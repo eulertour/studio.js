@@ -1269,16 +1269,73 @@ var animation = /*#__PURE__*/Object.freeze({
 	Shift: Shift
 });
 
+const updateRenderData = (startTime, previousCallTime, time) => {
+    let deltaTime, elapsedTime;
+    if (previousCallTime !== null && startTime !== null) {
+        deltaTime = time - previousCallTime;
+        elapsedTime = time - startTime;
+        previousCallTime = time;
+    }
+    else {
+        startTime = time;
+        deltaTime = 0;
+        elapsedTime = 0;
+        previousCallTime = time;
+    }
+    return [startTime, deltaTime, elapsedTime, previousCallTime];
+};
+const handleAnimations = (animations, currentAnimationIndex, deltaTime) => {
+    if (currentAnimationIndex >= animations.length) {
+        return currentAnimationIndex;
+    }
+    let currentAnimation = animations[currentAnimationIndex];
+    currentAnimation.update(deltaTime);
+    if (!currentAnimation.finished) {
+        return currentAnimationIndex;
+    }
+    currentAnimationIndex += 1;
+    if (currentAnimationIndex >= animations.length) {
+        return currentAnimationIndex;
+    }
+    let nextAnimation = animations[currentAnimationIndex];
+    nextAnimation.update(currentAnimation.excessTime);
+    return currentAnimationIndex;
+};
+
 class Scene {
     constructor(scene, camera, renderer) {
         this.scene = scene;
         this.camera = camera;
         this.renderer = renderer;
         this.animations = [];
+        this.previousCallTime = null;
+        this.startTime = null;
+        this.currentAnimationIndex = 0;
+        this.deltaTime = 0;
+        this.elapsedTime = 0;
         scene.clear();
         renderer.getSize(GeometryResolution);
     }
     render(time, deltaTime) { }
+    reset() {
+        this.previousCallTime = null;
+        this.startTime = null;
+        this.currentAnimationIndex = 0;
+        this.deltaTime = 0;
+        this.elapsedTime = 0;
+    }
+    tick(time) {
+        [this.startTime, this.deltaTime, this.elapsedTime, this.previousCallTime] =
+            updateRenderData(this.startTime, this.previousCallTime, time);
+        try {
+            this.render(this.elapsedTime, this.deltaTime);
+            this.currentAnimationIndex = handleAnimations(this.animations, this.currentAnimationIndex, this.deltaTime);
+        }
+        catch (err) {
+            console.error("Error executing user animation: ", err);
+            this.renderer.setAnimationLoop(null);
+        }
+    }
 }
 
 export { animation as Animation, geometry as Geometry, Scene };

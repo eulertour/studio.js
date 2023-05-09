@@ -12,6 +12,7 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-typescript": "^11.0.0",
+    "http-server": "^14.1.1",
     "rollup": "^3.20.2",
     "tslib": "^2.5.0"
   }
