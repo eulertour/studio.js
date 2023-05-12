@@ -5,15 +5,20 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup --config rollup.config.ts --configPlugin typescript"
+    "build": "rollup --config rollup.config.ts --configPlugin typescript",
+    "serve": "pnpm build && cross-env PORT=8081 serve ./build --cors",
+    "dev": "nodemon -w src -e js,ts --exec 'pnpm serve'"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-typescript": "^11.0.0",
+    "cross-env": "^7.0.3",
     "http-server": "^14.1.1",
+    "nodemon": "^2.0.22",
     "rollup": "^3.20.2",
+    "serve": "^14.2.0",
     "tslib": "^2.5.0"
   }
 }
