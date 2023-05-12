@@ -10,6 +10,8 @@ export default class Scene {
   currentAnimationIndex = 0;
   deltaTime = 0;
   elapsedTime = 0;
+  paused = false;
+  pausedTime = 0;
 
   constructor(
     public scene: THREE.Scene,
@@ -30,10 +32,22 @@ export default class Scene {
     this.elapsedTime = 0;
   }
 
-  tick(time) {
-    [this.startTime, this.deltaTime, this.elapsedTime, this.previousCallTime] =
-      updateRenderData(this.startTime, this.previousCallTime, time);
+  tick(time: number) {
+    [
+      this.startTime,
+      this.deltaTime,
+      this.elapsedTime,
+      this.previousCallTime,
+      this.pausedTime,
+    ] = updateRenderData(
+      this.startTime,
+      this.previousCallTime,
+      time,
+      this.pausedTime,
+      this.paused
+    );
 
+    if (this.paused) return;
     try {
       this.render(this.elapsedTime, this.deltaTime);
       this.currentAnimationIndex = handleAnimations(
@@ -45,5 +59,13 @@ export default class Scene {
       console.error("Error executing user animation: ", err);
       this.renderer.setAnimationLoop(null);
     }
+  }
+
+  pause() {
+    this.paused = true;
+  }
+
+  play() {
+    this.paused = false;
   }
 }

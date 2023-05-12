@@ -1269,11 +1269,13 @@ var animation = /*#__PURE__*/Object.freeze({
 	Shift: Shift
 });
 
-const updateRenderData = (startTime, previousCallTime, time) => {
+const updateRenderData = (startTime, previousCallTime, time, pausedTime, paused) => {
     let deltaTime, elapsedTime;
+    if (paused)
+        pausedTime += time - (previousCallTime !== null && previousCallTime !== void 0 ? previousCallTime : time);
     if (previousCallTime !== null && startTime !== null) {
         deltaTime = time - previousCallTime;
-        elapsedTime = time - startTime;
+        elapsedTime = time - (startTime + pausedTime);
         previousCallTime = time;
     }
     else {
@@ -1282,7 +1284,7 @@ const updateRenderData = (startTime, previousCallTime, time) => {
         elapsedTime = 0;
         previousCallTime = time;
     }
-    return [startTime, deltaTime, elapsedTime, previousCallTime];
+    return [startTime, deltaTime, elapsedTime, previousCallTime, pausedTime];
 };
 const handleAnimations = (animations, currentAnimationIndex, deltaTime) => {
     if (currentAnimationIndex >= animations.length) {
@@ -1313,6 +1315,8 @@ class Scene {
         this.currentAnimationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
+        this.paused = false;
+        this.pausedTime = 0;
         scene.clear();
         renderer.getSize(GeometryResolution);
     }
@@ -1325,8 +1329,15 @@ class Scene {
         this.elapsedTime = 0;
     }
     tick(time) {
-        [this.startTime, this.deltaTime, this.elapsedTime, this.previousCallTime] =
-            updateRenderData(this.startTime, this.previousCallTime, time);
+        [
+            this.startTime,
+            this.deltaTime,
+            this.elapsedTime,
+            this.previousCallTime,
+            this.pausedTime,
+        ] = updateRenderData(this.startTime, this.previousCallTime, time, this.pausedTime, this.paused);
+        if (this.paused)
+            return;
         try {
             this.render(this.elapsedTime, this.deltaTime);
             this.currentAnimationIndex = handleAnimations(this.animations, this.currentAnimationIndex, this.deltaTime);
@@ -1335,6 +1346,12 @@ class Scene {
             console.error("Error executing user animation: ", err);
             this.renderer.setAnimationLoop(null);
         }
+    }
+    pause() {
+        this.paused = true;
+    }
+    play() {
+        this.paused = false;
     }
 }
 

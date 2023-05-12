@@ -45,13 +45,17 @@ const setupCanvas = (
 const updateRenderData = (
   startTime: number | null,
   previousCallTime: number | null,
-  time: number
+  time: number,
+  pausedTime: number,
+  paused: boolean
 ) => {
   let deltaTime, elapsedTime;
 
+  if (paused) pausedTime += time - (previousCallTime ?? time);
+
   if (previousCallTime !== null && startTime !== null) {
     deltaTime = time - previousCallTime;
-    elapsedTime = time - startTime;
+    elapsedTime = time - (startTime + pausedTime);
     previousCallTime = time;
   } else {
     startTime = time;
@@ -60,7 +64,7 @@ const updateRenderData = (
     previousCallTime = time;
   }
 
-  return [startTime, deltaTime, elapsedTime, previousCallTime];
+  return [startTime, deltaTime, elapsedTime, previousCallTime, pausedTime];
 };
 
 const handleAnimations = (animations, currentAnimationIndex, deltaTime) => {
