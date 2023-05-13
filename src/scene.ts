@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { Animation } from "./animation";
 import * as Geometry from "./geometry";
-import { handleAnimations, updateRenderData } from "./utils";
+import { handleAnimations, nextFrame, updateRenderData } from "./utils";
 
 export default class Scene {
   animations: Array<Animation> = [];
@@ -11,7 +11,10 @@ export default class Scene {
   deltaTime = 0;
   elapsedTime = 0;
   paused = false;
+  seeking = false;
   pausedTime = 0;
+  seekOffset = 0;
+  static FPS = 60;
 
   constructor(
     public scene: THREE.Scene,
@@ -30,6 +33,8 @@ export default class Scene {
     this.currentAnimationIndex = 0;
     this.deltaTime = 0;
     this.elapsedTime = 0;
+    this.pausedTime = 0;
+    this.seekOffset = 0;
   }
 
   tick(time: number) {
@@ -44,10 +49,13 @@ export default class Scene {
       this.previousCallTime,
       time,
       this.pausedTime,
-      this.paused
+      this.seekOffset,
+      this.paused,
+      this.seeking
     );
 
-    if (this.paused) return;
+    if (this.paused && !this.seeking) return;
+
     try {
       this.render(this.elapsedTime, this.deltaTime);
       this.currentAnimationIndex = handleAnimations(
@@ -59,6 +67,31 @@ export default class Scene {
       console.error("Error executing user animation: ", err);
       this.renderer.setAnimationLoop(null);
     }
+  }
+
+  seek(durationMs: number) {
+    if (durationMs === 0)
+      throw new Error("durationMs must be a non zero integer");
+    this.seeking = true;
+    this.pause();
+
+    const targetMs: number = this.elapsedTime + durationMs;
+
+    if (durationMs < 0) this.reset();
+    if (targetMs <= 0) return;
+
+    const start = performance.now();
+    const MSPF = 1000 / Scene.FPS;
+    const framesToRender = Math.ceil(
+      (durationMs > 0 ? durationMs / 1000 : targetMs / 1000) * Scene.FPS
+    );
+    for (let i = 0; i <= framesToRender; i++) {
+      this.tick(start + MSPF * i);
+    }
+    this.seekOffset += MSPF * framesToRender;
+    this.play();
+    nextFrame(() => this.pause());
+    this.seeking = false;
   }
 
   pause() {

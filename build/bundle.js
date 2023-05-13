@@ -1269,13 +1269,13 @@ var animation = /*#__PURE__*/Object.freeze({
 	Shift: Shift
 });
 
-const updateRenderData = (startTime, previousCallTime, time, pausedTime, paused) => {
+const updateRenderData = (startTime, previousCallTime, time, pausedTime, seekOffset, paused, seeking) => {
     let deltaTime, elapsedTime;
-    if (paused)
+    if (paused && !seeking)
         pausedTime += time - (previousCallTime !== null && previousCallTime !== void 0 ? previousCallTime : time);
     if (previousCallTime !== null && startTime !== null) {
         deltaTime = time - previousCallTime;
-        elapsedTime = time - (startTime + pausedTime);
+        elapsedTime = time - (startTime + pausedTime - seekOffset);
         previousCallTime = time;
     }
     else {
@@ -1283,6 +1283,7 @@ const updateRenderData = (startTime, previousCallTime, time, pausedTime, paused)
         deltaTime = 0;
         elapsedTime = 0;
         previousCallTime = time;
+        pausedTime = 0;
     }
     return [startTime, deltaTime, elapsedTime, previousCallTime, pausedTime];
 };
@@ -1303,6 +1304,7 @@ const handleAnimations = (animations, currentAnimationIndex, deltaTime) => {
     nextAnimation.update(currentAnimation.excessTime);
     return currentAnimationIndex;
 };
+const nextFrame = (cb) => requestAnimationFrame(() => requestAnimationFrame(cb));
 
 class Scene {
     constructor(scene, camera, renderer) {
@@ -1316,7 +1318,9 @@ class Scene {
         this.deltaTime = 0;
         this.elapsedTime = 0;
         this.paused = false;
+        this.seeking = false;
         this.pausedTime = 0;
+        this.seekOffset = 0;
         scene.clear();
         renderer.getSize(GeometryResolution);
     }
@@ -1327,6 +1331,8 @@ class Scene {
         this.currentAnimationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
+        this.pausedTime = 0;
+        this.seekOffset = 0;
     }
     tick(time) {
         [
@@ -1335,8 +1341,8 @@ class Scene {
             this.elapsedTime,
             this.previousCallTime,
             this.pausedTime,
-        ] = updateRenderData(this.startTime, this.previousCallTime, time, this.pausedTime, this.paused);
-        if (this.paused)
+        ] = updateRenderData(this.startTime, this.previousCallTime, time, this.pausedTime, this.seekOffset, this.paused, this.seeking);
+        if (this.paused && !this.seeking)
             return;
         try {
             this.render(this.elapsedTime, this.deltaTime);
@@ -1347,6 +1353,27 @@ class Scene {
             this.renderer.setAnimationLoop(null);
         }
     }
+    seek(durationMs) {
+        if (durationMs === 0)
+            throw new Error("durationMs must be a non zero integer");
+        this.seeking = true;
+        this.pause();
+        const targetMs = this.elapsedTime + durationMs;
+        if (durationMs < 0)
+            this.reset();
+        if (targetMs <= 0)
+            return;
+        const start = performance.now();
+        const MSPF = 1000 / Scene.FPS;
+        const framesToRender = Math.ceil((durationMs > 0 ? durationMs / 1000 : targetMs / 1000) * Scene.FPS);
+        for (let i = 0; i <= framesToRender; i++) {
+            this.tick(start + MSPF * i);
+        }
+        this.seekOffset += MSPF * framesToRender;
+        this.play();
+        nextFrame(() => this.pause());
+        this.seeking = false;
+    }
     pause() {
         this.paused = true;
     }
@@ -1354,5 +1381,6 @@ class Scene {
         this.paused = false;
     }
 }
+Scene.FPS = 60;
 
 export { animation as Animation, geometry as Geometry, Scene };

@@ -47,21 +47,24 @@ const updateRenderData = (
   previousCallTime: number | null,
   time: number,
   pausedTime: number,
-  paused: boolean
+  seekOffset: number,
+  paused: boolean,
+  seeking: boolean
 ) => {
   let deltaTime, elapsedTime;
 
-  if (paused) pausedTime += time - (previousCallTime ?? time);
+  if (paused && !seeking) pausedTime += time - (previousCallTime ?? time);
 
   if (previousCallTime !== null && startTime !== null) {
     deltaTime = time - previousCallTime;
-    elapsedTime = time - (startTime + pausedTime);
+    elapsedTime = time - (startTime + pausedTime - seekOffset);
     previousCallTime = time;
   } else {
     startTime = time;
     deltaTime = 0;
     elapsedTime = 0;
     previousCallTime = time;
+    pausedTime = 0;
   }
 
   return [startTime, deltaTime, elapsedTime, previousCallTime, pausedTime];
@@ -88,4 +91,13 @@ const handleAnimations = (animations, currentAnimationIndex, deltaTime) => {
   return currentAnimationIndex;
 };
 
-export { getFrameAttributes, setupCanvas, updateRenderData, handleAnimations };
+const nextFrame = (cb: (time: DOMHighResTimeStamp) => void) =>
+  requestAnimationFrame(() => requestAnimationFrame(cb));
+
+export {
+  getFrameAttributes,
+  setupCanvas,
+  updateRenderData,
+  handleAnimations,
+  nextFrame,
+};
