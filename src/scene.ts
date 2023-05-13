@@ -15,6 +15,8 @@ export default class Scene {
   pausedTime = 0;
   seekOffset = 0;
   static FPS = 60;
+  pauseCallbacks: Array<(seeking: boolean) => void>;
+  playCallbacks: Array<(seeking: boolean) => void>;
 
   constructor(
     public scene: THREE.Scene,
@@ -23,6 +25,8 @@ export default class Scene {
   ) {
     scene.clear();
     renderer.getSize(Geometry.GeometryResolution);
+    this.pauseCallbacks = [];
+    this.playCallbacks = [];
   }
 
   render(time: number, deltaTime: number) {}
@@ -96,9 +100,19 @@ export default class Scene {
 
   pause() {
     this.paused = true;
+    this.pauseCallbacks.forEach((cb) => cb(this.seeking));
   }
 
   play() {
     this.paused = false;
+    this.playCallbacks.forEach((cb) => cb(this.seeking));
+  }
+
+  onPause(cb: () => void) {
+    this.pauseCallbacks.push(cb);
+  }
+
+  onPlay(cb: () => void) {
+    this.playCallbacks.push(cb);
   }
 }

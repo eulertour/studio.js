@@ -1323,6 +1323,8 @@ class Scene {
         this.seekOffset = 0;
         scene.clear();
         renderer.getSize(GeometryResolution);
+        this.pauseCallbacks = [];
+        this.playCallbacks = [];
     }
     render(time, deltaTime) { }
     reset() {
@@ -1376,9 +1378,17 @@ class Scene {
     }
     pause() {
         this.paused = true;
+        this.pauseCallbacks.forEach((cb) => cb(this.seeking));
     }
     play() {
         this.paused = false;
+        this.playCallbacks.forEach((cb) => cb(this.seeking));
+    }
+    onPause(cb) {
+        this.pauseCallbacks.push(cb);
+    }
+    onPlay(cb) {
+        this.playCallbacks.push(cb);
     }
 }
 Scene.FPS = 60;
