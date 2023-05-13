@@ -1391,6 +1391,7 @@ class Scene {
         this.playCallbacks.push(cb);
     }
 }
+// TODO: FPS from hardware info
 Scene.FPS = 60;
 
 export { animation as Animation, geometry as Geometry, Scene };

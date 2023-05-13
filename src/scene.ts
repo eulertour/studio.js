@@ -14,6 +14,7 @@ export default class Scene {
   seeking = false;
   pausedTime = 0;
   seekOffset = 0;
+  // TODO: FPS from hardware info
   static FPS = 60;
   pauseCallbacks: Array<(seeking: boolean) => void>;
   playCallbacks: Array<(seeking: boolean) => void>;
