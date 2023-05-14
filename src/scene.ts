@@ -24,12 +24,33 @@ export default class Scene {
 
   render(time: number, deltaTime: number) {}
 
+  init(scene, camera, renderer) {}
+
   reset() {
     this.previousCallTime = null;
     this.startTime = null;
     this.currentAnimationIndex = 0;
     this.deltaTime = 0;
     this.elapsedTime = 0;
+    this.animations.forEach((animation) => animation.reset());
+    this.scene.children.forEach((child) => {
+      if (child.dispose !== undefined) {
+        child.dispose();
+      } else {
+        console.warn("Can't dispose of object:", child);
+      }
+    });
+    this.scene.clear();
+    this.init(this.scene, this.camera, this.renderer);
+  }
+
+  renderAndHandleAnimations(elapsedTime, deltaTime) {
+    this.render(elapsedTime, deltaTime);
+    this.currentAnimationIndex = handleAnimations(
+      this.animations,
+      this.currentAnimationIndex,
+      deltaTime
+    );
   }
 
   tick(time: number) {
@@ -37,12 +58,7 @@ export default class Scene {
       updateRenderData(this.startTime, this.previousCallTime, time);
 
     try {
-      this.render(this.elapsedTime, this.deltaTime);
-      this.currentAnimationIndex = handleAnimations(
-        this.animations,
-        this.currentAnimationIndex,
-        this.deltaTime
-      );
+      this.renderAndHandleAnimations(this.elapsedTime, this.deltaTime);
     } catch (err) {
       console.error("Error executing user animation: ", err);
       this.renderer.setAnimationLoop(null);

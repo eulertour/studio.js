@@ -1219,48 +1219,52 @@ var geometry = /*#__PURE__*/Object.freeze({
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 let sigmoid = (x) => 1 / (1 + Math.exp(-x));
 let smooth = (t) => {
-	let error = sigmoid(-10 / 2);
-	return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
+  let error = sigmoid(-10 / 2);
+  return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
 };
 
 const modulate = (t, dt) => {
-	let tSeconds = t / 1000;
-	let modulatedDelta = 1000 * (smooth(tSeconds) - smooth((t - dt) / 1000));
-	let modulatedTime = 1000 * smooth(tSeconds);
-	return [modulatedTime, modulatedDelta];
+  let tSeconds = t / 1000;
+  let modulatedDelta = 1000 * (smooth(tSeconds) - smooth((t - dt) / 1000));
+  let modulatedTime = 1000 * smooth(tSeconds);
+  return [modulatedTime, modulatedDelta];
 };
 
 class Animation {
-	constructor(func) {
-		this.func = func;
-		this.elapsedTime = 0;
-		this.runtime = 1000;
-		this.finished = false;
-		this.excessTime = null;
-	}
+  constructor(func) {
+    this.func = func;
+    this.runtime = 1000;
+    this.reset();
+  }
 
-	update(deltaTime) {
-		if (this.elapsedTime + deltaTime >= this.runtime) {
-			this.finish(deltaTime);
-			return;
-		}
-		this.elapsedTime += deltaTime;
-		this.func(...modulate(this.elapsedTime, deltaTime));
-	}
+  reset() {
+    this.elapsedTime = 0;
+    this.finished = false;
+    this.excessTime = null;
+  }
 
-	finish(deltaTime) {
-		this.finished = true;
-		let finishDeltaTime = this.runtime - this.elapsedTime;
-		this.excessTime = this.elapsedTime + deltaTime - this.runtime;
-		this.elapsedTime = this.runtime;
-		this.func(...modulate(this.runtime, finishDeltaTime));
-	}
+  update(deltaTime) {
+    if (this.elapsedTime + deltaTime >= this.runtime) {
+      this.finish(deltaTime);
+      return;
+    }
+    this.elapsedTime += deltaTime;
+    this.func(...modulate(this.elapsedTime, deltaTime));
+  }
+
+  finish(deltaTime) {
+    this.finished = true;
+    let finishDeltaTime = this.runtime - this.elapsedTime;
+    this.excessTime = this.elapsedTime + deltaTime - this.runtime;
+    this.elapsedTime = this.runtime;
+    this.func(...modulate(this.runtime, finishDeltaTime));
+  }
 }
 
 const Shift = (object, direction) => {
-	return new Animation((elapsedTime, deltaTime) => {
-		object.position.add(direction.clone().multiplyScalar(deltaTime / 1000));
-	});
+  return new Animation((elapsedTime, deltaTime) => {
+    object.position.add(direction.clone().multiplyScalar(deltaTime / 1000));
+  });
 };
 
 var animation = /*#__PURE__*/Object.freeze({
@@ -1317,19 +1321,34 @@ class Scene {
         renderer.getSize(GeometryResolution);
     }
     render(time, deltaTime) { }
+    init(scene, camera, renderer) { }
     reset() {
         this.previousCallTime = null;
         this.startTime = null;
         this.currentAnimationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
+        this.animations.forEach((animation) => animation.reset());
+        this.scene.children.forEach((child) => {
+            if (child.dispose !== undefined) {
+                child.dispose();
+            }
+            else {
+                console.warn("Can't dispose of object:", child);
+            }
+        });
+        this.scene.clear();
+        this.init(this.scene, this.camera, this.renderer);
+    }
+    renderAndHandleAnimations(elapsedTime, deltaTime) {
+        this.render(elapsedTime, deltaTime);
+        this.currentAnimationIndex = handleAnimations(this.animations, this.currentAnimationIndex, deltaTime);
     }
     tick(time) {
         [this.startTime, this.deltaTime, this.elapsedTime, this.previousCallTime] =
             updateRenderData(this.startTime, this.previousCallTime, time);
         try {
-            this.render(this.elapsedTime, this.deltaTime);
-            this.currentAnimationIndex = handleAnimations(this.animations, this.currentAnimationIndex, this.deltaTime);
+            this.renderAndHandleAnimations(this.elapsedTime, this.deltaTime);
         }
         catch (err) {
             console.error("Error executing user animation: ", err);
