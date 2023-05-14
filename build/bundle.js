@@ -1359,12 +1359,14 @@ class Scene {
         if (durationMs === 0)
             throw new Error("durationMs must be a non zero integer");
         this.seeking = true;
-        this.pause();
         const targetMs = this.elapsedTime + durationMs;
         if (durationMs < 0)
             this.reset();
-        if (targetMs <= 0)
+        this.pause();
+        if (targetMs <= 0) {
+            this.seeking = false;
             return;
+        }
         const start = performance.now();
         const MSPF = 1000 / Scene.FPS;
         const framesToRender = Math.ceil((durationMs > 0 ? durationMs / 1000 : targetMs / 1000) * Scene.FPS);
