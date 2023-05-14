@@ -45,29 +45,22 @@ const setupCanvas = (
 const updateRenderData = (
   startTime: number | null,
   previousCallTime: number | null,
-  time: number,
-  pausedTime: number,
-  seekOffset: number,
-  paused: boolean,
-  seeking: boolean
+  time: number
 ) => {
   let deltaTime, elapsedTime;
 
-  if (paused && !seeking) pausedTime += time - (previousCallTime ?? time);
-
   if (previousCallTime !== null && startTime !== null) {
     deltaTime = time - previousCallTime;
-    elapsedTime = time - (startTime + pausedTime - seekOffset);
+    elapsedTime = time - startTime;
     previousCallTime = time;
   } else {
     startTime = time;
     deltaTime = 0;
     elapsedTime = 0;
     previousCallTime = time;
-    pausedTime = 0;
   }
 
-  return [startTime, deltaTime, elapsedTime, previousCallTime, pausedTime];
+  return [startTime, deltaTime, elapsedTime, previousCallTime];
 };
 
 const handleAnimations = (animations, currentAnimationIndex, deltaTime) => {

@@ -1269,13 +1269,11 @@ var animation = /*#__PURE__*/Object.freeze({
 	Shift: Shift
 });
 
-const updateRenderData = (startTime, previousCallTime, time, pausedTime, seekOffset, paused, seeking) => {
+const updateRenderData = (startTime, previousCallTime, time) => {
     let deltaTime, elapsedTime;
-    if (paused && !seeking)
-        pausedTime += time - (previousCallTime !== null && previousCallTime !== void 0 ? previousCallTime : time);
     if (previousCallTime !== null && startTime !== null) {
         deltaTime = time - previousCallTime;
-        elapsedTime = time - (startTime + pausedTime - seekOffset);
+        elapsedTime = time - startTime;
         previousCallTime = time;
     }
     else {
@@ -1283,9 +1281,8 @@ const updateRenderData = (startTime, previousCallTime, time, pausedTime, seekOff
         deltaTime = 0;
         elapsedTime = 0;
         previousCallTime = time;
-        pausedTime = 0;
     }
-    return [startTime, deltaTime, elapsedTime, previousCallTime, pausedTime];
+    return [startTime, deltaTime, elapsedTime, previousCallTime];
 };
 const handleAnimations = (animations, currentAnimationIndex, deltaTime) => {
     if (currentAnimationIndex >= animations.length) {
@@ -1304,7 +1301,6 @@ const handleAnimations = (animations, currentAnimationIndex, deltaTime) => {
     nextAnimation.update(currentAnimation.excessTime);
     return currentAnimationIndex;
 };
-const nextFrame = (cb) => requestAnimationFrame(() => requestAnimationFrame(cb));
 
 class Scene {
     constructor(scene, camera, renderer) {
@@ -1317,14 +1313,8 @@ class Scene {
         this.currentAnimationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
-        this.paused = false;
-        this.seeking = false;
-        this.pausedTime = 0;
-        this.seekOffset = 0;
         scene.clear();
         renderer.getSize(GeometryResolution);
-        this.pauseCallbacks = [];
-        this.playCallbacks = [];
     }
     render(time, deltaTime) { }
     reset() {
@@ -1333,19 +1323,10 @@ class Scene {
         this.currentAnimationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
-        this.pausedTime = 0;
-        this.seekOffset = 0;
     }
     tick(time) {
-        [
-            this.startTime,
-            this.deltaTime,
-            this.elapsedTime,
-            this.previousCallTime,
-            this.pausedTime,
-        ] = updateRenderData(this.startTime, this.previousCallTime, time, this.pausedTime, this.seekOffset, this.paused, this.seeking);
-        if (this.paused && !this.seeking)
-            return;
+        [this.startTime, this.deltaTime, this.elapsedTime, this.previousCallTime] =
+            updateRenderData(this.startTime, this.previousCallTime, time);
         try {
             this.render(this.elapsedTime, this.deltaTime);
             this.currentAnimationIndex = handleAnimations(this.animations, this.currentAnimationIndex, this.deltaTime);
@@ -1354,43 +1335,6 @@ class Scene {
             console.error("Error executing user animation: ", err);
             this.renderer.setAnimationLoop(null);
         }
-    }
-    seek(durationMs) {
-        if (durationMs === 0)
-            throw new Error("durationMs must be a non zero integer");
-        this.seeking = true;
-        const targetMs = this.elapsedTime + durationMs;
-        if (durationMs < 0)
-            this.reset();
-        this.pause();
-        if (targetMs <= 0) {
-            this.seeking = false;
-            return;
-        }
-        const start = performance.now();
-        const MSPF = 1000 / Scene.FPS;
-        const framesToRender = Math.ceil((durationMs > 0 ? durationMs / 1000 : targetMs / 1000) * Scene.FPS);
-        for (let i = 0; i <= framesToRender; i++) {
-            this.tick(start + MSPF * i);
-        }
-        this.seekOffset += MSPF * framesToRender;
-        this.play();
-        nextFrame(() => this.pause());
-        this.seeking = false;
-    }
-    pause() {
-        this.paused = true;
-        this.pauseCallbacks.forEach((cb) => cb(this.seeking));
-    }
-    play() {
-        this.paused = false;
-        this.playCallbacks.forEach((cb) => cb(this.seeking));
-    }
-    onPause(cb) {
-        this.pauseCallbacks.push(cb);
-    }
-    onPlay(cb) {
-        this.playCallbacks.push(cb);
     }
 }
 // TODO: FPS from hardware info
