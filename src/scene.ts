@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { Animation } from "./animation";
 import * as Geometry from "./geometry";
-import { handleAnimations, nextFrame, updateRenderData } from "./utils";
+import { handleAnimations } from "./utils";
 
 export default class Scene {
   animations: Array<Animation> = [];
@@ -44,18 +44,46 @@ export default class Scene {
     this.init(this.scene, this.camera, this.renderer);
   }
 
+  handleAnimations(deltaTime) {
+    if (this.currentAnimationIndex >= this.animations.length) {
+      return;
+    }
+
+    let currentAnimation = this.animations[this.currentAnimationIndex];
+    currentAnimation.update(deltaTime);
+    if (!currentAnimation.finished) {
+      return;
+    }
+
+    this.currentAnimationIndex += 1;
+    if (this.currentAnimationIndex >= this.animations.length) {
+      return;
+    }
+
+    let nextAnimation = this.animations[this.currentAnimationIndex];
+    nextAnimation.update(currentAnimation.excessTime);
+  }
+
   renderAndHandleAnimations(elapsedTime, deltaTime) {
     this.render(elapsedTime, deltaTime);
-    this.currentAnimationIndex = handleAnimations(
-      this.animations,
-      this.currentAnimationIndex,
-      deltaTime
-    );
+    this.handleAnimations(deltaTime);
+  }
+
+  updateRenderData(time: number) {
+    if (this.previousCallTime !== null && this.startTime !== null) {
+      this.deltaTime = time - this.previousCallTime;
+      this.elapsedTime = time - this.startTime;
+      this.previousCallTime = time;
+    } else {
+      this.startTime = time;
+      this.deltaTime = 0;
+      this.elapsedTime = 0;
+      this.previousCallTime = time;
+    }
   }
 
   tick(time: number) {
-    [this.startTime, this.deltaTime, this.elapsedTime, this.previousCallTime] =
-      updateRenderData(this.startTime, this.previousCallTime, time);
+    this.updateRenderData(time);
 
     try {
       this.renderAndHandleAnimations(this.elapsedTime, this.deltaTime);

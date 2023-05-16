@@ -1273,39 +1273,6 @@ var animation = /*#__PURE__*/Object.freeze({
 	Shift: Shift
 });
 
-const updateRenderData = (startTime, previousCallTime, time) => {
-    let deltaTime, elapsedTime;
-    if (previousCallTime !== null && startTime !== null) {
-        deltaTime = time - previousCallTime;
-        elapsedTime = time - startTime;
-        previousCallTime = time;
-    }
-    else {
-        startTime = time;
-        deltaTime = 0;
-        elapsedTime = 0;
-        previousCallTime = time;
-    }
-    return [startTime, deltaTime, elapsedTime, previousCallTime];
-};
-const handleAnimations = (animations, currentAnimationIndex, deltaTime) => {
-    if (currentAnimationIndex >= animations.length) {
-        return currentAnimationIndex;
-    }
-    let currentAnimation = animations[currentAnimationIndex];
-    currentAnimation.update(deltaTime);
-    if (!currentAnimation.finished) {
-        return currentAnimationIndex;
-    }
-    currentAnimationIndex += 1;
-    if (currentAnimationIndex >= animations.length) {
-        return currentAnimationIndex;
-    }
-    let nextAnimation = animations[currentAnimationIndex];
-    nextAnimation.update(currentAnimation.excessTime);
-    return currentAnimationIndex;
-};
-
 class Scene {
     constructor(scene, camera, renderer) {
         this.scene = scene;
@@ -1340,13 +1307,41 @@ class Scene {
         this.scene.clear();
         this.init(this.scene, this.camera, this.renderer);
     }
+    handleAnimations(deltaTime) {
+        if (this.currentAnimationIndex >= this.animations.length) {
+            return;
+        }
+        let currentAnimation = this.animations[this.currentAnimationIndex];
+        currentAnimation.update(deltaTime);
+        if (!currentAnimation.finished) {
+            return;
+        }
+        this.currentAnimationIndex += 1;
+        if (this.currentAnimationIndex >= this.animations.length) {
+            return;
+        }
+        let nextAnimation = this.animations[this.currentAnimationIndex];
+        nextAnimation.update(currentAnimation.excessTime);
+    }
     renderAndHandleAnimations(elapsedTime, deltaTime) {
         this.render(elapsedTime, deltaTime);
-        this.currentAnimationIndex = handleAnimations(this.animations, this.currentAnimationIndex, deltaTime);
+        this.handleAnimations(deltaTime);
+    }
+    updateRenderData(time) {
+        if (this.previousCallTime !== null && this.startTime !== null) {
+            this.deltaTime = time - this.previousCallTime;
+            this.elapsedTime = time - this.startTime;
+            this.previousCallTime = time;
+        }
+        else {
+            this.startTime = time;
+            this.deltaTime = 0;
+            this.elapsedTime = 0;
+            this.previousCallTime = time;
+        }
     }
     tick(time) {
-        [this.startTime, this.deltaTime, this.elapsedTime, this.previousCallTime] =
-            updateRenderData(this.startTime, this.previousCallTime, time);
+        this.updateRenderData(time);
         try {
             this.renderAndHandleAnimations(this.elapsedTime, this.deltaTime);
         }

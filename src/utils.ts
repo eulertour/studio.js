@@ -42,55 +42,7 @@ const setupCanvas = (
   return [camera, renderer];
 };
 
-const updateRenderData = (
-  startTime: number | null,
-  previousCallTime: number | null,
-  time: number
-) => {
-  let deltaTime, elapsedTime;
-
-  if (previousCallTime !== null && startTime !== null) {
-    deltaTime = time - previousCallTime;
-    elapsedTime = time - startTime;
-    previousCallTime = time;
-  } else {
-    startTime = time;
-    deltaTime = 0;
-    elapsedTime = 0;
-    previousCallTime = time;
-  }
-
-  return [startTime, deltaTime, elapsedTime, previousCallTime];
-};
-
-const handleAnimations = (animations, currentAnimationIndex, deltaTime) => {
-  if (currentAnimationIndex >= animations.length) {
-    return currentAnimationIndex;
-  }
-
-  let currentAnimation = animations[currentAnimationIndex];
-  currentAnimation.update(deltaTime);
-  if (!currentAnimation.finished) {
-    return currentAnimationIndex;
-  }
-
-  currentAnimationIndex += 1;
-  if (currentAnimationIndex >= animations.length) {
-    return currentAnimationIndex;
-  }
-
-  let nextAnimation = animations[currentAnimationIndex];
-  nextAnimation.update(currentAnimation.excessTime);
-  return currentAnimationIndex;
-};
-
 const nextFrame = (cb: (time: DOMHighResTimeStamp) => void) =>
   requestAnimationFrame(() => requestAnimationFrame(cb));
 
-export {
-  getFrameAttributes,
-  setupCanvas,
-  updateRenderData,
-  handleAnimations,
-  nextFrame,
-};
+export { getFrameAttributes, setupCanvas, handleAnimations, nextFrame };
