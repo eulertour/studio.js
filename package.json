@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup --config rollup.config.ts --configPlugin typescript",
-    "serve": "pnpm build && cross-env PORT=8081 serve ./build --cors",
-    "dev": "nodemon -w src -e js,ts --exec 'pnpm serve'"
+    "serve": "npm run build && cross-env PORT=8081 serve ./build --cors",
+    "dev": "nodemon -w src -e js,ts --exec 'npm run serve'"
   },
   "author": "",
   "license": "ISC",

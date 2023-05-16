@@ -1219,48 +1219,52 @@ var geometry = /*#__PURE__*/Object.freeze({
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 let sigmoid = (x) => 1 / (1 + Math.exp(-x));
 let smooth = (t) => {
-	let error = sigmoid(-10 / 2);
-	return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
+  let error = sigmoid(-10 / 2);
+  return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
 };
 
 const modulate = (t, dt) => {
-	let tSeconds = t / 1000;
-	let modulatedDelta = 1000 * (smooth(tSeconds) - smooth((t - dt) / 1000));
-	let modulatedTime = 1000 * smooth(tSeconds);
-	return [modulatedTime, modulatedDelta];
+  let tSeconds = t / 1000;
+  let modulatedDelta = 1000 * (smooth(tSeconds) - smooth((t - dt) / 1000));
+  let modulatedTime = 1000 * smooth(tSeconds);
+  return [modulatedTime, modulatedDelta];
 };
 
 class Animation {
-	constructor(func) {
-		this.func = func;
-		this.elapsedTime = 0;
-		this.runtime = 1000;
-		this.finished = false;
-		this.excessTime = null;
-	}
+  constructor(func) {
+    this.func = func;
+    this.runtime = 1000;
+    this.reset();
+  }
 
-	update(deltaTime) {
-		if (this.elapsedTime + deltaTime >= this.runtime) {
-			this.finish(deltaTime);
-			return;
-		}
-		this.elapsedTime += deltaTime;
-		this.func(...modulate(this.elapsedTime, deltaTime));
-	}
+  reset() {
+    this.elapsedTime = 0;
+    this.finished = false;
+    this.excessTime = null;
+  }
 
-	finish(deltaTime) {
-		this.finished = true;
-		let finishDeltaTime = this.runtime - this.elapsedTime;
-		this.excessTime = this.elapsedTime + deltaTime - this.runtime;
-		this.elapsedTime = this.runtime;
-		this.func(...modulate(this.runtime, finishDeltaTime));
-	}
+  update(deltaTime) {
+    if (this.elapsedTime + deltaTime >= this.runtime) {
+      this.finish(deltaTime);
+      return;
+    }
+    this.elapsedTime += deltaTime;
+    this.func(...modulate(this.elapsedTime, deltaTime));
+  }
+
+  finish(deltaTime) {
+    this.finished = true;
+    let finishDeltaTime = this.runtime - this.elapsedTime;
+    this.excessTime = this.elapsedTime + deltaTime - this.runtime;
+    this.elapsedTime = this.runtime;
+    this.func(...modulate(this.runtime, finishDeltaTime));
+  }
 }
 
 const Shift = (object, direction) => {
-	return new Animation((elapsedTime, deltaTime) => {
-		object.position.add(direction.clone().multiplyScalar(deltaTime / 1000));
-	});
+  return new Animation((elapsedTime, deltaTime) => {
+    object.position.add(direction.clone().multiplyScalar(deltaTime / 1000));
+  });
 };
 
 var animation = /*#__PURE__*/Object.freeze({
@@ -1268,43 +1272,6 @@ var animation = /*#__PURE__*/Object.freeze({
 	Animation: Animation,
 	Shift: Shift
 });
-
-const updateRenderData = (startTime, previousCallTime, time, pausedTime, seekOffset, paused, seeking) => {
-    let deltaTime, elapsedTime;
-    if (paused && !seeking)
-        pausedTime += time - (previousCallTime !== null && previousCallTime !== void 0 ? previousCallTime : time);
-    if (previousCallTime !== null && startTime !== null) {
-        deltaTime = time - previousCallTime;
-        elapsedTime = time - (startTime + pausedTime - seekOffset);
-        previousCallTime = time;
-    }
-    else {
-        startTime = time;
-        deltaTime = 0;
-        elapsedTime = 0;
-        previousCallTime = time;
-        pausedTime = 0;
-    }
-    return [startTime, deltaTime, elapsedTime, previousCallTime, pausedTime];
-};
-const handleAnimations = (animations, currentAnimationIndex, deltaTime) => {
-    if (currentAnimationIndex >= animations.length) {
-        return currentAnimationIndex;
-    }
-    let currentAnimation = animations[currentAnimationIndex];
-    currentAnimation.update(deltaTime);
-    if (!currentAnimation.finished) {
-        return currentAnimationIndex;
-    }
-    currentAnimationIndex += 1;
-    if (currentAnimationIndex >= animations.length) {
-        return currentAnimationIndex;
-    }
-    let nextAnimation = animations[currentAnimationIndex];
-    nextAnimation.update(currentAnimation.excessTime);
-    return currentAnimationIndex;
-};
-const nextFrame = (cb) => requestAnimationFrame(() => requestAnimationFrame(cb));
 
 class Scene {
     constructor(scene, camera, renderer) {
@@ -1317,80 +1284,74 @@ class Scene {
         this.currentAnimationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
-        this.paused = false;
-        this.seeking = false;
-        this.pausedTime = 0;
-        this.seekOffset = 0;
         scene.clear();
         renderer.getSize(GeometryResolution);
-        this.pauseCallbacks = [];
-        this.playCallbacks = [];
     }
     render(time, deltaTime) { }
+    init(scene, camera, renderer) { }
     reset() {
         this.previousCallTime = null;
         this.startTime = null;
         this.currentAnimationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
-        this.pausedTime = 0;
-        this.seekOffset = 0;
+        this.animations.forEach((animation) => animation.reset());
+        this.scene.children.forEach((child) => {
+            if (child.dispose !== undefined) {
+                child.dispose();
+            }
+            else {
+                console.warn("Can't dispose of object:", child);
+            }
+        });
+        this.scene.clear();
+        this.init(this.scene, this.camera, this.renderer);
+    }
+    handleAnimations(deltaTime) {
+        if (this.currentAnimationIndex >= this.animations.length) {
+            return;
+        }
+        let currentAnimation = this.animations[this.currentAnimationIndex];
+        currentAnimation.update(deltaTime);
+        if (!currentAnimation.finished) {
+            return;
+        }
+        this.currentAnimationIndex += 1;
+        if (this.currentAnimationIndex >= this.animations.length) {
+            return;
+        }
+        let nextAnimation = this.animations[this.currentAnimationIndex];
+        nextAnimation.update(currentAnimation.excessTime);
+    }
+    renderAndHandleAnimations(elapsedTime, deltaTime) {
+        this.render(elapsedTime, deltaTime);
+        this.handleAnimations(deltaTime);
+    }
+    updateRenderData(time) {
+        if (this.previousCallTime !== null && this.startTime !== null) {
+            this.deltaTime = time - this.previousCallTime;
+            this.elapsedTime = time - this.startTime;
+            this.previousCallTime = time;
+        }
+        else {
+            this.startTime = time;
+            this.deltaTime = 0;
+            this.elapsedTime = 0;
+            this.previousCallTime = time;
+        }
     }
     tick(time) {
-        [
-            this.startTime,
-            this.deltaTime,
-            this.elapsedTime,
-            this.previousCallTime,
-            this.pausedTime,
-        ] = updateRenderData(this.startTime, this.previousCallTime, time, this.pausedTime, this.seekOffset, this.paused, this.seeking);
-        if (this.paused && !this.seeking)
-            return;
+        this.updateRenderData(time);
         try {
-            this.render(this.elapsedTime, this.deltaTime);
-            this.currentAnimationIndex = handleAnimations(this.animations, this.currentAnimationIndex, this.deltaTime);
+            this.renderAndHandleAnimations(this.elapsedTime, this.deltaTime);
         }
         catch (err) {
             console.error("Error executing user animation: ", err);
             this.renderer.setAnimationLoop(null);
         }
     }
-    seek(durationMs) {
-        if (durationMs === 0)
-            throw new Error("durationMs must be a non zero integer");
-        this.seeking = true;
-        this.pause();
-        const targetMs = this.elapsedTime + durationMs;
-        if (durationMs < 0)
-            this.reset();
-        if (targetMs <= 0)
-            return;
-        const start = performance.now();
-        const MSPF = 1000 / Scene.FPS;
-        const framesToRender = Math.ceil((durationMs > 0 ? durationMs / 1000 : targetMs / 1000) * Scene.FPS);
-        for (let i = 0; i <= framesToRender; i++) {
-            this.tick(start + MSPF * i);
-        }
-        this.seekOffset += MSPF * framesToRender;
-        this.play();
-        nextFrame(() => this.pause());
-        this.seeking = false;
-    }
-    pause() {
-        this.paused = true;
-        this.pauseCallbacks.forEach((cb) => cb(this.seeking));
-    }
-    play() {
-        this.paused = false;
-        this.playCallbacks.forEach((cb) => cb(this.seeking));
-    }
-    onPause(cb) {
-        this.pauseCallbacks.push(cb);
-    }
-    onPlay(cb) {
-        this.playCallbacks.push(cb);
-    }
 }
+// TODO: FPS from hardware info
 Scene.FPS = 60;
 
 export { animation as Animation, geometry as Geometry, Scene };
