@@ -1,17 +1,13 @@
 import * as THREE from "three";
 import { Animation } from "./animation";
 import * as Geometry from "./geometry";
-import { handleAnimations } from "./utils";
 
 export default class Scene {
   animations: Array<Animation> = [];
-  previousCallTime: number | null = null;
-  startTime: number | null = null;
   currentAnimationIndex = 0;
   deltaTime = 0;
   elapsedTime = 0;
-  // TODO: FPS from hardware info
-  static FPS = 60;
+  firstFrame: boolean = true;
 
   constructor(
     public scene: THREE.Scene,
@@ -27,8 +23,6 @@ export default class Scene {
   init(scene, camera, renderer) {}
 
   reset() {
-    this.previousCallTime = null;
-    this.startTime = null;
     this.currentAnimationIndex = 0;
     this.deltaTime = 0;
     this.elapsedTime = 0;
@@ -42,6 +36,7 @@ export default class Scene {
     });
     this.scene.clear();
     this.init(this.scene, this.camera, this.renderer);
+    this.firstFrame = true;
   }
 
   handleAnimations(deltaTime) {
@@ -64,29 +59,19 @@ export default class Scene {
     nextAnimation.update(currentAnimation.excessTime);
   }
 
-  renderAndHandleAnimations(elapsedTime, deltaTime) {
-    this.render(elapsedTime, deltaTime);
-    this.handleAnimations(deltaTime);
-  }
-
-  updateRenderData(time: number) {
-    if (this.previousCallTime !== null && this.startTime !== null) {
-      this.deltaTime = time - this.previousCallTime;
-      this.elapsedTime = time - this.startTime;
-      this.previousCallTime = time;
-    } else {
-      this.startTime = time;
+  tick(deltaTime: number) {
+    if (this.firstFrame) {
       this.deltaTime = 0;
       this.elapsedTime = 0;
-      this.previousCallTime = time;
+      this.firstFrame = false;
+    } else {
+      this.deltaTime = deltaTime;
+      this.elapsedTime += deltaTime;
     }
-  }
-
-  tick(time: number) {
-    this.updateRenderData(time);
 
     try {
-      this.renderAndHandleAnimations(this.elapsedTime, this.deltaTime);
+      this.render(this.elapsedTime, this.deltaTime);
+      this.handleAnimations(this.deltaTime);
     } catch (err) {
       console.error("Error executing user animation: ", err);
       this.renderer.setAnimationLoop(null);

@@ -46167,19 +46167,16 @@ class Scene {
         this.camera = camera;
         this.renderer = renderer;
         this.animations = [];
-        this.previousCallTime = null;
-        this.startTime = null;
         this.currentAnimationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
+        this.firstFrame = true;
         scene.clear();
         renderer.getSize(GeometryResolution);
     }
     render(time, deltaTime) { }
     init(scene, camera, renderer) { }
     reset() {
-        this.previousCallTime = null;
-        this.startTime = null;
         this.currentAnimationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
@@ -46194,6 +46191,7 @@ class Scene {
         });
         this.scene.clear();
         this.init(this.scene, this.camera, this.renderer);
+        this.firstFrame = true;
     }
     handleAnimations(deltaTime) {
         if (this.currentAnimationIndex >= this.animations.length) {
@@ -46211,27 +46209,19 @@ class Scene {
         let nextAnimation = this.animations[this.currentAnimationIndex];
         nextAnimation.update(currentAnimation.excessTime);
     }
-    renderAndHandleAnimations(elapsedTime, deltaTime) {
-        this.render(elapsedTime, deltaTime);
-        this.handleAnimations(deltaTime);
-    }
-    updateRenderData(time) {
-        if (this.previousCallTime !== null && this.startTime !== null) {
-            this.deltaTime = time - this.previousCallTime;
-            this.elapsedTime = time - this.startTime;
-            this.previousCallTime = time;
-        }
-        else {
-            this.startTime = time;
+    tick(deltaTime) {
+        if (this.firstFrame) {
             this.deltaTime = 0;
             this.elapsedTime = 0;
-            this.previousCallTime = time;
+            this.firstFrame = false;
         }
-    }
-    tick(time) {
-        this.updateRenderData(time);
+        else {
+            this.deltaTime = deltaTime;
+            this.elapsedTime += deltaTime;
+        }
         try {
-            this.renderAndHandleAnimations(this.elapsedTime, this.deltaTime);
+            this.render(this.elapsedTime, this.deltaTime);
+            this.handleAnimations(this.deltaTime);
         }
         catch (err) {
             console.error("Error executing user animation: ", err);
@@ -46239,7 +46229,5 @@ class Scene {
         }
     }
 }
-// TODO: FPS from hardware info
-Scene.FPS = 60;
 
 export { animation as Animation, geometry as Geometry, Scene, text as Text };
