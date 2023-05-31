@@ -708,14 +708,14 @@ const getFillGeometry = (points) => {
     return new THREE.ShapeGeometry(shape);
 };
 class Shape extends THREE.Group {
-    constructor(points, { strokeColor = new THREE.Color(0x000000), strokeOpacity = 1.0, strokeWidth = 4 * PIXELS_TO_COORDS, stroke = true, fillColor = new THREE.Color(0xfffaf0), fillOpacity = 1.0, fill = false } = {}) {
+    constructor(points, { strokeColor = new THREE.Color(0x000000), strokeOpacity = 1.0, strokeWidth = 4 * PIXELS_TO_COORDS, stroke = true, fillColor = new THREE.Color(0xfffaf0), fillOpacity = 1.0, fill = false, } = {}) {
         super();
         const fillGeometry = getFillGeometry(points);
         const fillMaterial = new THREE.MeshBasicMaterial({
             color: fillColor,
             opacity: fillOpacity,
             transparent: true,
-            polygonOffset: true
+            polygonOffset: true,
         });
         this.fill = new THREE.Mesh(fillGeometry, fillMaterial);
         this.fillVisible = fill;
@@ -729,7 +729,7 @@ class Shape extends THREE.Group {
             opacity: strokeOpacity,
             lineWidth: strokeWidth,
             transparent: true,
-            polygonOffset: true
+            polygonOffset: true,
         });
         // Set the uniform to a reference to GeometryResolution so that
         // strokes automatically update when the canvas resolution changes.
@@ -773,7 +773,7 @@ class Shape extends THREE.Group {
     }
     clone(recursive) {
         if (recursive === false) {
-            throw Error('Shape.clone() is always recursive');
+            throw Error("Shape.clone() is always recursive");
         }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -783,7 +783,7 @@ class Shape extends THREE.Group {
     }
     copy(source, recursive) {
         if (recursive === false) {
-            throw Error('Shape.clone() is always recursive');
+            throw Error("Shape.clone() is always recursive");
         }
         const originalFillVisible = source.fillVisible;
         const originalStrokeVisible = source.strokeVisible;
@@ -816,7 +816,7 @@ class Shape extends THREE.Group {
             className: this.constructor.name,
             attributes: this.getAttributes(),
             transform: this.getTransform(),
-            style: Shape.styleToJson(this.getStyle())
+            style: Shape.styleToJson(this.getStyle()),
         };
     }
     static fromJson(json) {
@@ -840,7 +840,7 @@ class Shape extends THREE.Group {
             stroke: this.strokeVisible,
             strokeColor: this.stroke.material.uniforms.color.value,
             strokeOpacity: this.stroke.material.opacity,
-            strokeWidth: this.stroke.material.lineWidth
+            strokeWidth: this.stroke.material.lineWidth,
         };
     }
     setStyle(style) {
@@ -872,7 +872,7 @@ class Shape extends THREE.Group {
         return {
             position: this.position.toArray(),
             rotation: [this.rotation.x, this.rotation.y, this.rotation.z],
-            scale: this.scale.x
+            scale: this.scale.x,
         };
     }
     setTransform(transform) {
@@ -913,7 +913,7 @@ class Shape extends THREE.Group {
     }
 }
 Shape.styleToJson = (style) => {
-    const { strokeColor, strokeOpacity, strokeWidth, stroke, fillColor, fillOpacity, fill } = style;
+    const { strokeColor, strokeOpacity, strokeWidth, stroke, fillColor, fillOpacity, fill, } = style;
     return {
         strokeColor: strokeColor ? strokeColor.toArray() : undefined,
         strokeOpacity,
@@ -921,43 +921,49 @@ Shape.styleToJson = (style) => {
         stroke,
         fillColor: fillColor ? fillColor.toArray() : undefined,
         fillOpacity,
-        fill
+        fill,
     };
 };
 Shape.jsonToStyle = (styleJson) => {
-    const { strokeColor, strokeOpacity, strokeWidth, stroke, fillColor, fillOpacity, fill } = styleJson;
+    const { strokeColor, strokeOpacity, strokeWidth, stroke, fillColor, fillOpacity, fill, } = styleJson;
     return {
-        strokeColor: strokeColor ? new THREE.Color().fromArray(strokeColor) : undefined,
+        strokeColor: strokeColor
+            ? new THREE.Color().fromArray(strokeColor)
+            : undefined,
         strokeOpacity,
         strokeWidth,
         stroke,
         fillColor: fillColor ? new THREE.Color().fromArray(fillColor) : undefined,
         fillOpacity,
-        fill
+        fill,
     };
 };
 class Line extends Shape {
     constructor(start, end, config = { transformCenter: true }) {
+        let lineStart, lineEnd;
+        const strokeCenter = new THREE.Vector3()
+            .addVectors(start, end)
+            .divideScalar(2);
+        if (config.transformCenter) {
+            lineStart = new THREE.Vector3().subVectors(start, strokeCenter);
+            lineEnd = new THREE.Vector3().subVectors(end, strokeCenter);
+        }
+        else {
+            lineStart = start;
+            lineEnd = end;
+        }
+        super([lineStart, lineEnd], Object.assign(Object.assign({}, config), { fill: false }));
         this.start = start;
         this.end = end;
         if (config.transformCenter) {
-            const strokeCenter = new THREE.Vector3().addVectors(start, end).divideScalar(2);
-            const newPoints = [
-                new THREE.Vector3().subVectors(start, strokeCenter),
-                new THREE.Vector3().subVectors(end, strokeCenter)
-            ];
-            super(newPoints, Object.assign(Object.assign({}, config), { fill: false }));
             this.position.copy(strokeCenter);
-        }
-        else {
-            super([start, end], Object.assign(Object.assign({}, config), { fill: false }));
         }
         this.curveEndIndices = [[0, 1]];
     }
     getAttributes() {
         return {
             start: this.start,
-            end: this.end
+            end: this.end,
         };
     }
     static fromAttributes(attributes) {
@@ -972,7 +978,11 @@ class Arc extends Shape {
             points.push(new THREE.Vector3(radius * Math.cos(i), radius * Math.sin(i), 0));
         }
         if (closed) {
-            points = [new THREE.Vector3(0, 0, 0), ...points, new THREE.Vector3(0, 0, 0)];
+            points = [
+                new THREE.Vector3(0, 0, 0),
+                ...points,
+                new THREE.Vector3(0, 0, 0),
+            ];
         }
         super(points, config);
         this.radius = radius;
@@ -985,7 +995,7 @@ class Arc extends Shape {
             this.curveEndIndices = [
                 [0, 1],
                 [1, points.length - 2],
-                [points.length - 2, points.length - 1]
+                [points.length - 2, points.length - 1],
             ];
         }
         else {
@@ -999,7 +1009,7 @@ class Arc extends Shape {
         return {
             radius: this.radius,
             angle: this.angle,
-            closed: this.closed
+            closed: this.closed,
         };
     }
     static fromAttributes(attributes) {
@@ -1009,20 +1019,20 @@ class Arc extends Shape {
     get attributeData() {
         return [
             {
-                attribute: 'radius',
-                type: 'number',
-                default: 1
+                attribute: "radius",
+                type: "number",
+                default: 1,
             },
             {
-                attribute: 'angle',
-                type: 'angle',
-                default: 45
+                attribute: "angle",
+                type: "angle",
+                default: 45,
             },
             {
-                attribute: 'closed',
-                type: 'boolean',
-                default: false
-            }
+                attribute: "closed",
+                type: "boolean",
+                default: false,
+            },
         ];
     }
     getDimensions() {
@@ -1041,7 +1051,7 @@ class Circle extends Arc {
         return {
             radius: this.radius,
             angle: 2 * Math.PI,
-            closed: false
+            closed: false,
         };
     }
     static fromAttributes(attributes) {
@@ -1051,17 +1061,17 @@ class Circle extends Arc {
     get attributeData() {
         return [
             {
-                attribute: 'radius',
-                type: 'number',
-                default: 1
-            }
+                attribute: "radius",
+                type: "number",
+                default: 1,
+            },
         ];
     }
 }
 class Point extends Circle {
     // TODO: this.location should return this.position
     constructor(location, config = {}) {
-        super(0.08, Object.assign({ fillColor: new THREE.Color('black'), fill: true }, config));
+        super(0.08, Object.assign({ fillColor: new THREE.Color("black"), fill: true }, config));
         this.location = location;
         this.position.set(location.x, location.y, 0);
     }
@@ -1069,7 +1079,7 @@ class Point extends Circle {
         return {
             radius: 0.08,
             angle: 2 * Math.PI,
-            closed: false
+            closed: false,
         };
     }
     static fromAttributes() {
@@ -1095,7 +1105,7 @@ class Polygon extends Shape {
     }
     getAttributes() {
         return {
-            points: this.points
+            points: this.points,
         };
     }
     static fromAttributes(attributes) {
@@ -1113,7 +1123,7 @@ class Rectangle extends Shape {
             new THREE.Vector3(width / 2, height / 2, 0),
             new THREE.Vector3(width / 2, -height / 2, 0),
             new THREE.Vector3(-width / 2, -height / 2, 0),
-            new THREE.Vector3(-width / 2, height / 2, 0)
+            new THREE.Vector3(-width / 2, height / 2, 0),
         ], config);
         this.width = width;
         this.height = height;
@@ -1124,7 +1134,7 @@ class Rectangle extends Shape {
     getAttributes() {
         return {
             width: this.width,
-            height: this.height
+            height: this.height,
         };
     }
     static fromAttributes(attributes) {
@@ -1134,15 +1144,15 @@ class Rectangle extends Shape {
     get attributeData() {
         return [
             {
-                attribute: 'width',
-                type: 'number',
-                default: 4
+                attribute: "width",
+                type: "number",
+                default: 4,
             },
             {
-                attribute: 'height',
-                type: 'number',
-                default: 2
-            }
+                attribute: "height",
+                type: "number",
+                default: 2,
+            },
         ];
     }
     getCurveEndIndices() {
@@ -1150,7 +1160,7 @@ class Rectangle extends Shape {
             [0, 1],
             [1, 2],
             [2, 3],
-            [3, 4]
+            [3, 4],
         ];
     }
 }
@@ -1165,7 +1175,7 @@ class Square extends Rectangle {
     getAttributes() {
         return {
             width: this.sideLength,
-            height: this.sideLength
+            height: this.sideLength,
         };
     }
     static fromAttributes(attributes) {
@@ -1175,28 +1185,28 @@ class Square extends Rectangle {
     get attributeData() {
         return [
             {
-                attribute: 'sideLength',
-                type: 'number',
-                default: 2
-            }
+                attribute: "sideLength",
+                type: "number",
+                default: 2,
+            },
         ];
     }
 }
 const shapeFromJson = (json) => {
     switch (json.className) {
-        case 'Line':
+        case "Line":
             return Line.fromJson(json);
-        case 'Arc':
+        case "Arc":
             return Arc.fromJson(json);
-        case 'Circle':
+        case "Circle":
             return Circle.fromJson(json);
-        case 'Point':
+        case "Point":
             return Point.fromJson(json);
-        case 'Polygon':
+        case "Polygon":
             return Polygon.fromJson(json);
-        case 'Rectangle':
+        case "Rectangle":
             return Rectangle.fromJson(json);
-        case 'Square':
+        case "Square":
             return Square.fromJson(json);
         default:
             throw Error(`Invalid JSON ${json}`);
