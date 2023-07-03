@@ -8,6 +8,7 @@ export default {
     file: "build/bundle.js",
     format: "es",
   },
+  external: ["three"],
   plugins: [
     nodeResolve({
       extensions: [".js", ".ts"],

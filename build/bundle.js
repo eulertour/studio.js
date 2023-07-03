@@ -955,6 +955,8 @@ class Line extends Shape {
         super([lineStart, lineEnd], Object.assign(Object.assign({}, config), { fill: false }));
         this.start = start;
         this.end = end;
+        this.start = lineStart;
+        this.end = lineEnd;
         if (config.transformCenter) {
             this.position.copy(strokeCenter);
         }
@@ -1228,6 +1230,32 @@ var geometry = /*#__PURE__*/Object.freeze({
 });
 
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+const getFrameAttributes = (aspectRatio, height) => {
+    const coordinateHeight = PIXELS_TO_COORDS * height;
+    return {
+        aspectRatio,
+        height,
+        width: height * aspectRatio,
+        coordinateHeight,
+        coordinateWidth: coordinateHeight * aspectRatio,
+    };
+};
+const setupCanvas = (canvas, verticalResolution = 720) => {
+    const frameConfig = getFrameAttributes(16 / 9, 450);
+    const camera = new THREE.OrthographicCamera((-PIXELS_TO_COORDS * frameConfig.width) / 2, (PIXELS_TO_COORDS * frameConfig.width) / 2, (PIXELS_TO_COORDS * frameConfig.height) / 2, (-PIXELS_TO_COORDS * frameConfig.height) / 2, 1, 11);
+    camera.position.z = 6;
+    const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+    });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setClearColor(new THREE.Color(0xfffaf0));
+    const rendererConfig = getFrameAttributes(16 / 9, verticalResolution);
+    renderer.setSize(rendererConfig.width, rendererConfig.height, false);
+    renderer.getSize(GeometryResolution);
+    return [camera, renderer];
+};
+
 let sigmoid = (x) => 1 / (1 + Math.exp(-x));
 let smooth = (t) => {
   let error = sigmoid(-10 / 2);
@@ -1235,16 +1263,16 @@ let smooth = (t) => {
 };
 
 const modulate = (t, dt) => {
-  let tSeconds = t / 1000;
-  let modulatedDelta = 1000 * (smooth(tSeconds) - smooth((t - dt) / 1000));
-  let modulatedTime = 1000 * smooth(tSeconds);
+  let tSeconds = t;
+  let modulatedDelta = smooth(tSeconds) - smooth(t - dt);
+  let modulatedTime = smooth(tSeconds);
   return [modulatedTime, modulatedDelta];
 };
 
 class Animation {
   constructor(func) {
     this.func = func;
-    this.runtime = 1000;
+    this.runtime = 1;
     this.reset();
   }
 
@@ -1274,7 +1302,7 @@ class Animation {
 
 const Shift = (object, direction) => {
   return new Animation((elapsedTime, deltaTime) => {
-    object.position.add(direction.clone().multiplyScalar(deltaTime / 1000));
+    object.position.add(direction.clone().multiplyScalar(deltaTime));
   });
 };
 
@@ -46172,30 +46200,37 @@ var text = /*#__PURE__*/Object.freeze({
 });
 
 class Scene {
-    constructor(scene, camera, renderer) {
+    constructor(scene, camera, renderer, signalUpdate = () => { }) {
         this.scene = scene;
         this.camera = camera;
         this.renderer = renderer;
+        this.signalUpdate = signalUpdate;
         this.animations = [];
         this.currentAnimationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
         this.firstFrame = true;
+        this.paused = true;
+        this.fps = 60;
+        this.startTime = 0;
+        this.endTime = Infinity;
         scene.clear();
         renderer.getSize(GeometryResolution);
     }
-    render(time, deltaTime) { }
+    loop(time, deltaTime) { }
     init(scene, camera, renderer) { }
     reset() {
         this.currentAnimationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
         this.animations.forEach((animation) => animation.reset());
-        this.scene.children.forEach((child) => {
+        this.scene.traverse((child) => {
             if (child.dispose !== undefined) {
                 child.dispose();
             }
-            else {
+            else if (!(child instanceof THREE.Scene ||
+                child instanceof THREE.Group ||
+                child instanceof THREE.Mesh)) {
                 console.warn("Can't dispose of object:", child);
             }
         });
@@ -46219,7 +46254,7 @@ class Scene {
         let nextAnimation = this.animations[this.currentAnimationIndex];
         nextAnimation.update(currentAnimation.excessTime);
     }
-    tick(deltaTime) {
+    tick(deltaTime, render = true) {
         if (this.firstFrame) {
             this.deltaTime = 0;
             this.elapsedTime = 0;
@@ -46230,14 +46265,62 @@ class Scene {
             this.elapsedTime += deltaTime;
         }
         try {
-            this.render(this.elapsedTime, this.deltaTime);
+            this.loop(this.elapsedTime, this.deltaTime);
             this.handleAnimations(this.deltaTime);
         }
         catch (err) {
-            console.error("Error executing user animation: ", err);
             this.renderer.setAnimationLoop(null);
+            throw new Error(`Error executing user animation: ${err.toString()}`);
         }
+        if (render) {
+            this.renderer.render(this.scene, this.camera);
+        }
+    }
+    play() {
+        this.paused = false;
+        this.renderer.setAnimationLoop((initialTime) => {
+            let lastTime = initialTime;
+            this.renderer.setAnimationLoop((time) => {
+                const standardTickLength = (time - lastTime) / 1000;
+                const endTimeTickLength = this.endTime - this.elapsedTime;
+                if (standardTickLength < endTimeTickLength) {
+                    this.tick(standardTickLength);
+                    lastTime = time;
+                }
+                else {
+                    this.tick(endTimeTickLength);
+                    this.pause();
+                }
+                this.signalUpdate();
+            });
+        });
+    }
+    pause() {
+        this.paused = true;
+        this.renderer.setAnimationLoop(null);
+        this.signalUpdate();
+    }
+    seek(duration) {
+        if (duration === 0)
+            return;
+        this.seekAbsolute(clamp(this.elapsedTime + duration, this.startTime, this.endTime));
+    }
+    seekAbsolute(target) {
+        if (target < this.elapsedTime) {
+            this.reset();
+        }
+        const spf = 1 / this.fps;
+        while (this.elapsedTime !== target) {
+            try {
+                this.tick(Math.min(spf, target - this.elapsedTime), /*render=*/ false);
+            }
+            catch (e) {
+                throw new Error(`Error advancing scene: ${e.toString()}`);
+            }
+        }
+        this.renderer.render(this.scene, this.camera);
+        this.signalUpdate();
     }
 }
 
-export { animation as Animation, geometry as Geometry, Scene, text as Text };
+export { animation as Animation, geometry as Geometry, Scene, text as Text, setupCanvas };

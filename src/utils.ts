@@ -2,6 +2,8 @@ import * as THREE from "three";
 import { PIXELS_TO_COORDS } from "./constants";
 import * as Geometry from "./geometry";
 
+const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+
 const getFrameAttributes = (aspectRatio: number, height: number) => {
   const coordinateHeight = PIXELS_TO_COORDS * height;
   return {
@@ -36,13 +38,10 @@ const setupCanvas = (
   renderer.setClearColor(new THREE.Color(0xfffaf0));
 
   const rendererConfig = getFrameAttributes(16 / 9, verticalResolution);
-  renderer.setSize(rendererConfig.width, rendererConfig.height);
+  renderer.setSize(rendererConfig.width, rendererConfig.height, false);
   renderer.getSize(Geometry.GeometryResolution);
 
   return [camera, renderer];
 };
 
-const nextFrame = (cb: (time: DOMHighResTimeStamp) => void) =>
-  requestAnimationFrame(() => requestAnimationFrame(cb));
-
-export { getFrameAttributes, setupCanvas, handleAnimations, nextFrame };
+export { getFrameAttributes, setupCanvas, clamp };

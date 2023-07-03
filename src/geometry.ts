@@ -360,6 +360,8 @@ class Line extends Shape {
       lineEnd = end;
     }
     super([lineStart, lineEnd], { ...config, fill: false });
+    this.start = lineStart;
+    this.end = lineEnd;
     if (config.transformCenter) {
       this.position.copy(strokeCenter);
     }

@@ -1,4 +1,5 @@
-const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+import { clamp } from "./utils";
+
 let sigmoid = (x) => 1 / (1 + Math.exp(-x));
 let smooth = (t) => {
   let error = sigmoid(-10 / 2);
@@ -6,16 +7,16 @@ let smooth = (t) => {
 };
 
 const modulate = (t, dt) => {
-  let tSeconds = t / 1000;
-  let modulatedDelta = 1000 * (smooth(tSeconds) - smooth((t - dt) / 1000));
-  let modulatedTime = 1000 * smooth(tSeconds);
+  let tSeconds = t;
+  let modulatedDelta = smooth(tSeconds) - smooth(t - dt);
+  let modulatedTime = smooth(tSeconds);
   return [modulatedTime, modulatedDelta];
 };
 
 class Animation {
   constructor(func) {
     this.func = func;
-    this.runtime = 1000;
+    this.runtime = 1;
     this.reset();
   }
 
@@ -45,7 +46,7 @@ class Animation {
 
 const Shift = (object, direction) => {
   return new Animation((elapsedTime, deltaTime) => {
-    object.position.add(direction.clone().multiplyScalar(deltaTime / 1000));
+    object.position.add(direction.clone().multiplyScalar(deltaTime));
   });
 };
 
