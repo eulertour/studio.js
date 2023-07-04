@@ -777,9 +777,12 @@ class Shape extends THREE.Group {
         }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const clone = new this.constructor(...this.getCloneAttributes(), this.getStyle());
+        const clone = new this.constructor(...this.getCloneAttributes(), Object.assign(Object.assign({}, this.getStyle()), this.getClassConfig()));
         THREE.Object3D.prototype.copy.call(clone, this, false);
         return clone;
+    }
+    getClassConfig() {
+        return {};
     }
     copy(source, recursive) {
         if (recursive === false) {
@@ -957,12 +960,16 @@ class Line extends Shape {
         this.end = end;
         this.start = lineStart;
         this.end = lineEnd;
+        this.transformCenter = config.transformCenter;
         if (config.transformCenter) {
             this.position.copy(strokeCenter);
         }
         this.curveEndIndices = [[0, 1]];
     }
-    getAttributes() {
+    getClassConfig() {
+        return { transformCenter: this.transformCenter };
+    }
+    get getAttributes() {
         return {
             start: this.start,
             end: this.end,
@@ -1089,21 +1096,30 @@ class Point extends Circle {
     }
 }
 class Polygon extends Shape {
-    constructor(points, config = {}) {
-        const min = new THREE.Vector3(Infinity, Infinity, Infinity);
-        const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
-        for (const point of points.slice(0, points.length - 1)) {
-            min.min(point);
-            max.max(point);
+    constructor(points, config = { transformCenter: true }) {
+        if (config.transformCenter) {
+            const min = new THREE.Vector3(Infinity, Infinity, Infinity);
+            const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+            for (const point of points.slice(0, points.length - 1)) {
+                min.min(point);
+                max.max(point);
+            }
+            const center = new THREE.Vector3().addVectors(min, max).divideScalar(2);
+            const newPoints = points.map((p) => new THREE.Vector3().subVectors(p, center));
+            super(newPoints, config);
+            this.position.copy(center);
         }
-        const center = new THREE.Vector3().addVectors(min, max).divideScalar(2);
-        const newPoints = points.map((p) => new THREE.Vector3().subVectors(p, center));
-        super(newPoints, config);
-        this.position.copy(center);
+        else {
+            super(points, config);
+        }
+        this.transformCenter = config.transformCenter;
         this.curveEndIndices = [];
         for (let i = 0; i < points.length - 1; i++) {
             this.curveEndIndices.push([i, i + 1]);
         }
+    }
+    getClassConfig() {
+        return { transformCenter: this.transformCenter };
     }
     getAttributes() {
         return {
