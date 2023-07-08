@@ -731,8 +731,6 @@ class Shape extends THREE.Group {
             transparent: true,
             polygonOffset: true,
         });
-        // Set the uniform to a reference to GeometryResolution so that
-        // strokes automatically update when the canvas resolution changes.
         strokeMaterial.uniforms.resolution.value = GeometryResolution;
         this.stroke = new THREE.Mesh(strokeGeometry, strokeMaterial);
         this.stroke.raycast = MeshLineRaycast;
@@ -775,8 +773,6 @@ class Shape extends THREE.Group {
         if (recursive === false) {
             throw Error("Shape.clone() is always recursive");
         }
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         const clone = new this.constructor(...this.getCloneAttributes(), Object.assign(Object.assign({}, this.getStyle()), this.getClassConfig()));
         THREE.Object3D.prototype.copy.call(clone, this, false);
         return clone;
@@ -1078,7 +1074,6 @@ class Circle extends Arc {
     }
 }
 class Point extends Circle {
-    // TODO: this.location should return this.position
     constructor(location, config = {}) {
         super(0.08, Object.assign({ fillColor: new THREE.Color("black"), fill: true }, config));
         this.location = location;
@@ -1274,52 +1269,46 @@ const setupCanvas = (canvas, verticalResolution = 720) => {
 
 let sigmoid = (x) => 1 / (1 + Math.exp(-x));
 let smooth = (t) => {
-  let error = sigmoid(-10 / 2);
-  return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
+    let error = sigmoid(-10 / 2);
+    return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
 };
-
 const modulate = (t, dt) => {
-  let tSeconds = t;
-  let modulatedDelta = smooth(tSeconds) - smooth(t - dt);
-  let modulatedTime = smooth(tSeconds);
-  return [modulatedTime, modulatedDelta];
+    let tSeconds = t;
+    let modulatedDelta = smooth(tSeconds) - smooth(t - dt);
+    let modulatedTime = smooth(tSeconds);
+    return [modulatedTime, modulatedDelta];
 };
-
 class Animation {
-  constructor(func) {
-    this.func = func;
-    this.runtime = 1;
-    this.reset();
-  }
-
-  reset() {
-    this.elapsedTime = 0;
-    this.finished = false;
-    this.excessTime = null;
-  }
-
-  update(deltaTime) {
-    if (this.elapsedTime + deltaTime >= this.runtime) {
-      this.finish(deltaTime);
-      return;
+    constructor(func) {
+        this.func = func;
+        this.runtime = 1;
+        this.reset();
     }
-    this.elapsedTime += deltaTime;
-    this.func(...modulate(this.elapsedTime, deltaTime));
-  }
-
-  finish(deltaTime) {
-    this.finished = true;
-    let finishDeltaTime = this.runtime - this.elapsedTime;
-    this.excessTime = this.elapsedTime + deltaTime - this.runtime;
-    this.elapsedTime = this.runtime;
-    this.func(...modulate(this.runtime, finishDeltaTime));
-  }
+    reset() {
+        this.elapsedTime = 0;
+        this.finished = false;
+        this.excessTime = null;
+    }
+    update(deltaTime) {
+        if (this.elapsedTime + deltaTime >= this.runtime) {
+            this.finish(deltaTime);
+            return;
+        }
+        this.elapsedTime += deltaTime;
+        this.func(...modulate(this.elapsedTime, deltaTime));
+    }
+    finish(deltaTime) {
+        this.finished = true;
+        let finishDeltaTime = this.runtime - this.elapsedTime;
+        this.excessTime = this.elapsedTime + deltaTime - this.runtime;
+        this.elapsedTime = this.runtime;
+        this.func(...modulate(this.runtime, finishDeltaTime));
+    }
 }
-
 const Shift = (object, direction) => {
-  return new Animation((elapsedTime, deltaTime) => {
-    object.position.add(direction.clone().multiplyScalar(deltaTime));
-  });
+    return new Animation((elapsedTime, deltaTime) => {
+        object.position.add(direction.clone().multiplyScalar(deltaTime));
+    });
 };
 
 var animation = /*#__PURE__*/Object.freeze({
@@ -46088,7 +46077,6 @@ class Text extends THREE.Group {
             polygonOffset: true,
         });
         let svgString = tex2svg(this.text);
-        // Remove after updating to three.js r150 (https://github.com/mrdoob/three.js/issues/25548)
         const emptyPath = 'd=""';
         while (true) {
             const match = svgString.match(emptyPath);
@@ -46126,8 +46114,6 @@ class Text extends THREE.Group {
         if (recursive === false) {
             throw Error("Text.clone() is always recursive");
         }
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         const clone = new this.constructor(...this.getCloneAttributes());
         THREE.Object3D.prototype.copy.call(clone, this, false);
         return clone;
@@ -46328,7 +46314,7 @@ class Scene {
         const spf = 1 / this.fps;
         while (this.elapsedTime !== target) {
             try {
-                this.tick(Math.min(spf, target - this.elapsedTime), /*render=*/ false);
+                this.tick(Math.min(spf, target - this.elapsedTime), false);
             }
             catch (e) {
                 throw new Error(`Error advancing scene: ${e.toString()}`);
@@ -46339,4 +46325,60 @@ class Scene {
     }
 }
 
-export { animation as Animation, geometry as Geometry, Scene, text as Text, setupCanvas };
+class LineGeometry extends BufferGeometry {
+    constructor(startVec, endVec) {
+        super();
+        let vertices = [-1, -1, 0, +1, -1, 0, +1, +1, 0, -1, +1, 0];
+        let normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1];
+        let indices = [0, 1, 2, 2, 3, 0];
+        const startArray = startVec.toArray();
+        let start = [...startArray, ...startArray, ...startArray, ...startArray];
+        const endArray = endVec.toArray();
+        let end = [...endArray, ...endArray, ...endArray, ...endArray];
+        this.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+        this.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
+        this.setAttribute("start", new THREE.Float32BufferAttribute(start, 3));
+        this.setAttribute("end", new THREE.Float32BufferAttribute(end, 3));
+        this.setIndex(indices);
+    }
+}
+const material = new THREE.ShaderMaterial({
+    vertexShader: `
+precision mediump float;
+precision mediump int;
+
+// Passed by WebGLProgram
+// https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
+// uniform mat4 modelViewMatrix;
+// uniform mat4 projectionMatrix;
+
+// attribute vec3 position;
+
+varying vec3 vPosition;
+
+void main()	{
+
+  vPosition = position;
+
+  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+}
+  `,
+    fragmentShader: `
+precision mediump float;
+precision mediump int;
+
+uniform float time;
+
+varying vec3 vPosition;
+
+void main()	{
+
+  vec4 color = vec4( 1.0, 0.0, 0.0, 1.0 );
+  gl_FragColor = color;
+}
+  `,
+});
+const mesh = new THREE.Mesh(new LineGeometry(new THREE.Vector3(-1, -1, 0), new THREE.Vector3(1, 1, 0)), material);
+
+export { animation as Animation, geometry as Geometry, mesh as Line, Scene, text as Text, setupCanvas };
