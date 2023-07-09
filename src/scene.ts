@@ -21,7 +21,10 @@ export default class Scene {
     public signalUpdate = () => {}
   ) {
     scene.clear();
-    renderer.getSize(Geometry.GeometryResolution);
+    const resolution = new THREE.Vector2();
+    renderer.getSize(resolution);
+    resolution.multiplyScalar(window.devicePixelRatio);
+    Geometry.GeometryResolution.copy(resolution);
   }
 
   loop(time: number, deltaTime: number) {}
