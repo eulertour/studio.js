@@ -125,7 +125,7 @@ void main()	{
     // && (offset.x == -1.)
     // && (offset.y == -1.)
     && (cameraStart.x == 0.)
-    && (1150. < vStartPixel.x && vStartPixel.x < 1155.)
+    && (1151. < vStartPixel.x && vStartPixel.x < 1153.)
   ) {
     vTest = 1.;
   }
@@ -156,27 +156,79 @@ varying float vTest;
 varying vec2 vStartPixel;
 varying vec2 vEndPixel;
 
+float distanceToSegment(
+  vec2 fragment,
+  vec2 startFragment,
+  vec2 endFragment
+) {
+  vec2 segmentVec = endFragment - startFragment;
+  vec2 fragmentVec = fragment - startFragment;
+  float dotProduct = dot(fragmentVec, segmentVec);
+  vec2 segmentProjection = dotProduct / dot(segmentVec, segmentVec) * segmentVec;
+
+  vec2 normal = fragmentVec - segmentProjection;
+  vec2 tangent = fragmentVec - normal;
+
+  if (dotProduct > 0.) {
+    if (dot(segmentVec, segmentVec) < dot(tangent, tangent)) {
+      tangent -= segmentVec;
+    } else {
+      tangent *= 0.;
+    }
+  }
+
+  return length(tangent + normal);
+}
+
 void main()	{
+  float red = 0.;
+  float blue = 0.;
+
   vec2 centerPixel = vec2(
     resolution.x * devicePixelRatio / 2.,
     resolution.y * devicePixelRatio / 2.
   );
-  // vec2 centerToFrag = gl_FragCoord.xy - centerPixel.xy;
-  vec2 centerToFrag = gl_FragCoord.xy - vStartPixel;
-  if (length(centerToFrag) < 100.) {
-    discard;
-  }
-  
-  float vTest2 = 0.0;
-  if (vStartPixel.x < 1155.) {
-    vTest2 = 1.0;
-  }
-  
 
-  float red = 0.;
-  float blue = 0.;
-  if (vTest != 0.) red = 1.;
-  if (vTest2 != 0.) blue = 1.;
+  // vec2 centerToFrag = gl_FragCoord.xy - centerPixel.xy;
+  // if (length(centerToFrag) > 30.) {
+  //   red = 1.;
+  // }
+
+  // vec2 startToFrag = gl_FragCoord.xy - vStartPixel;
+  // if (length(startToFrag) < 30.) {
+  //   discard;
+  // }
+
+  // vec2 endToFrag = gl_FragCoord.xy - vEndPixel;
+  // if (length(endToFrag) < 30.) {
+  //   discard;
+  // }
+
+  // vec2 v = vEndPixel - vStartPixel;
+  // vec2 u = gl_FragCoord.xy - vStartPixel;
+  // vec2 vu = normalize(v);
+  // vec2 p = dot(u, vu) * vu;
+  // vec2 n = u - p;
+  
+  if (length(distanceToSegment(gl_FragCoord.xy, vStartPixel, vEndPixel)) > 30.) {
+    red = 1.;
+  } else {
+    blue = 1.;
+  }
+  // if (!(0.9 < length(vu) && length(vu) < 1.1)) {
+  //   discard;
+  // }
+
+  // float vTest2 = 0.0;
+  // if (
+  //   (vStartPixel.x < 1155.)
+  //   && (160. < v.x && v.x < 165.)
+  // ) {
+  //   vTest2 = 1.0;
+  // }
+
+  // if (vTest != 0.) red = 1.;
+  // if (vTest2 != 0.) blue = 1.;
 
   gl_FragColor = vec4(red, 0.0, blue, 1.0);
 }
