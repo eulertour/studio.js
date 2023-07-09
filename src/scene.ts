@@ -23,7 +23,6 @@ export default class Scene {
     scene.clear();
     const resolution = new THREE.Vector2();
     renderer.getSize(resolution);
-    resolution.multiplyScalar(window.devicePixelRatio);
     Geometry.GeometryResolution.copy(resolution);
   }
 

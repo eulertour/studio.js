@@ -46219,7 +46219,6 @@ class Scene {
         scene.clear();
         const resolution = new THREE.Vector2();
         renderer.getSize(resolution);
-        resolution.multiplyScalar(window.devicePixelRatio);
         GeometryResolution.copy(resolution);
     }
     loop(time, deltaTime) { }
@@ -46336,22 +46335,28 @@ class LineGeometry extends BufferGeometry {
         let position = [];
         let oppositePosition = [];
         let side = [];
+        let startEnd = [];
         position.push(...startArray);
         oppositePosition.push(...endArray);
         side.push(+1);
-        position.push(...endArray);
-        oppositePosition.push(...startArray);
-        side.push(-1);
-        position.push(...endArray);
-        oppositePosition.push(...startArray);
-        side.push(+1);
+        startEnd.push(+1);
         position.push(...startArray);
         oppositePosition.push(...endArray);
         side.push(-1);
+        startEnd.push(-1);
+        position.push(...startArray);
+        oppositePosition.push(...endArray);
+        side.push(+1);
+        startEnd.push(-1);
+        position.push(...startArray);
+        oppositePosition.push(...endArray);
+        side.push(-1);
+        startEnd.push(+1);
         let indices = [0, 1, 2, 2, 3, 0];
         this.setAttribute("position", new THREE.Float32BufferAttribute(position, 3));
         this.setAttribute("oppositePosition", new THREE.Float32BufferAttribute(oppositePosition, 3));
         this.setAttribute("side", new THREE.Float32BufferAttribute(side, 1));
+        this.setAttribute("startEnd", new THREE.Float32BufferAttribute(startEnd, 1));
         this.setIndex(indices);
     }
 }
@@ -46359,6 +46364,7 @@ const material = new THREE.ShaderMaterial({
     uniforms: {
         color: { value: new THREE.Vector3(0.0, 0.0, 1.0) },
         resolution: { value: GeometryResolution },
+        devicePixelRatio: { value: window.devicePixelRatio },
     },
     vertexShader: `
 precision mediump float;
@@ -46369,13 +46375,15 @@ precision mediump int;
 // uniform mat4 modelViewMatrix;
 // uniform mat4 projectionMatrix;
 uniform vec2 resolution;
+uniform float devicePixelRatio;
 
 // attribute vec3 position;
 attribute vec3 oppositePosition;
 attribute float side;
+attribute float startEnd;
 
-varying vec3 vPosition;
 varying float vTest;
+varying float vTest2;
 varying vec2 vStartPixel;
 varying vec2 vEndPixel;
 
@@ -46387,11 +46395,11 @@ vec2 fix(vec4 v, float aspect) {
   return res;
 }
 
-vec2 pixelCoords(vec4 v, vec2 resolution) {
+vec2 pixelCoords(vec4 v) {
   vec2 perspectiveDivide = v.xy / v.w;
   vec2 viewportTransform = vec2(
-    resolution.x / 2. * (1. + perspectiveDivide.x),
-    resolution.y / 2. * (1. + perspectiveDivide.y)
+    resolution.x * devicePixelRatio / 2. * (1. + perspectiveDivide.x),
+    resolution.y * devicePixelRatio / 2. * (1. + perspectiveDivide.y)
   );
   return viewportTransform;
 }
@@ -46406,13 +46414,13 @@ void main()	{
   vec4 clipStart = projectionMatrix * cameraStart;
   vec4 clipEnd = projectionMatrix * cameraEnd;
 
-  vStartPixel = pixelCoords(clipStart, resolution);
-  vEndPixel = pixelCoords(clipEnd, resolution);
+  vStartPixel = pixelCoords(clipStart);
+  vEndPixel = pixelCoords(clipEnd);
 
   vec2 fixedStart = fix(clipStart, aspect);
   vec2 fixedEnd = fix(clipEnd, aspect);
 
-  vec2 vec = normalize(fixedStart - fixedEnd);
+  vec2 vec = startEnd * normalize(fixedStart - fixedEnd);
   vec2 normal = side * vec2(-vec.y, vec.x);
   vec2 offset = normalize(vec + normal);
   
@@ -46424,15 +46432,21 @@ void main()	{
     // && (offset.x == -1.)
     // && (offset.y == -1.)
     && (cameraStart.x == 0.)
-    && (635. < vStartPixel.x && vStartPixel.x < 645.)
+    && (1150. < vStartPixel.x && vStartPixel.x < 1155.)
   ) {
     vTest = 1.;
   }
+  vTest2 = 0.;
   
   vec4 cameraOffset = vec4(offset.xy, 0., 1.);
   vec4 clipOffset = projectionMatrix * cameraOffset;
-  clipStart.xy += clipOffset.xy;
-  gl_Position = clipStart;
+  if (startEnd == 1.) {
+    clipStart.xy += clipOffset.xy;
+    gl_Position = clipStart;
+  } else {
+    clipEnd.xy += clipOffset.xy;
+    gl_Position = clipEnd;
+  }
 }
   `,
     fragmentShader: `
@@ -46442,21 +46456,36 @@ precision mediump int;
 uniform float time;
 uniform vec3 color;
 uniform vec2 resolution;
+uniform float devicePixelRatio;
 
 varying float vTest;
+// varying float vTest2;
+varying vec2 vStartPixel;
+varying vec2 vEndPixel;
 
 void main()	{
-  vec2 center = vec2(
-    resolution.x / 2.,
-    resolution.y / 2.
+  vec2 centerPixel = vec2(
+    resolution.x * devicePixelRatio / 2.,
+    resolution.y * devicePixelRatio / 2.
   );
-  vec2 centerToFrag = gl_FragCoord.xy - center.xy;
-  if (length(centerToFrag) > 100.) {
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-  } else {
+  // vec2 centerToFrag = gl_FragCoord.xy - centerPixel.xy;
+  vec2 centerToFrag = gl_FragCoord.xy - vStartPixel;
+  if (length(centerToFrag) < 100.) {
     discard;
-    gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
   }
+  
+  float vTest2 = 0.0;
+  if (vStartPixel.x < 1155.) {
+    vTest2 = 1.0;
+  }
+  
+
+  float red = 0.;
+  float blue = 0.;
+  if (vTest != 0.) red = 1.;
+  if (vTest2 != 0.) blue = 1.;
+
+  gl_FragColor = vec4(red, 0.0, blue, 1.0);
 }
   `,
 });
