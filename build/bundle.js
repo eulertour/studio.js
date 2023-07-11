@@ -1,10 +1,10 @@
 import * as THREE from 'three';
-import { Loader, FileLoader, Matrix3, Vector2, Vector3, ShapeUtils, Box2, Shape as Shape$1, Path, BufferGeometry, Float32BufferAttribute, ShapePath, SRGBColorSpace } from 'three';
+import { ShaderChunk, BufferGeometry, BufferAttribute, Loader, FileLoader, Matrix3, Vector2, Vector3, ShapeUtils, Box2, Shape as Shape$1, Path, Float32BufferAttribute, ShapePath, SRGBColorSpace } from 'three';
 
 const PIXELS_TO_COORDS = 8 / 450;
 const ERROR_THRESHOLD = 0.001;
 
-class MeshLine extends THREE.BufferGeometry {
+let MeshLine$1 = class MeshLine extends THREE.BufferGeometry {
 	constructor() {
 		super();
 		this.isMeshLine = true;
@@ -60,23 +60,23 @@ class MeshLine extends THREE.BufferGeometry {
 			}
 		});
 	}
-}
+};
 
-MeshLine.prototype.setMatrixWorld = function (matrixWorld) {
+MeshLine$1.prototype.setMatrixWorld = function (matrixWorld) {
 	this.matrixWorld = matrixWorld;
 };
 
 // setting via a geometry is rather superfluous
 // as you're creating a unecessary geometry just to throw away
 // but exists to support previous api
-MeshLine.prototype.setGeometry = function (g, c) {
+MeshLine$1.prototype.setGeometry = function (g, c) {
 	// as the input geometry are mutated we store them
 	// for later retreival when necessary (declaritive architectures)
 	this._geometry = g;
 	this.setPoints(g.getAttribute('position').array, c);
 };
 
-MeshLine.prototype.setPoints = function (points, wcb) {
+MeshLine$1.prototype.setPoints = function (points, wcb) {
 	if (!(points instanceof Float32Array) && !(points instanceof Array)) {
 		console.error('ERROR: The BufferArray of points is not instancied correctly.');
 		return;
@@ -177,8 +177,8 @@ function MeshLineRaycast(raycaster, intersects) {
 		}
 	}
 }
-MeshLine.prototype.raycast = MeshLineRaycast;
-MeshLine.prototype.compareV3 = function (a, b) {
+MeshLine$1.prototype.raycast = MeshLineRaycast;
+MeshLine$1.prototype.compareV3 = function (a, b) {
 	var aa = a * 6;
 	var ab = b * 6;
 	return (
@@ -188,12 +188,12 @@ MeshLine.prototype.compareV3 = function (a, b) {
 	);
 };
 
-MeshLine.prototype.copyV3 = function (a) {
+MeshLine$1.prototype.copyV3 = function (a) {
 	var aa = a * 6;
 	return [this.positions[aa], this.positions[aa + 1], this.positions[aa + 2]];
 };
 
-MeshLine.prototype.process = function () {
+MeshLine$1.prototype.process = function () {
 	var l = this.positions.length / 6;
 
 	this.previous = [];
@@ -329,7 +329,7 @@ function memcpy(src, srcOffset, dst, dstOffset, length) {
  * Fast method to advance the line by one position.  The oldest position is removed.
  * @param position
  */
-MeshLine.prototype.advance = function (position) {
+MeshLine$1.prototype.advance = function (position) {
 	var positions = this._attributes.position.array;
 	var previous = this._attributes.previous.array;
 	var next = this._attributes.next.array;
@@ -493,7 +493,7 @@ THREE.ShaderChunk['meshline_frag'] = [
 	'}'
 ].join('\n');
 
-class MeshLineMaterial extends THREE.ShaderMaterial {
+let MeshLineMaterial$1 = class MeshLineMaterial extends THREE.ShaderMaterial {
 	constructor(parameters) {
 		super({
 			uniforms: Object.assign({}, THREE.UniformsLib.fog, {
@@ -672,9 +672,9 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 
 		this.setValues(parameters);
 	}
-}
+};
 
-MeshLineMaterial.prototype.copy = function (source) {
+MeshLineMaterial$1.prototype.copy = function (source) {
 	THREE.ShaderMaterial.prototype.copy.call(this, source);
 
 	this.lineWidth = source.lineWidth;
@@ -697,6 +697,238 @@ MeshLineMaterial.prototype.copy = function (source) {
 	return this;
 };
 
+ShaderChunk["eulertour_meshline_vert"] = `
+  ${ShaderChunk.logdepthbuf_pars_vertex}
+  ${ShaderChunk.fog_pars_vertex}
+
+  precision lowp int;
+
+  // Passed by WebGLProgram
+  // https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
+  // uniform mat4 modelViewMatrix;
+  // uniform mat4 projectionMatrix;
+  uniform vec2 resolution;
+  uniform float unitsPerPixel;
+  uniform float pixelWidth;
+
+  // Passed by WebGLProgram
+  // https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
+  // attribute vec3 position;
+  attribute vec3 endPosition;
+  attribute vec3 nextPosition;
+  attribute int textureCoords;
+
+  varying vec2 vStartFragment;
+  varying vec2 vEndFragment;
+  varying vec2 vNextFragment;
+
+  vec2 fragmentCoords(vec4 v) {
+    return resolution / 2. * (1. + v.xy / v.w);
+  }
+
+  void main()	{
+    mat4 modelViewProjection = projectionMatrix * modelViewMatrix;
+    vec4 start = modelViewProjection * vec4(position, 1.0);
+    vec4 end = modelViewProjection * vec4(endPosition, 1.0);
+    vec4 next = modelViewProjection * vec4(nextPosition, 1.0);
+
+    vStartFragment = fragmentCoords(start);
+    vEndFragment = fragmentCoords(end);
+    vNextFragment = fragmentCoords(next);
+
+    vec2 segmentVec = normalize(vEndFragment - vStartFragment);
+    vec2 segmentNormal = vec2(-segmentVec.y, segmentVec.x);
+    float startEnd = 2. * (float(textureCoords / 2) - 0.5);
+    float bottomTop = 2. * (float(textureCoords % 2) - 0.5);
+    segmentVec *= startEnd;
+    segmentNormal *= bottomTop;
+
+    vec2 fragmentOffset = 0.5 * pixelWidth * unitsPerPixel * (segmentVec + segmentNormal);
+    vec2 offset = (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
+
+    gl_Position = startEnd == -1. ? start : end;
+    gl_Position.xy += offset;
+
+    ${ShaderChunk.logdepthbuf_vertex}
+    ${ShaderChunk.fog_vertex &&
+    `vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );`}
+    ${ShaderChunk.fog_vertex}
+	}
+`;
+ShaderChunk["eulertour_meshline_frag"] = `
+  ${ShaderChunk.fog_pars_fragment}
+  ${ShaderChunk.logdepthbuf_pars_fragment}
+
+  uniform vec3 color;
+  uniform vec2 resolution;
+  uniform float pixelWidth;
+
+  varying vec2 vStartFragment;
+  varying vec2 vEndFragment;
+  varying vec2 vNextFragment;
+
+  float distanceToSegment(
+    vec2 fragment,
+    vec2 startFragment,
+    vec2 endFragment
+  ) {
+    vec2 segmentVec = endFragment - startFragment;
+    vec2 fragmentVec = fragment - startFragment;
+    float dotProduct = dot(fragmentVec, segmentVec);
+    vec2 segmentProjection = dotProduct / dot(segmentVec, segmentVec) * segmentVec;
+
+    vec2 normal = fragmentVec - segmentProjection;
+    vec2 tangent = fragmentVec - normal;
+
+    if (dotProduct > 0.) {
+      if (dot(segmentVec, segmentVec) < dot(tangent, tangent)) {
+        tangent -= segmentVec;
+      } else {
+        tangent *= 0.;
+      }
+    }
+
+    return length(tangent + normal);
+  }
+
+  float distanceToFragment(vec2 u, vec2 v) {
+    return length(u - v);
+  }
+
+  void main() {
+    ${ShaderChunk.logdepthbuf_fragment}
+
+    float halfWidth = 0.5 * pixelWidth;
+    vec2 nextVec = normalize(vNextFragment - vEndFragment);
+    if (vNextFragment != vEndFragment) {
+      vec2 endToFrag = gl_FragCoord.xy - vEndFragment;
+      float d = dot(endToFrag, nextVec);
+      if (d > 0.) {
+        vec2 nextProjection = d / dot(nextVec, nextVec) * nextVec;
+        vec2 nextNormal = endToFrag - nextProjection;
+        if (length(nextProjection) < length(vNextFragment - vEndFragment) && length(nextNormal) < halfWidth) {
+          discard;
+        } else if (distanceToFragment(gl_FragCoord.xy, vNextFragment) < halfWidth) {
+          discard;
+        }
+      } else if (distanceToFragment(gl_FragCoord.xy, vEndFragment) < halfWidth) {
+        discard;
+      }
+    }
+
+    if (distanceToSegment(gl_FragCoord.xy, vStartFragment, vEndFragment) > halfWidth) {
+      discard;
+    } else {
+      gl_FragColor = vec4(0., 0., 0., 1.);
+    }
+
+    ${ShaderChunk.fog_fragment}
+	}
+`;
+
+class MeshLineGeometry extends BufferGeometry {
+    constructor(points) {
+        super();
+        const vertexCount = 4 * (points.length - 1);
+        let position = new Float32Array(12 * vertexCount);
+        let endPosition = new Float32Array(12 * vertexCount);
+        let nextPosition = new Float32Array(12 * vertexCount);
+        let textureCoords = new Int32Array(4 * vertexCount);
+        let indices = new Uint16Array(6 * vertexCount);
+        const addSegment = (index, start, end, next) => {
+            let x, y, z;
+            const vertexOffset = 12 * index;
+            ({ x, y, z } = start);
+            this.setVertexData(position, vertexOffset, x, y, z);
+            ({ x, y, z } = end);
+            this.setVertexData(endPosition, vertexOffset, x, y, z);
+            ({ x, y, z } = next);
+            this.setVertexData(nextPosition, vertexOffset, x, y, z);
+            const textureOffset = 4 * index;
+            this.setTextureCoords(textureCoords, textureOffset);
+            const indexOffset = 6 * index;
+            const nextIndex = 4 * index;
+            this.setIndices(indices, indexOffset, nextIndex);
+        };
+        for (let i = 0; i < points.length - 2; i++) {
+            addSegment(i, points[i], points[i + 1], points[i + 2]);
+        }
+        addSegment(points.length - 2, points.at(-2), points.at(-1), points.at(-1));
+        this.setAttribute("position", new BufferAttribute(position, 3));
+        this.setAttribute("endPosition", new BufferAttribute(endPosition, 3));
+        this.setAttribute("nextPosition", new BufferAttribute(nextPosition, 3));
+        this.setAttribute("textureCoords", new BufferAttribute(textureCoords, 1));
+        this.setIndex(new BufferAttribute(indices, 1));
+    }
+    setVertexData(array, offset, x, y, z) {
+        array[offset] = x;
+        array[offset + 1] = y;
+        array[offset + 2] = z;
+        array[offset + 3] = x;
+        array[offset + 4] = y;
+        array[offset + 5] = z;
+        array[offset + 6] = x;
+        array[offset + 7] = y;
+        array[offset + 8] = z;
+        array[offset + 9] = x;
+        array[offset + 10] = y;
+        array[offset + 11] = z;
+    }
+    setTextureCoords(array, offset) {
+        array[offset] = 1;
+        array[offset + 2] = 2;
+        array[offset + 3] = 3;
+    }
+    setIndices(array, offset, startIndex) {
+        array[offset] = startIndex;
+        array[offset + 1] = startIndex + 1;
+        array[offset + 2] = startIndex + 2;
+        array[offset + 3] = startIndex;
+        array[offset + 4] = startIndex + 2;
+        array[offset + 5] = startIndex + 3;
+    }
+}
+class MeshLineMaterial extends THREE.ShaderMaterial {
+    constructor() {
+        super({
+            uniforms: Object.assign({}, THREE.UniformsLib.fog, {
+                color: { value: new THREE.Vector3(0.0, 0.0, 1.0) },
+                opacity: { value: 1 },
+                resolution: { value: GeometryResolution },
+                unitsPerPixel: { value: 8 / GeometryResolution.y },
+                pixelWidth: { value: 35 * window.devicePixelRatio },
+            }),
+            vertexShader: THREE.ShaderChunk.eulertour_meshline_vert,
+            fragmentShader: THREE.ShaderChunk.eulertour_meshline_frag,
+            transparent: true,
+            opacity: 0.5,
+        });
+        Object.defineProperties(this, {
+            fogColor: {
+                enumerable: true,
+                get: () => {
+                    return this.uniforms.opacity.value;
+                },
+                set: (value) => {
+                    this.uniforms.opacity.value = value;
+                },
+            },
+        });
+    }
+}
+
+class MeshLine extends THREE.Mesh {
+    constructor() {
+        const geometry = new MeshLineGeometry([
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(1, 0, 0),
+            new THREE.Vector3(2, 2, 0),
+            new THREE.Vector3(0, 3, 0),
+        ]);
+        const material = new MeshLineMaterial();
+        super(geometry, material);
+    }
+}
 const GeometryResolution = new THREE.Vector2();
 const getFillGeometry = (points) => {
     const shape = new THREE.Shape();
@@ -724,7 +956,7 @@ class Shape extends THREE.Group {
         }
         const strokeGeometry = new MeshLine();
         strokeGeometry.setPoints(points);
-        const strokeMaterial = new MeshLineMaterial({
+        const strokeMaterial = new MeshLineMaterial$1({
             color: strokeColor,
             opacity: strokeOpacity,
             lineWidth: strokeWidth,
@@ -1232,6 +1464,7 @@ var geometry = /*#__PURE__*/Object.freeze({
 	Circle: Circle,
 	GeometryResolution: GeometryResolution,
 	Line: Line,
+	MeshLine: MeshLine,
 	Point: Point,
 	Polygon: Polygon,
 	Rectangle: Rectangle,
@@ -46328,133 +46561,4 @@ class Scene {
     }
 }
 
-class LineGeometry extends BufferGeometry {
-    constructor(startVec, endVec) {
-        super();
-        const startArray = startVec.toArray();
-        const endArray = endVec.toArray();
-        let position = [];
-        let oppositePosition = [];
-        let side = [];
-        let startEnd = [];
-        position.push(...startArray);
-        oppositePosition.push(...endArray);
-        side.push(+1);
-        startEnd.push(+1);
-        position.push(...startArray);
-        oppositePosition.push(...endArray);
-        side.push(-1);
-        startEnd.push(-1);
-        position.push(...startArray);
-        oppositePosition.push(...endArray);
-        side.push(+1);
-        startEnd.push(-1);
-        position.push(...startArray);
-        oppositePosition.push(...endArray);
-        side.push(-1);
-        startEnd.push(+1);
-        let indices = [0, 1, 2, 2, 3, 0];
-        this.setAttribute("position", new THREE.Float32BufferAttribute(position, 3));
-        this.setAttribute("oppositePosition", new THREE.Float32BufferAttribute(oppositePosition, 3));
-        this.setAttribute("side", new THREE.Float32BufferAttribute(side, 1));
-        this.setAttribute("startEnd", new THREE.Float32BufferAttribute(startEnd, 1));
-        this.setIndex(indices);
-    }
-}
-const material = new THREE.ShaderMaterial({
-    uniforms: {
-        color: { value: new THREE.Vector3(0.0, 0.0, 1.0) },
-        resolution: { value: GeometryResolution },
-    },
-    vertexShader: `
-precision mediump float;
-precision mediump int;
-
-// Passed by WebGLProgram
-// https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
-// uniform mat4 modelViewMatrix;
-// uniform mat4 projectionMatrix;
-uniform vec2 resolution;
-
-// attribute vec3 position;
-attribute vec3 oppositePosition;
-attribute float side;
-attribute float startEnd;
-
-varying vec2 vStartFragment;
-varying vec2 vEndFragment;
-
-vec2 fragmentCoords(vec4 v) {
-  vec2 perspectiveDivide = v.xy / v.w;
-  vec2 viewportTransform = resolution / 2. * (1. + perspectiveDivide);
-  return viewportTransform;
-}
-
-void main()	{
-  vec4 start = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  vec4 end = projectionMatrix * modelViewMatrix * vec4(oppositePosition, 1.0);
-
-  vStartFragment = fragmentCoords(start);
-  vEndFragment = fragmentCoords(end);
-
-  vec2 vec = startEnd * normalize(vStartFragment - vEndFragment);
-  vec2 normal = side * vec2(-vec.y, vec.x);
-  vec2 offset = normalize(vec + normal);
-  
-  vec4 cameraOffset = vec4(offset.xy, 0., 1.);
-  vec4 clipOffset = projectionMatrix * cameraOffset;
-
-  if (startEnd == 1.) {
-    start.xy += clipOffset.xy;
-    gl_Position = start;
-  } else {
-    end.xy += clipOffset.xy;
-    gl_Position = end;
-  }
-}
-  `,
-    fragmentShader: `
-precision mediump float;
-precision mediump int;
-
-uniform vec3 color;
-uniform vec2 resolution;
-
-varying vec2 vStartFragment;
-varying vec2 vEndFragment;
-
-float distanceToSegment(
-  vec2 fragment,
-  vec2 startFragment,
-  vec2 endFragment
-) {
-  vec2 segmentVec = endFragment - startFragment;
-  vec2 fragmentVec = fragment - startFragment;
-  float dotProduct = dot(fragmentVec, segmentVec);
-  vec2 segmentProjection = dotProduct / dot(segmentVec, segmentVec) * segmentVec;
-
-  vec2 normal = fragmentVec - segmentProjection;
-  vec2 tangent = fragmentVec - normal;
-
-  if (dotProduct > 0.) {
-    if (dot(segmentVec, segmentVec) < dot(tangent, tangent)) {
-      tangent -= segmentVec;
-    } else {
-      tangent *= 0.;
-    }
-  }
-
-  return length(tangent + normal);
-}
-
-void main()	{
-  if (distanceToSegment(gl_FragCoord.xy, vStartFragment, vEndFragment) > 15.) {
-    discard;
-  }
-  gl_FragColor = vec4(0., 0., 0., 1.0);
-}
-  `,
-});
-const mesh = new THREE.Mesh(new LineGeometry(new THREE.Vector3(0, 0, 0), new THREE.Vector3(3, 2, 0)), material);
-
-export { animation as Animation, geometry as Geometry, mesh as Line, Scene, text as Text, setupCanvas };
+export { animation as Animation, geometry as Geometry, Scene, text as Text, setupCanvas };

@@ -1,10 +1,11 @@
 import * as THREE from "three";
 import { ERROR_THRESHOLD, PIXELS_TO_COORDS } from "./constants";
 import {
-  MeshLine,
+  MeshLineGeometry,
   MeshLineMaterial,
   MeshLineRaycast,
 } from "./THREE.MeshLine.dev.js";
+import { MeshLineGeometry as G, MeshLineMaterial as M } from "./MeshLine/Line";
 import type {
   Transform,
   Style,
@@ -15,6 +16,19 @@ import type {
   ArcAttributes,
   RectangleAttributes,
 } from "./geometry.types.js";
+
+class MeshLine extends THREE.Mesh {
+  constructor() {
+    const geometry = new G([
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(1, 0, 0),
+      new THREE.Vector3(2, 2, 0),
+      new THREE.Vector3(0, 3, 0),
+    ]);
+    const material = new M();
+    super(geometry, material);
+  }
+}
 
 const GeometryResolution = new THREE.Vector2();
 
@@ -701,4 +715,5 @@ export {
   Polygon,
   Rectangle,
   Square,
+  MeshLine,
 };
