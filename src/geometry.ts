@@ -1,11 +1,6 @@
 import * as THREE from "three";
 import { ERROR_THRESHOLD, PIXELS_TO_COORDS } from "./constants";
-import {
-  MeshLineGeometry,
-  MeshLineMaterial,
-  MeshLineRaycast,
-} from "./THREE.MeshLine.dev.js";
-import { MeshLineGeometry as G, MeshLineMaterial as M } from "./MeshLine/Line";
+import { MeshLineGeometry, MeshLineMaterial } from "./MeshLine";
 import type {
   Transform,
   Style,
@@ -16,19 +11,6 @@ import type {
   ArcAttributes,
   RectangleAttributes,
 } from "./geometry.types.js";
-
-class MeshLine extends THREE.Mesh {
-  constructor() {
-    const geometry = new G([
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(1, 0, 0),
-      new THREE.Vector3(2, 2, 0),
-      new THREE.Vector3(0, 3, 0),
-    ]);
-    const material = new M();
-    super(geometry, material);
-  }
-}
 
 const GeometryResolution = new THREE.Vector2();
 
@@ -43,7 +25,7 @@ const getFillGeometry = (points: Array<THREE.Vector3>) => {
 };
 
 type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
-type Stroke = THREE.Mesh<MeshLine, MeshLineMaterial>;
+type Stroke = THREE.Mesh<MeshLineGeometry, MeshLineMaterial>;
 
 abstract class Shape extends THREE.Group {
   fill: Fill;
@@ -57,7 +39,7 @@ abstract class Shape extends THREE.Group {
     {
       strokeColor = new THREE.Color(0x000000),
       strokeOpacity = 1.0,
-      strokeWidth = 4 * PIXELS_TO_COORDS,
+      strokeWidth = 8,
       stroke = true,
       fillColor = new THREE.Color(0xfffaf0),
       fillOpacity = 1.0,
@@ -80,20 +62,15 @@ abstract class Shape extends THREE.Group {
       this.add(this.fill);
     }
 
-    const strokeGeometry = new MeshLine();
+    const strokeGeometry = new MeshLineGeometry();
     strokeGeometry.setPoints(points);
     const strokeMaterial = new MeshLineMaterial({
       color: strokeColor,
       opacity: strokeOpacity,
-      lineWidth: strokeWidth,
+      width: strokeWidth,
       transparent: true,
-      polygonOffset: true,
     });
-    // Set the uniform to a reference to GeometryResolution so that
-    // strokes automatically update when the canvas resolution changes.
-    strokeMaterial.uniforms.resolution.value = GeometryResolution;
     this.stroke = new THREE.Mesh(strokeGeometry, strokeMaterial);
-    this.stroke.raycast = MeshLineRaycast;
 
     this.strokeVisible = stroke;
     if (this.strokeVisible) {
@@ -104,7 +81,7 @@ abstract class Shape extends THREE.Group {
   }
 
   get points(): Array<THREE.Vector3> {
-    return this.stroke.geometry._points;
+    return this.stroke.geometry.points;
   }
 
   curve(curveIndex: number, worldTransform = true) {
@@ -125,7 +102,7 @@ abstract class Shape extends THREE.Group {
   }
 
   getCurveEndIndices() {
-    const points = this.stroke.geometry._points;
+    const points = this.stroke.geometry.points;
     const indices = [];
     for (let i = 0; i < points.length - 1; i++) {
       indices.push([i, i + 1]);
@@ -366,8 +343,9 @@ class Line extends Shape {
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
-    config: Style & { transformCenter?: boolean } = { transformCenter: true }
+    config: Style & { transformCenter?: boolean } = {}
   ) {
+    config = Object.assign({ transformCenter: false }, config);
     let lineStart, lineEnd;
     const strokeCenter = new THREE.Vector3()
       .addVectors(start, end)
@@ -550,8 +528,9 @@ class Polygon extends Shape {
 
   constructor(
     points: Array<THREE.Vector3>,
-    config: Style & { transformCenter?: boolean } = { transformCenter: true }
+    config: Style & { transformCenter?: boolean } = {}
   ) {
+    config = Object.assign({ transformCenter: false }, config);
     if (config.transformCenter) {
       const min = new THREE.Vector3(Infinity, Infinity, Infinity);
       const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
@@ -715,5 +694,4 @@ export {
   Polygon,
   Rectangle,
   Square,
-  MeshLine,
 };

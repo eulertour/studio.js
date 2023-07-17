@@ -1,701 +1,36 @@
 import * as THREE from 'three';
-import { ShaderChunk, BufferGeometry, BufferAttribute, Loader, FileLoader, Matrix3, Vector2, Vector3, ShapeUtils, Box2, Shape as Shape$1, Path, Float32BufferAttribute, ShapePath, SRGBColorSpace } from 'three';
+import { ShaderChunk, BufferGeometry, Vector3, BufferAttribute, Loader, FileLoader, Matrix3, Vector2, ShapeUtils, Box2, Shape as Shape$1, Path, Float32BufferAttribute, ShapePath, SRGBColorSpace } from 'three';
 
 const PIXELS_TO_COORDS = 8 / 450;
 const ERROR_THRESHOLD = 0.001;
 
-let MeshLine$1 = class MeshLine extends THREE.BufferGeometry {
-	constructor() {
-		super();
-		this.isMeshLine = true;
-		this.type = 'MeshLine';
+/******************************************************************************
+Copyright (c) Microsoft Corporation.
 
-		this.positions = [];
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
 
-		this.previous = [];
-		this.next = [];
-		this.side = [];
-		this.width = [];
-		this.indices_array = [];
-		this.uvs = [];
-		this.counters = [];
-		this._points = [];
-		this._geom = null;
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
 
-		this.widthCallback = null;
-
-		// Used to raycast
-		this.matrixWorld = new THREE.Matrix4();
-
-		Object.defineProperties(this, {
-			// this is now a bufferGeometry
-			// add getter to support previous api
-			geometry: {
-				enumerable: true,
-				get: function () {
-					return this;
-				}
-			},
-			geom: {
-				enumerable: true,
-				get: function () {
-					return this._geom;
-				},
-				set: function (value) {
-					this.setGeometry(value, this.widthCallback);
-				}
-			},
-			// for declaritive architectures
-			// to return the same value that sets the points
-			// eg. this.points = points
-			// console.log(this.points) -> points
-			points: {
-				enumerable: true,
-				get: function () {
-					return this._points;
-				},
-				set: function (value) {
-					this.setPoints(value, this.widthCallback);
-				}
-			}
-		});
-	}
-};
-
-MeshLine$1.prototype.setMatrixWorld = function (matrixWorld) {
-	this.matrixWorld = matrixWorld;
-};
-
-// setting via a geometry is rather superfluous
-// as you're creating a unecessary geometry just to throw away
-// but exists to support previous api
-MeshLine$1.prototype.setGeometry = function (g, c) {
-	// as the input geometry are mutated we store them
-	// for later retreival when necessary (declaritive architectures)
-	this._geometry = g;
-	this.setPoints(g.getAttribute('position').array, c);
-};
-
-MeshLine$1.prototype.setPoints = function (points, wcb) {
-	if (!(points instanceof Float32Array) && !(points instanceof Array)) {
-		console.error('ERROR: The BufferArray of points is not instancied correctly.');
-		return;
-	}
-	// as the points are mutated we store them
-	// for later retreival when necessary (declaritive architectures)
-	this._points = points;
-	this.widthCallback = wcb;
-	this.positions = [];
-	this.counters = [];
-	if (points.length && points[0] instanceof THREE.Vector3) {
-		// could transform Vector3 array into the array used below
-		// but this approach will only loop through the array once
-		// and is more performant
-		for (var j = 0; j < points.length; j++) {
-			var p = points[j];
-			var c = j / points.length;
-			this.positions.push(p.x, p.y, p.z);
-			this.positions.push(p.x, p.y, p.z);
-			this.counters.push(c);
-			this.counters.push(c);
-		}
-	} else {
-		for (var j = 0; j < points.length; j += 3) {
-			var c = j / points.length;
-			this.positions.push(points[j], points[j + 1], points[j + 2]);
-			this.positions.push(points[j], points[j + 1], points[j + 2]);
-			this.counters.push(c);
-			this.counters.push(c);
-		}
-	}
-	this.process();
-};
-
-function MeshLineRaycast(raycaster, intersects) {
-	var inverseMatrix = new THREE.Matrix4();
-	var ray = new THREE.Ray();
-	var sphere = new THREE.Sphere();
-	var interRay = new THREE.Vector3();
-	var geometry = this.geometry;
-	// Checking boundingSphere distance to ray
-
-	if (!geometry.boundingSphere) geometry.computeBoundingSphere();
-	sphere.copy(geometry.boundingSphere);
-	sphere.applyMatrix4(this.matrixWorld);
-
-	if (raycaster.ray.intersectSphere(sphere, interRay) === false) {
-		return;
-	}
-
-	inverseMatrix.copy(this.matrixWorld).invert();
-	ray.copy(raycaster.ray).applyMatrix4(inverseMatrix);
-
-	var vStart = new THREE.Vector3();
-	var vEnd = new THREE.Vector3();
-	var interSegment = new THREE.Vector3();
-	var step = this instanceof THREE.LineSegments ? 2 : 1;
-	var index = geometry.index;
-	var attributes = geometry.attributes;
-
-	if (index !== null) {
-		var indices = index.array;
-		var positions = attributes.position.array;
-		var widths = attributes.width.array;
-
-		for (var i = 0, l = indices.length - 1; i < l; i += step) {
-			var a = indices[i];
-			var b = indices[i + 1];
-
-			vStart.fromArray(positions, a * 3);
-			vEnd.fromArray(positions, b * 3);
-			var width = widths[Math.floor(i / 3)] !== undefined ? widths[Math.floor(i / 3)] : 1;
-			var precision = raycaster.params.Line.threshold + (this.material.lineWidth * width) / 2;
-			var precisionSq = precision * precision;
-
-			var distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment);
-
-			if (distSq > precisionSq) continue;
-
-			interRay.applyMatrix4(this.matrixWorld); //Move back to world space for distance calculation
-
-			var distance = raycaster.ray.origin.distanceTo(interRay);
-
-			if (distance < raycaster.near || distance > raycaster.far) continue;
-
-			intersects.push({
-				distance: distance,
-				// What do we want? intersection point on the ray or on the segment??
-				// point: raycaster.ray.at( distance ),
-				point: interSegment.clone().applyMatrix4(this.matrixWorld),
-				index: i,
-				face: null,
-				faceIndex: null,
-				object: this
-			});
-			// make event only fire once
-			i = l;
-		}
-	}
-}
-MeshLine$1.prototype.raycast = MeshLineRaycast;
-MeshLine$1.prototype.compareV3 = function (a, b) {
-	var aa = a * 6;
-	var ab = b * 6;
-	return (
-		this.positions[aa] === this.positions[ab] &&
-		this.positions[aa + 1] === this.positions[ab + 1] &&
-		this.positions[aa + 2] === this.positions[ab + 2]
-	);
-};
-
-MeshLine$1.prototype.copyV3 = function (a) {
-	var aa = a * 6;
-	return [this.positions[aa], this.positions[aa + 1], this.positions[aa + 2]];
-};
-
-MeshLine$1.prototype.process = function () {
-	var l = this.positions.length / 6;
-
-	this.previous = [];
-	this.next = [];
-	this.side = [];
-	this.width = [];
-	this.indices_array = [];
-	this.uvs = [];
-
-	var w;
-
-	var v;
-	// initial previous points
-	if (this.compareV3(0, l - 1)) {
-		v = this.copyV3(l - 2);
-	} else {
-		v = this.copyV3(0);
-	}
-	this.previous.push(v[0], v[1], v[2]);
-	this.previous.push(v[0], v[1], v[2]);
-
-	for (var j = 0; j < l; j++) {
-		// sides
-		this.side.push(1);
-		this.side.push(-1);
-
-		// widths
-		if (this.widthCallback) w = this.widthCallback(j / (l - 1));
-		else w = 1;
-		this.width.push(w);
-		this.width.push(w);
-
-		// uvs
-		this.uvs.push(j / (l - 1), 0);
-		this.uvs.push(j / (l - 1), 1);
-
-		if (j < l - 1) {
-			// points previous to poisitions
-			v = this.copyV3(j);
-			this.previous.push(v[0], v[1], v[2]);
-			this.previous.push(v[0], v[1], v[2]);
-
-			// indices
-			var n = j * 2;
-			this.indices_array.push(n, n + 1, n + 2);
-			this.indices_array.push(n + 2, n + 1, n + 3);
-		}
-		if (j > 0) {
-			// points after poisitions
-			v = this.copyV3(j);
-			this.next.push(v[0], v[1], v[2]);
-			this.next.push(v[0], v[1], v[2]);
-		}
-	}
-
-	// last next point
-	if (this.compareV3(l - 1, 0)) {
-		v = this.copyV3(1);
-	} else {
-		v = this.copyV3(l - 1);
-	}
-	this.next.push(v[0], v[1], v[2]);
-	this.next.push(v[0], v[1], v[2]);
-
-	// redefining the attribute seems to prevent range errors
-	// if the user sets a differing number of vertices
-	if (!this._attributes || this._attributes.position.count !== this.positions.length) {
-		this._attributes = {
-			position: new THREE.BufferAttribute(new Float32Array(this.positions), 3),
-			previous: new THREE.BufferAttribute(new Float32Array(this.previous), 3),
-			next: new THREE.BufferAttribute(new Float32Array(this.next), 3),
-			side: new THREE.BufferAttribute(new Float32Array(this.side), 1),
-			width: new THREE.BufferAttribute(new Float32Array(this.width), 1),
-			uv: new THREE.BufferAttribute(new Float32Array(this.uvs), 2),
-			index: new THREE.BufferAttribute(new Uint16Array(this.indices_array), 1),
-			counters: new THREE.BufferAttribute(new Float32Array(this.counters), 1)
-		};
-	} else {
-		this._attributes.position.copyArray(new Float32Array(this.positions));
-		this._attributes.position.needsUpdate = true;
-		this._attributes.previous.copyArray(new Float32Array(this.previous));
-		this._attributes.previous.needsUpdate = true;
-		this._attributes.next.copyArray(new Float32Array(this.next));
-		this._attributes.next.needsUpdate = true;
-		this._attributes.side.copyArray(new Float32Array(this.side));
-		this._attributes.side.needsUpdate = true;
-		this._attributes.width.copyArray(new Float32Array(this.width));
-		this._attributes.width.needsUpdate = true;
-		this._attributes.uv.copyArray(new Float32Array(this.uvs));
-		this._attributes.uv.needsUpdate = true;
-		this._attributes.index.copyArray(new Uint16Array(this.indices_array));
-		this._attributes.index.needsUpdate = true;
-	}
-
-	this.setAttribute('position', this._attributes.position);
-	this.setAttribute('previous', this._attributes.previous);
-	this.setAttribute('next', this._attributes.next);
-	this.setAttribute('side', this._attributes.side);
-	this.setAttribute('width', this._attributes.width);
-	this.setAttribute('uv', this._attributes.uv);
-	this.setAttribute('counters', this._attributes.counters);
-
-	this.setIndex(this._attributes.index);
-
-	this.computeBoundingSphere();
-	this.computeBoundingBox();
-};
-
-function memcpy(src, srcOffset, dst, dstOffset, length) {
-	var i;
-
-	src = src.subarray || src.slice ? src : src.buffer;
-	dst = dst.subarray || dst.slice ? dst : dst.buffer;
-
-	src = srcOffset
-		? src.subarray
-			? src.subarray(srcOffset, length && srcOffset + length)
-			: src.slice(srcOffset, length && srcOffset + length)
-		: src;
-
-	if (dst.set) {
-		dst.set(src, dstOffset);
-	} else {
-		for (i = 0; i < src.length; i++) {
-			dst[i + dstOffset] = src[i];
-		}
-	}
-
-	return dst;
+function __classPrivateFieldGet(receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 }
 
-/**
- * Fast method to advance the line by one position.  The oldest position is removed.
- * @param position
- */
-MeshLine$1.prototype.advance = function (position) {
-	var positions = this._attributes.position.array;
-	var previous = this._attributes.previous.array;
-	var next = this._attributes.next.array;
-	var l = positions.length;
-
-	// PREVIOUS
-	memcpy(positions, 0, previous, 0, l);
-
-	// POSITIONS
-	memcpy(positions, 6, positions, 0, l - 6);
-
-	positions[l - 6] = position.x;
-	positions[l - 5] = position.y;
-	positions[l - 4] = position.z;
-	positions[l - 3] = position.x;
-	positions[l - 2] = position.y;
-	positions[l - 1] = position.z;
-
-	// NEXT
-	memcpy(positions, 6, next, 0, l - 6);
-
-	next[l - 6] = position.x;
-	next[l - 5] = position.y;
-	next[l - 4] = position.z;
-	next[l - 3] = position.x;
-	next[l - 2] = position.y;
-	next[l - 1] = position.z;
-
-	this._attributes.position.needsUpdate = true;
-	this._attributes.previous.needsUpdate = true;
-	this._attributes.next.needsUpdate = true;
-};
-
-THREE.ShaderChunk['meshline_vert'] = [
-	'',
-	THREE.ShaderChunk.logdepthbuf_pars_vertex,
-	THREE.ShaderChunk.fog_pars_vertex,
-	'',
-	'attribute vec3 previous;',
-	'attribute vec3 next;',
-	'attribute float side;',
-	'attribute float width;',
-	'attribute float counters;',
-	'',
-	'uniform vec2 resolution;',
-	'uniform float lineWidth;',
-	'uniform vec3 color;',
-	'uniform float opacity;',
-	'uniform float sizeAttenuation;',
-	'',
-	'varying vec2 vUV;',
-	'varying vec4 vColor;',
-	'varying float vCounters;',
-	'',
-	'vec2 fix( vec4 i, float aspect ) {',
-	'',
-	'    vec2 res = i.xy / i.w;',
-	'    res.x *= aspect;',
-	'	   vCounters = counters;',
-	'    return res;',
-	'',
-	'}',
-	'',
-	'void main() {',
-	'',
-	'    float aspect = resolution.x / resolution.y;',
-	'',
-	'    vColor = vec4( color, opacity );',
-	'    vUV = uv;',
-	'',
-	'    mat4 m = projectionMatrix * modelViewMatrix;',
-	'    vec4 finalPosition = m * vec4( position, 1.0 );',
-	'    vec4 prevPos = m * vec4( previous, 1.0 );',
-	'    vec4 nextPos = m * vec4( next, 1.0 );',
-	'',
-	'    vec2 currentP = fix( finalPosition, aspect );',
-	'    vec2 prevP = fix( prevPos, aspect );',
-	'    vec2 nextP = fix( nextPos, aspect );',
-	'',
-	'    float w = lineWidth * width;',
-	'',
-	'    vec2 dir;',
-	'    vec4 normal;',
-	'    if( nextP == currentP ) {',
-	'      dir = normalize( currentP - prevP );',
-	'      normal = vec4( -dir.y, dir.x, 0., 1. );',
-	'      normal.xy *= .5 * w;',
-	'    } else if( prevP == currentP ) {',
-	'      dir = normalize( nextP - currentP );',
-	'      normal = vec4( -dir.y, dir.x, 0., 1. );',
-	'      normal.xy *= .5 * w;',
-	'    } else {',
-	'        vec2 dir1 = normalize( currentP - prevP );',
-	'        vec2 dir2 = normalize( nextP - currentP );',
-	'        dir = normalize( dir1 + dir2 );',
-	'        normal = vec4( -dir.y, dir.x, 0., 1. );',
-	'',
-	'        vec2 perp = vec2( -dir1.y, dir1.x );',
-	'        vec2 miter = vec2( -dir.y, dir.x );',
-	'        float d = .5 * w / dot( perp, miter );',
-	'        //w = clamp( w / dot( miter, perp ), 0., 4. * lineWidth * width );',
-	'        normal.xy *= d;',
-	'',
-	'    }',
-	'',
-	'    //vec2 normal = ( cross( vec3( dir, 0. ), vec3( 0., 0., 1. ) ) ).xy;',
-	'    // normal.xy *= .5 * w;',
-	'    //normal.xy *= w / dot(miter, perp);',
-	'    normal *= projectionMatrix;',
-	'    if( sizeAttenuation == 0. ) {',
-	'        normal.xy *= finalPosition.w;',
-	'        normal.xy /= ( vec4( resolution, 0., 1. ) * projectionMatrix ).xy;',
-	'    }',
-	'',
-	'    finalPosition.xy += normal.xy * side;',
-	'',
-	'    gl_Position = finalPosition;',
-	'',
-	THREE.ShaderChunk.logdepthbuf_vertex,
-	THREE.ShaderChunk.fog_vertex && '    vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );',
-	THREE.ShaderChunk.fog_vertex,
-	'}'
-].join('\n');
-
-THREE.ShaderChunk['meshline_frag'] = [
-	'',
-	THREE.ShaderChunk.fog_pars_fragment,
-	THREE.ShaderChunk.logdepthbuf_pars_fragment,
-	'',
-	'uniform sampler2D map;',
-	'uniform sampler2D alphaMap;',
-	'uniform float useMap;',
-	'uniform float useAlphaMap;',
-	'uniform float useDash;',
-	'uniform float dashArray;',
-	'uniform float dashOffset;',
-	'uniform float dashRatio;',
-	'uniform float visibility;',
-	'uniform float alphaTest;',
-	'uniform vec2 repeat;',
-	'',
-	'varying vec2 vUV;',
-	'varying vec4 vColor;',
-	'varying float vCounters;',
-	'',
-	'void main() {',
-	'',
-	THREE.ShaderChunk.logdepthbuf_fragment,
-	'',
-	'    vec4 c = vColor;',
-	'    if( useMap == 1. ) c *= texture2D( map, vUV * repeat );',
-	'    if( useAlphaMap == 1. ) c.a *= texture2D( alphaMap, vUV * repeat ).a;',
-	'    if( c.a < alphaTest ) discard;',
-	'    if( useDash == 1. ){',
-	'        c.a *= ceil(mod(vCounters + dashOffset, dashArray) - (dashArray * dashRatio));',
-	'    }',
-	'    gl_FragColor = c;',
-	'    gl_FragColor.a *= step(vCounters, visibility);',
-	'',
-	THREE.ShaderChunk.fog_fragment,
-	'}'
-].join('\n');
-
-let MeshLineMaterial$1 = class MeshLineMaterial extends THREE.ShaderMaterial {
-	constructor(parameters) {
-		super({
-			uniforms: Object.assign({}, THREE.UniformsLib.fog, {
-				lineWidth: { value: 1 },
-				map: { value: null },
-				useMap: { value: 0 },
-				alphaMap: { value: null },
-				useAlphaMap: { value: 0 },
-				color: { value: new THREE.Color(0xffffff) },
-				opacity: { value: 1 },
-				resolution: { value: new THREE.Vector2(1, 1) },
-				sizeAttenuation: { value: 1 },
-				dashArray: { value: 0 },
-				dashOffset: { value: 0 },
-				dashRatio: { value: 0.5 },
-				useDash: { value: 0 },
-				visibility: { value: 1 },
-				alphaTest: { value: 0 },
-				repeat: { value: new THREE.Vector2(1, 1) }
-			}),
-
-			vertexShader: THREE.ShaderChunk.meshline_vert,
-
-			fragmentShader: THREE.ShaderChunk.meshline_frag
-		});
-		this.isMeshLineMaterial = true;
-		this.type = 'MeshLineMaterial';
-
-		Object.defineProperties(this, {
-			lineWidth: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.lineWidth.value;
-				},
-				set: function (value) {
-					this.uniforms.lineWidth.value = value;
-				}
-			},
-			map: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.map.value;
-				},
-				set: function (value) {
-					this.uniforms.map.value = value;
-				}
-			},
-			useMap: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.useMap.value;
-				},
-				set: function (value) {
-					this.uniforms.useMap.value = value;
-				}
-			},
-			alphaMap: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.alphaMap.value;
-				},
-				set: function (value) {
-					this.uniforms.alphaMap.value = value;
-				}
-			},
-			useAlphaMap: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.useAlphaMap.value;
-				},
-				set: function (value) {
-					this.uniforms.useAlphaMap.value = value;
-				}
-			},
-			color: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.color.value;
-				},
-				set: function (value) {
-					this.uniforms.color.value = value;
-				}
-			},
-			opacity: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.opacity.value;
-				},
-				set: function (value) {
-					this.uniforms.opacity.value = value;
-				}
-			},
-			resolution: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.resolution.value;
-				},
-				set: function (value) {
-					this.uniforms.resolution.value.copy(value);
-				}
-			},
-			sizeAttenuation: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.sizeAttenuation.value;
-				},
-				set: function (value) {
-					this.uniforms.sizeAttenuation.value = value;
-				}
-			},
-			dashArray: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.dashArray.value;
-				},
-				set: function (value) {
-					this.uniforms.dashArray.value = value;
-					this.useDash = value !== 0 ? 1 : 0;
-				}
-			},
-			dashOffset: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.dashOffset.value;
-				},
-				set: function (value) {
-					this.uniforms.dashOffset.value = value;
-				}
-			},
-			dashRatio: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.dashRatio.value;
-				},
-				set: function (value) {
-					this.uniforms.dashRatio.value = value;
-				}
-			},
-			useDash: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.useDash.value;
-				},
-				set: function (value) {
-					this.uniforms.useDash.value = value;
-				}
-			},
-			visibility: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.visibility.value;
-				},
-				set: function (value) {
-					this.uniforms.visibility.value = value;
-				}
-			},
-			alphaTest: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.alphaTest.value;
-				},
-				set: function (value) {
-					this.uniforms.alphaTest.value = value;
-				}
-			},
-			repeat: {
-				enumerable: true,
-				get: function () {
-					return this.uniforms.repeat.value;
-				},
-				set: function (value) {
-					this.uniforms.repeat.value.copy(value);
-				}
-			}
-		});
-
-		this.setValues(parameters);
-	}
-};
-
-MeshLineMaterial$1.prototype.copy = function (source) {
-	THREE.ShaderMaterial.prototype.copy.call(this, source);
-
-	this.lineWidth = source.lineWidth;
-	this.map = source.map;
-	this.useMap = source.useMap;
-	this.alphaMap = source.alphaMap;
-	this.useAlphaMap = source.useAlphaMap;
-	this.color.copy(source.color);
-	this.opacity = source.opacity;
-	this.resolution.copy(source.resolution);
-	this.sizeAttenuation = source.sizeAttenuation;
-	this.dashArray = source.dashArray;
-	this.dashOffset = source.dashOffset;
-	this.dashRatio = source.dashRatio;
-	this.useDash = source.useDash;
-	this.visibility = source.visibility;
-	this.alphaTest = source.alphaTest;
-	this.repeat.copy(source.repeat);
-
-	return this;
-};
+function __classPrivateFieldSet(receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+}
 
 ShaderChunk["eulertour_meshline_vert"] = `
   ${ShaderChunk.logdepthbuf_pars_vertex}
@@ -717,16 +52,23 @@ ShaderChunk["eulertour_meshline_vert"] = `
   attribute vec3 endPosition;
   attribute vec3 nextPosition;
   attribute int textureCoords;
+  attribute float proportion;
 
   varying vec2 vStartFragment;
   varying vec2 vEndFragment;
   varying vec2 vNextFragment;
+  varying float vProportion;
+  
+  float eq(float x, float y) {
+    return 1.0 - abs(sign(x - y));
+  }
 
   vec2 fragmentCoords(vec4 v) {
     return resolution / 2. * (1. + v.xy / v.w);
   }
 
   void main()	{
+    vProportion = proportion;
     mat4 modelViewProjection = projectionMatrix * modelViewMatrix;
     vec4 start = modelViewProjection * vec4(position, 1.0);
     vec4 end = modelViewProjection * vec4(endPosition, 1.0);
@@ -746,7 +88,7 @@ ShaderChunk["eulertour_meshline_vert"] = `
     vec2 fragmentOffset = 0.5 * pixelWidth * unitsPerPixel * (segmentVec + segmentNormal);
     vec2 offset = (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
 
-    gl_Position = startEnd == -1. ? start : end;
+    gl_Position = start * eq(startEnd, -1.) + end * eq(startEnd, 1.);
     gl_Position.xy += offset;
 
     ${ShaderChunk.logdepthbuf_vertex}
@@ -762,103 +104,157 @@ ShaderChunk["eulertour_meshline_frag"] = `
   uniform vec3 color;
   uniform vec2 resolution;
   uniform float pixelWidth;
+  uniform float opacity;
+  uniform float visibility;
 
   varying vec2 vStartFragment;
   varying vec2 vEndFragment;
   varying vec2 vNextFragment;
-
-  float distanceToSegment(
-    vec2 fragment,
-    vec2 startFragment,
-    vec2 endFragment
-  ) {
-    vec2 segmentVec = endFragment - startFragment;
-    vec2 fragmentVec = fragment - startFragment;
-    float dotProduct = dot(fragmentVec, segmentVec);
-    vec2 segmentProjection = dotProduct / dot(segmentVec, segmentVec) * segmentVec;
-
-    vec2 normal = fragmentVec - segmentProjection;
-    vec2 tangent = fragmentVec - normal;
-
-    if (dotProduct > 0.) {
-      if (dot(segmentVec, segmentVec) < dot(tangent, tangent)) {
-        tangent -= segmentVec;
-      } else {
-        tangent *= 0.;
-      }
-    }
-
-    return length(tangent + normal);
+  varying float vProportion;
+  
+  float lengthSquared(vec2 vec) {
+    return dot(vec, vec);
   }
 
-  float distanceToFragment(vec2 u, vec2 v) {
-    return length(u - v);
+  bool segmentCoversFragment(vec2 fragment, vec2 startFragment, vec2 endFragment) {
+    float halfWidthSquared = 0.25 * pixelWidth * pixelWidth;
+
+    vec2 segmentVec = endFragment - startFragment;
+    vec2 startToFrag = fragment - startFragment;
+    vec2 endToFrag = fragment - endFragment;
+
+    float dotProduct = dot(startToFrag, segmentVec);
+    vec2 segmentProjection = dotProduct / lengthSquared(segmentVec) * segmentVec;
+    vec2 segmentNormal = startToFrag - segmentProjection;
+
+    bool towardSegment = dotProduct > 0.;
+
+    bool segmentStem = towardSegment
+      && lengthSquared(segmentProjection) < lengthSquared(segmentVec)
+      && lengthSquared(segmentNormal) < halfWidthSquared;
+
+    bool segmentStart = !towardSegment && lengthSquared(startToFrag) < halfWidthSquared;
+    bool segmentEnd = towardSegment && lengthSquared(endToFrag) < halfWidthSquared;
+
+    return segmentStem || segmentStart || segmentEnd;
   }
 
   void main() {
     ${ShaderChunk.logdepthbuf_fragment}
 
-    float halfWidth = 0.5 * pixelWidth;
-    vec2 nextVec = normalize(vNextFragment - vEndFragment);
-    if (vNextFragment != vEndFragment) {
-      vec2 endToFrag = gl_FragCoord.xy - vEndFragment;
-      float d = dot(endToFrag, nextVec);
-      if (d > 0.) {
-        vec2 nextProjection = d / dot(nextVec, nextVec) * nextVec;
-        vec2 nextNormal = endToFrag - nextProjection;
-        if (length(nextProjection) < length(vNextFragment - vEndFragment) && length(nextNormal) < halfWidth) {
-          discard;
-        } else if (distanceToFragment(gl_FragCoord.xy, vNextFragment) < halfWidth) {
-          discard;
-        }
-      } else if (distanceToFragment(gl_FragCoord.xy, vEndFragment) < halfWidth) {
-        discard;
-      }
-    }
-
-    if (distanceToSegment(gl_FragCoord.xy, vStartFragment, vEndFragment) > halfWidth) {
-      discard;
-    } else {
-      gl_FragColor = vec4(0., 0., 0., 1.);
-    }
+    bool hasNext = vNextFragment != vEndFragment;
+    if (hasNext && segmentCoversFragment(gl_FragCoord.xy, vEndFragment, vNextFragment)) discard;
+    if (!segmentCoversFragment(gl_FragCoord.xy, vStartFragment, vEndFragment)) discard;
+    float drawOpacity = vProportion <= visibility ? opacity : 0.;
+    gl_FragColor = vec4(color, drawOpacity);
 
     ${ShaderChunk.fog_fragment}
 	}
 `;
 
+var _MeshLineGeometry_instances, _MeshLineGeometry_position, _MeshLineGeometry_endPosition, _MeshLineGeometry_nextPosition, _MeshLineGeometry_textureCoords, _MeshLineGeometry_proportion, _MeshLineGeometry_indices, _MeshLineGeometry_attributes, _MeshLineGeometry_previousPointCount, _MeshLineGeometry_pointCount, _MeshLineGeometry_addSegment, _MeshLineGeometry_makeNewBuffers;
 class MeshLineGeometry extends BufferGeometry {
-    constructor(points) {
-        super();
-        const vertexCount = 4 * (points.length - 1);
-        let position = new Float32Array(12 * vertexCount);
-        let endPosition = new Float32Array(12 * vertexCount);
-        let nextPosition = new Float32Array(12 * vertexCount);
-        let textureCoords = new Int32Array(4 * vertexCount);
-        let indices = new Uint16Array(6 * vertexCount);
-        const addSegment = (index, start, end, next) => {
-            let x, y, z;
-            const vertexOffset = 12 * index;
-            ({ x, y, z } = start);
-            this.setVertexData(position, vertexOffset, x, y, z);
-            ({ x, y, z } = end);
-            this.setVertexData(endPosition, vertexOffset, x, y, z);
-            ({ x, y, z } = next);
-            this.setVertexData(nextPosition, vertexOffset, x, y, z);
-            const textureOffset = 4 * index;
-            this.setTextureCoords(textureCoords, textureOffset);
-            const indexOffset = 6 * index;
-            const nextIndex = 4 * index;
-            this.setIndices(indices, indexOffset, nextIndex);
-        };
-        for (let i = 0; i < points.length - 2; i++) {
-            addSegment(i, points[i], points[i + 1], points[i + 2]);
+    constructor() {
+        super(...arguments);
+        _MeshLineGeometry_instances.add(this);
+        this.isMeshLineGeometry = true;
+        this.type = "MeshLineGeometry";
+        _MeshLineGeometry_position.set(this, new Float32Array());
+        _MeshLineGeometry_endPosition.set(this, new Float32Array());
+        _MeshLineGeometry_nextPosition.set(this, new Float32Array());
+        _MeshLineGeometry_textureCoords.set(this, new Int32Array());
+        _MeshLineGeometry_proportion.set(this, new Float32Array());
+        _MeshLineGeometry_indices.set(this, new Uint16Array());
+        _MeshLineGeometry_attributes.set(this, null);
+        _MeshLineGeometry_previousPointCount.set(this, 0);
+        _MeshLineGeometry_pointCount.set(this, 0);
+    }
+    setPoints(points, updateBounds = true) {
+        this.points = points;
+        __classPrivateFieldSet(this, _MeshLineGeometry_pointCount, points.length, "f");
+        const pointCount = __classPrivateFieldGet(this, _MeshLineGeometry_pointCount, "f");
+        const sizeChanged = __classPrivateFieldGet(this, _MeshLineGeometry_previousPointCount, "f") !== pointCount;
+        if (!__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f") || sizeChanged) {
+            __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_makeNewBuffers).call(this, pointCount);
         }
-        addSegment(points.length - 2, points.at(-2), points.at(-1), points.at(-1));
-        this.setAttribute("position", new BufferAttribute(position, 3));
-        this.setAttribute("endPosition", new BufferAttribute(endPosition, 3));
-        this.setAttribute("nextPosition", new BufferAttribute(nextPosition, 3));
-        this.setAttribute("textureCoords", new BufferAttribute(textureCoords, 1));
-        this.setIndex(new BufferAttribute(indices, 1));
+        __classPrivateFieldSet(this, _MeshLineGeometry_previousPointCount, pointCount, "f");
+        let lengths = new Float32Array(this.points.length);
+        lengths[0] = 0;
+        for (let i = 0; i < this.points.length - 2; i++) {
+            const position = points[i];
+            const endPosition = points[i + 1];
+            const nextPosition = points[i + 2];
+            const previousLength = lengths[i];
+            if (position === undefined ||
+                endPosition === undefined ||
+                nextPosition === undefined ||
+                previousLength === undefined) {
+                throw new Error("point missing");
+            }
+            lengths[i + 1] =
+                previousLength +
+                    Math.pow((Math.pow((position.x - endPosition.x), 2) +
+                        Math.pow((position.y - endPosition.y), 2) +
+                        Math.pow((position.z - endPosition.z), 2)), 0.5);
+            __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_addSegment).call(this, i, position, endPosition, nextPosition);
+        }
+        const firstPoint = points.at(0);
+        const lastPoint = points.at(-1);
+        if (firstPoint === undefined || lastPoint === undefined) {
+            throw new Error("invalid endpoints");
+        }
+        let nextPosition;
+        if (new Vector3().subVectors(firstPoint, lastPoint).length() < 0.001) {
+            nextPosition = points.at(1);
+        }
+        else {
+            nextPosition = points.at(-1);
+        }
+        const position = points.at(-2);
+        const endPosition = points.at(-1);
+        const previousLength = lengths.at(-2);
+        if (position === undefined ||
+            endPosition === undefined ||
+            nextPosition === undefined ||
+            previousLength === undefined) {
+            throw new Error("point missing");
+        }
+        lengths[this.points.length - 1] =
+            previousLength +
+                Math.pow((Math.pow((position.x - endPosition.x), 2) +
+                    Math.pow((position.y - endPosition.y), 2) +
+                    Math.pow((position.z - endPosition.z), 2)), 0.5);
+        __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_addSegment).call(this, points.length - 2, position, endPosition, nextPosition);
+        const totalLength = lengths.at(-1);
+        if (totalLength === undefined) {
+            throw new Error("Invalid length");
+        }
+        for (let i = 0; i < this.points.length - 1; i++) {
+            const startLength = lengths[i];
+            const endLength = lengths[i + 1];
+            if (startLength === undefined || endLength === undefined) {
+                throw new Error("Invalid length");
+            }
+            const startProportion = startLength / totalLength;
+            const endProportion = endLength / totalLength;
+            const offset = 4 * i;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset] = startProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 1] = startProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 2] = endProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 3] = endProportion;
+        }
+        if (!__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f"))
+            throw new Error("missing attributes");
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endPosition.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords.needsUpdate = sizeChanged;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index.needsUpdate = sizeChanged;
+        if (updateBounds) {
+            this.computeBoundingSphere();
+            this.computeBoundingBox();
+        }
     }
     setVertexData(array, offset, x, y, z) {
         array[offset] = x;
@@ -888,23 +284,62 @@ class MeshLineGeometry extends BufferGeometry {
         array[offset + 5] = startIndex + 3;
     }
 }
+_MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new WeakMap(), _MeshLineGeometry_nextPosition = new WeakMap(), _MeshLineGeometry_textureCoords = new WeakMap(), _MeshLineGeometry_proportion = new WeakMap(), _MeshLineGeometry_indices = new WeakMap(), _MeshLineGeometry_attributes = new WeakMap(), _MeshLineGeometry_previousPointCount = new WeakMap(), _MeshLineGeometry_pointCount = new WeakMap(), _MeshLineGeometry_instances = new WeakSet(), _MeshLineGeometry_addSegment = function _MeshLineGeometry_addSegment(index, start, end, next) {
+    let x, y, z;
+    const vertexOffset = 12 * index;
+    ({ x, y, z } = start);
+    this.setVertexData(__classPrivateFieldGet(this, _MeshLineGeometry_position, "f"), vertexOffset, x, y, z);
+    ({ x, y, z } = end);
+    this.setVertexData(__classPrivateFieldGet(this, _MeshLineGeometry_endPosition, "f"), vertexOffset, x, y, z);
+    ({ x, y, z } = next);
+    this.setVertexData(__classPrivateFieldGet(this, _MeshLineGeometry_nextPosition, "f"), vertexOffset, x, y, z);
+    const textureOffset = 4 * index;
+    this.setTextureCoords(__classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f"), textureOffset);
+    const indexOffset = 6 * index;
+    const nextIndex = 4 * index;
+    this.setIndices(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), indexOffset, nextIndex);
+}, _MeshLineGeometry_makeNewBuffers = function _MeshLineGeometry_makeNewBuffers(pointCount) {
+    this.dispose();
+    const rectCount = pointCount - 1;
+    __classPrivateFieldSet(this, _MeshLineGeometry_position, new Float32Array(12 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_endPosition, new Float32Array(12 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_nextPosition, new Float32Array(12 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_textureCoords, new Int32Array(4 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_proportion, new Float32Array(4 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_indices, new Uint16Array(6 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_attributes, {
+        position: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_position, "f"), 3),
+        endPosition: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_endPosition, "f"), 3),
+        nextPosition: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_nextPosition, "f"), 3),
+        textureCoords: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f"), 1),
+        proportion: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f"), 1),
+        index: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), 1),
+    }, "f");
+    this.setAttribute("position", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position);
+    this.setAttribute("endPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endPosition);
+    this.setAttribute("nextPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition);
+    this.setAttribute("textureCoords", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords);
+    this.setAttribute("proportion", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion);
+    this.setIndex(__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index);
+};
+
 class MeshLineMaterial extends THREE.ShaderMaterial {
-    constructor() {
+    constructor(parameters) {
         super({
             uniforms: Object.assign({}, THREE.UniformsLib.fog, {
-                color: { value: new THREE.Vector3(0.0, 0.0, 1.0) },
+                color: { value: new THREE.Color(0x0000ff) },
                 opacity: { value: 1 },
                 resolution: { value: GeometryResolution },
                 unitsPerPixel: { value: 8 / GeometryResolution.y },
-                pixelWidth: { value: 35 * window.devicePixelRatio },
+                pixelWidth: { value: 4 * window.devicePixelRatio },
+                visibility: { value: 1 },
             }),
             vertexShader: THREE.ShaderChunk.eulertour_meshline_vert,
             fragmentShader: THREE.ShaderChunk.eulertour_meshline_frag,
             transparent: true,
-            opacity: 0.5,
         });
         Object.defineProperties(this, {
-            fogColor: {
+            opacity: {
                 enumerable: true,
                 get: () => {
                     return this.uniforms.opacity.value;
@@ -913,22 +348,38 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
                     this.uniforms.opacity.value = value;
                 },
             },
+            width: {
+                enumerable: true,
+                get: () => {
+                    return this.uniforms.pixelWidth.value * window.devicePixelRatio;
+                },
+                set: (value) => {
+                    this.uniforms.pixelWidth.value = value * window.devicePixelRatio;
+                },
+            },
+            color: {
+                enumerable: true,
+                get: () => {
+                    return this.uniforms.color.value;
+                },
+                set: (value) => {
+                    this.uniforms.color.value = value;
+                },
+            },
+            visibility: {
+                enumerable: true,
+                get: () => {
+                    return this.uniforms.visibility.value;
+                },
+                set: (value) => {
+                    this.uniforms.visibility.value = value;
+                },
+            },
         });
+        this.setValues(parameters);
     }
 }
 
-class MeshLine extends THREE.Mesh {
-    constructor() {
-        const geometry = new MeshLineGeometry([
-            new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(1, 0, 0),
-            new THREE.Vector3(2, 2, 0),
-            new THREE.Vector3(0, 3, 0),
-        ]);
-        const material = new MeshLineMaterial();
-        super(geometry, material);
-    }
-}
 const GeometryResolution = new THREE.Vector2();
 const getFillGeometry = (points) => {
     const shape = new THREE.Shape();
@@ -940,7 +391,7 @@ const getFillGeometry = (points) => {
     return new THREE.ShapeGeometry(shape);
 };
 class Shape extends THREE.Group {
-    constructor(points, { strokeColor = new THREE.Color(0x000000), strokeOpacity = 1.0, strokeWidth = 4 * PIXELS_TO_COORDS, stroke = true, fillColor = new THREE.Color(0xfffaf0), fillOpacity = 1.0, fill = false, } = {}) {
+    constructor(points, { strokeColor = new THREE.Color(0x000000), strokeOpacity = 1.0, strokeWidth = 8, stroke = true, fillColor = new THREE.Color(0xfffaf0), fillOpacity = 1.0, fill = false, } = {}) {
         super();
         const fillGeometry = getFillGeometry(points);
         const fillMaterial = new THREE.MeshBasicMaterial({
@@ -954,18 +405,15 @@ class Shape extends THREE.Group {
         if (this.fillVisible) {
             this.add(this.fill);
         }
-        const strokeGeometry = new MeshLine();
+        const strokeGeometry = new MeshLineGeometry();
         strokeGeometry.setPoints(points);
-        const strokeMaterial = new MeshLineMaterial$1({
+        const strokeMaterial = new MeshLineMaterial({
             color: strokeColor,
             opacity: strokeOpacity,
-            lineWidth: strokeWidth,
+            width: strokeWidth,
             transparent: true,
-            polygonOffset: true,
         });
-        strokeMaterial.uniforms.resolution.value = GeometryResolution;
         this.stroke = new THREE.Mesh(strokeGeometry, strokeMaterial);
-        this.stroke.raycast = MeshLineRaycast;
         this.strokeVisible = stroke;
         if (this.strokeVisible) {
             this.add(this.stroke);
@@ -973,7 +421,7 @@ class Shape extends THREE.Group {
         this.curveEndIndices = this.getCurveEndIndices();
     }
     get points() {
-        return this.stroke.geometry._points;
+        return this.stroke.geometry.points;
     }
     curve(curveIndex, worldTransform = true) {
         const curveEndIndices = this.curveEndIndices[curveIndex];
@@ -989,7 +437,7 @@ class Shape extends THREE.Group {
         return this.curveEndIndices.length;
     }
     getCurveEndIndices() {
-        const points = this.stroke.geometry._points;
+        const points = this.stroke.geometry.points;
         const indices = [];
         for (let i = 0; i < points.length - 1; i++) {
             indices.push([i, i + 1]);
@@ -1170,7 +618,8 @@ Shape.jsonToStyle = (styleJson) => {
     };
 };
 class Line extends Shape {
-    constructor(start, end, config = { transformCenter: true }) {
+    constructor(start, end, config = {}) {
+        config = Object.assign({ transformCenter: false }, config);
         let lineStart, lineEnd;
         const strokeCenter = new THREE.Vector3()
             .addVectors(start, end)
@@ -1323,7 +772,8 @@ class Point extends Circle {
     }
 }
 class Polygon extends Shape {
-    constructor(points, config = { transformCenter: true }) {
+    constructor(points, config = {}) {
+        config = Object.assign({ transformCenter: false }, config);
         if (config.transformCenter) {
             const min = new THREE.Vector3(Infinity, Infinity, Infinity);
             const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
@@ -1459,18 +909,17 @@ const shapeFromJson = (json) => {
 };
 
 var geometry = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	Arc: Arc,
-	Circle: Circle,
-	GeometryResolution: GeometryResolution,
-	Line: Line,
-	MeshLine: MeshLine,
-	Point: Point,
-	Polygon: Polygon,
-	Rectangle: Rectangle,
-	Shape: Shape,
-	Square: Square,
-	shapeFromJson: shapeFromJson
+    __proto__: null,
+    Arc: Arc,
+    Circle: Circle,
+    GeometryResolution: GeometryResolution,
+    Line: Line,
+    Point: Point,
+    Polygon: Polygon,
+    Rectangle: Rectangle,
+    Shape: Shape,
+    Square: Square,
+    shapeFromJson: shapeFromJson
 });
 
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
@@ -1539,15 +988,21 @@ class Animation {
     }
 }
 const Shift = (object, direction) => {
-    return new Animation((elapsedTime, deltaTime) => {
+    return new Animation((_elapsedTime, deltaTime) => {
         object.position.add(direction.clone().multiplyScalar(deltaTime));
+    });
+};
+const Draw = (object) => {
+    return new Animation((elapsedTime) => {
+        object.stroke.material.visibility = elapsedTime;
     });
 };
 
 var animation = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	Animation: Animation,
-	Shift: Shift
+    __proto__: null,
+    Animation: Animation,
+    Draw: Draw,
+    Shift: Shift
 });
 
 const COLOR_SPACE_SVG = SRGBColorSpace;
@@ -46429,9 +45884,9 @@ const textFromJson = (json) => {
 };
 
 var text = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	Text: Text,
-	textFromJson: textFromJson
+    __proto__: null,
+    Text: Text,
+    textFromJson: textFromJson
 });
 
 class Scene {

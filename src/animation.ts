@@ -14,7 +14,7 @@ const modulate = (t, dt) => {
 };
 
 class Animation {
-  constructor(func) {
+  constructor(func: (elapsedTime: number, deltaTime: number) => void) {
     this.func = func;
     this.runtime = 1;
     this.reset();
@@ -45,9 +45,15 @@ class Animation {
 }
 
 const Shift = (object, direction) => {
-  return new Animation((elapsedTime, deltaTime) => {
+  return new Animation((_elapsedTime, deltaTime) => {
     object.position.add(direction.clone().multiplyScalar(deltaTime));
   });
 };
 
-export { Animation, Shift };
+const Draw = (object) => {
+  return new Animation((elapsedTime) => {
+    object.stroke.material.visibility = elapsedTime;
+  });
+};
+
+export { Animation, Shift, Draw };
