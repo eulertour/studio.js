@@ -2,6 +2,12 @@ import * as THREE from "three";
 import { PIXELS_TO_COORDS } from "./constants";
 import * as Geometry from "./geometry";
 
+const BUFFER = 0.5;
+const RIGHT = new THREE.Vector3(1, 0, 0);
+const LEFT = new THREE.Vector3(-1, 0, 0);
+const UP = new THREE.Vector3(0, 1, 0);
+const DOWN = new THREE.Vector3(0, -1, 0);
+
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 
 const getFrameAttributes = (aspectRatio: number, height: number) => {
@@ -44,4 +50,23 @@ const setupCanvas = (
   return [camera, renderer];
 };
 
-export { getFrameAttributes, setupCanvas, clamp };
+const moveToRightOf = (object1, object2, distance = 0.5) => {
+  const object2Size = new THREE.Vector3();
+  const object1Box = new THREE.Box3().setFromObject(object1);
+  const object2Box = new THREE.Box3().setFromObject(object2);
+  object2Box.getSize(object2Size);
+
+  object2.position.x = object1Box.max.x + object2Size.x / 2 + distance;
+};
+
+export {
+  getFrameAttributes,
+  setupCanvas,
+  clamp,
+  moveToRightOf,
+  BUFFER,
+  RIGHT,
+  LEFT,
+  UP,
+  DOWN,
+};

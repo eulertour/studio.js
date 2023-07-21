@@ -13,6 +13,7 @@ export default class Scene {
   fps = 60;
   startTime = 0;
   endTime = Infinity;
+  loopAnimations: Array<Animation> = [];
 
   constructor(
     public scene: THREE.Scene,
@@ -35,7 +36,8 @@ export default class Scene {
     this.currentAnimationIndex = 0;
     this.deltaTime = 0;
     this.elapsedTime = 0;
-    this.animations.forEach((animation) => animation.reset());
+    this.loopAnimations = [];
+    this.loopAnimations.forEach((animation, i) => animation.reset());
     this.scene.traverse((child) => {
       if (child.dispose !== undefined) {
         child.dispose();
@@ -54,31 +56,44 @@ export default class Scene {
     this.firstFrame = true;
   }
 
-  handleAnimations(deltaTime) {
-    if (this.currentAnimationIndex >= this.animations.length) {
-      return;
-    }
-
-    let currentAnimation = this.animations[this.currentAnimationIndex];
-    currentAnimation.update(deltaTime);
-    if (!currentAnimation.finished) {
-      return;
-    }
-
-    this.currentAnimationIndex += 1;
-    if (this.currentAnimationIndex >= this.animations.length) {
-      return;
-    }
-
-    let nextAnimation = this.animations[this.currentAnimationIndex];
-    nextAnimation.update(currentAnimation.excessTime);
-  }
-
   tick(deltaTime: number, render = true) {
     if (this.firstFrame) {
       this.deltaTime = 0;
       this.elapsedTime = 0;
       this.firstFrame = false;
+      let currentEndTime = 0;
+      this.animations.forEach((o) => {
+        if (o instanceof Animation) {
+          const animation = o;
+          animation.setScene(this.scene);
+          animation.startTime = currentEndTime;
+          animation.endTime = currentEndTime + animation.runTime;
+          animation.addBefore(() => {});
+          animation.addAfter(() => {});
+          animation.parent = this.scene;
+          this.loopAnimations.push(animation);
+          currentEndTime = animation.endTime;
+        } else if (typeof o === "object") {
+          const animationArray = o.animations;
+          const runTime = o.runTime || 1;
+          const scale = o.scale || 1;
+          const before = o.before || (() => {});
+          const after = o.after || (() => {});
+          const parent = o.parent || this.scene;
+          animationArray.forEach((animation) => {
+            animation.setScene(this.scene);
+            animation.startTime = currentEndTime;
+            animation.endTime = currentEndTime + runTime * scale;
+            animation.addBefore(before);
+            animation.addAfter(after);
+            animation.parent = parent;
+            animation.runTime = runTime;
+            animation.scale = scale;
+            this.loopAnimations.push(...animationArray);
+          });
+          currentEndTime = animationArray[0].endTime;
+        }
+      });
     } else {
       this.deltaTime = deltaTime;
       this.elapsedTime += deltaTime;
@@ -86,7 +101,9 @@ export default class Scene {
 
     try {
       this.loop(this.elapsedTime, this.deltaTime);
-      this.handleAnimations(this.deltaTime);
+      this.loopAnimations.forEach((animation) =>
+        animation.update(this.elapsedTime)
+      );
     } catch (err: any) {
       this.renderer.setAnimationLoop(null);
       throw new Error(`Error executing user animation: ${err.toString()}`);

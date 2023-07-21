@@ -17,7 +17,7 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
         resolution: { value: GeometryResolution },
         unitsPerPixel: { value: 8 / GeometryResolution.y },
         pixelWidth: { value: 4 * window.devicePixelRatio },
-        visibility: { value: 1 },
+        drawRange: { value: new THREE.Vector2(0, 1) },
       }),
       vertexShader: THREE.ShaderChunk.eulertour_meshline_vert,
       fragmentShader: THREE.ShaderChunk.eulertour_meshline_frag,
@@ -52,13 +52,13 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
           this.uniforms.color.value = value;
         },
       },
-      visibility: {
+      drawRange: {
         enumerable: true,
         get: () => {
-          return this.uniforms.visibility.value;
+          return this.uniforms.drawRange.value;
         },
         set: (value) => {
-          this.uniforms.visibility.value = value;
+          this.uniforms.drawRange.value = value;
         },
       },
     });

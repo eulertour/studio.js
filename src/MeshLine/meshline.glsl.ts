@@ -76,7 +76,7 @@ ShaderChunk["eulertour_meshline_frag"] = /*glsl*/ `
   uniform vec2 resolution;
   uniform float pixelWidth;
   uniform float opacity;
-  uniform float visibility;
+  uniform vec2 drawRange;
 
   varying vec2 vStartFragment;
   varying vec2 vEndFragment;
@@ -116,8 +116,8 @@ ShaderChunk["eulertour_meshline_frag"] = /*glsl*/ `
     bool hasNext = vNextFragment != vEndFragment;
     if (hasNext && segmentCoversFragment(gl_FragCoord.xy, vEndFragment, vNextFragment)) discard;
     if (!segmentCoversFragment(gl_FragCoord.xy, vStartFragment, vEndFragment)) discard;
-    float drawOpacity = vProportion <= visibility ? opacity : 0.;
-    gl_FragColor = vec4(color, drawOpacity);
+    if (vProportion < drawRange[0] || drawRange[1] < vProportion) discard;
+    gl_FragColor = vec4(color, opacity);
 
     ${ShaderChunk.fog_fragment}
 	}
