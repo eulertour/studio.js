@@ -14,7 +14,7 @@ export default class MeshLineGeometry extends BufferGeometry {
   #position = new Float32Array();
   #endPosition = new Float32Array();
   #nextPosition = new Float32Array();
-  #textureCoords = new Int32Array();
+  #textureCoords = new Float32Array();
   #proportion = new Float32Array();
   #indices = new Uint16Array();
 
@@ -162,7 +162,7 @@ export default class MeshLineGeometry extends BufferGeometry {
     this.#position = new Float32Array(12 * rectCount);
     this.#endPosition = new Float32Array(12 * rectCount);
     this.#nextPosition = new Float32Array(12 * rectCount);
-    this.#textureCoords = new Int32Array(4 * rectCount);
+    this.#textureCoords = new Float32Array(4 * rectCount);
     this.#proportion = new Float32Array(4 * rectCount);
     this.#indices = new Uint16Array(6 * rectCount);
 

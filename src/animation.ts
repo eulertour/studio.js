@@ -47,7 +47,7 @@ class Animation {
 
     let deltaTime;
     if (this.prevUpdateTime === undefined) {
-      this.beforeFunc();
+      this.beforeFunc && this.beforeFunc();
       deltaTime = worldTime - this.startTime;
     } else if (worldTime > this.endTime) {
       deltaTime = this.endTime - this.prevUpdateTime;
@@ -66,7 +66,7 @@ class Animation {
 
     if (worldTime >= this.endTime) {
       this.finished = true;
-      this.afterFunc();
+      this.afterFunc && this.afterFunc();
     }
   }
 

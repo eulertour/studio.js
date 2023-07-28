@@ -2,6 +2,9 @@ import * as THREE from "three";
 import { GeometryResolution } from "../geometry";
 import type { ShaderMaterialParameters } from "three";
 
+const devicePixelRatio =
+  typeof window !== "undefined" ? window.devicePixelRatio : 1;
+
 export default class MeshLineMaterial extends THREE.ShaderMaterial {
   constructor(
     parameters: ShaderMaterialParameters & {
@@ -16,7 +19,7 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
         opacity: { value: 1 },
         resolution: { value: GeometryResolution },
         unitsPerPixel: { value: 8 / GeometryResolution.y },
-        pixelWidth: { value: 4 * window.devicePixelRatio },
+        pixelWidth: { value: 4 * devicePixelRatio },
         drawRange: { value: new THREE.Vector2(0, 1) },
       }),
       vertexShader: THREE.ShaderChunk.eulertour_meshline_vert,
@@ -37,10 +40,10 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
       width: {
         enumerable: true,
         get: () => {
-          return this.uniforms.pixelWidth.value * window.devicePixelRatio;
+          return this.uniforms.pixelWidth.value * devicePixelRatio;
         },
         set: (value) => {
-          this.uniforms.pixelWidth.value = value * window.devicePixelRatio;
+          this.uniforms.pixelWidth.value = value * devicePixelRatio;
         },
       },
       color: {

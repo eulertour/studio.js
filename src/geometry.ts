@@ -53,7 +53,6 @@ abstract class Shape extends THREE.Group {
       color: fillColor,
       opacity: fillOpacity,
       transparent: true,
-      polygonOffset: true,
     });
     this.fill = new THREE.Mesh(fillGeometry, fillMaterial);
 

@@ -4,15 +4,21 @@ import type { Style, StyleJson, Transform } from "./geometry.types";
 import tex2svg from "./mathjax";
 
 class Text extends THREE.Group {
-  constructor(public text: string) {
+  constructor(
+    public text: string,
+    config: { fillColor?: THREE.Color; fillOpacity?: number } = {}
+  ) {
     super();
 
+    config = Object.assign(
+      { fillColor: new THREE.Color("black"), fillOpacity: 1 },
+      config
+    );
     const material = new THREE.MeshBasicMaterial({
-      color: new THREE.Color("black"),
-      opacity: 1,
+      color: config.fillColor,
+      opacity: config.fillOpacity,
       transparent: true,
       side: THREE.DoubleSide,
-      polygonOffset: true,
     });
 
     let svgString = tex2svg(this.text);
@@ -49,11 +55,10 @@ class Text extends THREE.Group {
   }
 
   dispose() {
-    const group = this.children[0];
-    for (let shape of group.children) {
-      shape.geometry.dispose();
-    }
-    group.children[0].material.dispose();
+    this.traverse((child) => {
+      child.geometry?.dispose();
+      child.material?.dispose();
+    });
   }
 
   clone(recursive: boolean) {

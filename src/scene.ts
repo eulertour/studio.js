@@ -24,7 +24,9 @@ export default class Scene {
     scene.clear();
     const resolution = new THREE.Vector2();
     renderer.getSize(resolution);
-    resolution.multiplyScalar(window.devicePixelRatio);
+    if (typeof window !== "undefined") {
+      resolution.multiplyScalar(window.devicePixelRatio);
+    }
     Geometry.GeometryResolution.copy(resolution);
   }
 
@@ -84,13 +86,13 @@ export default class Scene {
             animation.setScene(this.scene);
             animation.startTime = currentEndTime;
             animation.endTime = currentEndTime + runTime * scale;
-            animation.addBefore(before);
-            animation.addAfter(after);
             animation.parent = parent;
             animation.runTime = runTime;
             animation.scale = scale;
             this.loopAnimations.push(...animationArray);
           });
+          animationArray.at(0).addBefore(before);
+          animationArray.at(-1).addAfter(after);
           currentEndTime = animationArray[0].endTime;
         }
       });

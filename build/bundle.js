@@ -36,8 +36,6 @@ ShaderChunk["eulertour_meshline_vert"] = `
   ${ShaderChunk.logdepthbuf_pars_vertex}
   ${ShaderChunk.fog_pars_vertex}
 
-  precision lowp int;
-
   // Passed by WebGLProgram
   // https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
   // uniform mat4 modelViewMatrix;
@@ -51,7 +49,7 @@ ShaderChunk["eulertour_meshline_vert"] = `
   // attribute vec3 position;
   attribute vec3 endPosition;
   attribute vec3 nextPosition;
-  attribute int textureCoords;
+  attribute float textureCoords;
   attribute float proportion;
 
   varying vec2 vStartFragment;
@@ -80,8 +78,9 @@ ShaderChunk["eulertour_meshline_vert"] = `
 
     vec2 segmentVec = normalize(vEndFragment - vStartFragment);
     vec2 segmentNormal = vec2(-segmentVec.y, segmentVec.x);
-    float startEnd = 2. * (float(textureCoords / 2) - 0.5);
-    float bottomTop = 2. * (float(textureCoords % 2) - 0.5);
+    float textureDivide = textureCoords / 2.;
+    float startEnd = 2. * (ceil(floor(textureDivide)) - 0.5);
+    float bottomTop = 2. * (ceil(fract(textureDivide)) - 0.5);
     segmentVec *= startEnd;
     segmentNormal *= bottomTop;
 
@@ -162,7 +161,7 @@ class MeshLineGeometry extends BufferGeometry {
         _MeshLineGeometry_position.set(this, new Float32Array());
         _MeshLineGeometry_endPosition.set(this, new Float32Array());
         _MeshLineGeometry_nextPosition.set(this, new Float32Array());
-        _MeshLineGeometry_textureCoords.set(this, new Int32Array());
+        _MeshLineGeometry_textureCoords.set(this, new Float32Array());
         _MeshLineGeometry_proportion.set(this, new Float32Array());
         _MeshLineGeometry_indices.set(this, new Uint16Array());
         _MeshLineGeometry_attributes.set(this, null);
@@ -304,7 +303,7 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
     __classPrivateFieldSet(this, _MeshLineGeometry_position, new Float32Array(12 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_endPosition, new Float32Array(12 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_nextPosition, new Float32Array(12 * rectCount), "f");
-    __classPrivateFieldSet(this, _MeshLineGeometry_textureCoords, new Int32Array(4 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_textureCoords, new Float32Array(4 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_proportion, new Float32Array(4 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_indices, new Uint16Array(6 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_attributes, {
@@ -323,6 +322,7 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
     this.setIndex(__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index);
 };
 
+const devicePixelRatio = typeof window !== "undefined" ? window.devicePixelRatio : 1;
 class MeshLineMaterial extends THREE.ShaderMaterial {
     constructor(parameters) {
         super({
@@ -331,7 +331,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
                 opacity: { value: 1 },
                 resolution: { value: GeometryResolution },
                 unitsPerPixel: { value: 8 / GeometryResolution.y },
-                pixelWidth: { value: 4 * window.devicePixelRatio },
+                pixelWidth: { value: 4 * devicePixelRatio },
                 drawRange: { value: new THREE.Vector2(0, 1) },
             }),
             vertexShader: THREE.ShaderChunk.eulertour_meshline_vert,
@@ -351,10 +351,10 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
             width: {
                 enumerable: true,
                 get: () => {
-                    return this.uniforms.pixelWidth.value * window.devicePixelRatio;
+                    return this.uniforms.pixelWidth.value * devicePixelRatio;
                 },
                 set: (value) => {
-                    this.uniforms.pixelWidth.value = value * window.devicePixelRatio;
+                    this.uniforms.pixelWidth.value = value * devicePixelRatio;
                 },
             },
             color: {
@@ -398,7 +398,6 @@ class Shape extends THREE.Group {
             color: fillColor,
             opacity: fillOpacity,
             transparent: true,
-            polygonOffset: true,
         });
         this.fill = new THREE.Mesh(fillGeometry, fillMaterial);
         this.fillVisible = fill;
@@ -927,6 +926,8 @@ const RIGHT = new THREE.Vector3(1, 0, 0);
 const LEFT = new THREE.Vector3(-1, 0, 0);
 const UP = new THREE.Vector3(0, 1, 0);
 const DOWN = new THREE.Vector3(0, -1, 0);
+const OUT = new THREE.Vector3(0, 0, 1);
+const IN = new THREE.Vector3(0, 0, -1);
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 const getFrameAttributes = (aspectRatio, height) => {
     const coordinateHeight = PIXELS_TO_COORDS * height;
@@ -954,22 +955,114 @@ const setupCanvas = (canvas, verticalResolution = 720) => {
     return [camera, renderer];
 };
 const moveToRightOf = (object1, object2, distance = 0.5) => {
-    const object2Size = new THREE.Vector3();
-    const object1Box = new THREE.Box3().setFromObject(object1);
-    const object2Box = new THREE.Box3().setFromObject(object2);
-    object2Box.getSize(object2Size);
-    object2.position.x = object1Box.max.x + object2Size.x / 2 + distance;
+    moveNextTo(object1, object2, RIGHT, distance);
+};
+const moveToLeftOf = (object1, object2, distance = 0.5) => {
+    moveNextTo(object1, object2, LEFT, distance);
+};
+const moveBelow = (object1, object2, distance = 0.5) => {
+    moveNextTo(object1, object2, DOWN, distance);
+};
+const furthestInDirection = (object, direction) => {
+    object.updateWorldMatrix(true, true);
+    let maxPoint = new THREE.Vector3();
+    let maxVal = -Infinity;
+    let worldPoint = new THREE.Vector3();
+    object.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+            const positionArray = child.geometry.attributes.position.array;
+            if (positionArray.length % 3 !== 0) {
+                throw new Error("Invalid position array length");
+            }
+            for (let i = 0; i < positionArray.length; i += 3) {
+                worldPoint
+                    .set(positionArray[i], positionArray[i + 1], positionArray[i + 2])
+                    .applyMatrix4(child.matrixWorld);
+                let dot = worldPoint.dot(direction);
+                if (dot > maxVal) {
+                    maxPoint.copy(worldPoint);
+                    maxVal = dot;
+                }
+            }
+            if (child.parent.constructor.name === "Line") {
+                const nextArray = child.geometry.attributes.nextPosition.array;
+                worldPoint
+                    .set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1))
+                    .applyMatrix4(child.matrixWorld);
+                let dot = worldPoint.dot(direction);
+                if (dot > maxVal) {
+                    maxPoint.copy(worldPoint);
+                    maxVal = dot;
+                }
+            }
+        }
+    });
+    return maxPoint;
+};
+const getCenter = (object) => {
+    object.updateWorldMatrix(true, true);
+    const min = new THREE.Vector3(Infinity, Infinity, Infinity);
+    const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+    let point = new THREE.Vector3();
+    let worldPoint = new THREE.Vector3();
+    object.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+            const positionArray = child.geometry.attributes.position.array;
+            if (positionArray.length % 3 !== 0) {
+                throw new Error("Invalid position array length");
+            }
+            for (let i = 0; i < positionArray.length; i += 3) {
+                point.set(positionArray[i], positionArray[i + 1], positionArray[i + 2]);
+                worldPoint.copy(point).applyMatrix4(child.matrixWorld);
+                min.min(worldPoint);
+                max.max(worldPoint);
+            }
+            if (child.parent.constructor.name === "Line") {
+                const nextArray = child.geometry.attributes.nextPosition.array;
+                point.set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1));
+                worldPoint.copy(point).applyMatrix4(child.matrixWorld);
+                min.min(worldPoint);
+                max.max(worldPoint);
+            }
+        }
+    });
+    worldPoint.addVectors(min, max).divideScalar(2);
+    return worldPoint.addVectors(min, max).divideScalar(2);
+};
+const moveNextTo = (object1, object2, direction, distance = 0.5) => {
+    const normalizedDirection = direction.clone().normalize();
+    const obj1Edge = furthestInDirection(object1, normalizedDirection);
+    const obj2Opposite = furthestInDirection(object2, new THREE.Vector3().copy(normalizedDirection).negate());
+    const obj1Center = getCenter(object1);
+    const obj1Offset = new THREE.Vector3()
+        .subVectors(obj1Edge, obj1Center)
+        .projectOnVector(normalizedDirection);
+    const obj2Center = getCenter(object2);
+    const obj2Offset = new THREE.Vector3()
+        .subVectors(obj2Center, obj2Opposite)
+        .projectOnVector(normalizedDirection);
+    const newPosition = new THREE.Vector3()
+        .copy(obj1Center)
+        .add(obj1Offset)
+        .add(obj2Offset)
+        .add(normalizedDirection.multiplyScalar(distance));
+    object2.position.copy(newPosition);
 };
 
 var utils = /*#__PURE__*/Object.freeze({
     __proto__: null,
     BUFFER: BUFFER,
     DOWN: DOWN,
+    IN: IN,
     LEFT: LEFT,
+    OUT: OUT,
     RIGHT: RIGHT,
     UP: UP,
     clamp: clamp,
     getFrameAttributes: getFrameAttributes,
+    moveBelow: moveBelow,
+    moveNextTo: moveNextTo,
+    moveToLeftOf: moveToLeftOf,
     moveToRightOf: moveToRightOf,
     setupCanvas: setupCanvas
 });
@@ -1005,7 +1098,7 @@ class Animation {
         }
         let deltaTime;
         if (this.prevUpdateTime === undefined) {
-            this.beforeFunc();
+            this.beforeFunc && this.beforeFunc();
             deltaTime = worldTime - this.startTime;
         }
         else if (worldTime > this.endTime) {
@@ -1019,7 +1112,7 @@ class Animation {
         this.func(...modulate(this.elapsedSinceStart / (this.scale * this.runTime), deltaTime / (this.scale * this.runTime)).map((t) => t * this.runTime));
         if (worldTime >= this.endTime) {
             this.finished = true;
-            this.afterFunc();
+            this.afterFunc && this.afterFunc();
         }
     }
     addBefore(before) {
@@ -45847,15 +45940,15 @@ const tex2svg = (tex) => {
 };
 
 class Text extends THREE.Group {
-    constructor(text) {
+    constructor(text, config = {}) {
         super();
         this.text = text;
+        config = Object.assign({ fillColor: new THREE.Color("black"), fillOpacity: 1 }, config);
         const material = new THREE.MeshBasicMaterial({
-            color: new THREE.Color("black"),
-            opacity: 1,
+            color: config.fillColor,
+            opacity: config.fillOpacity,
             transparent: true,
             side: THREE.DoubleSide,
-            polygonOffset: true,
         });
         let svgString = tex2svg(this.text);
         const emptyPath = 'd=""';
@@ -45885,11 +45978,11 @@ class Text extends THREE.Group {
         this.add(group);
     }
     dispose() {
-        const group = this.children[0];
-        for (let shape of group.children) {
-            shape.geometry.dispose();
-        }
-        group.children[0].material.dispose();
+        this.traverse((child) => {
+            var _a, _b;
+            (_a = child.geometry) === null || _a === void 0 ? void 0 : _a.dispose();
+            (_b = child.material) === null || _b === void 0 ? void 0 : _b.dispose();
+        });
     }
     clone(recursive) {
         if (recursive === false) {
@@ -46001,7 +46094,9 @@ class Scene {
         scene.clear();
         const resolution = new THREE.Vector2();
         renderer.getSize(resolution);
-        resolution.multiplyScalar(window.devicePixelRatio);
+        if (typeof window !== "undefined") {
+            resolution.multiplyScalar(window.devicePixelRatio);
+        }
         GeometryResolution.copy(resolution);
     }
     loop(time, deltaTime) { }
@@ -46055,13 +46150,13 @@ class Scene {
                         animation.setScene(this.scene);
                         animation.startTime = currentEndTime;
                         animation.endTime = currentEndTime + runTime * scale;
-                        animation.addBefore(before);
-                        animation.addAfter(after);
                         animation.parent = parent;
                         animation.runTime = runTime;
                         animation.scale = scale;
                         this.loopAnimations.push(...animationArray);
                     });
+                    animationArray.at(0).addBefore(before);
+                    animationArray.at(-1).addAfter(after);
                     currentEndTime = animationArray[0].endTime;
                 }
             });

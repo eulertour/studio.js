@@ -4,8 +4,6 @@ ShaderChunk["eulertour_meshline_vert"] = /*glsl*/ `
   ${ShaderChunk.logdepthbuf_pars_vertex}
   ${ShaderChunk.fog_pars_vertex}
 
-  precision lowp int;
-
   // Passed by WebGLProgram
   // https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
   // uniform mat4 modelViewMatrix;
@@ -19,7 +17,7 @@ ShaderChunk["eulertour_meshline_vert"] = /*glsl*/ `
   // attribute vec3 position;
   attribute vec3 endPosition;
   attribute vec3 nextPosition;
-  attribute int textureCoords;
+  attribute float textureCoords;
   attribute float proportion;
 
   varying vec2 vStartFragment;
@@ -48,8 +46,9 @@ ShaderChunk["eulertour_meshline_vert"] = /*glsl*/ `
 
     vec2 segmentVec = normalize(vEndFragment - vStartFragment);
     vec2 segmentNormal = vec2(-segmentVec.y, segmentVec.x);
-    float startEnd = 2. * (float(textureCoords / 2) - 0.5);
-    float bottomTop = 2. * (float(textureCoords % 2) - 0.5);
+    float textureDivide = textureCoords / 2.;
+    float startEnd = 2. * (ceil(floor(textureDivide)) - 0.5);
+    float bottomTop = 2. * (ceil(fract(textureDivide)) - 0.5);
     segmentVec *= startEnd;
     segmentNormal *= bottomTop;
 
