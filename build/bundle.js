@@ -41,8 +41,7 @@ ShaderChunk["eulertour_meshline_vert"] = `
   // uniform mat4 modelViewMatrix;
   // uniform mat4 projectionMatrix;
   uniform vec2 resolution;
-  uniform float unitsPerPixel;
-  uniform float pixelWidth;
+  uniform float unitWidth;
 
   // Passed by WebGLProgram
   // https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
@@ -84,7 +83,7 @@ ShaderChunk["eulertour_meshline_vert"] = `
     segmentVec *= startEnd;
     segmentNormal *= bottomTop;
 
-    vec2 fragmentOffset = 0.5 * pixelWidth * unitsPerPixel * (segmentVec + segmentNormal);
+    vec2 fragmentOffset = 0.5 * unitWidth * (segmentVec + segmentNormal);
     vec2 offset = (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
 
     gl_Position = start * eq(startEnd, -1.) + end * eq(startEnd, 1.);
@@ -102,9 +101,10 @@ ShaderChunk["eulertour_meshline_frag"] = `
 
   uniform vec3 color;
   uniform vec2 resolution;
-  uniform float pixelWidth;
+  uniform float unitWidth;
   uniform float opacity;
   uniform vec2 drawRange;
+  uniform float pixelsPerUnit;
 
   varying vec2 vStartFragment;
   varying vec2 vEndFragment;
@@ -116,6 +116,7 @@ ShaderChunk["eulertour_meshline_frag"] = `
   }
 
   bool segmentCoversFragment(vec2 fragment, vec2 startFragment, vec2 endFragment) {
+    float pixelWidth = unitWidth * pixelsPerUnit;
     float halfWidthSquared = 0.25 * pixelWidth * pixelWidth;
 
     vec2 segmentVec = endFragment - startFragment;
@@ -322,7 +323,6 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
     this.setIndex(__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index);
 };
 
-const devicePixelRatio = typeof window !== "undefined" ? window.devicePixelRatio : 1;
 class MeshLineMaterial extends THREE.ShaderMaterial {
     constructor(parameters) {
         super({
@@ -330,8 +330,8 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
                 color: { value: new THREE.Color(0x0000ff) },
                 opacity: { value: 1 },
                 resolution: { value: GeometryResolution },
-                unitsPerPixel: { value: 8 / GeometryResolution.y },
-                pixelWidth: { value: 4 * devicePixelRatio },
+                pixelsPerUnit: { value: GeometryResolution.y / 8 },
+                unitWidth: { value: 1 / 10 },
                 drawRange: { value: new THREE.Vector2(0, 1) },
             }),
             vertexShader: THREE.ShaderChunk.eulertour_meshline_vert,
@@ -351,10 +351,10 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
             width: {
                 enumerable: true,
                 get: () => {
-                    return this.uniforms.pixelWidth.value * devicePixelRatio;
+                    return this.uniforms.unitWidth.value * 8 * 10;
                 },
                 set: (value) => {
-                    this.uniforms.pixelWidth.value = value * devicePixelRatio;
+                    this.uniforms.unitWidth.value = value / 8 / 10;
                 },
             },
             color: {
@@ -939,9 +939,40 @@ const getFrameAttributes = (aspectRatio, height) => {
         coordinateWidth: coordinateHeight * aspectRatio,
     };
 };
-const setupCanvas = (canvas, verticalResolution = 720) => {
-    const frameConfig = getFrameAttributes(16 / 9, 450);
-    const camera = new THREE.OrthographicCamera((-PIXELS_TO_COORDS * frameConfig.width) / 2, (PIXELS_TO_COORDS * frameConfig.width) / 2, (PIXELS_TO_COORDS * frameConfig.height) / 2, (-PIXELS_TO_COORDS * frameConfig.height) / 2, 1, 11);
+const isWidthSetup = (config) => {
+    return ("aspectRatio" in config &&
+        "pixelWidth" in config &&
+        "coordinateWidth" in config);
+};
+const isHeightSetup = (config) => {
+    return ("aspectRatio" in config &&
+        "pixelHeight" in config &&
+        "coordinateHeight" in config);
+};
+const setupCanvas = (canvas, config = {
+    aspectRatio: 16 / 9,
+    pixelHeight: 720,
+    coordinateHeight: 8,
+}) => {
+    let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
+    if (isWidthSetup(config)) {
+        aspectRatio = config.aspectRatio;
+        pixelWidth = config.pixelWidth;
+        coordinateWidth = config.coordinateWidth;
+        pixelHeight = pixelWidth / aspectRatio;
+        coordinateHeight = coordinateWidth / aspectRatio;
+    }
+    else if (isHeightSetup(config)) {
+        aspectRatio = config.aspectRatio;
+        pixelHeight = config.pixelHeight;
+        coordinateHeight = config.coordinateHeight;
+        pixelWidth = pixelHeight * aspectRatio;
+        coordinateWidth = coordinateHeight * aspectRatio;
+    }
+    else {
+        throw new Error("Invalid config:", config);
+    }
+    const camera = new THREE.OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
     camera.position.z = 6;
     const renderer = new THREE.WebGLRenderer({
         canvas,
@@ -949,8 +980,7 @@ const setupCanvas = (canvas, verticalResolution = 720) => {
     });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setClearColor(new THREE.Color(0xfffaf0));
-    const rendererConfig = getFrameAttributes(16 / 9, verticalResolution);
-    renderer.setSize(rendererConfig.width, rendererConfig.height, false);
+    renderer.setSize(pixelWidth, pixelHeight, false);
     renderer.getSize(GeometryResolution);
     return [camera, renderer];
 };

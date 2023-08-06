@@ -23,16 +23,64 @@ const getFrameAttributes = (aspectRatio: number, height: number) => {
   };
 };
 
+interface WidthSetupConfig {
+  aspectRatio: number;
+  pixelWidth: number;
+  coordinateWidth: number;
+}
+
+const isWidthSetup = (config: object): config is WidthSetupConfig => {
+  return (
+    "aspectRatio" in config &&
+    "pixelWidth" in config &&
+    "coordinateWidth" in config
+  );
+};
+
+interface HeightSetupConfig {
+  aspectRatio: number;
+  pixelHeight: number;
+  coordinateHeight: number;
+}
+
+const isHeightSetup = (config: object): config is HeightSetupConfig => {
+  return (
+    "aspectRatio" in config &&
+    "pixelHeight" in config &&
+    "coordinateHeight" in config
+  );
+};
+
 const setupCanvas = (
   canvas: HTMLCanvasElement,
-  verticalResolution = 720
+  config: WidthSetupConfig | HeightSetupConfig = {
+    aspectRatio: 16 / 9,
+    pixelHeight: 720,
+    coordinateHeight: 8,
+  }
 ): [THREE.Camera, THREE.WebGLRenderer] => {
-  const frameConfig = getFrameAttributes(16 / 9, 450);
+  let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
+  if (isWidthSetup(config)) {
+    aspectRatio = config.aspectRatio;
+    pixelWidth = config.pixelWidth;
+    coordinateWidth = config.coordinateWidth;
+    pixelHeight = pixelWidth / aspectRatio;
+    coordinateHeight = coordinateWidth / aspectRatio;
+  } else if (isHeightSetup(config)) {
+    aspectRatio = config.aspectRatio;
+    pixelHeight = config.pixelHeight;
+    coordinateHeight = config.coordinateHeight;
+    pixelWidth = pixelHeight * aspectRatio;
+    coordinateWidth = coordinateHeight * aspectRatio;
+  } else {
+    throw new Error("Invalid config:", config);
+  }
+
   const camera = new THREE.OrthographicCamera(
-    (-PIXELS_TO_COORDS * frameConfig.width) / 2,
-    (PIXELS_TO_COORDS * frameConfig.width) / 2,
-    (PIXELS_TO_COORDS * frameConfig.height) / 2,
-    (-PIXELS_TO_COORDS * frameConfig.height) / 2,
+    -coordinateWidth / 2,
+    coordinateWidth / 2,
+    coordinateHeight / 2,
+    -coordinateHeight / 2,
     1,
     11
   );
@@ -45,8 +93,7 @@ const setupCanvas = (
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setClearColor(new THREE.Color(0xfffaf0));
 
-  const rendererConfig = getFrameAttributes(16 / 9, verticalResolution);
-  renderer.setSize(rendererConfig.width, rendererConfig.height, false);
+  renderer.setSize(pixelWidth, pixelHeight, false);
   renderer.getSize(Geometry.GeometryResolution);
 
   return [camera, renderer];

@@ -9,8 +9,7 @@ ShaderChunk["eulertour_meshline_vert"] = /*glsl*/ `
   // uniform mat4 modelViewMatrix;
   // uniform mat4 projectionMatrix;
   uniform vec2 resolution;
-  uniform float unitsPerPixel;
-  uniform float pixelWidth;
+  uniform float unitWidth;
 
   // Passed by WebGLProgram
   // https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
@@ -52,7 +51,7 @@ ShaderChunk["eulertour_meshline_vert"] = /*glsl*/ `
     segmentVec *= startEnd;
     segmentNormal *= bottomTop;
 
-    vec2 fragmentOffset = 0.5 * pixelWidth * unitsPerPixel * (segmentVec + segmentNormal);
+    vec2 fragmentOffset = 0.5 * unitWidth * (segmentVec + segmentNormal);
     vec2 offset = (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
 
     gl_Position = start * eq(startEnd, -1.) + end * eq(startEnd, 1.);
@@ -73,9 +72,10 @@ ShaderChunk["eulertour_meshline_frag"] = /*glsl*/ `
 
   uniform vec3 color;
   uniform vec2 resolution;
-  uniform float pixelWidth;
+  uniform float unitWidth;
   uniform float opacity;
   uniform vec2 drawRange;
+  uniform float pixelsPerUnit;
 
   varying vec2 vStartFragment;
   varying vec2 vEndFragment;
@@ -87,6 +87,7 @@ ShaderChunk["eulertour_meshline_frag"] = /*glsl*/ `
   }
 
   bool segmentCoversFragment(vec2 fragment, vec2 startFragment, vec2 endFragment) {
+    float pixelWidth = unitWidth * pixelsPerUnit;
     float halfWidthSquared = 0.25 * pixelWidth * pixelWidth;
 
     vec2 segmentVec = endFragment - startFragment;
