@@ -43,7 +43,8 @@ ShaderChunk["eulertour_meshline_vert"] = /*glsl*/ `
     vEndFragment = fragmentCoords(end);
     vNextFragment = fragmentCoords(next);
 
-    vec2 segmentVec = normalize(vEndFragment - vStartFragment);
+    // Add 0.1 so all pixels are covered.
+    vec2 segmentVec = 1.1 * normalize(vEndFragment - vStartFragment);
     vec2 segmentNormal = vec2(-segmentVec.y, segmentVec.x);
     float textureDivide = textureCoords / 2.;
     float startEnd = 2. * (ceil(floor(textureDivide)) - 0.5);

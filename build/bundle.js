@@ -75,7 +75,8 @@ ShaderChunk["eulertour_meshline_vert"] = `
     vEndFragment = fragmentCoords(end);
     vNextFragment = fragmentCoords(next);
 
-    vec2 segmentVec = normalize(vEndFragment - vStartFragment);
+    // Add 0.1 so all pixels are covered.
+    vec2 segmentVec = 1.1 * normalize(vEndFragment - vStartFragment);
     vec2 segmentNormal = vec2(-segmentVec.y, segmentVec.x);
     float textureDivide = textureCoords / 2.;
     float startEnd = 2. * (ceil(floor(textureDivide)) - 0.5);
@@ -393,16 +394,21 @@ const getFillGeometry = (points) => {
 class Shape extends THREE.Group {
     constructor(points, { strokeColor = new THREE.Color(0x000000), strokeOpacity = 1.0, strokeWidth = 8, stroke = true, fillColor = new THREE.Color(0xfffaf0), fillOpacity = 1.0, fill = false, } = {}) {
         super();
-        const fillGeometry = getFillGeometry(points);
-        const fillMaterial = new THREE.MeshBasicMaterial({
-            color: fillColor,
-            opacity: fillOpacity,
-            transparent: true,
-        });
-        this.fill = new THREE.Mesh(fillGeometry, fillMaterial);
-        this.fillVisible = fill;
-        if (this.fillVisible) {
-            this.add(this.fill);
+        if (points) {
+            const fillGeometry = getFillGeometry(points);
+            const fillMaterial = new THREE.MeshBasicMaterial({
+                color: fillColor,
+                opacity: fillOpacity,
+                transparent: true,
+            });
+            this.fill = new THREE.Mesh(fillGeometry, fillMaterial);
+            this.fillVisible = fill;
+            if (this.fillVisible) {
+                this.add(this.fill);
+            }
+        }
+        else {
+            this.fillVisible = false;
         }
         const strokeGeometry = new MeshLineGeometry();
         strokeGeometry.setPoints(points);
@@ -651,9 +657,33 @@ class Line extends Shape {
             end: this.end,
         };
     }
+    toVector(global) {
+        this.updateWorldMatrix(true, false);
+        return global
+            ? new THREE.Vector3().subVectors(new THREE.Vector3().copy(this.end).applyMatrix4(this.matrixWorld), new THREE.Vector3().copy(this.start).applyMatrix4(this.matrixWorld))
+            : new THREE.Vector3().subVectors(this.end, this.start);
+    }
     static fromAttributes(attributes) {
         const { start, end } = attributes;
         return new Line(start, end);
+    }
+}
+class Polyline extends Shape {
+    constructor(points, config = {}) {
+        super(points, Object.assign(Object.assign({}, config), { fill: false }));
+        this.curveEndIndices = [[0, 1]];
+    }
+    getClassConfig() {
+        return {};
+    }
+    get getAttributes() {
+        return {
+            points: this.points,
+        };
+    }
+    static fromAttributes(attributes) {
+        const { points } = attributes;
+        return new Polyline(points);
     }
 }
 class Arc extends Shape {
@@ -915,6 +945,7 @@ var geometry = /*#__PURE__*/Object.freeze({
     Line: Line,
     Point: Point,
     Polygon: Polygon,
+    Polyline: Polyline,
     Rectangle: Rectangle,
     Shape: Shape,
     Square: Square,
