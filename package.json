@@ -1,8 +1,9 @@
 {
   "name": "@eulertour/studio",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "three.js code to use in Euler Studio",
   "main": "build/bundle.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup --config rollup.config.ts --configPlugin typescript",
