@@ -34919,11 +34919,13 @@ const setupCanvas = (canvas, config = {
         canvas,
         antialias: true,
     });
-    renderer.setPixelRatio(window.devicePixelRatio);
+    if (typeof window !== "undefined") {
+        renderer.setPixelRatio(window.devicePixelRatio);
+    }
     renderer.setClearColor(new Color(0xfffaf0));
     renderer.setSize(pixelWidth, pixelHeight, false);
     renderer.getSize(GeometryResolution);
-    return [camera, renderer];
+    return [new Scene$1(), camera, renderer];
 };
 const moveToRightOf = (object1, object2, distance = 0.5) => {
     moveNextTo(object1, object2, RIGHT, distance);

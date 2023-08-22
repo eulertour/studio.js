@@ -58,7 +58,7 @@ const setupCanvas = (
     pixelHeight: 720,
     coordinateHeight: 8,
   }
-): [THREE.Camera, THREE.WebGLRenderer] => {
+): [THREE.Scene, THREE.Camera, THREE.WebGLRenderer] => {
   let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
   if (isWidthSetup(config)) {
     aspectRatio = config.aspectRatio;
@@ -90,13 +90,15 @@ const setupCanvas = (
     canvas,
     antialias: true,
   });
-  renderer.setPixelRatio(window.devicePixelRatio);
+  if (typeof window !== "undefined") {
+    renderer.setPixelRatio(window.devicePixelRatio);
+  }
   renderer.setClearColor(new THREE.Color(0xfffaf0));
 
   renderer.setSize(pixelWidth, pixelHeight, false);
   renderer.getSize(Geometry.GeometryResolution);
 
-  return [camera, renderer];
+  return [new THREE.Scene(), camera, renderer];
 };
 
 const moveToRightOf = (object1, object2, distance = 0.5) => {

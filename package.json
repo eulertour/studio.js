@@ -1,6 +1,6 @@
 {
   "name": "@eulertour/studio",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "three.js code to use in Euler Studio",
   "main": "build/bundle.js",
   "type": "module",
