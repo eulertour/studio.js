@@ -157,4 +157,8 @@ const FadeIn = (object) => {
   );
 };
 
-export { Animation, Shift, Rotate, Scale, Draw, FadeIn };
+const Wait = () => {
+  return new Animation(() => {});
+};
+
+export { Animation, Shift, Rotate, Scale, Draw, FadeIn, Wait };

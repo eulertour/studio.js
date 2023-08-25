@@ -35153,6 +35153,9 @@ const FadeIn = (object) => {
         });
     }, { object });
 };
+const Wait = () => {
+    return new Animation(() => { });
+};
 
 var animation = /*#__PURE__*/Object.freeze({
 	__proto__: null,
@@ -35161,7 +35164,8 @@ var animation = /*#__PURE__*/Object.freeze({
 	FadeIn: FadeIn,
 	Rotate: Rotate,
 	Scale: Scale,
-	Shift: Shift
+	Shift: Shift,
+	Wait: Wait
 });
 
 const COLOR_SPACE_SVG = SRGBColorSpace;
