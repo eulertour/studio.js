@@ -6,7 +6,11 @@ import tex2svg from "./mathjax";
 class Text extends THREE.Group {
   constructor(
     public text: string,
-    config: { fillColor?: THREE.Color; fillOpacity?: number } = {}
+    config: {
+      fillColor?: THREE.Color;
+      fillOpacity?: number;
+      groupColoring?: Array<[string, number?]>;
+    } = {}
   ) {
     super();
 
@@ -14,12 +18,6 @@ class Text extends THREE.Group {
       { fillColor: new THREE.Color("black"), fillOpacity: 1 },
       config
     );
-    const material = new THREE.MeshBasicMaterial({
-      color: config.fillColor,
-      opacity: config.fillOpacity,
-      transparent: true,
-      side: THREE.DoubleSide,
-    });
 
     let svgString = tex2svg(this.text);
 
@@ -40,13 +38,48 @@ class Text extends THREE.Group {
     const parseData = new SVGLoader().parse(svgString);
     const group = new THREE.Group();
     group.scale.set(0.001, -0.001, 0.001);
-    for (const shapePath of parseData.paths) {
+
+    let groupColorsIndex = 0;
+    let groupColoring = config.groupColoring || [
+      [parseData.paths.length, config.fillColor],
+    ];
+    let material = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(groupColoring[0][1]),
+      opacity: config.fillOpacity,
+      transparent: true,
+      side: THREE.DoubleSide,
+    });
+    let curGroup = new THREE.Group();
+
+    for (let i = 0; i < parseData.paths.length; i++) {
+      if (
+        groupColorsIndex < groupColoring.length &&
+        groupColoring[groupColorsIndex].length > 1 &&
+        i === groupColoring[groupColorsIndex][0]
+      ) {
+        group.add(curGroup);
+        curGroup = new THREE.Group();
+        if (
+          groupColorsIndex + 1 < groupColoring.length &&
+          groupColoring[groupColorsIndex + 1].length > 1
+        ) {
+          material = new THREE.MeshBasicMaterial({
+            color: new THREE.Color(groupColoring[groupColorsIndex + 1][1]),
+            opacity: config.fillOpacity,
+            transparent: true,
+            side: THREE.DoubleSide,
+          });
+        }
+        groupColorsIndex += 1;
+      }
+      const shapePath = parseData.paths[i];
       const shapes = SVGLoader.createShapes(shapePath);
       for (const shape of shapes) {
         const mesh = new THREE.Mesh(new THREE.ShapeGeometry(shape), material);
-        group.add(mesh);
+        curGroup.add(mesh);
       }
     }
+    group.add(curGroup);
 
     const center = new THREE.Vector3();
     new THREE.Box3().setFromObject(group).getCenter(center);

@@ -4,7 +4,7 @@ import * as Geometry from "./geometry";
 import { clamp } from "./utils";
 
 export default class Scene {
-  animations: Array<Animation> = [];
+  animations: Array<Object> = [];
   currentAnimationIndex = 0;
   deltaTime = 0;
   elapsedTime = 0;
@@ -34,12 +34,7 @@ export default class Scene {
 
   init(scene, camera, renderer) {}
 
-  reset() {
-    this.currentAnimationIndex = 0;
-    this.deltaTime = 0;
-    this.elapsedTime = 0;
-    this.loopAnimations = [];
-    this.loopAnimations.forEach((animation, i) => animation.reset());
+  dispose() {
     this.scene.traverse((child) => {
       if (child.dispose !== undefined) {
         child.dispose();
@@ -54,8 +49,6 @@ export default class Scene {
       }
     });
     this.scene.clear();
-    this.init(this.scene, this.camera, this.renderer);
-    this.firstFrame = true;
   }
 
   tick(deltaTime: number, render = true) {
@@ -65,14 +58,16 @@ export default class Scene {
       this.firstFrame = false;
       let currentEndTime = 0;
       this.animations.forEach((o) => {
+        if (Array.isArray(o)) {
+          o = { animations: o };
+        }
         if (o instanceof Animation) {
           const animation = o;
-          animation.setScene(this.scene);
           animation.startTime = currentEndTime;
           animation.endTime = currentEndTime + animation.runTime;
-          animation.addBefore(() => {});
-          animation.addAfter(() => {});
-          animation.parent = this.scene;
+          animation.parent = animation.parent || this.scene;
+          animation.before && animation.addBefore(animation.before);
+          animation.after && animation.addAfter(animation.after);
           this.loopAnimations.push(animation);
           currentEndTime = animation.endTime;
         } else if (typeof o === "object") {
@@ -81,14 +76,12 @@ export default class Scene {
           const scale = o.scale || 1;
           const before = o.before || (() => {});
           const after = o.after || (() => {});
-          const parent = o.parent || this.scene;
           animationArray.forEach((animation) => {
-            animation.setScene(this.scene);
             animation.startTime = currentEndTime;
             animation.endTime = currentEndTime + runTime * scale;
-            animation.parent = parent;
             animation.runTime = runTime;
             animation.scale = scale;
+            animation.parent = animation.parent || o.parent || this.scene;
             this.loopAnimations.push(...animationArray);
           });
           animationArray.at(0).addBefore(before);
@@ -141,25 +134,29 @@ export default class Scene {
     this.signalUpdate();
   }
 
-  seek(duration: number) {
-    if (duration === 0) return;
-    this.seekAbsolute(
-      clamp(this.elapsedTime + duration, this.startTime, this.endTime)
-    );
-  }
+  seekForward(duration: number) {
+    if (duration < 0)
+      throw new Error("Scene.seekForward() requires a nonnegative offset");
 
-  seekAbsolute(target: number) {
-    if (target < this.elapsedTime) {
-      this.reset();
-    }
-    const spf = 1 / this.fps;
-    while (this.elapsedTime !== target) {
-      try {
-        this.tick(Math.min(spf, target - this.elapsedTime), /*render=*/ false);
-      } catch (e: any) {
-        throw new Error(`Error advancing scene: ${e.toString()}`);
+    if (duration !== 0) {
+      const target = THREE.MathUtils.clamp(
+        this.elapsedTime + duration,
+        this.startTime,
+        this.endTime
+      );
+      const spf = 1 / this.fps;
+      while (this.elapsedTime !== target) {
+        try {
+          this.tick(
+            Math.min(spf, target - this.elapsedTime),
+            /*render=*/ false
+          );
+        } catch (e: any) {
+          throw new Error(`Error advancing scene: ${e.toString()}`);
+        }
       }
     }
+
     this.renderer.render(this.scene, this.camera);
     this.signalUpdate();
   }

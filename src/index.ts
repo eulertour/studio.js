@@ -3,6 +3,8 @@ import * as Animation from "./animation";
 import * as Text from "./text";
 import * as Utils from "./utils";
 import Scene from "./scene";
+import * as Diagram from "./diagram";
 import { setupCanvas } from "./utils";
 
-export { Scene, Geometry, Animation, Text, Utils, setupCanvas };
+export { Scene, Geometry, Animation, Text, Utils, Diagram, setupCanvas };
+export * as THREE from "three";

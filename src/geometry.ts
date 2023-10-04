@@ -29,55 +29,41 @@ type Stroke = THREE.Mesh<MeshLineGeometry, MeshLineMaterial>;
 
 abstract class Shape extends THREE.Group {
   fill: Fill;
-  fillVisible: boolean;
   stroke: Stroke;
-  strokeVisible: boolean;
   curveEndIndices: Array<Array<number>>;
 
-  constructor(
-    points: Array<THREE.Vector3>,
-    {
-      strokeColor = new THREE.Color(0x000000),
-      strokeOpacity = 1.0,
-      strokeWidth = 8,
-      stroke = true,
-      fillColor = new THREE.Color(0xfffaf0),
-      fillOpacity = 1.0,
-      fill = false,
-    }: Style = {}
-  ) {
+  constructor(points: Array<THREE.Vector3>, config: Style = {}) {
     super();
+    config = Object.assign(
+      {
+        strokeColor: new THREE.Color(0x000000),
+        strokeOpacity: 1.0,
+        strokeWidth: 8,
+        fillColor: new THREE.Color(0xfffaf0),
+        fillOpacity: 0.0,
+      },
+      config
+    );
 
-    if (points) {
-      const fillGeometry = getFillGeometry(points);
-      const fillMaterial = new THREE.MeshBasicMaterial({
-        color: fillColor,
-        opacity: fillOpacity,
-        transparent: true,
-      });
-      this.fill = new THREE.Mesh(fillGeometry, fillMaterial);
-      this.fillVisible = fill;
-      if (this.fillVisible) {
-        this.add(this.fill);
-      }
-    } else {
-      this.fillVisible = false;
-    }
+    const fillGeometry = getFillGeometry(points);
+    const fillMaterial = new THREE.MeshBasicMaterial({
+      color: config.fillColor,
+      opacity: config.fillOpacity,
+      transparent: true,
+    });
+    this.fill = new THREE.Mesh(fillGeometry, fillMaterial);
+    this.add(this.fill);
 
     const strokeGeometry = new MeshLineGeometry();
     strokeGeometry.setPoints(points);
     const strokeMaterial = new MeshLineMaterial({
-      color: strokeColor,
-      opacity: strokeOpacity,
-      width: strokeWidth,
+      color: config.strokeColor,
+      opacity: config.strokeOpacity,
+      width: config.strokeWidth,
       transparent: true,
     });
     this.stroke = new THREE.Mesh(strokeGeometry, strokeMaterial);
-
-    this.strokeVisible = stroke;
-    if (this.strokeVisible) {
-      this.add(this.stroke);
-    }
+    this.add(this.stroke);
 
     this.curveEndIndices = this.getCurveEndIndices();
   }
@@ -141,13 +127,13 @@ abstract class Shape extends THREE.Group {
       throw Error("Shape.clone() is always recursive");
     }
 
-    const originalFillVisible = source.fillVisible;
-    const originalStrokeVisible = source.strokeVisible;
+    const originalFillVisible = source.children.includes(source.fill);
+    const originalStrokeVisible = source.children.includes(source.stroke);
 
     this.clear();
     source.clear();
-    source.addFill();
-    source.addStroke();
+    source.add(source.fill);
+    source.add(source.stroke);
 
     super.copy(source, true);
     this.fill = this.children[0] as Fill;
@@ -158,13 +144,11 @@ abstract class Shape extends THREE.Group {
     this.clear();
 
     if (originalFillVisible) {
-      source.addFill();
-      this.addFill();
+      this.add(this.fill);
     }
 
     if (originalStrokeVisible) {
-      source.addStroke();
-      this.addStroke();
+      this.add(this.stroke);
     }
 
     for (const { attribute } of source.attributeData) {
@@ -250,13 +234,11 @@ abstract class Shape extends THREE.Group {
 
   getStyle(): Style {
     return {
-      fill: this.fillVisible,
       fillColor: this.fill.material.color,
       fillOpacity: this.fill.material.opacity,
-      stroke: this.strokeVisible,
-      strokeColor: this.stroke.material.uniforms.color.value,
+      strokeColor: this.stroke.material.color,
       strokeOpacity: this.stroke.material.opacity,
-      strokeWidth: this.stroke.material.lineWidth,
+      strokeWidth: this.stroke.material.width,
     };
   }
 
@@ -268,9 +250,6 @@ abstract class Shape extends THREE.Group {
     if (fillOpacity !== undefined) {
       this.fill.material.opacity = fillOpacity;
     }
-    if (fill !== undefined) {
-      fill ? this.addFill() : this.removeFill();
-    }
 
     const { strokeColor, strokeOpacity, strokeWidth, stroke } = style;
     if (strokeColor !== undefined) {
@@ -281,9 +260,6 @@ abstract class Shape extends THREE.Group {
     }
     if (strokeWidth !== undefined) {
       this.stroke.material.lineWidth = strokeWidth;
-    }
-    if (stroke !== undefined) {
-      stroke ? this.addStroke() : this.removeStroke();
     }
   }
 
@@ -300,26 +276,6 @@ abstract class Shape extends THREE.Group {
     this.position.set(...position);
     this.setRotationFromEuler(new THREE.Euler(...rotation));
     this.scale.set(scale, scale, scale);
-  }
-
-  addStroke() {
-    this.add(this.stroke);
-    this.strokeVisible = true;
-  }
-
-  removeStroke() {
-    this.remove(this.stroke);
-    this.strokeVisible = false;
-  }
-
-  addFill() {
-    this.add(this.fill);
-    this.fillVisible = true;
-  }
-
-  removeFill() {
-    this.remove(this.fill);
-    this.fillVisible = false;
   }
 
   dispose() {
@@ -359,7 +315,7 @@ class Line extends Shape {
       lineStart = start;
       lineEnd = end;
     }
-    super([lineStart, lineEnd], { ...config, fill: false });
+    super([lineStart, lineEnd], { ...config, fillOpacity: 0 });
     this.start = lineStart;
     this.end = lineEnd;
     this.transformCenter = config.transformCenter;
@@ -399,7 +355,7 @@ class Line extends Shape {
 
 class Polyline extends Shape {
   constructor(points: Array<THREE.Vector3>, config: Style = {}) {
-    super(points, { ...config, fill: false });
+    super(points, { ...config, fillOpacity: 0 });
 
     this.curveEndIndices = [[0, 1]];
   }
@@ -535,11 +491,12 @@ class Point extends Circle {
   // TODO: this.location should return this.position
   constructor(
     public location: THREE.Vector2 | THREE.Vector3,
-    config: Style = {}
+    config: Style & { radius?: number } = {}
   ) {
-    super(0.08, {
+    config = Object.assign({ radius: 0.08 }, config);
+    super(config.radius, {
       fillColor: new THREE.Color("black"),
-      fill: true,
+      fillOpacity: 1,
       ...config,
     });
     this.position.set(location.x, location.y, 0);
@@ -547,7 +504,7 @@ class Point extends Circle {
 
   getAttributes(): ArcAttributes {
     return {
-      radius: 0.08,
+      radius: this.radius,
       angle: 2 * Math.PI,
       closed: false,
     };

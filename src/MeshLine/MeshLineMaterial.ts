@@ -58,14 +58,19 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
       drawRange: {
         enumerable: true,
         get: () => {
-          return this.uniforms.drawRange.value;
+          return new THREE.Color()
+            .set(this.uniforms.drawRange.value)
+            .convertSRGBToLinear();
         },
         set: (value) => {
-          this.uniforms.drawRange.value = value;
+          this.uniforms.drawRange.value.set(value).convertLinearToSRGB();
         },
       },
     });
 
+    parameters.color = new THREE.Color()
+      .set(parameters.color)
+      .convertLinearToSRGB();
     this.setValues(parameters);
   }
 }
