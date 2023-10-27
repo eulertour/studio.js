@@ -1,19 +1,20 @@
 import * as THREE from "three";
 import { Animation } from "./animation";
 import * as Geometry from "./geometry";
-import { clamp } from "./utils";
 
 export default class Scene {
   animations: Array<Object> = [];
-  currentAnimationIndex = 0;
+  animationIndex = 0;
   deltaTime = 0;
   elapsedTime = 0;
   firstFrame = true;
   paused = true;
   fps = 60;
+  timePrecision = 1e5;
   startTime = 0;
   endTime = Infinity;
   loopAnimations: Array<Animation> = [];
+  finishedAnimationCount = 0;
 
   constructor(
     public scene: THREE.Scene,
@@ -96,12 +97,21 @@ export default class Scene {
 
     try {
       this.loop(this.elapsedTime, this.deltaTime);
-      this.loopAnimations.forEach((animation) =>
-        animation.update(this.elapsedTime)
-      );
+      const roundedTime =
+        Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
+      this.loopAnimations.forEach((animation) => animation.update(roundedTime));
     } catch (err: any) {
       this.renderer.setAnimationLoop(null);
       throw new Error(`Error executing user animation: ${err.toString()}`);
+    }
+
+    const newFinishedAnimationCount = this.loopAnimations.reduce(
+      (acc, cur) => acc + (cur.finished ? 1 : 0),
+      0
+    );
+    if (newFinishedAnimationCount !== this.finishedAnimationCount) {
+      this.animationIndex += 1;
+      this.finishedAnimationCount = newFinishedAnimationCount;
     }
 
     if (render) {

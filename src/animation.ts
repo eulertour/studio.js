@@ -26,6 +26,7 @@ class Animation {
   public before;
   public after;
   public scale;
+  public finished: boolean;
 
   constructor(
     public func: (elapsedTime: number, deltaTime: number) => void,

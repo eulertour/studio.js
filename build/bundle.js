@@ -98395,15 +98395,17 @@ class Scene {
         this.renderer = renderer;
         this.signalUpdate = signalUpdate;
         this.animations = [];
-        this.currentAnimationIndex = 0;
+        this.animationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
         this.firstFrame = true;
         this.paused = true;
         this.fps = 60;
+        this.timePrecision = 1e5;
         this.startTime = 0;
         this.endTime = Infinity;
         this.loopAnimations = [];
+        this.finishedAnimationCount = 0;
         scene.clear();
         const resolution = new Vector2();
         renderer.getSize(resolution);
@@ -98473,11 +98475,17 @@ class Scene {
         }
         try {
             this.loop(this.elapsedTime, this.deltaTime);
-            this.loopAnimations.forEach((animation) => animation.update(this.elapsedTime));
+            const roundedTime = Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
+            this.loopAnimations.forEach((animation) => animation.update(roundedTime));
         }
         catch (err) {
             this.renderer.setAnimationLoop(null);
             throw new Error(`Error executing user animation: ${err.toString()}`);
+        }
+        const newFinishedAnimationCount = this.loopAnimations.reduce((acc, cur) => acc + (cur.finished ? 1 : 0), 0);
+        if (newFinishedAnimationCount !== this.finishedAnimationCount) {
+            this.animationIndex += 1;
+            this.finishedAnimationCount = newFinishedAnimationCount;
         }
         if (render) {
             this.renderer.render(this.scene, this.camera);
