@@ -30373,7 +30373,7 @@ class Fog {
 
 }
 
-let Scene$1 = class Scene extends Object3D {
+class Scene extends Object3D {
 
 	constructor() {
 
@@ -30445,7 +30445,7 @@ let Scene$1 = class Scene extends Object3D {
 
 	}
 
-};
+}
 
 class InterleavedBuffer {
 
@@ -44676,7 +44676,7 @@ class ObjectLoader extends Loader {
 
 			case 'Scene':
 
-				object = new Scene$1();
+				object = new Scene();
 
 				if ( data.background !== undefined ) {
 
@@ -51807,7 +51807,7 @@ var three_module = /*#__PURE__*/Object.freeze({
 	SIGNED_RED_GREEN_RGTC2_Format: SIGNED_RED_GREEN_RGTC2_Format,
 	SIGNED_RED_RGTC1_Format: SIGNED_RED_RGTC1_Format,
 	SRGBColorSpace: SRGBColorSpace,
-	Scene: Scene$1,
+	Scene: Scene,
 	ShaderChunk: ShaderChunk,
 	ShaderLib: ShaderLib,
 	ShaderMaterial: ShaderMaterial,
@@ -52893,7 +52893,7 @@ const setupCanvas = (canvas, config = {
     renderer.setClearColor(new Color(0xfffaf0));
     renderer.setSize(pixelWidth, pixelHeight, false);
     renderer.getSize(GeometryResolution);
-    return [new Scene$1(), camera, renderer];
+    return [new Scene(), camera, renderer];
 };
 const moveToRightOf = (object1, object2, distance = 0.5) => {
     moveNextTo(object1, object2, RIGHT, distance);
@@ -98388,13 +98388,8 @@ var text = /*#__PURE__*/Object.freeze({
 	textFromJson: textFromJson
 });
 
-class Scene {
-    constructor(scene, camera, renderer, signalUpdate = () => { }) {
-        this.scene = scene;
-        this.camera = camera;
-        this.renderer = renderer;
-        this.signalUpdate = signalUpdate;
-        this.animations = [];
+class SceneController {
+    constructor(UserScene, canvasRef, config) {
         this.animationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
@@ -98406,28 +98401,22 @@ class Scene {
         this.endTime = Infinity;
         this.loopAnimations = [];
         this.finishedAnimationCount = 0;
-        scene.clear();
+        this.userScene = new UserScene(...setupCanvas(canvasRef, config));
         const resolution = new Vector2();
-        renderer.getSize(resolution);
+        this.userScene.renderer.getSize(resolution);
         if (typeof window !== "undefined") {
             resolution.multiplyScalar(window.devicePixelRatio);
         }
         GeometryResolution.copy(resolution);
     }
-    loop(time, deltaTime) { }
-    init(scene, camera, renderer) { }
-    dispose() {
-        this.scene.traverse((child) => {
-            if (child.dispose !== undefined) {
-                child.dispose();
-            }
-            else if (!(child instanceof Scene$1 ||
-                child instanceof Group ||
-                child instanceof Mesh)) {
-                console.warn("Can't dispose of object:", child);
-            }
-        });
-        this.scene.clear();
+    get scene() {
+        return this.userScene.scene;
+    }
+    get camera() {
+        return this.userScene.camera;
+    }
+    get renderer() {
+        return this.userScene.renderer;
     }
     tick(deltaTime, render = true) {
         if (this.firstFrame) {
@@ -98435,51 +98424,54 @@ class Scene {
             this.elapsedTime = 0;
             this.firstFrame = false;
             let currentEndTime = 0;
-            this.animations.forEach((o) => {
-                if (Array.isArray(o)) {
-                    o = { animations: o };
-                }
-                if (o instanceof Animation) {
-                    const animation = o;
-                    animation.startTime = currentEndTime;
-                    animation.endTime = currentEndTime + animation.runTime;
-                    animation.parent = animation.parent || this.scene;
-                    animation.before && animation.addBefore(animation.before);
-                    animation.after && animation.addAfter(animation.after);
-                    this.loopAnimations.push(animation);
-                    currentEndTime = animation.endTime;
-                }
-                else if (typeof o === "object") {
-                    const animationArray = o.animations;
-                    const runTime = o.runTime || 1;
-                    const scale = o.scale || 1;
-                    const before = o.before || (() => { });
-                    const after = o.after || (() => { });
-                    animationArray.forEach((animation) => {
+            this.userScene.animations &&
+                this.userScene.animations.forEach((o) => {
+                    if (Array.isArray(o)) {
+                        o = { animations: o };
+                    }
+                    if (o instanceof Animation) {
+                        const animation = o;
                         animation.startTime = currentEndTime;
-                        animation.endTime = currentEndTime + runTime * scale;
-                        animation.runTime = runTime;
-                        animation.scale = scale;
-                        animation.parent = animation.parent || o.parent || this.scene;
-                        this.loopAnimations.push(...animationArray);
-                    });
-                    animationArray.at(0).addBefore(before);
-                    animationArray.at(-1).addAfter(after);
-                    currentEndTime = animationArray[0].endTime;
-                }
-            });
+                        animation.endTime = currentEndTime + animation.runTime;
+                        animation.parent = animation.parent || this.userScene.scene;
+                        animation.before && animation.addBefore(animation.before);
+                        animation.after && animation.addAfter(animation.after);
+                        this.loopAnimations.push(animation);
+                        currentEndTime = animation.endTime;
+                    }
+                    else if (typeof o === "object") {
+                        const animationArray = o.animations;
+                        const runTime = o.runTime || 1;
+                        const scale = o.scale || 1;
+                        const before = o.before || (() => { });
+                        const after = o.after || (() => { });
+                        animationArray.forEach((animation) => {
+                            animation.startTime = currentEndTime;
+                            animation.endTime = currentEndTime + runTime * scale;
+                            animation.runTime = runTime;
+                            animation.scale = scale;
+                            animation.parent =
+                                animation.parent || o.parent || this.userScene.scene;
+                            this.loopAnimations.push(...animationArray);
+                        });
+                        animationArray.at(0).addBefore(before);
+                        animationArray.at(-1).addAfter(after);
+                        currentEndTime = animationArray[0].endTime;
+                    }
+                });
         }
         else {
             this.deltaTime = deltaTime;
             this.elapsedTime += deltaTime;
         }
         try {
-            this.loop(this.elapsedTime, this.deltaTime);
+            this.userScene.loop &&
+                this.userScene.loop(this.elapsedTime, this.deltaTime);
             const roundedTime = Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
             this.loopAnimations.forEach((animation) => animation.update(roundedTime));
         }
         catch (err) {
-            this.renderer.setAnimationLoop(null);
+            this.userScene.renderer.setAnimationLoop(null);
             throw new Error(`Error executing user animation: ${err.toString()}`);
         }
         const newFinishedAnimationCount = this.loopAnimations.reduce((acc, cur) => acc + (cur.finished ? 1 : 0), 0);
@@ -98488,14 +98480,14 @@ class Scene {
             this.finishedAnimationCount = newFinishedAnimationCount;
         }
         if (render) {
-            this.renderer.render(this.scene, this.camera);
+            this.userScene.renderer.render(this.userScene.scene, this.userScene.camera);
         }
     }
     play() {
         this.paused = false;
-        this.renderer.setAnimationLoop((initialTime) => {
+        this.userScene.renderer.setAnimationLoop((initialTime) => {
             let lastTime = initialTime;
-            this.renderer.setAnimationLoop((time) => {
+            this.userScene.renderer.setAnimationLoop((time) => {
                 const standardTickLength = (time - lastTime) / 1000;
                 const endTimeTickLength = this.endTime - this.elapsedTime;
                 if (standardTickLength < endTimeTickLength) {
@@ -98512,7 +98504,7 @@ class Scene {
     }
     pause() {
         this.paused = true;
-        this.renderer.setAnimationLoop(null);
+        this.userScene.renderer.setAnimationLoop(null);
         this.signalUpdate();
     }
     seekForward(duration) {
@@ -98530,8 +98522,22 @@ class Scene {
                 }
             }
         }
-        this.renderer.render(this.scene, this.camera);
+        this.userScene.renderer.render(this.userScene.scene, this.userScene.camera);
         this.signalUpdate();
+    }
+    dispose() {
+        this.userScene.scene.traverse((child) => {
+            if (child instanceof BufferGeometry ||
+                child instanceof Material) {
+                child.dispose();
+            }
+            else if (!(child instanceof Scene ||
+                child instanceof Group ||
+                child instanceof Mesh)) {
+                console.warn("Can't dispose of object:", child);
+            }
+        });
+        this.userScene.scene.clear();
     }
 }
 
@@ -98595,4 +98601,4 @@ var diagram = /*#__PURE__*/Object.freeze({
 	Indicator: Indicator
 });
 
-export { animation as Animation, diagram as Diagram, geometry as Geometry, Scene, three_module as THREE, text as Text, utils as Utils, setupCanvas };
+export { animation as Animation, diagram as Diagram, geometry as Geometry, SceneController, three_module as THREE, text as Text, utils as Utils, setupCanvas };
