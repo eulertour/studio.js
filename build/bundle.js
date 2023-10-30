@@ -51934,7 +51934,12 @@ function __classPrivateFieldSet(receiver, state, value, kind, f) {
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 }
 
-ShaderChunk["eulertour_meshline_vert"] = `
+typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    var e = new Error(message);
+    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+};
+
+const MESHLINE_VERT = `
   ${ShaderChunk.logdepthbuf_pars_vertex}
   ${ShaderChunk.fog_pars_vertex}
 
@@ -51998,7 +52003,7 @@ ShaderChunk["eulertour_meshline_vert"] = `
     ${ShaderChunk.fog_vertex}
 	}
 `;
-ShaderChunk["eulertour_meshline_frag"] = `
+const MESHLINE_FRAG = `
   ${ShaderChunk.fog_pars_fragment}
   ${ShaderChunk.logdepthbuf_pars_fragment}
 
@@ -52237,8 +52242,8 @@ class MeshLineMaterial extends ShaderMaterial {
                 unitWidth: { value: 1 / 10 },
                 drawRange: { value: new Vector2(0, 1) },
             }),
-            vertexShader: ShaderChunk.eulertour_meshline_vert,
-            fragmentShader: ShaderChunk.eulertour_meshline_frag,
+            vertexShader: MESHLINE_VERT,
+            fragmentShader: MESHLINE_FRAG,
             transparent: true,
         });
         Object.defineProperties(this, {
@@ -52353,8 +52358,8 @@ class Shape extends Group {
         return indices;
     }
     clear() {
-        this.removeStroke();
-        this.removeFill();
+        this.remove(this.stroke);
+        this.remove(this.fill);
         return this;
     }
     clone(recursive) {

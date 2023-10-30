@@ -1,5 +1,5 @@
 import { nodeResolve } from "@rollup/plugin-node-resolve";
-import typescript from "@rollup/plugin-typescript";
+import ts from "rollup-plugin-ts";
 import commonjs from "@rollup/plugin-commonjs";
 
 export default {
@@ -9,14 +9,8 @@ export default {
     format: "es",
   },
   plugins: [
-    nodeResolve({
-      extensions: [".js", ".ts"],
-    }),
-    typescript({
-      compilerOptions: {
-        target: "es6",
-      },
-    }),
+    nodeResolve({ extensions: [".js", ".ts"] }),
+    ts({ transpileOnly: true }),
     commonjs(),
   ],
 };

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GeometryResolution } from "../geometry";
 import type { ShaderMaterialParameters } from "three";
+import { MESHLINE_FRAG, MESHLINE_VERT } from "./meshline.glsl";
 
 const devicePixelRatio =
   typeof window !== "undefined" ? window.devicePixelRatio : 1;
@@ -22,8 +23,8 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
         unitWidth: { value: 1 / 10 },
         drawRange: { value: new THREE.Vector2(0, 1) },
       }),
-      vertexShader: THREE.ShaderChunk.eulertour_meshline_vert,
-      fragmentShader: THREE.ShaderChunk.eulertour_meshline_frag,
+      vertexShader: MESHLINE_VERT,
+      fragmentShader: MESHLINE_FRAG,
       transparent: true,
     });
 

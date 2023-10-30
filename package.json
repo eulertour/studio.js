@@ -1,9 +1,10 @@
 {
   "name": "@eulertour/studio",
-  "version": "1.0.7",
+  "version": "1.0.16",
   "description": "three.js code to use in Euler Studio",
-  "main": "build/bundle.js",
   "type": "module",
+  "main": "./build/bundle.js",
+  "types": "./build/bundle.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup --config rollup.config.ts --configPlugin typescript",
@@ -21,11 +22,14 @@
     "http-server": "^14.1.1",
     "nodemon": "^2.0.22",
     "rollup": "^3.20.2",
+    "rollup-plugin-ts": "^3.4.5",
     "serve": "^14.2.0",
-    "tslib": "^2.5.0"
+    "tslib": "^2.5.0",
+    "typescript": "^5.2.2"
   },
   "dependencies": {
     "mathjax-full": "^3.2.2",
+    "rollup-plugin-typescript2": "^0.36.0",
     "three": "^0.153.0"
   }
 }

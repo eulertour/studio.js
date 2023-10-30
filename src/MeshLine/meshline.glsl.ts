@@ -1,6 +1,6 @@
 import { ShaderChunk } from "three";
 
-ShaderChunk["eulertour_meshline_vert"] = /*glsl*/ `
+export const MESHLINE_VERT = /*glsl*/ `
   ${ShaderChunk.logdepthbuf_pars_vertex}
   ${ShaderChunk.fog_pars_vertex}
 
@@ -67,7 +67,7 @@ ShaderChunk["eulertour_meshline_vert"] = /*glsl*/ `
 	}
 `;
 
-ShaderChunk["eulertour_meshline_frag"] = /*glsl*/ `
+export const MESHLINE_FRAG = /*glsl*/ `
   ${ShaderChunk.fog_pars_fragment}
   ${ShaderChunk.logdepthbuf_pars_fragment}
 

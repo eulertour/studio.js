@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as THREE from "three";
 import { ERROR_THRESHOLD, PIXELS_TO_COORDS } from "./constants";
 import { MeshLineGeometry, MeshLineMaterial } from "./MeshLine";
@@ -99,8 +100,8 @@ abstract class Shape extends THREE.Group {
   }
 
   clear() {
-    this.removeStroke();
-    this.removeFill();
+    this.remove(this.stroke);
+    this.remove(this.fill);
     return this;
   }
 

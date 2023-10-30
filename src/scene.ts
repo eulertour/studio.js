@@ -3,14 +3,18 @@ import { Animation } from "./animation";
 import * as Geometry from "./geometry";
 import { HeightSetupConfig, WidthSetupConfig, setupCanvas } from "./utils";
 
-type Class<T> = new (...args: any[]) => T;
+type Class<T> = new (
+  scene: THREE.Scene,
+  camera: THREE.Camera,
+  renderer: THREE.Renderer
+) => T;
 
 export interface StudioScene {
   scene: THREE.Scene;
   camera: THREE.Camera;
-  renderer: THREE.WebGLRenderer;
-  animations: Array<Object> | undefined;
-  loop: (time: number, deltaTime: number) => void | undefined;
+  renderer: THREE.Renderer;
+  animations?: Array<Object>;
+  loop?: (time: number, deltaTime: number) => void;
 }
 
 export class SceneController {
