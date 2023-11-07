@@ -98402,12 +98402,6 @@ class SceneController {
         this.loopAnimations = [];
         this.finishedAnimationCount = 0;
         this.userScene = new UserScene(...setupCanvas(canvasRef, config));
-        const resolution = new Vector2();
-        this.userScene.renderer.getSize(resolution);
-        if (typeof window !== "undefined") {
-            resolution.multiplyScalar(window.devicePixelRatio);
-        }
-        GeometryResolution.copy(resolution);
     }
     get scene() {
         return this.userScene.scene;

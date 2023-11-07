@@ -38,13 +38,6 @@ export class SceneController {
     config: WidthSetupConfig | HeightSetupConfig | undefined
   ) {
     this.userScene = new UserScene(...setupCanvas(canvasRef, config));
-
-    const resolution = new THREE.Vector2();
-    this.userScene.renderer.getSize(resolution);
-    if (typeof window !== "undefined") {
-      resolution.multiplyScalar(window.devicePixelRatio);
-    }
-    Geometry.GeometryResolution.copy(resolution);
   }
 
   get scene() {
