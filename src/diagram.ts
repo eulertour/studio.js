@@ -2,10 +2,11 @@ import * as THREE from "three";
 import { Line } from "./geometry";
 import { Animation } from "./animation";
 import { Style } from "./geometry.types";
+import { Geometry } from "src";
 
 class Indicator extends THREE.Group {
-  public startTick;
-  public endTick;
+  public startTick: Geometry.Line;
+  public endTick: Geometry.Line;
   public stem;
 
   constructor(
@@ -58,18 +59,18 @@ class Indicator extends THREE.Group {
 
   grow(config) {
     const vec = new THREE.Vector3().subVectors(this.end, this.start);
-    this.startTick.position.addScaledVector(vec, 0.5);
-    this.endTick.position.addScaledVector(vec, -0.5);
+    this.startTick.position.set(0, 0, 0);
+    this.endTick.position.set(0, 0, 0);
     this.stem.stroke.material.uniforms.drawRange.value.set(0.5, 0.5);
     return new Animation(
-      (elapsedTime: number, deltaTime: number) => {
+      (elapsedTime: number) => {
+        const halfTime = elapsedTime / 2;
         this.stem.stroke.material.uniforms.drawRange.value.set(
-          0.5 - elapsedTime / 2,
-          0.5 + elapsedTime / 2
+          0.5 - halfTime,
+          0.5 + halfTime
         );
-        const halfDeltaTime = deltaTime / 2;
-        this.startTick.position.addScaledVector(vec, -halfDeltaTime);
-        this.endTick.position.addScaledVector(vec, halfDeltaTime);
+        this.startTick.position.set(0, 0, 0).addScaledVector(vec, halfTime);
+        this.endTick.position.set(0, 0, 0).addScaledVector(vec, -halfTime);
       },
       { object: this, ...config }
     );

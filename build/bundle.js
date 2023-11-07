@@ -52008,7 +52008,6 @@ const MESHLINE_FRAG = `
   ${ShaderChunk.logdepthbuf_pars_fragment}
 
   uniform vec3 color;
-  uniform vec2 resolution;
   uniform float unitWidth;
   uniform float opacity;
   uniform vec2 drawRange;
@@ -52277,12 +52276,10 @@ class MeshLineMaterial extends ShaderMaterial {
             drawRange: {
                 enumerable: true,
                 get: () => {
-                    return new Color()
-                        .set(this.uniforms.drawRange.value)
-                        .convertSRGBToLinear();
+                    return this.uniforms.drawRange.value;
                 },
                 set: (value) => {
-                    this.uniforms.drawRange.value.set(value).convertLinearToSRGB();
+                    this.uniforms.drawRange.value = value;
                 },
             },
         });
@@ -52888,16 +52885,14 @@ const setupCanvas = (canvas, config = {
     }
     const camera = new OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
     camera.position.z = 6;
-    const renderer = new WebGLRenderer({
-        canvas,
-        antialias: true,
-    });
-    if (typeof window !== "undefined") {
-        renderer.setPixelRatio(window.devicePixelRatio);
-    }
+    const renderer = new WebGLRenderer({ canvas, antialias: true });
     renderer.setClearColor(new Color(0xfffaf0));
     renderer.setSize(pixelWidth, pixelHeight, false);
     renderer.getSize(GeometryResolution);
+    if (typeof window !== "undefined") {
+        renderer.setPixelRatio(window.devicePixelRatio);
+        GeometryResolution.multiplyScalar(window.devicePixelRatio);
+    }
     return [new Scene(), camera, renderer];
 };
 const moveToRightOf = (object1, object2, distance = 0.5) => {
@@ -98568,14 +98563,14 @@ class Indicator extends Group {
     }
     grow(config) {
         const vec = new Vector3().subVectors(this.end, this.start);
-        this.startTick.position.addScaledVector(vec, 0.5);
-        this.endTick.position.addScaledVector(vec, -0.5);
+        this.startTick.position.set(0, 0, 0);
+        this.endTick.position.set(0, 0, 0);
         this.stem.stroke.material.uniforms.drawRange.value.set(0.5, 0.5);
-        return new Animation((elapsedTime, deltaTime) => {
-            this.stem.stroke.material.uniforms.drawRange.value.set(0.5 - elapsedTime / 2, 0.5 + elapsedTime / 2);
-            const halfDeltaTime = deltaTime / 2;
-            this.startTick.position.addScaledVector(vec, -halfDeltaTime);
-            this.endTick.position.addScaledVector(vec, halfDeltaTime);
+        return new Animation((elapsedTime) => {
+            const halfTime = elapsedTime / 2;
+            this.stem.stroke.material.uniforms.drawRange.value.set(0.5 - halfTime, 0.5 + halfTime);
+            this.startTick.position.set(0, 0, 0).addScaledVector(vec, halfTime);
+            this.endTick.position.set(0, 0, 0).addScaledVector(vec, -halfTime);
         }, Object.assign({ object: this }, config));
     }
 }

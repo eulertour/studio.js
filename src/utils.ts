@@ -87,18 +87,14 @@ const setupCanvas = (
   );
   camera.position.z = 6;
 
-  const renderer = new THREE.WebGLRenderer({
-    canvas,
-    antialias: true,
-  });
-  if (typeof window !== "undefined") {
-    renderer.setPixelRatio(window.devicePixelRatio);
-  }
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setClearColor(new THREE.Color(0xfffaf0));
-
   renderer.setSize(pixelWidth, pixelHeight, false);
   renderer.getSize(Geometry.GeometryResolution);
-
+  if (typeof window !== "undefined") {
+    renderer.setPixelRatio(window.devicePixelRatio);
+    Geometry.GeometryResolution.multiplyScalar(window.devicePixelRatio);
+  }
   return [new THREE.Scene(), camera, renderer];
 };
 
@@ -209,9 +205,11 @@ const moveNextTo = (object1, object2, direction, distance = 0.5) => {
 };
 
 /*
-[ a b ]   [ xa ]   [ ba ]
-[ c d ] * [ xb ] = [ bb ]
-*/
+ * Solves
+ * [ a b ]   [ xa ]   [ ba ]
+ * [ c d ] * [ xb ] = [ bb ]
+ * for x.
+ */
 const matrixSolve = (
   ma: number,
   mb: number,

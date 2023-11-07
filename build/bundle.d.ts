@@ -564,11 +564,91 @@ declare namespace Diagram {
     type PolygonAttributes = {
         points: Array<THREE.Vector3>;
     };
+    const BUFFER = 0.5;
+    const RIGHT: THREE.Vector3;
+    const LEFT: THREE.Vector3;
+    const UP: THREE.Vector3;
+    const DOWN: THREE.Vector3;
+    const OUT: THREE.Vector3;
+    const IN: THREE.Vector3;
+    const clamp: (num: any, min: any, max: any) => number;
+    const getFrameAttributes: (aspectRatio: number, height: number) => {
+        aspectRatio: number;
+        height: number;
+        width: number;
+        coordinateHeight: number;
+        coordinateWidth: number;
+    };
+    interface WidthSetupConfig {
+        aspectRatio: number;
+        pixelWidth: number;
+        coordinateWidth: number;
+    }
+    interface HeightSetupConfig {
+        aspectRatio: number;
+        pixelHeight: number;
+        coordinateHeight: number;
+    }
+    const setupCanvas: (canvas: HTMLCanvasElement, config?: WidthSetupConfig | HeightSetupConfig) => [
+        THREE.Scene,
+        THREE.Camera,
+        THREE.WebGLRenderer
+    ];
+    const moveToRightOf: (object1: any, object2: any, distance?: number) => void;
+    const moveToLeftOf: (object1: any, object2: any, distance?: number) => void;
+    const moveBelow: (object1: any, object2: any, distance?: number) => void;
+    const furthestInDirection: (object: any, direction: any) => THREE.Vector3;
+    const moveNextTo: (object1: any, object2: any, direction: any, distance?: number) => void;
+    class ShapeFromCurves {
+        adjacentThreshold: number;
+        segmentClosestToPoint: THREE.Vector3;
+        pointToSegment: THREE.Vector3;
+        points: Array<THREE.Vector3>;
+        style: Style;
+        withStyle(style: Style): this;
+        startAt(start: THREE.Vector3): this;
+        extendAlong(shape: Geometry.Shape, direction: THREE.Vector3, until: THREE.Vector3 | undefined): this;
+        extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until: THREE.Vector3 | undefined): void;
+        finish(): Geometry.Polygon;
+    }
+    const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
+    type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.Renderer) => T;
+    interface StudioScene {
+        scene: THREE.Scene;
+        camera: THREE.Camera;
+        renderer: THREE.Renderer;
+        animations?: Array<Object>;
+        loop?: (time: number, deltaTime: number) => void;
+    }
+    class SceneController {
+        animationIndex: number;
+        deltaTime: number;
+        elapsedTime: number;
+        firstFrame: boolean;
+        paused: boolean;
+        fps: number;
+        timePrecision: number;
+        startTime: number;
+        endTime: number;
+        loopAnimations: Array<Animation>;
+        finishedAnimationCount: number;
+        userScene: StudioScene;
+        signalUpdate: () => void;
+        constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: WidthSetupConfig | HeightSetupConfig | undefined);
+        get scene(): THREE.Scene;
+        get camera(): THREE.Camera;
+        get renderer(): THREE.Renderer;
+        tick(deltaTime: number, render?: boolean): void;
+        play(): void;
+        pause(): void;
+        seekForward(duration: number): void;
+        dispose(): void;
+    }
     class Indicator extends THREE.Group {
         start: THREE.Vector3;
         end: THREE.Vector3;
-        startTick: any;
-        endTick: any;
+        startTick: Geometry.Line;
+        endTick: Geometry.Line;
         stem: any;
         constructor(start: THREE.Vector3, end: THREE.Vector3, config?: {});
         grow(config: any): Animation;

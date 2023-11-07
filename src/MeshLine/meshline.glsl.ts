@@ -72,7 +72,6 @@ export const MESHLINE_FRAG = /*glsl*/ `
   ${ShaderChunk.logdepthbuf_pars_fragment}
 
   uniform vec3 color;
-  uniform vec2 resolution;
   uniform float unitWidth;
   uniform float opacity;
   uniform vec2 drawRange;
