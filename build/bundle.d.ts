@@ -235,15 +235,15 @@ declare namespace Animation {
         addBefore(before: any): void;
         addAfter(after: any): void;
     }
-    const Shift: (object: any, direction: any, config: any) => Animation;
-    const MoveTo: (object: any, target: any, config: any) => Animation;
-    const Rotate: (object: any, angle: any, config: any) => Animation;
-    const Scale: (object: any, finalScale: any, config: any) => Animation;
-    const Draw: (object: any, config: any) => Animation;
-    const Erase: (object: any, config: any) => Animation;
-    const FadeIn: (object: any, config: any) => Animation;
-    const FadeOut: (object: any, config: any) => Animation;
-    const Wait: (config: any) => Animation;
+    const Shift: (object: any, direction: any, config?: any) => Animation;
+    const MoveTo: (object: any, target: any, config?: any) => Animation;
+    const Rotate: (object: any, angle: any, config?: any) => Animation;
+    const Scale: (object: any, finalScale: any, config?: any) => Animation;
+    const Draw: (object: any, config?: any) => Animation;
+    const Erase: (object: any, config?: any) => Animation;
+    const FadeIn: (object: any, config?: any) => Animation;
+    const FadeOut: (object: any, config?: any) => Animation;
+    const Wait: (config?: any) => Animation;
 }
 declare namespace Text {
     type Transform = {
@@ -502,15 +502,15 @@ declare namespace Diagram {
         addBefore(before: any): void;
         addAfter(after: any): void;
     }
-    const Shift: (object: any, direction: any, config: any) => Animation;
-    const MoveTo: (object: any, target: any, config: any) => Animation;
-    const Rotate: (object: any, angle: any, config: any) => Animation;
-    const Scale: (object: any, finalScale: any, config: any) => Animation;
-    const Draw: (object: any, config: any) => Animation;
-    const Erase: (object: any, config: any) => Animation;
-    const FadeIn: (object: any, config: any) => Animation;
-    const FadeOut: (object: any, config: any) => Animation;
-    const Wait: (config: any) => Animation;
+    const Shift: (object: any, direction: any, config?: any) => Animation;
+    const MoveTo: (object: any, target: any, config?: any) => Animation;
+    const Rotate: (object: any, angle: any, config?: any) => Animation;
+    const Scale: (object: any, finalScale: any, config?: any) => Animation;
+    const Draw: (object: any, config?: any) => Animation;
+    const Erase: (object: any, config?: any) => Animation;
+    const FadeIn: (object: any, config?: any) => Animation;
+    const FadeOut: (object: any, config?: any) => Animation;
+    const Wait: (config?: any) => Animation;
     type Transform = {
         position: [
             number,

@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { Animation } from "./animation";
-import * as Geometry from "./geometry";
 import { HeightSetupConfig, WidthSetupConfig, setupCanvas } from "./utils";
 
 type Class<T> = new (

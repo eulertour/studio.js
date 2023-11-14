@@ -1,6 +1,6 @@
 {
   "name": "@eulertour/studio",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "three.js code to use in Euler Studio",
   "type": "module",
   "main": "./build/bundle.js",
@@ -8,6 +8,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup --config rollup.config.ts --configPlugin typescript",
+    "genTypes": "rollup --config rollup.three-types.config.ts --configPlugin typescript",
     "serve": "npm run build && cross-env PORT=8081 serve ./build --cors",
     "dev": "nodemon -w src -e js,ts --exec 'npm run serve'"
   },
@@ -29,6 +30,7 @@
   },
   "dependencies": {
     "mathjax-full": "^3.2.2",
+    "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-typescript2": "^0.36.0",
     "three": "^0.153.0"
   }

@@ -109,7 +109,7 @@ class Animation {
   }
 }
 
-const Shift = (object, direction, config) => {
+const Shift = (object, direction, config?) => {
   return new Animation(
     (_elapsedTime, deltaTime) => {
       object.position.add(direction.clone().multiplyScalar(deltaTime));
@@ -118,7 +118,7 @@ const Shift = (object, direction, config) => {
   );
 };
 
-const MoveTo = (object, target, config) => {
+const MoveTo = (object, target, config?) => {
   let shiftVec: THREE.Vector3;
 
   const animation = new Animation(
@@ -243,7 +243,7 @@ const MoveTo = (object, target, config) => {
   return animation;
 };
 
-const Rotate = (object, angle, config) => {
+const Rotate = (object, angle, config?) => {
   return new Animation(
     (_elapsedTime, deltaTime) => {
       object.rotation.z += angle * deltaTime;
@@ -252,7 +252,7 @@ const Rotate = (object, angle, config) => {
   );
 };
 
-const Scale = (object, finalScale, config) => {
+const Scale = (object, finalScale, config?) => {
   const initialScale = object.scale.x;
   return new Animation(
     (elapsedTime, deltaTime) => {
@@ -263,7 +263,7 @@ const Scale = (object, finalScale, config) => {
   );
 };
 
-const Draw = (object, config) => {
+const Draw = (object, config?) => {
   return new Animation(
     (elapsedTime) => {
       object.stroke.material.uniforms.drawRange.value.y = elapsedTime;
@@ -272,7 +272,7 @@ const Draw = (object, config) => {
   );
 };
 
-const Erase = (object, config) => {
+const Erase = (object, config?) => {
   const animation = new Animation(
     (elapsedTime) => {
       object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
@@ -286,7 +286,7 @@ const Erase = (object, config) => {
   return animation;
 };
 
-const FadeIn = (object, config) => {
+const FadeIn = (object, config?) => {
   const initialOpacity = new Map();
 
   const animation = new Animation(
@@ -315,7 +315,7 @@ const FadeIn = (object, config) => {
   return animation;
 };
 
-const FadeOut = (object, config) => {
+const FadeOut = (object, config?) => {
   const initialOpacity = new Map();
 
   const animation = new Animation(
@@ -356,7 +356,7 @@ const FadeOut = (object, config) => {
   return animation;
 };
 
-const Wait = (config) => {
+const Wait = (config?) => {
   return new Animation(() => {}, config);
 };
 
