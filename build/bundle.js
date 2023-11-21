@@ -53237,20 +53237,17 @@ const modulate = (t, dt) => {
 class Animation {
     constructor(func, { object, parent, before, after, scale } = {}) {
         this.func = func;
+        this.finished = false;
+        this.elapsedSinceStart = 0;
         this.runTime = 1;
         this.scale = scale || 1;
         this.object = object;
         this.parent = parent;
         this.before = before;
         this.after = after;
-        this.reset();
     }
-    reset() {
-        this.elapsedSinceStart = 0;
-        this.finished = false;
-        this.beforeFunc = undefined;
-        this.afterFunc = undefined;
-    }
+    setUp() { }
+    tearDown() { }
     update(worldTime) {
         if (worldTime <= this.startTime || this.finished) {
             return;
@@ -53265,6 +53262,7 @@ class Animation {
                 !parent.children.includes(this.object) && parent.add(this.object);
             }
             this.beforeFunc && this.beforeFunc();
+            this.setUp();
             deltaTime = worldTime - this.startTime;
         }
         else if (worldTime > this.endTime) {
@@ -53278,6 +53276,7 @@ class Animation {
         this.func(...modulate(this.elapsedSinceStart / (this.scale * this.runTime), deltaTime / (this.scale * this.runTime)).map((t) => t * this.runTime));
         if (worldTime >= this.endTime) {
             this.finished = true;
+            this.tearDown();
             this.afterFunc && this.afterFunc();
         }
     }
@@ -53306,122 +53305,137 @@ class Animation {
         }
     }
 }
-const Shift = (object, direction, config) => {
-    return new Animation((_elapsedTime, deltaTime) => {
-        object.position.add(direction.clone().multiplyScalar(deltaTime));
-    }, Object.assign({ object }, config));
-};
-const MoveTo = (target, obj, config) => {
-    let start;
-    let displacement;
-    const animation = new Animation(elapsedTime => {
-        if (start === undefined) {
-            start = obj.position.clone();
-        }
-        if (displacement === undefined) {
-            const final = new Vector3();
-            const initial = new Vector3();
-            obj.parent.worldToLocal(getBoundingBoxCenter(target, final));
-            obj.parent.worldToLocal(getBoundingBoxCenter(obj, initial));
-            displacement = new Vector3().subVectors(final, initial);
-        }
-        obj
-            .position
-            .copy(start)
-            .addScaledVector(displacement, elapsedTime);
-    }, Object.assign({ obj }, config));
-    return animation;
-};
-const Rotate = (object, angle, config) => {
-    return new Animation((_elapsedTime, deltaTime) => {
-        object.rotation.z += angle * deltaTime;
-    }, Object.assign({ object }, config));
-};
-const Scale = (object, factor, config) => {
-    const initialScale = object.scale.x;
-    return new Animation((elapsedTime, deltaTime) => {
-        const scale = MathUtils.lerp(initialScale, factor, elapsedTime);
-        object.scale.set(scale, scale, scale);
-    }, Object.assign({ object }, config));
-};
-const Draw = (object, config) => {
-    return new Animation((elapsedTime) => {
-        object.stroke.material.uniforms.drawRange.value.y = elapsedTime;
-    }, Object.assign({ object }, config));
-};
-const Erase = (object, config) => {
-    const animation = new Animation((elapsedTime) => {
-        object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
-    }, Object.assign({ object }, config));
-    animation.addAfter(() => {
-        object.parent.remove(object);
-        object.stroke.material.uniforms.drawRange.value.y = 1;
-    });
-    return animation;
-};
-const FadeIn = (objectOrFunc, config) => {
-    let object;
-    const initialOpacity = new Map();
-    const animation = new Animation((elapsedTime, _deltaTime) => {
-        object.traverse((child) => {
-            if (child instanceof Mesh) {
-                child.material.opacity = MathUtils.lerp(0, initialOpacity.get(child), elapsedTime);
-            }
-        });
-    }, Object.assign({ object: () => {
-            object = objectOrFunc instanceof Function
-                ? objectOrFunc()
-                : objectOrFunc;
-            return object;
-        } }, config));
-    animation.addBefore(() => {
-        object.traverse((child) => {
-            if (child instanceof Mesh) {
-                initialOpacity.set(child, child.material.opacity);
-            }
-        });
-    });
-    return animation;
-};
-const FadeOut = (objectOrFunc, config) => {
-    let object;
-    if (!(objectOrFunc instanceof Function)) {
-        object = objectOrFunc;
+class Shift extends Animation {
+    constructor(object, direction, config) {
+        super((_elapsedTime, deltaTime) => {
+            object.position.add(direction.clone().multiplyScalar(deltaTime));
+        }, Object.assign({ object }, config));
     }
-    else {
-        objectOrFunc = () => { object = objectOrFunc(); return object; };
+}
+class MoveTo extends Animation {
+    constructor(target, obj, config) {
+        super(elapsedTime => {
+            obj
+                .position
+                .copy(this.start)
+                .addScaledVector(this.displacement, elapsedTime);
+        }, Object.assign({ obj }, config));
+        this.target = target;
+        this.obj = obj;
     }
-    const initialOpacity = new Map();
-    const animation = new Animation((elapsedTime, _deltaTime) => {
-        object.traverse((child) => {
-            if (child instanceof Mesh) {
-                if (!initialOpacity.has(child)) {
-                    console.error("Unknown child");
+    setUp() {
+        this.start = this.obj.position.clone();
+        const final = new Vector3();
+        const initial = new Vector3();
+        this.obj.parent.worldToLocal(getBoundingBoxCenter(this.target, final));
+        this.obj.parent.worldToLocal(getBoundingBoxCenter(this.obj, initial));
+        this.displacement = new Vector3().subVectors(final, initial);
+    }
+}
+class Rotate extends Animation {
+    constructor(object, angle, config) {
+        super((_elapsedTime, deltaTime) => {
+            object.rotation.z += angle * deltaTime;
+        }, Object.assign({ object }, config));
+    }
+}
+class Scale extends Animation {
+    constructor(object, factor, config) {
+        const initialScale = object.scale.x;
+        super((elapsedTime, deltaTime) => {
+            const scale = MathUtils.lerp(initialScale, factor, elapsedTime);
+            object.scale.set(scale, scale, scale);
+        }, Object.assign({ object }, config));
+    }
+}
+class Draw extends Animation {
+    constructor(object, config) {
+        super((elapsedTime) => {
+            object.stroke.material.uniforms.drawRange.value.y = elapsedTime;
+        }, Object.assign({ object }, config));
+    }
+}
+class Erase extends Animation {
+    constructor(object, config) {
+        super((elapsedTime) => {
+            object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
+        }, Object.assign({ object }, config));
+        this.object = object;
+        this.config = config;
+    }
+    tearDown() {
+        var _a, _b;
+        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
+            this.object.parent.remove(this.object);
+        }
+        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
+            this.object.stroke.material.uniforms.drawRange.value.y = 1;
+        }
+    }
+}
+class FadeIn extends Animation {
+    constructor(object, config) {
+        super((elapsedTime, _deltaTime) => {
+            this.object.traverse((child) => {
+                if (child instanceof Mesh) {
+                    child.material.opacity = MathUtils.lerp(0, this.initialOpacity.get(child), elapsedTime);
                 }
-                child.material.opacity = MathUtils.lerp(initialOpacity.get(child), 0, elapsedTime);
-            }
-        });
-    }, Object.assign({ object: objectOrFunc }, config));
-    animation.addBefore(() => {
-        object.traverse((child) => {
+            });
+        }, Object.assign({ object }, config));
+        this.initialOpacity = new Map();
+    }
+    setUp() {
+        this.object.traverse((child) => {
             if (child instanceof Mesh) {
-                initialOpacity.set(child, child.material.opacity);
+                this.initialOpacity.set(child, child.material.opacity);
             }
         });
-    });
-    animation.addAfter(() => {
-        object.parent.remove(object);
-        object.traverse((child) => {
+    }
+}
+class FadeOut extends Animation {
+    constructor(objectOrFunc, config) {
+        super((elapsedTime, _deltaTime) => {
+            this.object.traverse((child) => {
+                if (child instanceof Mesh) {
+                    if (!this.initialOpacity.has(child)) {
+                        console.error("Unknown child");
+                    }
+                    child.material.opacity = MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
+                }
+            });
+        }, Object.assign({ object: objectOrFunc }, config));
+        this.config = config;
+        this.initialOpacity = new Map();
+    }
+    setUp() {
+        this.object.traverse((child) => {
             if (child instanceof Mesh) {
-                child.material.opacity = initialOpacity.get(child);
+                this.initialOpacity.set(child, child.material.opacity);
             }
         });
-    });
-    return animation;
-};
-const Wait = (config) => {
-    return new Animation(() => { }, config);
-};
+    }
+    tearDown() {
+        var _a, _b;
+        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
+            this.object.parent.remove(this.object);
+        }
+        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
+            this.object.traverse((child) => {
+                if (child instanceof Mesh) {
+                    if (!this.initialOpacity.has(child)) {
+                        console.error("Unknown child");
+                    }
+                    child.material.opacity = this.initialOpacity.get(child);
+                }
+            });
+        }
+    }
+}
+class Wait extends Animation {
+    constructor(config) {
+        super(() => { }, config);
+    }
+}
 
 var animation = /*#__PURE__*/Object.freeze({
 	__proto__: null,

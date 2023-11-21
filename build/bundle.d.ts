@@ -223,6 +223,7 @@ declare namespace Animation {
         after: any;
         scale: any;
         finished: boolean;
+        elapsedSinceStart: number;
         constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, scale }?: {
             object: any;
             parent: any;
@@ -230,20 +231,53 @@ declare namespace Animation {
             after: any;
             scale: any;
         });
-        reset(): void;
+        setUp(): void;
+        tearDown(): void;
         update(worldTime: any): void;
         addBefore(before: any): void;
         addAfter(after: any): void;
     }
-    const Shift: (object: any, direction: any, config?: any) => Animation;
-    const MoveTo: (target: THREE.Mesh, obj: THREE.Mesh, config?: any) => Animation;
-    const Rotate: (object: any, angle: any, config?: any) => Animation;
-    const Scale: (object: any, factor: any, config?: any) => Animation;
-    const Draw: (object: any, config?: any) => Animation;
-    const Erase: (object: any, config?: any) => Animation;
-    const FadeIn: (objectOrFunc: any, config?: any) => Animation;
-    const FadeOut: (objectOrFunc: any, config?: any) => Animation;
-    const Wait: (config?: any) => Animation;
+    class Shift extends Animation {
+        constructor(object: any, direction: any, config?: any);
+    }
+    class MoveTo extends Animation {
+        target: THREE.Mesh;
+        obj: THREE.Mesh;
+        start: any;
+        displacement: any;
+        constructor(target: THREE.Mesh, obj: THREE.Mesh, config?: any);
+        setUp(): void;
+    }
+    class Rotate extends Animation {
+        constructor(object: any, angle: any, config?: any);
+    }
+    class Scale extends Animation {
+        constructor(object: any, factor: any, config?: any);
+    }
+    class Draw extends Animation {
+        constructor(object: any, config?: any);
+    }
+    class Erase extends Animation {
+        object: any;
+        config?: any;
+        constructor(object: any, config?: any);
+        tearDown(): void;
+    }
+    class FadeIn extends Animation {
+        initialOpacity: Map<any, any>;
+        constructor(object: any, config?: any);
+        setUp(): void;
+    }
+    class FadeOut extends Animation {
+        config?: any;
+        initialOpacity: Map<any, any>;
+        constructor(objectOrFunc: any, config?: any);
+        setUp(): void;
+        tearDown(): void;
+    }
+    class Wait extends Animation {
+        constructor(config?: any);
+    }
 }
 declare namespace Text {
     type Transform = {
@@ -493,6 +527,7 @@ declare namespace Diagram {
         after: any;
         scale: any;
         finished: boolean;
+        elapsedSinceStart: number;
         constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, scale }?: {
             object: any;
             parent: any;
@@ -500,20 +535,53 @@ declare namespace Diagram {
             after: any;
             scale: any;
         });
-        reset(): void;
+        setUp(): void;
+        tearDown(): void;
         update(worldTime: any): void;
         addBefore(before: any): void;
         addAfter(after: any): void;
     }
-    const Shift: (object: any, direction: any, config?: any) => Animation;
-    const MoveTo: (target: THREE.Mesh, obj: THREE.Mesh, config?: any) => Animation;
-    const Rotate: (object: any, angle: any, config?: any) => Animation;
-    const Scale: (object: any, factor: any, config?: any) => Animation;
-    const Draw: (object: any, config?: any) => Animation;
-    const Erase: (object: any, config?: any) => Animation;
-    const FadeIn: (objectOrFunc: any, config?: any) => Animation;
-    const FadeOut: (objectOrFunc: any, config?: any) => Animation;
-    const Wait: (config?: any) => Animation;
+    class Shift extends Animation {
+        constructor(object: any, direction: any, config?: any);
+    }
+    class MoveTo extends Animation {
+        target: THREE.Mesh;
+        obj: THREE.Mesh;
+        start: any;
+        displacement: any;
+        constructor(target: THREE.Mesh, obj: THREE.Mesh, config?: any);
+        setUp(): void;
+    }
+    class Rotate extends Animation {
+        constructor(object: any, angle: any, config?: any);
+    }
+    class Scale extends Animation {
+        constructor(object: any, factor: any, config?: any);
+    }
+    class Draw extends Animation {
+        constructor(object: any, config?: any);
+    }
+    class Erase extends Animation {
+        object: any;
+        config?: any;
+        constructor(object: any, config?: any);
+        tearDown(): void;
+    }
+    class FadeIn extends Animation {
+        initialOpacity: Map<any, any>;
+        constructor(object: any, config?: any);
+        setUp(): void;
+    }
+    class FadeOut extends Animation {
+        config?: any;
+        initialOpacity: Map<any, any>;
+        constructor(objectOrFunc: any, config?: any);
+        setUp(): void;
+        tearDown(): void;
+    }
+    class Wait extends Animation {
+        constructor(config?: any);
+    }
     type Transform = {
         position: [
             number,

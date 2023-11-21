@@ -26,7 +26,8 @@ class Animation {
   public before;
   public after;
   public scale;
-  public finished: boolean;
+  public finished = false;
+  public elapsedSinceStart = 0;
 
   constructor(
     public func: (elapsedTime: number, deltaTime: number) => void,
@@ -38,15 +39,11 @@ class Animation {
     this.parent = parent;
     this.before = before;
     this.after = after;
-    this.reset();
   }
+  
+  setUp() {}
 
-  reset() {
-    this.elapsedSinceStart = 0;
-    this.finished = false;
-    this.beforeFunc = undefined;
-    this.afterFunc = undefined;
-  }
+  tearDown() {}
 
   update(worldTime) {
     if (worldTime <= this.startTime || this.finished) {
@@ -63,6 +60,7 @@ class Animation {
         !parent.children.includes(this.object) && parent.add(this.object);
       }
       this.beforeFunc && this.beforeFunc();
+      this.setUp();
       deltaTime = worldTime - this.startTime;
     } else if (worldTime > this.endTime) {
       deltaTime = this.endTime - this.prevUpdateTime;
@@ -81,6 +79,7 @@ class Animation {
 
     if (worldTime >= this.endTime) {
       this.finished = true;
+      this.tearDown();
       this.afterFunc && this.afterFunc();
     }
   }
@@ -110,173 +109,181 @@ class Animation {
   }
 }
 
-const Shift = (object, direction, config?) => {
-  return new Animation(
-    (_elapsedTime, deltaTime) => {
-      object.position.add(direction.clone().multiplyScalar(deltaTime));
-    },
-    { object, ...config }
-  );
-};
-
-const MoveTo = (target: THREE.Mesh, obj: THREE.Mesh, config?) => {
-  let start: THREE.Vector3;
-  let displacement: THREE.Vector3;
-
-  const animation = new Animation(
-    elapsedTime => {
-      if (start === undefined) {
-        start = obj.position.clone();
-      }
-      if (displacement === undefined) {
-        const final = new THREE.Vector3();
-        const initial = new THREE.Vector3();
-        obj.parent.worldToLocal(getBoundingBoxCenter(target, final));
-        obj.parent.worldToLocal(getBoundingBoxCenter(obj, initial));
-        displacement = new THREE.Vector3().subVectors(final, initial);
-      }
-      obj
-        .position
-        .copy(start)
-        .addScaledVector(displacement, elapsedTime);
-    },
-    { obj, ...config }
-  );
-  
-  return animation;
-};
-
-const Rotate = (object, angle, config?) => {
-  return new Animation(
-    (_elapsedTime, deltaTime) => {
-      object.rotation.z += angle * deltaTime;
-    },
-    { object, ...config }
-  );
-};
-
-const Scale = (object, factor, config?) => {
-  const initialScale = object.scale.x;
-  return new Animation(
-    (elapsedTime, deltaTime) => {
-      const scale = THREE.MathUtils.lerp(initialScale, factor, elapsedTime);
-      object.scale.set(scale, scale, scale);
-    },
-    { object, ...config }
-  );
-};
-
-const Draw = (object, config?) => {
-  return new Animation(
-    (elapsedTime) => {
-      object.stroke.material.uniforms.drawRange.value.y = elapsedTime;
-    },
-    { object, ...config }
-  );
-};
-
-const Erase = (object, config?) => {
-  const animation = new Animation(
-    (elapsedTime) => {
-      object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
-    },
-    { object, ...config }
-  );
-  animation.addAfter(() => {
-    object.parent.remove(object);
-    object.stroke.material.uniforms.drawRange.value.y = 1;
-  });
-  return animation;
-};
-
-const FadeIn = (objectOrFunc, config?) => {
-  let object;
-  const initialOpacity = new Map();
-
-  const animation = new Animation(
-    (elapsedTime, _deltaTime) => {
-      object.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.material.opacity = THREE.MathUtils.lerp(
-            0,
-            initialOpacity.get(child),
-            elapsedTime
-          );
-        }
-      });
-    }, {
-      object: () => {
-        object = objectOrFunc instanceof Function
-          ? objectOrFunc()
-          : objectOrFunc;
-        return object;
+class Shift extends Animation {
+  constructor(object, direction, config?) {
+    super(
+      (_elapsedTime, deltaTime) => {
+        object.position.add(direction.clone().multiplyScalar(deltaTime));
       },
-      ...config
-    }
-  );
+      { object, ...config }
+    );
+  } 
+}
 
-  animation.addBefore(() => {
-    object.traverse((child: THREE.Object3D) => {
+class MoveTo extends Animation {
+  public start;
+  public displacement;
+
+  constructor(public target: THREE.Mesh, public obj: THREE.Mesh, config?) {
+    super(
+      elapsedTime => {
+        obj
+          .position
+          .copy(this.start)
+          .addScaledVector(this.displacement, elapsedTime);
+      },
+      { obj, ...config }
+    )
+  }
+  
+  setUp() {
+    this.start = this.obj.position.clone();
+
+    const final = new THREE.Vector3();
+    const initial = new THREE.Vector3();
+    this.obj.parent.worldToLocal(getBoundingBoxCenter(this.target, final));
+    this.obj.parent.worldToLocal(getBoundingBoxCenter(this.obj, initial));
+    this.displacement = new THREE.Vector3().subVectors(final, initial);
+  }
+}
+
+class Rotate extends Animation {
+  constructor(object, angle, config?) {
+    super(
+      (_elapsedTime, deltaTime) => {
+        object.rotation.z += angle * deltaTime;
+      },
+      { object, ...config }
+    );
+  }
+}
+
+class Scale extends Animation {
+  constructor(object, factor, config?) {
+    const initialScale = object.scale.x;
+    super(
+      (elapsedTime, deltaTime) => {
+        const scale = THREE.MathUtils.lerp(initialScale, factor, elapsedTime);
+        object.scale.set(scale, scale, scale);
+      },
+      { object, ...config }
+    );
+  }
+} 
+
+class Draw extends Animation {
+  constructor(object, config?) {
+    super(
+      (elapsedTime) => {
+        object.stroke.material.uniforms.drawRange.value.y = elapsedTime;
+      },
+      { object, ...config }
+    );
+  }
+}
+
+class Erase extends Animation {
+  constructor(public object, public config?) {
+    super(
+      (elapsedTime) => {
+        object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
+      },
+      { object, ...config }
+    );
+  }
+  
+  tearDown() {
+    if (this.config?.remove) {
+      this.object.parent.remove(this.object);
+    }
+    if (this.config?.restore) {
+      this.object.stroke.material.uniforms.drawRange.value.y = 1;
+    }
+  }
+}
+
+class FadeIn extends Animation {
+  public initialOpacity = new Map();
+
+  constructor(object, config?) {
+    super(
+      (elapsedTime, _deltaTime) => {
+        this.object.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.material.opacity = THREE.MathUtils.lerp(
+              0,
+              this.initialOpacity.get(child),
+              elapsedTime
+            );
+          }
+        });
+      },
+      { object, ...config }
+    );
+  }
+  
+  setUp() {
+    this.object.traverse((child: THREE.Object3D) => {
       if (child instanceof THREE.Mesh) {
-        initialOpacity.set(child, child.material.opacity);
+        this.initialOpacity.set(child, child.material.opacity);
       }
     });
-  });
+  }
+}
 
-  return animation;
-};
+class FadeOut extends Animation {
+  initialOpacity = new Map();
 
-const FadeOut = (objectOrFunc, config?) => {
-  let object;
-  if (!(objectOrFunc instanceof Function)) {
-    object = objectOrFunc;
-  } else {
-    objectOrFunc = () => { object = objectOrFunc(); return object; }
+  constructor(objectOrFunc, public config?) {
+    super(
+      (elapsedTime, _deltaTime) => {
+        this.object.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            if (!this.initialOpacity.has(child)) {
+              console.error("Unknown child");
+            }
+            child.material.opacity = THREE.MathUtils.lerp(
+              this.initialOpacity.get(child),
+              0,
+              elapsedTime
+            );
+          }
+        });
+      },
+      { object: objectOrFunc, ...config }
+    );
+  }
+  
+  setUp() {
+    this.object.traverse((child: THREE.Object3D) => {
+      if (child instanceof THREE.Mesh) {
+        this.initialOpacity.set(child, child.material.opacity);
+      }
+    });
   }
 
-  const initialOpacity = new Map();
-
-  const animation = new Animation(
-    (elapsedTime, _deltaTime) => {
-      object.traverse((child) => {
+  tearDown() {
+    if (this.config?.remove) {
+      this.object.parent.remove(this.object);
+    }
+    if (this.config?.restore) {
+      this.object.traverse((child) => {
         if (child instanceof THREE.Mesh) {
-          if (!initialOpacity.has(child)) {
+          if (!this.initialOpacity.has(child)) {
             console.error("Unknown child");
           }
-          child.material.opacity = THREE.MathUtils.lerp(
-            initialOpacity.get(child),
-            0,
-            elapsedTime
-          );
+          child.material.opacity = this.initialOpacity.get(child);
         }
       });
-    },
-    { object: objectOrFunc, ...config }
-  );
+    }
+  }
+}
 
-  animation.addBefore(() => {
-    object.traverse((child: THREE.Object3D) => {
-      if (child instanceof THREE.Mesh) {
-        initialOpacity.set(child, child.material.opacity);
-      }
-    });
-  });
-
-  animation.addAfter(() => {
-    object.parent.remove(object);
-    object.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.material.opacity = initialOpacity.get(child);
-      }
-    });
-  });
-
-  return animation;
-};
-
-const Wait = (config?) => {
-  return new Animation(() => {}, config);
-};
+class Wait extends Animation {
+  constructor(config?) {
+    super(() => {}, config);
+  }
+}
 
 export {
   Animation,
