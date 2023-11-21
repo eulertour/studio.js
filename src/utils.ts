@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { PIXELS_TO_COORDS } from "./constants";
 import * as Geometry from "./geometry";
 import { Style } from "./geometry.types";
+import { Utils } from "src";
 
 const BUFFER = 0.5;
 const RIGHT = Object.freeze(new THREE.Vector3(1, 0, 0));
@@ -98,110 +99,64 @@ const setupCanvas = (
   return [new THREE.Scene(), camera, renderer];
 };
 
-const moveToRightOf = (object1, object2, distance = 0.5) => {
-  moveNextTo(object1, object2, RIGHT, distance);
-};
-
-const moveToLeftOf = (object1, object2, distance = 0.5) => {
-  moveNextTo(object1, object2, LEFT, distance);
-};
-
-const moveBelow = (object1, object2, distance = 0.5) => {
-  moveNextTo(object1, object2, DOWN, distance);
-};
-
-const furthestInDirection = (object, direction) => {
+const moveNextTo = (target, object, direction, distance = 0.5) => {
+  target.updateWorldMatrix(true, true);
   object.updateWorldMatrix(true, true);
-  let maxPoint = new THREE.Vector3();
-  let maxVal = -Infinity;
-  let worldPoint = new THREE.Vector3();
-  object.traverse((child) => {
-    if (child instanceof THREE.Mesh) {
-      const positionArray = child.geometry.attributes.position.array;
-      if (positionArray.length % 3 !== 0) {
-        throw new Error("Invalid position array length");
-      }
-      for (let i = 0; i < positionArray.length; i += 3) {
-        worldPoint
-          .set(positionArray[i], positionArray[i + 1], positionArray[i + 2])
-          .applyMatrix4(child.matrixWorld);
-        let dot = worldPoint.dot(direction);
-        if (dot > maxVal) {
-          maxPoint.copy(worldPoint);
-          maxVal = dot;
-        }
-      }
-      if (child.geometry.attributes.nextPosition !== undefined) {
-        const nextArray = child.geometry.attributes.nextPosition.array;
-        worldPoint
-          .set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1))
-          .applyMatrix4(child.matrixWorld);
-        let dot = worldPoint.dot(direction);
-        if (dot > maxVal) {
-          maxPoint.copy(worldPoint);
-          maxVal = dot;
-        }
-      }
-    }
-  });
-  return maxPoint;
+
+  const targetBox = new THREE.Box3().expandByObject(target);
+  const objectBox = new THREE.Box3().expandByObject(object);
+
+  let targetCenter: THREE.Vector3;
+  let objectCenter: THREE.Vector3;
+  targetBox.getCenter(targetCenter);
+  objectBox.getCenter(objectCenter);
+  
+  const objectPositionToCenter = objectCenter.clone().sub(object.position);
+  
+  let targetCenterToHorizontalEdge;
+  let objectCenterToHorizontalEdge;
+  if (direction.x > 0) {
+    targetCenterToHorizontalEdge = targetBox.max.x - targetCenter.x;
+    objectCenterToHorizontalEdge = objectBox.min.x - objectCenter.x;
+  } else if (direction.x < 0) {
+    targetCenterToHorizontalEdge = targetBox.min.x - targetCenter.x;
+    objectCenterToHorizontalEdge = objectBox.max.x - objectCenter.x;
+  }
+
+  let targetCenterToVerticalEdge;
+  let objectCenterToVerticalEdge;
+  if (direction.y > 0) {
+    targetCenterToVerticalEdge = targetBox.max.y - targetCenter.y;
+    objectCenterToVerticalEdge = objectBox.min.y - objectCenter.y;
+  } else if (direction.y < 0) {
+    targetCenterToVerticalEdge = targetBox.min.y - targetCenter.y;
+    objectCenterToVerticalEdge = objectBox.max.y - objectCenter.y;
+  }
+  
+  object.position
+    .copy(targetCenter)
+    .sub(objectPositionToCenter)
+    .add(direction.multiplyScalar(distance));
+  object.position.x += targetCenterToHorizontalEdge;
+  object.position.x -= objectCenterToHorizontalEdge;
+  object.position.y += targetCenterToVerticalEdge;
+  object.position.y -= objectCenterToVerticalEdge;
+}
+
+const moveToRightOf = (target, object, distance = 0.5) => {
+  moveNextTo(target, object, RIGHT, distance);
 };
 
-const getCenter = (object) => {
-  object.updateWorldMatrix(true, true);
-  const min = new THREE.Vector3(Infinity, Infinity, Infinity);
-  const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
-  let point = new THREE.Vector3();
-  let worldPoint = new THREE.Vector3();
-  object.traverse((child) => {
-    if (child instanceof THREE.Mesh) {
-      const positionArray = child.geometry.attributes.position.array;
-      if (positionArray.length % 3 !== 0) {
-        throw new Error("Invalid position array length");
-      }
-      for (let i = 0; i < positionArray.length; i += 3) {
-        point.set(positionArray[i], positionArray[i + 1], positionArray[i + 2]);
-        worldPoint.copy(point).applyMatrix4(child.matrixWorld);
-        min.min(worldPoint);
-        max.max(worldPoint);
-      }
-      if (child.geometry.attributes.nextPosition !== undefined) {
-        const nextArray = child.geometry.attributes.nextPosition.array;
-        point.set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1));
-        worldPoint.copy(point).applyMatrix4(child.matrixWorld);
-        min.min(worldPoint);
-        max.max(worldPoint);
-      }
-    }
-  });
-  worldPoint.addVectors(min, max).divideScalar(2);
-  return worldPoint.addVectors(min, max).divideScalar(2);
+const moveToLeftOf = (target, object, distance = 0.5) => {
+  moveNextTo(target, object, LEFT, distance);
 };
 
-const moveNextTo = (object1, object2, direction, distance = 0.5) => {
-  const normalizedDirection = direction.clone().normalize();
-  const obj1Edge = furthestInDirection(object1, normalizedDirection);
-  const obj2Opposite = furthestInDirection(
-    object2,
-    new THREE.Vector3().copy(normalizedDirection).negate()
-  );
+const moveAbove = (target, object, distance = 0.5) => {
+  moveNextTo(target, object, UP, distance);
+};
 
-  const obj1Center = getCenter(object1);
-  const obj1Offset = new THREE.Vector3()
-    .subVectors(obj1Edge, obj1Center)
-    .projectOnVector(normalizedDirection);
-
-  const obj2Center = getCenter(object2);
-  const obj2Offset = new THREE.Vector3()
-    .subVectors(obj2Center, obj2Opposite)
-    .projectOnVector(normalizedDirection);
-
-  const newPosition = new THREE.Vector3()
-    .copy(obj1Center)
-    .add(obj1Offset)
-    .add(obj2Offset)
-    .add(normalizedDirection.multiplyScalar(distance));
-  object2.position.copy(newPosition);
+const moveBelow = (target, object, distance = 0.5) => {
+  moveNextTo(target, object, DOWN, distance);
 };
 
 const getBoundingBoxCenter = (obj: THREE.Mesh | THREE.Group, target: THREE.Vector3) => {
@@ -216,6 +171,14 @@ const getBoundingBoxHelper = (obj: THREE.Mesh | THREE.Group, color: string) => {
   const helper = new THREE.Box3Helper(box, new THREE.Color(color));
   return helper;
 };
+
+const transformBetweenSpaces = (
+  from: THREE.Object3D,
+  to: THREE.Object3D,
+  point: THREE.Vector3,
+) => {
+  return to.worldToLocal(from.localToWorld(point));
+}
 
 /*
  * Solves
@@ -525,10 +488,12 @@ export {
   furthestInDirection,
   moveToRightOf,
   moveToLeftOf,
+  moveAbove,
   moveBelow,
   moveNextTo,
   getBoundingBoxCenter,
   getBoundingBoxHelper,
+  transformBetweenSpaces,
   intersectionsBetween,
   ShapeFromCurves,
   BUFFER,

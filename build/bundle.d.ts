@@ -459,13 +459,16 @@ declare namespace Utils {
         THREE.Camera,
         THREE.WebGLRenderer
     ];
-    const moveToRightOf: (object1: any, object2: any, distance?: number) => void;
-    const moveToLeftOf: (object1: any, object2: any, distance?: number) => void;
-    const moveBelow: (object1: any, object2: any, distance?: number) => void;
+    const moveToRightOf: (target: any, object: any, distance?: number) => void;
+    const moveToLeftOf: (target: any, object: any, distance?: number) => void;
+    const moveAbove: (target: any, object: any, distance?: number) => void;
+    const moveBelow: (target: any, object: any, distance?: number) => void;
     const furthestInDirection: (object: any, direction: any) => THREE.Vector3;
     const moveNextTo: (object1: any, object2: any, direction: any, distance?: number) => void;
+    const moveNextTo2: (target: any, object: any, direction: any, distance?: number) => void;
     const getBoundingBoxCenter: (obj: THREE.Mesh | THREE.Group, target: THREE.Vector3) => THREE.Vector3;
     const getBoundingBoxHelper: (obj: THREE.Mesh | THREE.Group, color: string) => THREE.Box3Helper;
+    const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;
     const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
     class ShapeFromCurves {
         adjacentThreshold: number;
@@ -665,13 +668,16 @@ declare namespace Diagram {
         THREE.Camera,
         THREE.WebGLRenderer
     ];
-    const moveToRightOf: (object1: any, object2: any, distance?: number) => void;
-    const moveToLeftOf: (object1: any, object2: any, distance?: number) => void;
-    const moveBelow: (object1: any, object2: any, distance?: number) => void;
+    const moveToRightOf: (target: any, object: any, distance?: number) => void;
+    const moveToLeftOf: (target: any, object: any, distance?: number) => void;
+    const moveAbove: (target: any, object: any, distance?: number) => void;
+    const moveBelow: (target: any, object: any, distance?: number) => void;
     const furthestInDirection: (object: any, direction: any) => THREE.Vector3;
     const moveNextTo: (object1: any, object2: any, direction: any, distance?: number) => void;
+    const moveNextTo2: (target: any, object: any, direction: any, distance?: number) => void;
     const getBoundingBoxCenter: (obj: THREE.Mesh | THREE.Group, target: THREE.Vector3) => THREE.Vector3;
     const getBoundingBoxHelper: (obj: THREE.Mesh | THREE.Group, color: string) => THREE.Box3Helper;
+    const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;
     const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
     class ShapeFromCurves {
         adjacentThreshold: number;

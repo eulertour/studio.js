@@ -52897,14 +52897,17 @@ const setupCanvas = (canvas, config = {
     }
     return [new Scene(), camera, renderer];
 };
-const moveToRightOf = (object1, object2, distance = 0.5) => {
-    moveNextTo(object1, object2, RIGHT, distance);
+const moveToRightOf = (target, object, distance = 0.5) => {
+    moveNextTo(target, object, RIGHT, distance);
 };
-const moveToLeftOf = (object1, object2, distance = 0.5) => {
-    moveNextTo(object1, object2, LEFT, distance);
+const moveToLeftOf = (target, object, distance = 0.5) => {
+    moveNextTo(target, object, LEFT, distance);
 };
-const moveBelow = (object1, object2, distance = 0.5) => {
-    moveNextTo(object1, object2, DOWN, distance);
+const moveAbove = (target, object, distance = 0.5) => {
+    moveNextTo(target, object, UP, distance);
+};
+const moveBelow = (target, object, distance = 0.5) => {
+    moveNextTo(target, object, DOWN, distance);
 };
 const furthestInDirection = (object, direction) => {
     object.updateWorldMatrix(true, true);
@@ -52991,6 +52994,45 @@ const moveNextTo = (object1, object2, direction, distance = 0.5) => {
         .add(normalizedDirection.multiplyScalar(distance));
     object2.position.copy(newPosition);
 };
+const moveNextTo2 = (target, object, direction, distance = 0.5) => {
+    target.updateWorldMatrix(true, true);
+    object.updateWorldMatrix(true, true);
+    const targetBox = new Box3().expandByObject(target);
+    const objectBox = new Box3().expandByObject(object);
+    let targetCenter;
+    let objectCenter;
+    targetBox.getCenter(targetCenter);
+    objectBox.getCenter(objectCenter);
+    const objectPositionToCenter = objectCenter.clone().sub(object.position);
+    let targetCenterToHorizontalEdge;
+    let objectCenterToHorizontalEdge;
+    if (direction.x > 0) {
+        targetCenterToHorizontalEdge = targetBox.max.x - targetCenter.x;
+        objectCenterToHorizontalEdge = objectBox.min.x - objectCenter.x;
+    }
+    else if (direction.x < 0) {
+        targetCenterToHorizontalEdge = targetBox.min.x - targetCenter.x;
+        objectCenterToHorizontalEdge = objectBox.max.x - objectCenter.x;
+    }
+    let targetCenterToVerticalEdge;
+    let objectCenterToVerticalEdge;
+    if (direction.y > 0) {
+        targetCenterToVerticalEdge = targetBox.max.y - targetCenter.y;
+        objectCenterToVerticalEdge = objectBox.min.y - objectCenter.y;
+    }
+    else if (direction.y < 0) {
+        targetCenterToVerticalEdge = targetBox.min.y - targetCenter.y;
+        objectCenterToVerticalEdge = objectBox.max.y - objectCenter.y;
+    }
+    object.position
+        .copy(targetCenter)
+        .sub(objectPositionToCenter)
+        .add(direction.multiplyScalar(distance));
+    object.position.x += targetCenterToHorizontalEdge;
+    object.position.x -= objectCenterToHorizontalEdge;
+    object.position.y += targetCenterToVerticalEdge;
+    object.position.y -= objectCenterToVerticalEdge;
+};
 const getBoundingBoxCenter = (obj, target) => {
     obj.updateWorldMatrix(true, true);
     new Box3().expandByObject(obj).getCenter(target);
@@ -53001,6 +53043,9 @@ const getBoundingBoxHelper = (obj, color) => {
     const box = new Box3().expandByObject(obj);
     const helper = new Box3Helper(box, new Color(color));
     return helper;
+};
+const transformBetweenSpaces = (from, to, point) => {
+    return to.worldToLocal(from.localToWorld(point));
 };
 const matrixSolve = (ma, mb, mc, md, ba, bb) => {
     const determinant = ma * md - mb * mc;
@@ -53216,11 +53261,14 @@ var utils = /*#__PURE__*/Object.freeze({
 	getBoundingBoxHelper: getBoundingBoxHelper,
 	getFrameAttributes: getFrameAttributes,
 	intersectionsBetween: intersectionsBetween,
+	moveAbove: moveAbove,
 	moveBelow: moveBelow,
 	moveNextTo: moveNextTo,
+	moveNextTo2: moveNextTo2,
 	moveToLeftOf: moveToLeftOf,
 	moveToRightOf: moveToRightOf,
-	setupCanvas: setupCanvas
+	setupCanvas: setupCanvas,
+	transformBetweenSpaces: transformBetweenSpaces
 });
 
 let sigmoid = (x) => 1 / (1 + Math.exp(-x));
