@@ -9,7 +9,8 @@ class Text extends THREE.Group {
     config: {
       fillColor?: THREE.Color;
       fillOpacity?: number;
-      groupColoring?: Array<[string, number?]>;
+      groupColoring?: Array<[number, string?]>;
+      batchMaterials?: boolean;
     } = {}
   ) {
     super();
@@ -40,9 +41,17 @@ class Text extends THREE.Group {
     group.scale.set(0.001, -0.001, 0.001);
 
     let groupColorsIndex = 0;
-    let groupColoring = config.groupColoring || [
-      [parseData.paths.length, config.fillColor],
-    ];
+    let groupColoring;
+    if (config.groupColoring !== undefined) {
+      groupColoring = config.groupColoring;
+    } else if (config.batchMaterials === false) {
+      groupColoring = [];
+      for (let i = 0; i < parseData.paths.length; i++) {
+        groupColoring.push([i + 1, config.fillColor]);
+      }
+    } else {
+      groupColoring = [[parseData.paths.length, config.fillColor]];
+    }
     let material = new THREE.MeshBasicMaterial({
       color: new THREE.Color(groupColoring[0][1]),
       opacity: config.fillOpacity,

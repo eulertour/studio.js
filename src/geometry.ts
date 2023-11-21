@@ -105,7 +105,7 @@ abstract class Shape extends THREE.Group {
     return this;
   }
 
-  clone(recursive: boolean) {
+  clone(recursive: boolean?) {
     if (recursive === false) {
       throw Error("Shape.clone() is always recursive");
     }

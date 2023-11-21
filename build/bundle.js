@@ -52835,12 +52835,12 @@ var geometry = /*#__PURE__*/Object.freeze({
 });
 
 const BUFFER = 0.5;
-const RIGHT = new Vector3(1, 0, 0);
-const LEFT = new Vector3(-1, 0, 0);
-const UP = new Vector3(0, 1, 0);
-const DOWN = new Vector3(0, -1, 0);
-const OUT = new Vector3(0, 0, 1);
-const IN = new Vector3(0, 0, -1);
+const RIGHT = Object.freeze(new Vector3(1, 0, 0));
+const LEFT = Object.freeze(new Vector3(-1, 0, 0));
+const UP = Object.freeze(new Vector3(0, 1, 0));
+const DOWN = Object.freeze(new Vector3(0, -1, 0));
+const OUT = Object.freeze(new Vector3(0, 0, 1));
+const IN = Object.freeze(new Vector3(0, 0, -1));
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 const getFrameAttributes = (aspectRatio, height) => {
     const coordinateHeight = PIXELS_TO_COORDS * height;
@@ -52927,7 +52927,7 @@ const furthestInDirection = (object, direction) => {
                     maxVal = dot;
                 }
             }
-            if (child.parent.constructor.name === "Line") {
+            if (child.geometry.attributes.nextPosition !== undefined) {
                 const nextArray = child.geometry.attributes.nextPosition.array;
                 worldPoint
                     .set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1))
@@ -52960,7 +52960,7 @@ const getCenter = (object) => {
                 min.min(worldPoint);
                 max.max(worldPoint);
             }
-            if (child.parent.constructor.name === "Line") {
+            if (child.geometry.attributes.nextPosition !== undefined) {
                 const nextArray = child.geometry.attributes.nextPosition.array;
                 point.set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1));
                 worldPoint.copy(point).applyMatrix4(child.matrixWorld);
@@ -52991,6 +52991,17 @@ const moveNextTo = (object1, object2, direction, distance = 0.5) => {
         .add(normalizedDirection.multiplyScalar(distance));
     object2.position.copy(newPosition);
 };
+const getBoundingBoxCenter = (obj, target) => {
+    obj.updateWorldMatrix(true, true);
+    new Box3().expandByObject(obj).getCenter(target);
+    return target;
+};
+const getBoundingBoxHelper = (obj, color) => {
+    obj.updateWorldMatrix(true, true);
+    const box = new Box3().expandByObject(obj);
+    const helper = new Box3Helper(box, new Color(color));
+    return helper;
+};
 const matrixSolve = (ma, mb, mc, md, ba, bb) => {
     const determinant = ma * md - mb * mc;
     if (determinant === 0) {
@@ -53016,6 +53027,23 @@ const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
     return (new Vector3()
         .subVectors(shape.points.at(0), shape.points.at(-1))
         .length() < adjacentThreshold);
+};
+const intersectionsBetween = (shape1, shape2) => {
+    var _a, _b, _c, _d;
+    let intersections = [];
+    shape1.updateMatrixWorld();
+    shape2.updateMatrixWorld();
+    for (let i = 0; i < shape1.points.length - 1; i++) {
+        const segment1 = new Line3((_a = shape1.points[i]) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape1.matrixWorld), (_b = shape1.points[i + 1]) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape1.matrixWorld));
+        for (let j = 0; j < shape2.points.length - 1; j++) {
+            const segment2 = new Line3((_c = shape2.points[j]) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape2.matrixWorld), (_d = shape2.points[j + 1]) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape2.matrixWorld));
+            const maybeIntersection = getIntersection(segment1.start, segment1.end, segment2.start, segment2.end);
+            if (maybeIntersection !== null) {
+                intersections.push(maybeIntersection);
+            }
+        }
+    }
+    return intersections;
 };
 class ShapeFromCurves {
     constructor() {
@@ -53171,23 +53199,6 @@ class ShapeFromCurves {
         return new Polygon(this.points, this.style);
     }
 }
-const intersectionsBetween = (shape1, shape2) => {
-    var _a, _b, _c, _d;
-    let intersections = [];
-    shape1.updateMatrixWorld();
-    shape2.updateMatrixWorld();
-    for (let i = 0; i < shape1.points.length - 1; i++) {
-        const segment1 = new Line3((_a = shape1.points[i]) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape1.matrixWorld), (_b = shape1.points[i + 1]) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape1.matrixWorld));
-        for (let j = 0; j < shape2.points.length - 1; j++) {
-            const segment2 = new Line3((_c = shape2.points[j]) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape2.matrixWorld), (_d = shape2.points[j + 1]) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape2.matrixWorld));
-            const maybeIntersection = getIntersection(segment1.start, segment1.end, segment2.start, segment2.end);
-            if (maybeIntersection !== null) {
-                intersections.push(maybeIntersection);
-            }
-        }
-    }
-    return intersections;
-};
 
 var utils = /*#__PURE__*/Object.freeze({
 	__proto__: null,
@@ -53201,6 +53212,8 @@ var utils = /*#__PURE__*/Object.freeze({
 	UP: UP,
 	clamp: clamp,
 	furthestInDirection: furthestInDirection,
+	getBoundingBoxCenter: getBoundingBoxCenter,
+	getBoundingBoxHelper: getBoundingBoxHelper,
 	getFrameAttributes: getFrameAttributes,
 	intersectionsBetween: intersectionsBetween,
 	moveBelow: moveBelow,
@@ -53244,12 +53257,13 @@ class Animation {
         }
         let deltaTime;
         if (this.prevUpdateTime === undefined) {
-            this.addBefore(() => {
-                if (this.object !== undefined && this.object.parent === null) {
-                    const parent = this.parent;
-                    !parent.children.includes(this.object) && parent.add(this.object);
-                }
-            });
+            if (this.object instanceof Function) {
+                this.object = this.object();
+            }
+            if (this.object !== undefined && this.object.parent === null) {
+                const parent = this.parent;
+                !parent.children.includes(this.object) && parent.add(this.object);
+            }
             this.beforeFunc && this.beforeFunc();
             deltaTime = worldTime - this.startTime;
         }
@@ -53297,98 +53311,25 @@ const Shift = (object, direction, config) => {
         object.position.add(direction.clone().multiplyScalar(deltaTime));
     }, Object.assign({ object }, config));
 };
-const MoveTo = (object, target, config) => {
-    let shiftVec;
-    const animation = new Animation((_elapsedTime, deltaTime) => {
-        object.position.add(shiftVec.clone().multiplyScalar(deltaTime));
-    }, Object.assign({ object }, config));
-    animation.addBefore(() => {
-        object.updateWorldMatrix(true, true);
-        target.updateWorldMatrix(true, true);
-        let lowestCommonAncestor;
-        let currentParent;
-        const objectParents = new Set();
-        currentParent = object.parent;
-        while (currentParent !== null) {
-            objectParents.add(currentParent.id);
-            currentParent = currentParent.parent;
+const MoveTo = (target, obj, config) => {
+    let start;
+    let displacement;
+    const animation = new Animation(elapsedTime => {
+        if (start === undefined) {
+            start = obj.position.clone();
         }
-        currentParent = target.parent;
-        let lastParent = target;
-        while (currentParent !== null && !objectParents.has(currentParent.id)) {
-            currentParent = currentParent.parent;
-            lastParent = currentParent;
+        if (displacement === undefined) {
+            const final = new Vector3();
+            const initial = new Vector3();
+            obj.parent.worldToLocal(getBoundingBoxCenter(target, final));
+            obj.parent.worldToLocal(getBoundingBoxCenter(obj, initial));
+            displacement = new Vector3().subVectors(final, initial);
         }
-        let removeAncestorAtEnd = false;
-        if (currentParent === null) {
-            if (config.ancestor === undefined) {
-                throw new Error("object and target have no common ancestor and none was specified");
-            }
-            config.ancestor.add(lastParent);
-            removeAncestorAtEnd = true;
-            lowestCommonAncestor = config.ancestor;
-        }
-        else {
-            lowestCommonAncestor = currentParent;
-        }
-        const objectBox = new Box3();
-        const currentBox = new Box3();
-        object.traverse((child) => {
-            if (child instanceof Mesh) {
-                const geometry = child.geometry;
-                if (geometry.boundingBox === null) {
-                    geometry.computeBoundingBox();
-                }
-                currentBox.copy(geometry.boundingBox);
-                currentBox.applyMatrix4(child.matrix);
-                currentParent = child.parent;
-                while (currentParent !== lowestCommonAncestor) {
-                    currentBox.applyMatrix4(currentParent.matrix);
-                    currentParent = currentParent.parent;
-                }
-                objectBox.union(currentBox);
-            }
-        });
-        const targetBox = new Box3();
-        target.traverse((child) => {
-            if (child instanceof Mesh) {
-                const geometry = child.geometry;
-                if (geometry.boundingBox === null) {
-                    geometry.computeBoundingBox();
-                }
-                currentBox.copy(geometry.boundingBox);
-                currentBox.applyMatrix4(child.matrix);
-                currentParent = child.parent;
-                while (currentParent !== null &&
-                    currentParent !== lowestCommonAncestor) {
-                    currentBox.applyMatrix4(currentParent.matrix);
-                    currentParent = currentParent.parent;
-                }
-                targetBox.union(currentBox);
-            }
-        });
-        const objectCenter = new Vector3();
-        const targetCenter = new Vector3();
-        objectBox.getCenter(objectCenter);
-        targetBox.getCenter(targetCenter);
-        shiftVec = new Vector3().subVectors(targetCenter, objectCenter);
-        const ancestorToObjectMatrices = [object.matrix];
-        currentParent = object.parent;
-        while (currentParent !== lowestCommonAncestor) {
-            ancestorToObjectMatrices.push(currentParent.matrix);
-            currentParent = currentParent.parent;
-        }
-        ancestorToObjectMatrices.reverse();
-        const ancestorToObjectMatrix = new Matrix4();
-        for (let matrix of ancestorToObjectMatrices) {
-            ancestorToObjectMatrix.premultiply(matrix.clone().invert());
-        }
-        const shiftVec4 = new Vector4(shiftVec.x, shiftVec.y, shiftVec.z, 0).applyMatrix4(ancestorToObjectMatrix);
-        shiftVec.set(shiftVec4.x, shiftVec4.y, shiftVec4.z);
-        if (removeAncestorAtEnd) {
-            config.ancestor.remove(lastParent);
-        }
-    });
+        obj
+            .position
+            .copy(start)
+            .addScaledVector(displacement, elapsedTime);
+    }, Object.assign({ obj }, config));
     return animation;
 };
 const Rotate = (object, angle, config) => {
@@ -53396,10 +53337,10 @@ const Rotate = (object, angle, config) => {
         object.rotation.z += angle * deltaTime;
     }, Object.assign({ object }, config));
 };
-const Scale = (object, finalScale, config) => {
+const Scale = (object, factor, config) => {
     const initialScale = object.scale.x;
     return new Animation((elapsedTime, deltaTime) => {
-        const scale = MathUtils.lerp(initialScale, finalScale, elapsedTime);
+        const scale = MathUtils.lerp(initialScale, factor, elapsedTime);
         object.scale.set(scale, scale, scale);
     }, Object.assign({ object }, config));
 };
@@ -53418,7 +53359,8 @@ const Erase = (object, config) => {
     });
     return animation;
 };
-const FadeIn = (object, config) => {
+const FadeIn = (objectOrFunc, config) => {
+    let object;
     const initialOpacity = new Map();
     const animation = new Animation((elapsedTime, _deltaTime) => {
         object.traverse((child) => {
@@ -53426,7 +53368,12 @@ const FadeIn = (object, config) => {
                 child.material.opacity = MathUtils.lerp(0, initialOpacity.get(child), elapsedTime);
             }
         });
-    }, Object.assign({ object }, config));
+    }, Object.assign({ object: () => {
+            object = objectOrFunc instanceof Function
+                ? objectOrFunc()
+                : objectOrFunc;
+            return object;
+        } }, config));
     animation.addBefore(() => {
         object.traverse((child) => {
             if (child instanceof Mesh) {
@@ -53436,7 +53383,14 @@ const FadeIn = (object, config) => {
     });
     return animation;
 };
-const FadeOut = (object, config) => {
+const FadeOut = (objectOrFunc, config) => {
+    let object;
+    if (!(objectOrFunc instanceof Function)) {
+        object = objectOrFunc;
+    }
+    else {
+        objectOrFunc = () => { object = objectOrFunc(); return object; };
+    }
     const initialOpacity = new Map();
     const animation = new Animation((elapsedTime, _deltaTime) => {
         object.traverse((child) => {
@@ -53447,7 +53401,7 @@ const FadeOut = (object, config) => {
                 child.material.opacity = MathUtils.lerp(initialOpacity.get(child), 0, elapsedTime);
             }
         });
-    }, Object.assign({ object }, config));
+    }, Object.assign({ object: objectOrFunc }, config));
     animation.addBefore(() => {
         object.traverse((child) => {
             if (child instanceof Mesh) {
@@ -98252,9 +98206,19 @@ class Text extends Group {
         const group = new Group();
         group.scale.set(0.001, -0.001, 0.001);
         let groupColorsIndex = 0;
-        let groupColoring = config.groupColoring || [
-            [parseData.paths.length, config.fillColor],
-        ];
+        let groupColoring;
+        if (config.groupColoring !== undefined) {
+            groupColoring = config.groupColoring;
+        }
+        else if (config.batchMaterials === false) {
+            groupColoring = [];
+            for (let i = 0; i < parseData.paths.length; i++) {
+                groupColoring.push([i + 1, config.fillColor]);
+            }
+        }
+        else {
+            groupColoring = [[parseData.paths.length, config.fillColor]];
+        }
         let material = new MeshBasicMaterial({
             color: new Color(groupColoring[0][1]),
             opacity: config.fillOpacity,
@@ -98446,6 +98410,8 @@ class SceneController {
                             animation.endTime = currentEndTime + runTime * scale;
                             animation.runTime = runTime;
                             animation.scale = scale;
+                            animation.before && animation.addBefore(animation.before);
+                            animation.after && animation.addAfter(animation.after);
                             animation.parent =
                                 animation.parent || o.parent || this.userScene.scene;
                             this.loopAnimations.push(...animationArray);

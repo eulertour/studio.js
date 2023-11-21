@@ -89,7 +89,7 @@ declare namespace Geometry {
         get numCurves(): number;
         getCurveEndIndices(): any[];
         clear(): this;
-        clone(recursive: boolean): any;
+        clone(recursive: ?boolean): any;
         getClassConfig(): {};
         copy(source: this, recursive: boolean): this;
         abstract getAttributes(): object;
@@ -236,13 +236,13 @@ declare namespace Animation {
         addAfter(after: any): void;
     }
     const Shift: (object: any, direction: any, config?: any) => Animation;
-    const MoveTo: (object: any, target: any, config?: any) => Animation;
+    const MoveTo: (target: THREE.Mesh, obj: THREE.Mesh, config?: any) => Animation;
     const Rotate: (object: any, angle: any, config?: any) => Animation;
-    const Scale: (object: any, finalScale: any, config?: any) => Animation;
+    const Scale: (object: any, factor: any, config?: any) => Animation;
     const Draw: (object: any, config?: any) => Animation;
     const Erase: (object: any, config?: any) => Animation;
-    const FadeIn: (object: any, config?: any) => Animation;
-    const FadeOut: (object: any, config?: any) => Animation;
+    const FadeIn: (objectOrFunc: any, config?: any) => Animation;
+    const FadeOut: (objectOrFunc: any, config?: any) => Animation;
     const Wait: (config?: any) => Animation;
 }
 declare namespace Text {
@@ -305,9 +305,10 @@ declare namespace Text {
             fillColor?: THREE.Color;
             fillOpacity?: number;
             groupColoring?: Array<[
-                string,
-                number?
+                number,
+                string?
             ]>;
+            batchMaterials?: boolean;
         });
         dispose(): void;
         clone(recursive: boolean): any;
@@ -395,12 +396,12 @@ declare namespace Utils {
         points: Array<THREE.Vector3>;
     };
     const BUFFER = 0.5;
-    const RIGHT: THREE.Vector3;
-    const LEFT: THREE.Vector3;
-    const UP: THREE.Vector3;
-    const DOWN: THREE.Vector3;
-    const OUT: THREE.Vector3;
-    const IN: THREE.Vector3;
+    const RIGHT: Readonly<THREE.Vector3>;
+    const LEFT: Readonly<THREE.Vector3>;
+    const UP: Readonly<THREE.Vector3>;
+    const DOWN: Readonly<THREE.Vector3>;
+    const OUT: Readonly<THREE.Vector3>;
+    const IN: Readonly<THREE.Vector3>;
     const clamp: (num: any, min: any, max: any) => number;
     const getFrameAttributes: (aspectRatio: number, height: number) => {
         aspectRatio: number;
@@ -429,6 +430,9 @@ declare namespace Utils {
     const moveBelow: (object1: any, object2: any, distance?: number) => void;
     const furthestInDirection: (object: any, direction: any) => THREE.Vector3;
     const moveNextTo: (object1: any, object2: any, direction: any, distance?: number) => void;
+    const getBoundingBoxCenter: (obj: THREE.Mesh | THREE.Group, target: THREE.Vector3) => THREE.Vector3;
+    const getBoundingBoxHelper: (obj: THREE.Mesh | THREE.Group, color: string) => THREE.Box3Helper;
+    const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
     class ShapeFromCurves {
         adjacentThreshold: number;
         segmentClosestToPoint: THREE.Vector3;
@@ -441,7 +445,6 @@ declare namespace Utils {
         extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until: THREE.Vector3 | undefined): void;
         finish(): Geometry.Polygon;
     }
-    const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
 }
 type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.Renderer) => T;
 interface StudioScene {
@@ -503,13 +506,13 @@ declare namespace Diagram {
         addAfter(after: any): void;
     }
     const Shift: (object: any, direction: any, config?: any) => Animation;
-    const MoveTo: (object: any, target: any, config?: any) => Animation;
+    const MoveTo: (target: THREE.Mesh, obj: THREE.Mesh, config?: any) => Animation;
     const Rotate: (object: any, angle: any, config?: any) => Animation;
-    const Scale: (object: any, finalScale: any, config?: any) => Animation;
+    const Scale: (object: any, factor: any, config?: any) => Animation;
     const Draw: (object: any, config?: any) => Animation;
     const Erase: (object: any, config?: any) => Animation;
-    const FadeIn: (object: any, config?: any) => Animation;
-    const FadeOut: (object: any, config?: any) => Animation;
+    const FadeIn: (objectOrFunc: any, config?: any) => Animation;
+    const FadeOut: (objectOrFunc: any, config?: any) => Animation;
     const Wait: (config?: any) => Animation;
     type Transform = {
         position: [
@@ -565,12 +568,12 @@ declare namespace Diagram {
         points: Array<THREE.Vector3>;
     };
     const BUFFER = 0.5;
-    const RIGHT: THREE.Vector3;
-    const LEFT: THREE.Vector3;
-    const UP: THREE.Vector3;
-    const DOWN: THREE.Vector3;
-    const OUT: THREE.Vector3;
-    const IN: THREE.Vector3;
+    const RIGHT: Readonly<THREE.Vector3>;
+    const LEFT: Readonly<THREE.Vector3>;
+    const UP: Readonly<THREE.Vector3>;
+    const DOWN: Readonly<THREE.Vector3>;
+    const OUT: Readonly<THREE.Vector3>;
+    const IN: Readonly<THREE.Vector3>;
     const clamp: (num: any, min: any, max: any) => number;
     const getFrameAttributes: (aspectRatio: number, height: number) => {
         aspectRatio: number;
@@ -599,6 +602,9 @@ declare namespace Diagram {
     const moveBelow: (object1: any, object2: any, distance?: number) => void;
     const furthestInDirection: (object: any, direction: any) => THREE.Vector3;
     const moveNextTo: (object1: any, object2: any, direction: any, distance?: number) => void;
+    const getBoundingBoxCenter: (obj: THREE.Mesh | THREE.Group, target: THREE.Vector3) => THREE.Vector3;
+    const getBoundingBoxHelper: (obj: THREE.Mesh | THREE.Group, color: string) => THREE.Box3Helper;
+    const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
     class ShapeFromCurves {
         adjacentThreshold: number;
         segmentClosestToPoint: THREE.Vector3;
@@ -611,7 +617,6 @@ declare namespace Diagram {
         extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until: THREE.Vector3 | undefined): void;
         finish(): Geometry.Polygon;
     }
-    const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
     type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.Renderer) => T;
     interface StudioScene {
         scene: THREE.Scene;

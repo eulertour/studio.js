@@ -4,12 +4,12 @@ import * as Geometry from "./geometry";
 import { Style } from "./geometry.types";
 
 const BUFFER = 0.5;
-const RIGHT = new THREE.Vector3(1, 0, 0);
-const LEFT = new THREE.Vector3(-1, 0, 0);
-const UP = new THREE.Vector3(0, 1, 0);
-const DOWN = new THREE.Vector3(0, -1, 0);
-const OUT = new THREE.Vector3(0, 0, 1);
-const IN = new THREE.Vector3(0, 0, -1);
+const RIGHT = Object.freeze(new THREE.Vector3(1, 0, 0));
+const LEFT = Object.freeze(new THREE.Vector3(-1, 0, 0));
+const UP = Object.freeze(new THREE.Vector3(0, 1, 0));
+const DOWN = Object.freeze(new THREE.Vector3(0, -1, 0));
+const OUT = Object.freeze(new THREE.Vector3(0, 0, 1));
+const IN = Object.freeze(new THREE.Vector3(0, 0, -1));
 
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 
@@ -131,7 +131,7 @@ const furthestInDirection = (object, direction) => {
           maxVal = dot;
         }
       }
-      if (child.parent.constructor.name === "Line") {
+      if (child.geometry.attributes.nextPosition !== undefined) {
         const nextArray = child.geometry.attributes.nextPosition.array;
         worldPoint
           .set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1))
@@ -165,7 +165,7 @@ const getCenter = (object) => {
         min.min(worldPoint);
         max.max(worldPoint);
       }
-      if (child.parent.constructor.name === "Line") {
+      if (child.geometry.attributes.nextPosition !== undefined) {
         const nextArray = child.geometry.attributes.nextPosition.array;
         point.set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1));
         worldPoint.copy(point).applyMatrix4(child.matrixWorld);
@@ -202,6 +202,19 @@ const moveNextTo = (object1, object2, direction, distance = 0.5) => {
     .add(obj2Offset)
     .add(normalizedDirection.multiplyScalar(distance));
   object2.position.copy(newPosition);
+};
+
+const getBoundingBoxCenter = (obj: THREE.Mesh | THREE.Group, target: THREE.Vector3) => {
+  obj.updateWorldMatrix(true, true);
+  new THREE.Box3().expandByObject(obj).getCenter(target);
+  return target;
+};
+
+const getBoundingBoxHelper = (obj: THREE.Mesh | THREE.Group, color: string) => {
+  obj.updateWorldMatrix(true, true);
+  const box = new THREE.Box3().expandByObject(obj);
+  const helper = new THREE.Box3Helper(box, new THREE.Color(color));
+  return helper;
 };
 
 /*
@@ -262,6 +275,37 @@ const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
       .subVectors(shape.points.at(0), shape.points.at(-1))
       .length() < adjacentThreshold
   );
+};
+
+const intersectionsBetween = (
+  shape1: Geometry.Shape,
+  shape2: Geometry.Shape
+): Array<THREE.Vector3> => {
+  let intersections: Array<THREE.Vector3> = [];
+  shape1.updateMatrixWorld();
+  shape2.updateMatrixWorld();
+  for (let i = 0; i < shape1.points.length - 1; i++) {
+    const segment1 = new THREE.Line3(
+      shape1.points[i]?.clone().applyMatrix4(shape1.matrixWorld),
+      shape1.points[i + 1]?.clone().applyMatrix4(shape1.matrixWorld)
+    );
+    for (let j = 0; j < shape2.points.length - 1; j++) {
+      const segment2 = new THREE.Line3(
+        shape2.points[j]?.clone().applyMatrix4(shape2.matrixWorld),
+        shape2.points[j + 1]?.clone().applyMatrix4(shape2.matrixWorld)
+      );
+      const maybeIntersection = getIntersection(
+        segment1.start,
+        segment1.end,
+        segment2.start,
+        segment2.end
+      );
+      if (maybeIntersection !== null) {
+        intersections.push(maybeIntersection);
+      }
+    }
+  }
+  return intersections;
 };
 
 class ShapeFromCurves {
@@ -474,37 +518,6 @@ class ShapeFromCurves {
   }
 }
 
-const intersectionsBetween = (
-  shape1: Geometry.Shape,
-  shape2: Geometry.Shape
-): Array<THREE.Vector3> => {
-  let intersections: Array<THREE.Vector3> = [];
-  shape1.updateMatrixWorld();
-  shape2.updateMatrixWorld();
-  for (let i = 0; i < shape1.points.length - 1; i++) {
-    const segment1 = new THREE.Line3(
-      shape1.points[i]?.clone().applyMatrix4(shape1.matrixWorld),
-      shape1.points[i + 1]?.clone().applyMatrix4(shape1.matrixWorld)
-    );
-    for (let j = 0; j < shape2.points.length - 1; j++) {
-      const segment2 = new THREE.Line3(
-        shape2.points[j]?.clone().applyMatrix4(shape2.matrixWorld),
-        shape2.points[j + 1]?.clone().applyMatrix4(shape2.matrixWorld)
-      );
-      const maybeIntersection = getIntersection(
-        segment1.start,
-        segment1.end,
-        segment2.start,
-        segment2.end
-      );
-      if (maybeIntersection !== null) {
-        intersections.push(maybeIntersection);
-      }
-    }
-  }
-  return intersections;
-};
-
 export {
   getFrameAttributes,
   setupCanvas,
@@ -514,6 +527,8 @@ export {
   moveToLeftOf,
   moveBelow,
   moveNextTo,
+  getBoundingBoxCenter,
+  getBoundingBoxHelper,
   intersectionsBetween,
   ShapeFromCurves,
   BUFFER,

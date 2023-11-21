@@ -57,7 +57,7 @@ class Indicator extends THREE.Group {
     );
   }
 
-  grow(config) {
+  grow(config): Animation {
     const vec = new THREE.Vector3().subVectors(this.end, this.start);
     this.startTick.position.set(0, 0, 0);
     this.endTick.position.set(0, 0, 0);

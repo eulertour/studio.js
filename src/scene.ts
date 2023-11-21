@@ -82,6 +82,8 @@ export class SceneController {
               animation.endTime = currentEndTime + runTime * scale;
               animation.runTime = runTime;
               animation.scale = scale;
+              animation.before && animation.addBefore(animation.before);
+              animation.after && animation.addAfter(animation.after);
               animation.parent =
                 animation.parent || o.parent || this.userScene.scene;
               this.loopAnimations.push(...animationArray);
