@@ -99,22 +99,62 @@ const setupCanvas = (
   return [new THREE.Scene(), camera, renderer];
 };
 
+const furthestInDirection = (object, direction) => {
+  object.updateWorldMatrix(true, true);
+  let maxPoint = new THREE.Vector3();
+  let maxVal = -Infinity;
+  let worldPoint = new THREE.Vector3();
+  object.traverse((child) => {
+    if (child instanceof THREE.Mesh) {
+      const positionArray = child.geometry.attributes.position.array;
+      if (positionArray.length % 3 !== 0) {
+        throw new Error("Invalid position array length");
+      }
+      for (let i = 0; i < positionArray.length; i += 3) {
+        worldPoint
+          .set(positionArray[i], positionArray[i + 1], positionArray[i + 2])
+          .applyMatrix4(child.matrixWorld);
+        let dot = worldPoint.dot(direction);
+        if (dot > maxVal) {
+          maxPoint.copy(worldPoint);
+          maxVal = dot;
+        }
+      }
+      if (child.geometry.attributes.nextPosition !== undefined) {
+        const nextArray = child.geometry.attributes.nextPosition.array;
+        worldPoint
+          .set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1))
+          .applyMatrix4(child.matrixWorld);
+        let dot = worldPoint.dot(direction);
+        if (dot > maxVal) {
+          maxPoint.copy(worldPoint);
+          maxVal = dot;
+        }
+      }
+    }
+  });
+  return maxPoint;
+};
+
 const moveNextTo = (target, object, direction, distance = 0.5) => {
   target.updateWorldMatrix(true, true);
   object.updateWorldMatrix(true, true);
 
+  let targetCenter = new THREE.Vector3();
+  let objectCenter = new THREE.Vector3();
   const targetBox = new THREE.Box3().expandByObject(target);
   const objectBox = new THREE.Box3().expandByObject(object);
-
-  let targetCenter: THREE.Vector3;
-  let objectCenter: THREE.Vector3;
+  
   targetBox.getCenter(targetCenter);
   objectBox.getCenter(objectCenter);
   
-  const objectPositionToCenter = objectCenter.clone().sub(object.position);
-  
-  let targetCenterToHorizontalEdge;
-  let objectCenterToHorizontalEdge;
+  let objectWorldPosition = object.parent !== null
+    ? object.parent.localToWorld(object.position.clone())
+    : object.position.clone();
+  const objectPositionToCenter = objectCenter.clone().sub(objectWorldPosition);
+
+  let targetCenterToHorizontalEdge = 0;
+  let objectCenterToHorizontalEdge = 0;
   if (direction.x > 0) {
     targetCenterToHorizontalEdge = targetBox.max.x - targetCenter.x;
     objectCenterToHorizontalEdge = objectBox.min.x - objectCenter.x;
@@ -123,8 +163,8 @@ const moveNextTo = (target, object, direction, distance = 0.5) => {
     objectCenterToHorizontalEdge = objectBox.max.x - objectCenter.x;
   }
 
-  let targetCenterToVerticalEdge;
-  let objectCenterToVerticalEdge;
+  let targetCenterToVerticalEdge = 0;
+  let objectCenterToVerticalEdge = 0;
   if (direction.y > 0) {
     targetCenterToVerticalEdge = targetBox.max.y - targetCenter.y;
     objectCenterToVerticalEdge = objectBox.min.y - objectCenter.y;
@@ -133,14 +173,20 @@ const moveNextTo = (target, object, direction, distance = 0.5) => {
     objectCenterToVerticalEdge = objectBox.max.y - objectCenter.y;
   }
   
-  object.position
+  const finalObjectPosition = new THREE.Vector3()
     .copy(targetCenter)
-    .sub(objectPositionToCenter)
-    .add(direction.multiplyScalar(distance));
-  object.position.x += targetCenterToHorizontalEdge;
-  object.position.x -= objectCenterToHorizontalEdge;
-  object.position.y += targetCenterToVerticalEdge;
-  object.position.y -= objectCenterToVerticalEdge;
+    .addScaledVector(direction, distance)
+    .sub(objectPositionToCenter);
+  finalObjectPosition.x += targetCenterToHorizontalEdge;
+  finalObjectPosition.x -= objectCenterToHorizontalEdge;
+  finalObjectPosition.y += targetCenterToVerticalEdge;
+  finalObjectPosition.y -= objectCenterToVerticalEdge;
+
+  if (object.parent !== null) {
+    object.position.copy(object.parent.worldToLocal(finalObjectPosition));
+  } else {
+    object.position.copy(finalObjectPosition);
+  }
 }
 
 const moveToRightOf = (target, object, distance = 0.5) => {

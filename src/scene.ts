@@ -12,7 +12,7 @@ export interface StudioScene {
   scene: THREE.Scene;
   camera: THREE.Camera;
   renderer: THREE.Renderer;
-  animations?: Array<Object>;
+  animations?: Array<Animation | Array<Animation>>;
   loop?: (time: number, deltaTime: number) => void;
 }
 

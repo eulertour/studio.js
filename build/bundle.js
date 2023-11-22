@@ -52897,18 +52897,6 @@ const setupCanvas = (canvas, config = {
     }
     return [new Scene(), camera, renderer];
 };
-const moveToRightOf = (target, object, distance = 0.5) => {
-    moveNextTo(target, object, RIGHT, distance);
-};
-const moveToLeftOf = (target, object, distance = 0.5) => {
-    moveNextTo(target, object, LEFT, distance);
-};
-const moveAbove = (target, object, distance = 0.5) => {
-    moveNextTo(target, object, UP, distance);
-};
-const moveBelow = (target, object, distance = 0.5) => {
-    moveNextTo(target, object, DOWN, distance);
-};
 const furthestInDirection = (object, direction) => {
     object.updateWorldMatrix(true, true);
     let maxPoint = new Vector3();
@@ -52945,67 +52933,21 @@ const furthestInDirection = (object, direction) => {
     });
     return maxPoint;
 };
-const getCenter = (object) => {
-    object.updateWorldMatrix(true, true);
-    const min = new Vector3(Infinity, Infinity, Infinity);
-    const max = new Vector3(-Infinity, -Infinity, -Infinity);
-    let point = new Vector3();
-    let worldPoint = new Vector3();
-    object.traverse((child) => {
-        if (child instanceof Mesh) {
-            const positionArray = child.geometry.attributes.position.array;
-            if (positionArray.length % 3 !== 0) {
-                throw new Error("Invalid position array length");
-            }
-            for (let i = 0; i < positionArray.length; i += 3) {
-                point.set(positionArray[i], positionArray[i + 1], positionArray[i + 2]);
-                worldPoint.copy(point).applyMatrix4(child.matrixWorld);
-                min.min(worldPoint);
-                max.max(worldPoint);
-            }
-            if (child.geometry.attributes.nextPosition !== undefined) {
-                const nextArray = child.geometry.attributes.nextPosition.array;
-                point.set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1));
-                worldPoint.copy(point).applyMatrix4(child.matrixWorld);
-                min.min(worldPoint);
-                max.max(worldPoint);
-            }
-        }
-    });
-    worldPoint.addVectors(min, max).divideScalar(2);
-    return worldPoint.addVectors(min, max).divideScalar(2);
-};
-const moveNextTo = (object1, object2, direction, distance = 0.5) => {
-    const normalizedDirection = direction.clone().normalize();
-    const obj1Edge = furthestInDirection(object1, normalizedDirection);
-    const obj2Opposite = furthestInDirection(object2, new Vector3().copy(normalizedDirection).negate());
-    const obj1Center = getCenter(object1);
-    const obj1Offset = new Vector3()
-        .subVectors(obj1Edge, obj1Center)
-        .projectOnVector(normalizedDirection);
-    const obj2Center = getCenter(object2);
-    const obj2Offset = new Vector3()
-        .subVectors(obj2Center, obj2Opposite)
-        .projectOnVector(normalizedDirection);
-    const newPosition = new Vector3()
-        .copy(obj1Center)
-        .add(obj1Offset)
-        .add(obj2Offset)
-        .add(normalizedDirection.multiplyScalar(distance));
-    object2.position.copy(newPosition);
-};
-const moveNextTo2 = (target, object, direction, distance = 0.5) => {
+const moveNextTo = (target, object, direction, distance = 0.5) => {
     target.updateWorldMatrix(true, true);
     object.updateWorldMatrix(true, true);
+    let targetCenter = new Vector3();
+    let objectCenter = new Vector3();
     const targetBox = new Box3().expandByObject(target);
     const objectBox = new Box3().expandByObject(object);
-    let targetCenter;
-    let objectCenter;
     targetBox.getCenter(targetCenter);
     objectBox.getCenter(objectCenter);
-    const objectPositionToCenter = objectCenter.clone().sub(object.position);
-    let targetCenterToHorizontalEdge;
-    let objectCenterToHorizontalEdge;
+    let objectWorldPosition = object.parent !== null
+        ? object.parent.localToWorld(object.position.clone())
+        : object.position.clone();
+    const objectPositionToCenter = objectCenter.clone().sub(objectWorldPosition);
+    let targetCenterToHorizontalEdge = 0;
+    let objectCenterToHorizontalEdge = 0;
     if (direction.x > 0) {
         targetCenterToHorizontalEdge = targetBox.max.x - targetCenter.x;
         objectCenterToHorizontalEdge = objectBox.min.x - objectCenter.x;
@@ -53014,8 +52956,8 @@ const moveNextTo2 = (target, object, direction, distance = 0.5) => {
         targetCenterToHorizontalEdge = targetBox.min.x - targetCenter.x;
         objectCenterToHorizontalEdge = objectBox.max.x - objectCenter.x;
     }
-    let targetCenterToVerticalEdge;
-    let objectCenterToVerticalEdge;
+    let targetCenterToVerticalEdge = 0;
+    let objectCenterToVerticalEdge = 0;
     if (direction.y > 0) {
         targetCenterToVerticalEdge = targetBox.max.y - targetCenter.y;
         objectCenterToVerticalEdge = objectBox.min.y - objectCenter.y;
@@ -53024,14 +52966,32 @@ const moveNextTo2 = (target, object, direction, distance = 0.5) => {
         targetCenterToVerticalEdge = targetBox.min.y - targetCenter.y;
         objectCenterToVerticalEdge = objectBox.max.y - objectCenter.y;
     }
-    object.position
+    const finalObjectPosition = new Vector3()
         .copy(targetCenter)
-        .sub(objectPositionToCenter)
-        .add(direction.multiplyScalar(distance));
-    object.position.x += targetCenterToHorizontalEdge;
-    object.position.x -= objectCenterToHorizontalEdge;
-    object.position.y += targetCenterToVerticalEdge;
-    object.position.y -= objectCenterToVerticalEdge;
+        .addScaledVector(direction, distance)
+        .sub(objectPositionToCenter);
+    finalObjectPosition.x += targetCenterToHorizontalEdge;
+    finalObjectPosition.x -= objectCenterToHorizontalEdge;
+    finalObjectPosition.y += targetCenterToVerticalEdge;
+    finalObjectPosition.y -= objectCenterToVerticalEdge;
+    if (object.parent !== null) {
+        object.position.copy(object.parent.worldToLocal(finalObjectPosition));
+    }
+    else {
+        object.position.copy(finalObjectPosition);
+    }
+};
+const moveToRightOf = (target, object, distance = 0.5) => {
+    moveNextTo(target, object, RIGHT, distance);
+};
+const moveToLeftOf = (target, object, distance = 0.5) => {
+    moveNextTo(target, object, LEFT, distance);
+};
+const moveAbove = (target, object, distance = 0.5) => {
+    moveNextTo(target, object, UP, distance);
+};
+const moveBelow = (target, object, distance = 0.5) => {
+    moveNextTo(target, object, DOWN, distance);
 };
 const getBoundingBoxCenter = (obj, target) => {
     obj.updateWorldMatrix(true, true);
@@ -53264,7 +53224,6 @@ var utils = /*#__PURE__*/Object.freeze({
 	moveAbove: moveAbove,
 	moveBelow: moveBelow,
 	moveNextTo: moveNextTo,
-	moveNextTo2: moveNextTo2,
 	moveToLeftOf: moveToLeftOf,
 	moveToRightOf: moveToRightOf,
 	setupCanvas: setupCanvas,
