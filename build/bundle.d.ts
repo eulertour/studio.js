@@ -208,6 +208,126 @@ declare namespace Geometry {
     }
     const shapeFromJson: (json: object) => Shape;
 }
+declare namespace Utils {
+    type Transform = {
+        position: [
+            number,
+            number,
+            number
+        ];
+        rotation: [
+            number,
+            number,
+            number
+        ];
+        scale: number;
+    };
+    type Style = {
+        strokeColor?: THREE.Color;
+        strokeWidth?: number;
+        strokeOpacity?: number;
+        stroke?: boolean;
+        fillColor?: THREE.Color;
+        fillOpacity?: number;
+        fill?: boolean;
+    };
+    type StyleJson = {
+        strokeColor?: Array<number>;
+        strokeWidth?: number;
+        strokeOpacity?: number;
+        stroke?: boolean;
+        fillColor?: Array<number>;
+        fillOpacity?: number;
+        fill?: boolean;
+    };
+    type Representation = {
+        class: string;
+        attributes: object;
+        transform: Transform;
+        style: StyleJson;
+    };
+    type LineAttributes = {
+        start: THREE.Vector3;
+        end: THREE.Vector3;
+    };
+    type ArcAttributes = {
+        radius: number;
+        angle: number;
+        closed: boolean;
+    };
+    type RectangleAttributes = {
+        width: number;
+        height: number;
+    };
+    type PolygonAttributes = {
+        points: Array<THREE.Vector3>;
+    };
+    const BUFFER = 0.5;
+    const RIGHT: Readonly<THREE.Vector3>;
+    const LEFT: Readonly<THREE.Vector3>;
+    const UP: Readonly<THREE.Vector3>;
+    const DOWN: Readonly<THREE.Vector3>;
+    const OUT: Readonly<THREE.Vector3>;
+    const IN: Readonly<THREE.Vector3>;
+    const clamp: (num: any, min: any, max: any) => number;
+    const getFrameAttributes: (aspectRatio: number, height: number) => {
+        aspectRatio: number;
+        height: number;
+        width: number;
+        coordinateHeight: number;
+        coordinateWidth: number;
+    };
+    interface WidthSetupConfig {
+        aspectRatio: number;
+        pixelWidth: number;
+        coordinateWidth: number;
+    }
+    interface HeightSetupConfig {
+        aspectRatio: number;
+        pixelHeight: number;
+        coordinateHeight: number;
+    }
+    const setupCanvas: (canvas: HTMLCanvasElement, config?: WidthSetupConfig | HeightSetupConfig) => [
+        THREE.Scene,
+        THREE.Camera,
+        THREE.WebGLRenderer
+    ];
+    const furthestInDirection: (object: any, direction: any) => THREE.Vector3;
+    const moveNextTo: (target: any, object: any, direction: any, distance?: number) => void;
+    const moveToRightOf: (target: any, object: any, distance?: number) => void;
+    const moveToLeftOf: (target: any, object: any, distance?: number) => void;
+    const moveAbove: (target: any, object: any, distance?: number) => void;
+    const moveBelow: (target: any, object: any, distance?: number) => void;
+    const getBoundingBoxCenter: (obj: THREE.Object3D, target: THREE.Vector3) => THREE.Vector3;
+    const getBoundingBoxHelper: (obj: THREE.Object3D, color: string) => THREE.Box3Helper;
+    const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;
+    const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
+    class ShapeFromCurves {
+        adjacentThreshold: number;
+        segmentClosestToPoint: THREE.Vector3;
+        pointToSegment: THREE.Vector3;
+        points: Array<THREE.Vector3>;
+        style: Style;
+        withStyle(style: Style): this;
+        startAt(start: THREE.Vector3): this;
+        extendAlong(shape: Geometry.Shape, direction: THREE.Vector3, until: THREE.Vector3 | undefined): this;
+        extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until: THREE.Vector3 | undefined): void;
+        finish(): Geometry.Polygon;
+    }
+}
+declare module "three" {
+    interface Object3D {
+        setScale(factor: number): Object3D;
+        moveNextTo(target: Object3D, direction: Vector3, distance?: any): void;
+        moveToRightOf(target: Object3D, distance?: any): void;
+        moveToLeftOf(target: Object3D, distance?: any): void;
+        moveAbove(target: Object3D, distance?: any): void;
+        moveBelow(target: Object3D, distance?: any): void;
+        setOpacity(opacity: number): Object3D;
+        setInvisible(): Object3D;
+        setVisible(): Object3D;
+    }
+}
 declare namespace Animation {
     class Animation {
         func: (elapsedTime: number, deltaTime: number) => void;
@@ -241,11 +361,11 @@ declare namespace Animation {
         constructor(object: any, direction: any, config?: any);
     }
     class MoveTo extends Animation {
-        target: THREE.Mesh;
-        obj: THREE.Mesh;
+        target: THREE.Object3D;
+        obj: THREE.Object3D;
         start: any;
         displacement: any;
-        constructor(target: THREE.Mesh, obj: THREE.Mesh, config?: any);
+        constructor(target: THREE.Object3D, obj: THREE.Object3D, config?: any);
         setUp(): void;
     }
     class Rotate extends Animation {
@@ -375,6 +495,38 @@ declare namespace Text {
     }
     const textFromJson: (json: object) => Text;
 }
+type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.Renderer) => T;
+interface StudioScene {
+    scene: THREE.Scene;
+    camera: THREE.Camera;
+    renderer: THREE.Renderer;
+    animations?: Array<Animation | Array<Animation>>;
+    loop?: (time: number, deltaTime: number) => void;
+}
+declare class SceneController {
+    animationIndex: number;
+    deltaTime: number;
+    elapsedTime: number;
+    firstFrame: boolean;
+    paused: boolean;
+    fps: number;
+    timePrecision: number;
+    startTime: number;
+    endTime: number;
+    loopAnimations: Array<Animation>;
+    finishedAnimationCount: number;
+    userScene: StudioScene;
+    signalUpdate: () => void;
+    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: WidthSetupConfig | HeightSetupConfig | undefined);
+    get scene(): THREE.Scene;
+    get camera(): THREE.Camera;
+    get renderer(): THREE.Renderer;
+    tick(deltaTime: number, render?: boolean): void;
+    play(): void;
+    pause(): void;
+    seekForward(duration: number): void;
+    dispose(): void;
+}
 declare namespace Diagram {
     class Animation {
         func: (elapsedTime: number, deltaTime: number) => void;
@@ -408,11 +560,11 @@ declare namespace Diagram {
         constructor(object: any, direction: any, config?: any);
     }
     class MoveTo extends Animation {
-        target: THREE.Mesh;
-        obj: THREE.Mesh;
+        target: THREE.Object3D;
+        obj: THREE.Object3D;
         start: any;
         displacement: any;
-        constructor(target: THREE.Mesh, obj: THREE.Mesh, config?: any);
+        constructor(target: THREE.Object3D, obj: THREE.Object3D, config?: any);
         setUp(): void;
     }
     class Rotate extends Animation {
@@ -498,90 +650,6 @@ declare namespace Diagram {
     type PolygonAttributes = {
         points: Array<THREE.Vector3>;
     };
-    const BUFFER = 0.5;
-    const RIGHT: Readonly<THREE.Vector3>;
-    const LEFT: Readonly<THREE.Vector3>;
-    const UP: Readonly<THREE.Vector3>;
-    const DOWN: Readonly<THREE.Vector3>;
-    const OUT: Readonly<THREE.Vector3>;
-    const IN: Readonly<THREE.Vector3>;
-    const clamp: (num: any, min: any, max: any) => number;
-    const getFrameAttributes: (aspectRatio: number, height: number) => {
-        aspectRatio: number;
-        height: number;
-        width: number;
-        coordinateHeight: number;
-        coordinateWidth: number;
-    };
-    interface WidthSetupConfig {
-        aspectRatio: number;
-        pixelWidth: number;
-        coordinateWidth: number;
-    }
-    interface HeightSetupConfig {
-        aspectRatio: number;
-        pixelHeight: number;
-        coordinateHeight: number;
-    }
-    const setupCanvas: (canvas: HTMLCanvasElement, config?: WidthSetupConfig | HeightSetupConfig) => [
-        THREE.Scene,
-        THREE.Camera,
-        THREE.WebGLRenderer
-    ];
-    const furthestInDirection: (object: any, direction: any) => THREE.Vector3;
-    const moveNextTo: (target: any, object: any, direction: any, distance?: number) => void;
-    const moveToRightOf: (target: any, object: any, distance?: number) => void;
-    const moveToLeftOf: (target: any, object: any, distance?: number) => void;
-    const moveAbove: (target: any, object: any, distance?: number) => void;
-    const moveBelow: (target: any, object: any, distance?: number) => void;
-    const getBoundingBoxCenter: (obj: THREE.Mesh | THREE.Group, target: THREE.Vector3) => THREE.Vector3;
-    const getBoundingBoxHelper: (obj: THREE.Mesh | THREE.Group, color: string) => THREE.Box3Helper;
-    const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;
-    const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
-    class ShapeFromCurves {
-        adjacentThreshold: number;
-        segmentClosestToPoint: THREE.Vector3;
-        pointToSegment: THREE.Vector3;
-        points: Array<THREE.Vector3>;
-        style: Style;
-        withStyle(style: Style): this;
-        startAt(start: THREE.Vector3): this;
-        extendAlong(shape: Geometry.Shape, direction: THREE.Vector3, until: THREE.Vector3 | undefined): this;
-        extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until: THREE.Vector3 | undefined): void;
-        finish(): Geometry.Polygon;
-    }
-    type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.Renderer) => T;
-    interface StudioScene {
-        scene: THREE.Scene;
-        camera: THREE.Camera;
-        renderer: THREE.Renderer;
-        animations?: Array<Animation | Array<Animation>>;
-        loop?: (time: number, deltaTime: number) => void;
-    }
-    class SceneController {
-        animationIndex: number;
-        deltaTime: number;
-        elapsedTime: number;
-        firstFrame: boolean;
-        paused: boolean;
-        fps: number;
-        timePrecision: number;
-        startTime: number;
-        endTime: number;
-        loopAnimations: Array<Animation>;
-        finishedAnimationCount: number;
-        userScene: StudioScene;
-        signalUpdate: () => void;
-        constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: WidthSetupConfig | HeightSetupConfig | undefined);
-        get scene(): THREE.Scene;
-        get camera(): THREE.Camera;
-        get renderer(): THREE.Renderer;
-        tick(deltaTime: number, render?: boolean): void;
-        play(): void;
-        pause(): void;
-        seekForward(duration: number): void;
-        dispose(): void;
-    }
     class Indicator extends THREE.Group {
         start: THREE.Vector3;
         end: THREE.Vector3;
@@ -600,298 +668,6 @@ declare namespace Diagram {
         moveToSegment(start: THREE.Vector3, end: THREE.Vector3): this;
     }
 }
-declare namespace Utils {
-    type Transform = {
-        position: [
-            number,
-            number,
-            number
-        ];
-        rotation: [
-            number,
-            number,
-            number
-        ];
-        scale: number;
-    };
-    type Style = {
-        strokeColor?: THREE.Color;
-        strokeWidth?: number;
-        strokeOpacity?: number;
-        stroke?: boolean;
-        fillColor?: THREE.Color;
-        fillOpacity?: number;
-        fill?: boolean;
-    };
-    type StyleJson = {
-        strokeColor?: Array<number>;
-        strokeWidth?: number;
-        strokeOpacity?: number;
-        stroke?: boolean;
-        fillColor?: Array<number>;
-        fillOpacity?: number;
-        fill?: boolean;
-    };
-    type Representation = {
-        class: string;
-        attributes: object;
-        transform: Transform;
-        style: StyleJson;
-    };
-    type LineAttributes = {
-        start: THREE.Vector3;
-        end: THREE.Vector3;
-    };
-    type ArcAttributes = {
-        radius: number;
-        angle: number;
-        closed: boolean;
-    };
-    type RectangleAttributes = {
-        width: number;
-        height: number;
-    };
-    type PolygonAttributes = {
-        points: Array<THREE.Vector3>;
-    };
-    class Animation {
-        func: (elapsedTime: number, deltaTime: number) => void;
-        scene: any;
-        startTime: number;
-        endTime: number;
-        prevUpdateTime: number;
-        beforeFunc: () => void;
-        afterFunc: () => void;
-        parent: any;
-        object: any;
-        before: any;
-        after: any;
-        scale: any;
-        finished: boolean;
-        elapsedSinceStart: number;
-        constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, scale }?: {
-            object: any;
-            parent: any;
-            before: any;
-            after: any;
-            scale: any;
-        });
-        setUp(): void;
-        tearDown(): void;
-        update(worldTime: any): void;
-        addBefore(before: any): void;
-        addAfter(after: any): void;
-    }
-    class Shift extends Animation {
-        constructor(object: any, direction: any, config?: any);
-    }
-    class MoveTo extends Animation {
-        target: THREE.Mesh;
-        obj: THREE.Mesh;
-        start: any;
-        displacement: any;
-        constructor(target: THREE.Mesh, obj: THREE.Mesh, config?: any);
-        setUp(): void;
-    }
-    class Rotate extends Animation {
-        constructor(object: any, angle: any, config?: any);
-    }
-    class Scale extends Animation {
-        constructor(object: any, factor: any, config?: any);
-    }
-    class Draw extends Animation {
-        constructor(object: any, config?: any);
-    }
-    class Erase extends Animation {
-        object: any;
-        config?: any;
-        constructor(object: any, config?: any);
-        tearDown(): void;
-    }
-    class FadeIn extends Animation {
-        initialOpacity: Map<any, any>;
-        constructor(object: any, config?: any);
-        setUp(): void;
-    }
-    class FadeOut extends Animation {
-        config?: any;
-        initialOpacity: Map<any, any>;
-        constructor(objectOrFunc: any, config?: any);
-        setUp(): void;
-        tearDown(): void;
-    }
-    class Wait extends Animation {
-        constructor(config?: any);
-    }
-    const BUFFER = 0.5;
-    const RIGHT: Readonly<THREE.Vector3>;
-    const LEFT: Readonly<THREE.Vector3>;
-    const UP: Readonly<THREE.Vector3>;
-    const DOWN: Readonly<THREE.Vector3>;
-    const OUT: Readonly<THREE.Vector3>;
-    const IN: Readonly<THREE.Vector3>;
-    const clamp: (num: any, min: any, max: any) => number;
-    const getFrameAttributes: (aspectRatio: number, height: number) => {
-        aspectRatio: number;
-        height: number;
-        width: number;
-        coordinateHeight: number;
-        coordinateWidth: number;
-    };
-    interface WidthSetupConfig {
-        aspectRatio: number;
-        pixelWidth: number;
-        coordinateWidth: number;
-    }
-    interface HeightSetupConfig {
-        aspectRatio: number;
-        pixelHeight: number;
-        coordinateHeight: number;
-    }
-    const setupCanvas: (canvas: HTMLCanvasElement, config?: WidthSetupConfig | HeightSetupConfig) => [
-        THREE.Scene,
-        THREE.Camera,
-        THREE.WebGLRenderer
-    ];
-    const furthestInDirection: (object: any, direction: any) => THREE.Vector3;
-    const moveNextTo: (target: any, object: any, direction: any, distance?: number) => void;
-    const moveToRightOf: (target: any, object: any, distance?: number) => void;
-    const moveToLeftOf: (target: any, object: any, distance?: number) => void;
-    const moveAbove: (target: any, object: any, distance?: number) => void;
-    const moveBelow: (target: any, object: any, distance?: number) => void;
-    const getBoundingBoxCenter: (obj: THREE.Mesh | THREE.Group, target: THREE.Vector3) => THREE.Vector3;
-    const getBoundingBoxHelper: (obj: THREE.Mesh | THREE.Group, color: string) => THREE.Box3Helper;
-    const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;
-    const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
-    class ShapeFromCurves {
-        adjacentThreshold: number;
-        segmentClosestToPoint: THREE.Vector3;
-        pointToSegment: THREE.Vector3;
-        points: Array<THREE.Vector3>;
-        style: Style;
-        withStyle(style: Style): this;
-        startAt(start: THREE.Vector3): this;
-        extendAlong(shape: Geometry.Shape, direction: THREE.Vector3, until: THREE.Vector3 | undefined): this;
-        extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until: THREE.Vector3 | undefined): void;
-        finish(): Geometry.Polygon;
-    }
-    type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.Renderer) => T;
-    interface StudioScene {
-        scene: THREE.Scene;
-        camera: THREE.Camera;
-        renderer: THREE.Renderer;
-        animations?: Array<Animation | Array<Animation>>;
-        loop?: (time: number, deltaTime: number) => void;
-    }
-    class SceneController {
-        animationIndex: number;
-        deltaTime: number;
-        elapsedTime: number;
-        firstFrame: boolean;
-        paused: boolean;
-        fps: number;
-        timePrecision: number;
-        startTime: number;
-        endTime: number;
-        loopAnimations: Array<Animation>;
-        finishedAnimationCount: number;
-        userScene: StudioScene;
-        signalUpdate: () => void;
-        constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: WidthSetupConfig | HeightSetupConfig | undefined);
-        get scene(): THREE.Scene;
-        get camera(): THREE.Camera;
-        get renderer(): THREE.Renderer;
-        tick(deltaTime: number, render?: boolean): void;
-        play(): void;
-        pause(): void;
-        seekForward(duration: number): void;
-        dispose(): void;
-    }
-    const BUFFER = 0.5;
-    const RIGHT: Readonly<THREE.Vector3>;
-    const LEFT: Readonly<THREE.Vector3>;
-    const UP: Readonly<THREE.Vector3>;
-    const DOWN: Readonly<THREE.Vector3>;
-    const OUT: Readonly<THREE.Vector3>;
-    const IN: Readonly<THREE.Vector3>;
-    const clamp: (num: any, min: any, max: any) => number;
-    const getFrameAttributes: (aspectRatio: number, height: number) => {
-        aspectRatio: number;
-        height: number;
-        width: number;
-        coordinateHeight: number;
-        coordinateWidth: number;
-    };
-    interface WidthSetupConfig {
-        aspectRatio: number;
-        pixelWidth: number;
-        coordinateWidth: number;
-    }
-    interface HeightSetupConfig {
-        aspectRatio: number;
-        pixelHeight: number;
-        coordinateHeight: number;
-    }
-    const setupCanvas: (canvas: HTMLCanvasElement, config?: WidthSetupConfig | HeightSetupConfig) => [
-        THREE.Scene,
-        THREE.Camera,
-        THREE.WebGLRenderer
-    ];
-    const furthestInDirection: (object: any, direction: any) => THREE.Vector3;
-    const moveNextTo: (target: any, object: any, direction: any, distance?: number) => void;
-    const moveToRightOf: (target: any, object: any, distance?: number) => void;
-    const moveToLeftOf: (target: any, object: any, distance?: number) => void;
-    const moveAbove: (target: any, object: any, distance?: number) => void;
-    const moveBelow: (target: any, object: any, distance?: number) => void;
-    const getBoundingBoxCenter: (obj: THREE.Mesh | THREE.Group, target: THREE.Vector3) => THREE.Vector3;
-    const getBoundingBoxHelper: (obj: THREE.Mesh | THREE.Group, color: string) => THREE.Box3Helper;
-    const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;
-    const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
-    class ShapeFromCurves {
-        adjacentThreshold: number;
-        segmentClosestToPoint: THREE.Vector3;
-        pointToSegment: THREE.Vector3;
-        points: Array<THREE.Vector3>;
-        style: Style;
-        withStyle(style: Style): this;
-        startAt(start: THREE.Vector3): this;
-        extendAlong(shape: Geometry.Shape, direction: THREE.Vector3, until: THREE.Vector3 | undefined): this;
-        extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until: THREE.Vector3 | undefined): void;
-        finish(): Geometry.Polygon;
-    }
-}
-type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.Renderer) => T;
-interface StudioScene {
-    scene: THREE.Scene;
-    camera: THREE.Camera;
-    renderer: THREE.Renderer;
-    animations?: Array<Animation | Array<Animation>>;
-    loop?: (time: number, deltaTime: number) => void;
-}
-declare class SceneController {
-    animationIndex: number;
-    deltaTime: number;
-    elapsedTime: number;
-    firstFrame: boolean;
-    paused: boolean;
-    fps: number;
-    timePrecision: number;
-    startTime: number;
-    endTime: number;
-    loopAnimations: Array<Animation>;
-    finishedAnimationCount: number;
-    userScene: StudioScene;
-    signalUpdate: () => void;
-    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: WidthSetupConfig | HeightSetupConfig | undefined);
-    get scene(): THREE.Scene;
-    get camera(): THREE.Camera;
-    get renderer(): THREE.Renderer;
-    tick(deltaTime: number, render?: boolean): void;
-    play(): void;
-    pause(): void;
-    seekForward(duration: number): void;
-    dispose(): void;
-}
-export { SceneController, Geometry, Animation, Text, Utils, Diagram, setupCanvas };
+export { Geometry, Animation, Text, SceneController, setupCanvas, Utils, Diagram };
 export * as THREE from "three";
 export type { StudioScene };

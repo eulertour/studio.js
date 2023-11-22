@@ -124,7 +124,7 @@ class MoveTo extends Animation {
   public start;
   public displacement;
 
-  constructor(public target: THREE.Mesh, public obj: THREE.Mesh, config?) {
+  constructor(public target: THREE.Object3D, public obj: THREE.Object3D, config?) {
     super(
       elapsedTime => {
         obj

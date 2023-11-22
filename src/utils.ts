@@ -2,7 +2,6 @@ import * as THREE from "three";
 import { PIXELS_TO_COORDS } from "./constants";
 import * as Geometry from "./geometry";
 import { Style } from "./geometry.types";
-import { Utils } from "src";
 
 const BUFFER = 0.5;
 const RIGHT = Object.freeze(new THREE.Vector3(1, 0, 0));
@@ -205,13 +204,13 @@ const moveBelow = (target, object, distance = 0.5) => {
   moveNextTo(target, object, DOWN, distance);
 };
 
-const getBoundingBoxCenter = (obj: THREE.Mesh | THREE.Group, target: THREE.Vector3) => {
+const getBoundingBoxCenter = (obj: THREE.Object3D, target: THREE.Vector3) => {
   obj.updateWorldMatrix(true, true);
   new THREE.Box3().expandByObject(obj).getCenter(target);
   return target;
 };
 
-const getBoundingBoxHelper = (obj: THREE.Mesh | THREE.Group, color: string) => {
+const getBoundingBoxHelper = (obj: THREE.Object3D, color: string) => {
   obj.updateWorldMatrix(true, true);
   const box = new THREE.Box3().expandByObject(obj);
   const helper = new THREE.Box3Helper(box, new THREE.Color(color));

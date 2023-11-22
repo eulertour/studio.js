@@ -1,8 +1,7 @@
 import * as THREE from "three";
-import { Line } from "./geometry";
 import { Animation } from "./animation";
 import { Style } from "./geometry.types";
-import { Geometry } from "src";
+import * as Geometry from "./geometry";
 
 class Indicator extends THREE.Group {
   public startTick: Geometry.Line;
@@ -19,12 +18,12 @@ class Indicator extends THREE.Group {
     const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
     const vec = new THREE.Vector3().subVectors(end, start).normalize();
 
-    this.stem = new Line(start, end, config);
+    this.stem = new Geometry.Line(start, end, config);
 
     const normal = vec
       .clone()
       .applyAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2);
-    this.startTick = new Line(
+    this.startTick = new Geometry.Line(
       new THREE.Vector3().addVectors(
         start,
         normal.clone().multiplyScalar(config.tickLength / 2)
@@ -36,7 +35,7 @@ class Indicator extends THREE.Group {
       config
     );
 
-    this.endTick = new Line(
+    this.endTick = new Geometry.Line(
       new THREE.Vector3().addVectors(
         end,
         normal.clone().multiplyScalar(config.tickLength / 2)
@@ -87,7 +86,7 @@ class Congruent extends THREE.Group {
     const left = (-config.spacing * (ticks - 1)) / 4;
     for (let i = 0; i < ticks; i++) {
       const pos = left + 0.5 * config.spacing * i;
-      const tick = new Line(
+      const tick = new Geometry.Line(
         new THREE.Vector3(pos, -config.tickLength / 2, 0),
         new THREE.Vector3(pos, config.tickLength / 2, 0),
         config

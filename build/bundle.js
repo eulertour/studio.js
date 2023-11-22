@@ -98584,4 +98584,40 @@ var diagram = /*#__PURE__*/Object.freeze({
 	Indicator: Indicator
 });
 
+Object3D.prototype.setScale = function (factor) {
+    this.scale.x = factor;
+    this.scale.y = factor;
+    this.scale.z = factor;
+    return this;
+};
+Object3D.prototype.moveNextTo = function (target, direction, distance) {
+    moveNextTo(target, this, direction, distance);
+};
+Object3D.prototype.moveToRightOf = function (target, distance) {
+    moveToRightOf(target, this, distance);
+};
+Object3D.prototype.moveToLeftOf = function (target, distance) {
+    moveToLeftOf(target, this, distance);
+};
+Object3D.prototype.moveAbove = function (target, distance) {
+    moveAbove(target, this, distance);
+};
+Object3D.prototype.moveBelow = function (target, distance) {
+    moveBelow(target, this, distance);
+};
+Object3D.prototype.setOpacity = function (opacity) {
+    this.traverse((child) => {
+        if (child instanceof Mesh) {
+            child.material.opacity = opacity;
+        }
+    });
+    return this;
+};
+Object3D.prototype.setInvisible = function () {
+    return this.setOpacity(0);
+};
+Object3D.prototype.setVisible = function () {
+    return this.setOpacity(1);
+};
+
 export { animation as Animation, diagram as Diagram, geometry as Geometry, SceneController, three_module as THREE, text as Text, utils as Utils, setupCanvas };
