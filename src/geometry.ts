@@ -105,9 +105,9 @@ abstract class Shape extends THREE.Group {
     return this;
   }
 
-  clone(recursive: boolean?) {
-    if (recursive === false) {
-      throw Error("Shape.clone() is always recursive");
+  clone(recursive?: boolean): this {
+    if (recursive === true) {
+      throw Error("Recursive Shape.clone() isn't implemented.");
     }
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -123,9 +123,9 @@ abstract class Shape extends THREE.Group {
     return {};
   }
 
-  copy(source: this, recursive: boolean) {
+  copy<T extends Shape>(source: T, recursive: boolean): T {
     if (recursive === false) {
-      throw Error("Shape.clone() is always recursive");
+      throw Error("Recursive Shape.copy() isn't implemented.");
     }
 
     const originalFillVisible = source.children.includes(source.fill);
@@ -331,7 +331,7 @@ class Line extends Shape {
     return { transformCenter: this.transformCenter };
   }
 
-  get getAttributes(): LineAttributes {
+  getAttributes(): LineAttributes {
     return {
       start: this.start,
       end: this.end,
@@ -365,7 +365,7 @@ class Polyline extends Shape {
     return {};
   }
 
-  get getAttributes(): PolygonAttributes {
+  getAttributes(): PolygonAttributes {
     return {
       points: this.points,
     };

@@ -336,7 +336,7 @@ class ShapeFromCurves {
   extendAlong(
     shape: Geometry.Shape,
     direction: THREE.Vector3,
-    until: THREE.Vector3 | undefined
+    until?: THREE.Vector3 | undefined
   ) {
     const startPoint = this.points.at(-1)?.clone();
     if (startPoint === undefined) {
@@ -466,7 +466,7 @@ class ShapeFromCurves {
     shape: Geometry.Shape,
     initialPointIndex: number,
     forward: boolean,
-    until: THREE.Vector3 | undefined
+    until?: THREE.Vector3 | undefined
   ) {
     const advance = (i: number) => {
       i += increment;

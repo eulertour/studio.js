@@ -9,7 +9,7 @@ const devicePixelRatio =
 export default class MeshLineMaterial extends THREE.ShaderMaterial {
   constructor(
     parameters: ShaderMaterialParameters & {
-      color: THREE.Color;
+      color: THREE.ColorRepresentation;
       opacity: number;
       width: number;
     }

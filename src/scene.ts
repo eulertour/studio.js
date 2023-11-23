@@ -8,11 +8,18 @@ type Class<T> = new (
   renderer: THREE.Renderer
 ) => T;
 
+export type AnimationRepresentation = Animation | Array<Animation> | {
+  animations: Array<Animation>,
+  before?: () => void,
+  after?: () => void,
+  parent?: THREE.Object3D,
+}
+
 export interface StudioScene {
   scene: THREE.Scene;
   camera: THREE.Camera;
   renderer: THREE.Renderer;
-  animations?: Array<Animation | Array<Animation>>;
+  animations?: Array<AnimationRepresentation>;
   loop?: (time: number, deltaTime: number) => void;
 }
 

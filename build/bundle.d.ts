@@ -18,7 +18,7 @@ declare namespace Geometry {
     }
     class MeshLineMaterial extends THREE.ShaderMaterial {
         constructor(parameters: ShaderMaterialParameters & {
-            color: THREE.Color;
+            color: THREE.ColorRepresentation;
             opacity: number;
             width: number;
         });
@@ -37,22 +37,18 @@ declare namespace Geometry {
         scale: number;
     };
     type Style = {
-        strokeColor?: THREE.Color;
+        strokeColor?: THREE.ColorRepresentation;
         strokeWidth?: number;
         strokeOpacity?: number;
-        stroke?: boolean;
-        fillColor?: THREE.Color;
+        fillColor?: THREE.ColorRepresentation;
         fillOpacity?: number;
-        fill?: boolean;
     };
     type StyleJson = {
         strokeColor?: Array<number>;
         strokeWidth?: number;
         strokeOpacity?: number;
-        stroke?: boolean;
         fillColor?: Array<number>;
         fillOpacity?: number;
-        fill?: boolean;
     };
     type Representation = {
         class: string;
@@ -89,9 +85,9 @@ declare namespace Geometry {
         get numCurves(): number;
         getCurveEndIndices(): any[];
         clear(): this;
-        clone(recursive: ?boolean): any;
+        clone(recursive?: boolean): this;
         getClassConfig(): {};
-        copy(source: this, recursive: boolean): this;
+        copy<T extends Shape>(source: T, recursive: boolean): T;
         abstract getAttributes(): object;
         static styleToJson: (style: Style) => StyleJson;
         static jsonToStyle: (styleJson: StyleJson) => Style;
@@ -120,14 +116,14 @@ declare namespace Geometry {
         getClassConfig(): {
             transformCenter: boolean;
         };
-        get getAttributes(): LineAttributes;
+        getAttributes(): LineAttributes;
         toVector(global: boolean): THREE.Vector3;
         static fromAttributes(attributes: LineAttributes): Line;
     }
     class Polyline extends Shape {
         constructor(points: Array<THREE.Vector3>, config?: Style);
         getClassConfig(): {};
-        get getAttributes(): PolygonAttributes;
+        getAttributes(): PolygonAttributes;
         static fromAttributes(attributes: PolygonAttributes): Polyline;
     }
     class Arc extends Shape {
@@ -223,22 +219,18 @@ declare namespace Utils {
         scale: number;
     };
     type Style = {
-        strokeColor?: THREE.Color;
+        strokeColor?: THREE.ColorRepresentation;
         strokeWidth?: number;
         strokeOpacity?: number;
-        stroke?: boolean;
-        fillColor?: THREE.Color;
+        fillColor?: THREE.ColorRepresentation;
         fillOpacity?: number;
-        fill?: boolean;
     };
     type StyleJson = {
         strokeColor?: Array<number>;
         strokeWidth?: number;
         strokeOpacity?: number;
-        stroke?: boolean;
         fillColor?: Array<number>;
         fillOpacity?: number;
-        fill?: boolean;
     };
     type Representation = {
         class: string;
@@ -310,8 +302,8 @@ declare namespace Utils {
         style: Style;
         withStyle(style: Style): this;
         startAt(start: THREE.Vector3): this;
-        extendAlong(shape: Geometry.Shape, direction: THREE.Vector3, until: THREE.Vector3 | undefined): this;
-        extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until: THREE.Vector3 | undefined): void;
+        extendAlong(shape: Geometry.Shape, direction: THREE.Vector3, until?: THREE.Vector3 | undefined): this;
+        extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until?: THREE.Vector3 | undefined): void;
         finish(): Geometry.Polygon;
     }
 }
@@ -414,22 +406,18 @@ declare namespace Text {
         scale: number;
     };
     type Style = {
-        strokeColor?: THREE.Color;
+        strokeColor?: THREE.ColorRepresentation;
         strokeWidth?: number;
         strokeOpacity?: number;
-        stroke?: boolean;
-        fillColor?: THREE.Color;
+        fillColor?: THREE.ColorRepresentation;
         fillOpacity?: number;
-        fill?: boolean;
     };
     type StyleJson = {
         strokeColor?: Array<number>;
         strokeWidth?: number;
         strokeOpacity?: number;
-        stroke?: boolean;
         fillColor?: Array<number>;
         fillOpacity?: number;
-        fill?: boolean;
     };
     type Representation = {
         class: string;
@@ -496,11 +484,17 @@ declare namespace Text {
     const textFromJson: (json: object) => Text;
 }
 type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.Renderer) => T;
+type AnimationRepresentation = Animation | Array<Animation> | {
+    animations: Array<Animation>;
+    before?: () => void;
+    after?: () => void;
+    parent?: THREE.Object3D;
+};
 interface StudioScene {
     scene: THREE.Scene;
     camera: THREE.Camera;
     renderer: THREE.Renderer;
-    animations?: Array<Animation | Array<Animation>>;
+    animations?: Array<AnimationRepresentation>;
     loop?: (time: number, deltaTime: number) => void;
 }
 declare class SceneController {
@@ -611,22 +605,18 @@ declare namespace Diagram {
         scale: number;
     };
     type Style = {
-        strokeColor?: THREE.Color;
+        strokeColor?: THREE.ColorRepresentation;
         strokeWidth?: number;
         strokeOpacity?: number;
-        stroke?: boolean;
-        fillColor?: THREE.Color;
+        fillColor?: THREE.ColorRepresentation;
         fillOpacity?: number;
-        fill?: boolean;
     };
     type StyleJson = {
         strokeColor?: Array<number>;
         strokeWidth?: number;
         strokeOpacity?: number;
-        stroke?: boolean;
         fillColor?: Array<number>;
         fillOpacity?: number;
-        fill?: boolean;
     };
     type Representation = {
         class: string;
@@ -670,4 +660,4 @@ declare namespace Diagram {
 }
 export { Geometry, Animation, Text, SceneController, setupCanvas, Utils, Diagram };
 export * as THREE from "three";
-export type { StudioScene };
+export type { StudioScene, AnimationRepresentation };

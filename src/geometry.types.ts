@@ -5,23 +5,19 @@ type Transform = {
 };
 
 type Style = {
-	strokeColor?: THREE.Color;
+	strokeColor?: THREE.ColorRepresentation;
 	strokeWidth?: number;
 	strokeOpacity?: number;
-	stroke?: boolean;
-	fillColor?: THREE.Color;
+	fillColor?: THREE.ColorRepresentation;
 	fillOpacity?: number;
-	fill?: boolean;
 };
 
 type StyleJson = {
 	strokeColor?: Array<number>;
 	strokeWidth?: number;
 	strokeOpacity?: number;
-	stroke?: boolean;
 	fillColor?: Array<number>;
 	fillOpacity?: number;
-	fill?: boolean;
 };
 
 type Representation = {

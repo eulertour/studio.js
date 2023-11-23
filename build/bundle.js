@@ -52362,8 +52362,8 @@ class Shape extends Group {
         return this;
     }
     clone(recursive) {
-        if (recursive === false) {
-            throw Error("Shape.clone() is always recursive");
+        if (recursive === true) {
+            throw Error("Recursive Shape.clone() isn't implemented.");
         }
         const clone = new this.constructor(...this.getCloneAttributes(), Object.assign(Object.assign({}, this.getStyle()), this.getClassConfig()));
         Object3D.prototype.copy.call(clone, this, false);
@@ -52374,7 +52374,7 @@ class Shape extends Group {
     }
     copy(source, recursive) {
         if (recursive === false) {
-            throw Error("Shape.clone() is always recursive");
+            throw Error("Recursive Shape.copy() isn't implemented.");
         }
         const originalFillVisible = source.children.includes(source.fill);
         const originalStrokeVisible = source.children.includes(source.stroke);
@@ -52532,7 +52532,7 @@ class Line extends Shape {
     getClassConfig() {
         return { transformCenter: this.transformCenter };
     }
-    get getAttributes() {
+    getAttributes() {
         return {
             start: this.start,
             end: this.end,
@@ -52557,7 +52557,7 @@ class Polyline extends Shape {
     getClassConfig() {
         return {};
     }
-    get getAttributes() {
+    getAttributes() {
         return {
             points: this.points,
         };

@@ -65,6 +65,6 @@ export * as Text from "./text";
 export { SceneController } from "./scene";
 export { setupCanvas } from "./utils";
 export * as THREE from "three";
-export type { StudioScene } from "./scene";
+export type { StudioScene, AnimationRepresentation } from "./scene";
 export { Utils };
 export * as Diagram from "./diagram";
