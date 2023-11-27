@@ -158,6 +158,7 @@ declare namespace Geometry {
     }
     class Point extends Circle {
         location: THREE.Vector2 | THREE.Vector3;
+        // TODO: this.location should return this.position
         constructor(location: THREE.Vector2 | THREE.Vector3, config?: Style & {
             radius?: number;
         });
@@ -658,6 +659,12 @@ declare namespace Diagram {
         moveToSegment(start: THREE.Vector3, end: THREE.Vector3): this;
     }
 }
-export { Geometry, Animation, Text, SceneController, setupCanvas, Utils, Diagram };
+declare namespace Constants {
+    const PIXELS_TO_COORDS: number;
+    const COORDS_TO_PIXELS: number;
+    const ERROR_THRESHOLD = 0.001;
+    const DEFAULT_BACKGROUND_HEX = 16775920;
+}
+export { Geometry, Animation, Text, SceneController, setupCanvas, Utils, Diagram, Constants };
 export * as THREE from "three";
 export type { StudioScene, AnimationRepresentation };

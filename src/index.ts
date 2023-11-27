@@ -68,3 +68,4 @@ export * as THREE from "three";
 export type { StudioScene, AnimationRepresentation } from "./scene";
 export { Utils };
 export * as Diagram from "./diagram";
+export * as Constants from "./constants";

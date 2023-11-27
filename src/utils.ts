@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { PIXELS_TO_COORDS } from "./constants";
+import { DEFAULT_BACKGROUND_HEX, PIXELS_TO_COORDS } from "./constants";
 import * as Geometry from "./geometry";
 import { Style } from "./geometry.types";
 
@@ -88,7 +88,7 @@ const setupCanvas = (
   camera.position.z = 6;
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.setClearColor(new THREE.Color(0xfffaf0));
+  renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
   renderer.setSize(pixelWidth, pixelHeight, false);
   renderer.getSize(Geometry.GeometryResolution);
   if (typeof window !== "undefined") {

@@ -51904,7 +51904,17 @@ var three_module = /*#__PURE__*/Object.freeze({
 });
 
 const PIXELS_TO_COORDS = 8 / 450;
+const COORDS_TO_PIXELS = 1 / PIXELS_TO_COORDS;
 const ERROR_THRESHOLD = 0.001;
+const DEFAULT_BACKGROUND_HEX = 0xfffaf0;
+
+var constants = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	COORDS_TO_PIXELS: COORDS_TO_PIXELS,
+	DEFAULT_BACKGROUND_HEX: DEFAULT_BACKGROUND_HEX,
+	ERROR_THRESHOLD: ERROR_THRESHOLD,
+	PIXELS_TO_COORDS: PIXELS_TO_COORDS
+});
 
 /******************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -51941,7 +51951,7 @@ typeof SuppressedError === "function" ? SuppressedError : function (error, suppr
     return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
 };
 
-const MESHLINE_VERT = `
+const MESHLINE_VERT = /*glsl*/ `
   ${ShaderChunk.logdepthbuf_pars_vertex}
   ${ShaderChunk.fog_pars_vertex}
 
@@ -52001,11 +52011,11 @@ const MESHLINE_VERT = `
 
     ${ShaderChunk.logdepthbuf_vertex}
     ${ShaderChunk.fog_vertex &&
-    `vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );`}
+    /*glsl*/ `vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );`}
     ${ShaderChunk.fog_vertex}
 	}
 `;
-const MESHLINE_FRAG = `
+const MESHLINE_FRAG = /*glsl*/ `
   ${ShaderChunk.fog_pars_fragment}
   ${ShaderChunk.logdepthbuf_pars_fragment}
 
@@ -52180,9 +52190,10 @@ class MeshLineGeometry extends BufferGeometry {
         array[offset + 11] = z;
     }
     setTextureCoords(array, offset) {
-        array[offset] = 1;
-        array[offset + 2] = 2;
-        array[offset + 3] = 3;
+        array[offset] = 1; // 2 * 0 + 1;
+        // array[offset + 1] = 0; // 2 * 0 + 0;
+        array[offset + 2] = 2; // 2 * 1 + 0;
+        array[offset + 3] = 3; // 2 * 1 + 1;
     }
     setIndices(array, offset, startIndex) {
         array[offset] = startIndex;
@@ -52208,6 +52219,7 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
     const nextIndex = 4 * index;
     this.setIndices(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), indexOffset, nextIndex);
 }, _MeshLineGeometry_makeNewBuffers = function _MeshLineGeometry_makeNewBuffers(pointCount) {
+    // Remove the previous buffers from the GPU
     this.dispose();
     const rectCount = pointCount - 1;
     __classPrivateFieldSet(this, _MeshLineGeometry_position, new Float32Array(12 * rectCount), "f");
@@ -52292,6 +52304,7 @@ class MeshLineMaterial extends ShaderMaterial {
     }
 }
 
+// @ts-nocheck
 const GeometryResolution = new Vector2();
 const getFillGeometry = (points) => {
     const shape = new Shape$1();
@@ -52365,6 +52378,8 @@ class Shape extends Group {
         if (recursive === true) {
             throw Error("Recursive Shape.clone() isn't implemented.");
         }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         const clone = new this.constructor(...this.getCloneAttributes(), Object.assign(Object.assign({}, this.getStyle()), this.getClassConfig()));
         Object3D.prototype.copy.call(clone, this, false);
         return clone;
@@ -52665,6 +52680,7 @@ class Circle extends Arc {
     }
 }
 class Point extends Circle {
+    // TODO: this.location should return this.position
     constructor(location, config = {}) {
         config = Object.assign({ radius: 0.08 }, config);
         super(config.radius, Object.assign({ fillColor: new Color("black"), fillOpacity: 1 }, config));
@@ -52888,7 +52904,7 @@ const setupCanvas = (canvas, config = {
     const camera = new OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
     camera.position.z = 6;
     const renderer = new WebGLRenderer({ canvas, antialias: true });
-    renderer.setClearColor(new Color(0xfffaf0));
+    renderer.setClearColor(new Color(DEFAULT_BACKGROUND_HEX));
     renderer.setSize(pixelWidth, pixelHeight, false);
     renderer.getSize(GeometryResolution);
     if (typeof window !== "undefined") {
@@ -53007,6 +53023,12 @@ const getBoundingBoxHelper = (obj, color) => {
 const transformBetweenSpaces = (from, to, point) => {
     return to.worldToLocal(from.localToWorld(point));
 };
+/*
+ * Solves
+ * [ a b ]   [ xa ]   [ ba ]
+ * [ c d ] * [ xb ] = [ bb ]
+ * for x.
+ */
 const matrixSolve = (ma, mb, mc, md, ba, bb) => {
     const determinant = ma * md - mb * mc;
     if (determinant === 0) {
@@ -53014,12 +53036,14 @@ const matrixSolve = (ma, mb, mc, md, ba, bb) => {
     }
     return [(md * ba - mb * bb) / determinant, (ma * bb - mc * ba) / determinant];
 };
+// https://blogs.sas.com/content/iml/2018/07/09/intersection-line-segments.html
 const getIntersection = (p1, p2, q1, q2) => {
     const p2MinusP1 = new Vector3().subVectors(p2, p1);
     const q1MinusQ2 = new Vector3().subVectors(q1, q2);
     const q1MinusP1 = new Vector3().subVectors(q1, p1);
     const solution = matrixSolve(p2MinusP1.x, q1MinusQ2.x, p2MinusP1.y, q1MinusQ2.y, q1MinusP1.x, q1MinusP1.y);
     if (solution === null) {
+        // TODO: Handle parallel lines.
         return null;
     }
     const [s, t] = solution;
@@ -53071,6 +53095,7 @@ class ShapeFromCurves {
         if (startPoint === undefined) {
             throw new Error("Cannot extend with no current points.");
         }
+        // Find where the shape intersects the current endpoint.
         let intersectSegment = null;
         let intersectIndex = null;
         shape.updateMatrixWorld();
@@ -53099,13 +53124,17 @@ class ShapeFromCurves {
             }
             return new Vector3().subVectors(endPoint, point).normalize();
         };
+        // Get potential directions to extend.
         let towardStartVector;
         let forwardInitialPointIndex = intersectIndex + 1;
         let backwardInitialPointIndex = intersectIndex;
+        // debugger;
         towardStartVector = new Vector3().subVectors(intersectSegment.start, this.segmentClosestToPoint);
         if (towardStartVector.length() < this.adjacentThreshold) {
+            // The point intersects at the start of this segment, so try using the previous point instead.
             let prevIndex = intersectIndex - 1;
             if (prevIndex === -1 && shapeIsClosed(shape)) {
+                // The point intersects at the first point of a closed shape, so use the second to last point.
                 prevIndex = shape.points.length - 2;
             }
             if (prevIndex !== -1) {
@@ -53114,10 +53143,12 @@ class ShapeFromCurves {
                 backwardInitialPointIndex = prevIndex;
             }
             else {
+                // The vector is (effectively) zero.
                 towardStartVector.set(0, 0, 0);
             }
         }
         towardStartVector.normalize();
+        // Ugh do this.
         let towardEndVector;
         const endToIntersection = new Vector3()
             .subVectors(intersectSegment.end, this.segmentClosestToPoint)
@@ -53132,6 +53163,7 @@ class ShapeFromCurves {
             towardEndVector = new Vector3()
                 .subVectors(nextPoint, intersectSegment.end)
                 .normalize();
+            // Handle closed curves (shape.points.at(0) === shape.points.at(-1))
             if (towardEndVector.length() < this.adjacentThreshold) {
                 nextPoint = (_e = shape.points
                     .at(intersectIndex + 3)) === null || _e === void 0 ? void 0 : _e.clone().applyMatrix4(shape.matrixWorld);
@@ -53163,6 +53195,7 @@ class ShapeFromCurves {
             }
             return i;
         };
+        // const initialPointIndex = forward ? segmentIndex + 1 : segmentIndex;
         const increment = forward ? 1 : -1;
         let i = initialPointIndex;
         let count = 0;
@@ -98212,6 +98245,7 @@ class Text extends Group {
         this.text = text;
         config = Object.assign({ fillColor: new Color("black"), fillOpacity: 1 }, config);
         let svgString = tex2svg(this.text);
+        // Remove after updating to three.js r150 (https://github.com/mrdoob/three.js/issues/25548)
         const emptyPath = 'd=""';
         while (true) {
             const match = svgString.match(emptyPath);
@@ -98288,6 +98322,8 @@ class Text extends Group {
         if (recursive === false) {
             throw Error("Text.clone() is always recursive");
         }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         const clone = new this.constructor(...this.getCloneAttributes());
         Object3D.prototype.copy.call(clone, this, false);
         return clone;
@@ -98498,7 +98534,8 @@ class SceneController {
             const spf = 1 / this.fps;
             while (this.elapsedTime !== target) {
                 try {
-                    this.tick(Math.min(spf, target - this.elapsedTime), false);
+                    this.tick(Math.min(spf, target - this.elapsedTime), 
+                    /*render=*/ false);
                 }
                 catch (e) {
                     throw new Error(`Error advancing scene: ${e.toString()}`);
@@ -98620,4 +98657,4 @@ Object3D.prototype.setVisible = function () {
     return this.setOpacity(1);
 };
 
-export { animation as Animation, diagram as Diagram, geometry as Geometry, SceneController, three_module as THREE, text as Text, utils as Utils, setupCanvas };
+export { animation as Animation, constants as Constants, diagram as Diagram, geometry as Geometry, SceneController, three_module as THREE, text as Text, utils as Utils, setupCanvas };
