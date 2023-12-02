@@ -623,6 +623,7 @@ class Rectangle extends Shape {
   }
 }
 
+/** This is a square. */
 class Square extends Rectangle {
   constructor(public sideLength = 2, config = {}) {
     super(sideLength, sideLength, config);
