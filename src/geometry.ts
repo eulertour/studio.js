@@ -13,7 +13,15 @@ import type {
   RectangleAttributes,
 } from "./geometry.types.js";
 
-const GeometryResolution = new THREE.Vector2();
+const CanvasViewport = new THREE.Vector4();
+
+const setGeometryViewport = (viewport: THREE.Vector4) => {
+  CanvasViewport.copy(viewport);
+   
+  if (typeof window !== "undefined") {
+    CanvasViewport.multiplyScalar(window.devicePixelRatio);
+  }
+};
 
 const getFillGeometry = (points: Array<THREE.Vector3>) => {
   const shape = new THREE.Shape();
@@ -678,7 +686,8 @@ const shapeFromJson = (json: object): Shape => {
 };
 
 export {
-  GeometryResolution,
+  CanvasViewport,
+  setGeometryViewport,
   shapeFromJson,
   Shape,
   Line,

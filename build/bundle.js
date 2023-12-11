@@ -51480,7 +51480,7 @@ if ( typeof window !== 'undefined' ) {
 
 }
 
-var three_module = /*#__PURE__*/Object.freeze({
+var THREE = /*#__PURE__*/Object.freeze({
 	__proto__: null,
 	ACESFilmicToneMapping: ACESFilmicToneMapping,
 	AddEquation: AddEquation,
@@ -51959,7 +51959,7 @@ const MESHLINE_VERT = /*glsl*/ `
   // https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
   // uniform mat4 modelViewMatrix;
   // uniform mat4 projectionMatrix;
-  uniform vec2 resolution;
+  uniform vec4 viewport;
   uniform float unitWidth;
 
   // Passed by WebGLProgram
@@ -51980,7 +51980,9 @@ const MESHLINE_VERT = /*glsl*/ `
   }
 
   vec2 fragmentCoords(vec4 v) {
-    return resolution / 2. * (1. + v.xy / v.w);
+    vec2 viewportFragment = viewport.zw / 2. * (1. + v.xy / v.w);
+    viewportFragment += viewport.xy;
+    return viewportFragment;
   }
 
   void main()	{
@@ -51994,8 +51996,8 @@ const MESHLINE_VERT = /*glsl*/ `
     vEndFragment = fragmentCoords(end);
     vNextFragment = fragmentCoords(next);
 
-    // Add 0.1 so all pixels are covered.
-    vec2 segmentVec = 1.1 * normalize(vEndFragment - vStartFragment);
+    // Add 0.2 so all pixels are covered.
+    vec2 segmentVec = 1.2 * normalize(vEndFragment - vStartFragment);
     vec2 segmentNormal = vec2(-segmentVec.y, segmentVec.x);
     float textureDivide = textureCoords / 2.;
     float startEnd = 2. * (ceil(floor(textureDivide)) - 0.5);
@@ -52023,7 +52025,7 @@ const MESHLINE_FRAG = /*glsl*/ `
   uniform float unitWidth;
   uniform float opacity;
   uniform vec2 drawRange;
-  uniform float pixelsPerUnit;
+  uniform vec4 viewport;
 
   varying vec2 vStartFragment;
   varying vec2 vEndFragment;
@@ -52035,6 +52037,7 @@ const MESHLINE_FRAG = /*glsl*/ `
   }
 
   bool segmentCoversFragment(vec2 fragment, vec2 startFragment, vec2 endFragment) {
+    float pixelsPerUnit = viewport.w / 8.;
     float pixelWidth = unitWidth * pixelsPerUnit;
     float halfWidthSquared = 0.25 * pixelWidth * pixelWidth;
 
@@ -52052,8 +52055,8 @@ const MESHLINE_FRAG = /*glsl*/ `
       && lengthSquared(segmentProjection) < lengthSquared(segmentVec)
       && lengthSquared(segmentNormal) < halfWidthSquared;
 
-    bool segmentStart = !towardSegment && lengthSquared(startToFrag) < halfWidthSquared;
-    bool segmentEnd = towardSegment && lengthSquared(endToFrag) < halfWidthSquared;
+    bool segmentStart = lengthSquared(startToFrag) < halfWidthSquared;
+    bool segmentEnd = lengthSquared(endToFrag) < halfWidthSquared;
 
     return segmentStem || segmentStart || segmentEnd;
   }
@@ -52250,8 +52253,8 @@ class MeshLineMaterial extends ShaderMaterial {
             uniforms: Object.assign({}, UniformsLib.fog, {
                 color: { value: new Color(0x0000ff) },
                 opacity: { value: 1 },
-                resolution: { value: GeometryResolution },
-                pixelsPerUnit: { value: GeometryResolution.y / 8 },
+                viewport: { value: CanvasViewport },
+                // pixelsPerUnit: { value: CanvasViewport.w / 8 },
                 unitWidth: { value: 1 / 10 },
                 drawRange: { value: new Vector2(0, 1) },
             }),
@@ -52305,7 +52308,13 @@ class MeshLineMaterial extends ShaderMaterial {
 }
 
 // @ts-nocheck
-const GeometryResolution = new Vector2();
+const CanvasViewport = new Vector4();
+const setGeometryViewport = (viewport) => {
+    CanvasViewport.copy(viewport);
+    if (typeof window !== "undefined") {
+        CanvasViewport.multiplyScalar(window.devicePixelRatio);
+    }
+};
 const getFillGeometry = (points) => {
     const shape = new Shape$1();
     shape.moveTo(points[0].x, points[0].y);
@@ -52786,6 +52795,7 @@ class Rectangle extends Shape {
         ];
     }
 }
+/** This is a square. */
 class Square extends Rectangle {
     constructor(sideLength = 2, config = {}) {
         super(sideLength, sideLength, config);
@@ -52838,8 +52848,8 @@ const shapeFromJson = (json) => {
 var geometry = /*#__PURE__*/Object.freeze({
 	__proto__: null,
 	Arc: Arc,
+	CanvasViewport: CanvasViewport,
 	Circle: Circle,
-	GeometryResolution: GeometryResolution,
 	Line: Line,
 	Point: Point,
 	Polygon: Polygon,
@@ -52847,6 +52857,7 @@ var geometry = /*#__PURE__*/Object.freeze({
 	Rectangle: Rectangle,
 	Shape: Shape,
 	Square: Square,
+	setGeometryViewport: setGeometryViewport,
 	shapeFromJson: shapeFromJson
 });
 
@@ -52882,7 +52893,16 @@ const setupCanvas = (canvas, config = {
     aspectRatio: 16 / 9,
     pixelHeight: 720,
     coordinateHeight: 8,
+    setRendererSize: true,
+    viewport: new Vector4(),
 }) => {
+    config = Object.assign({
+        aspectRatio: 16 / 9,
+        pixelHeight: 720,
+        coordinateHeight: 8,
+        setRendererSize: true,
+        viewport: new Vector4(),
+    }, config);
     let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
     if (isWidthSetup(config)) {
         aspectRatio = config.aspectRatio;
@@ -52903,13 +52923,19 @@ const setupCanvas = (canvas, config = {
     }
     const camera = new OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
     camera.position.z = 6;
-    const renderer = new WebGLRenderer({ canvas, antialias: true });
+    const renderer = new WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
     renderer.setClearColor(new Color(DEFAULT_BACKGROUND_HEX));
-    renderer.setSize(pixelWidth, pixelHeight, false);
-    renderer.getSize(GeometryResolution);
+    renderer.autoClear = false;
+    if (config.setRendererSize) {
+        renderer.setSize(pixelWidth, pixelHeight, false);
+        CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
+    }
+    else {
+        CanvasViewport.copy(config.viewport);
+    }
     if (typeof window !== "undefined") {
         renderer.setPixelRatio(window.devicePixelRatio);
-        GeometryResolution.multiplyScalar(window.devicePixelRatio);
+        CanvasViewport.multiplyScalar(window.devicePixelRatio);
     }
     return [new Scene(), camera, renderer];
 };
@@ -98413,6 +98439,7 @@ var text = /*#__PURE__*/Object.freeze({
 
 class SceneController {
     constructor(UserScene, canvasRef, config) {
+        this.UserScene = UserScene;
         this.animationIndex = 0;
         this.deltaTime = 0;
         this.elapsedTime = 0;
@@ -98424,6 +98451,8 @@ class SceneController {
         this.endTime = Infinity;
         this.loopAnimations = [];
         this.finishedAnimationCount = 0;
+        this.three = THREE;
+        this.viewport = "viewport" in config ? config.viewport : undefined;
         this.userScene = new UserScene(...setupCanvas(canvasRef, config));
     }
     get scene() {
@@ -98434,6 +98463,20 @@ class SceneController {
     }
     get renderer() {
         return this.userScene.renderer;
+    }
+    render() {
+        if (!this.viewport) {
+            this.userScene.renderer.render(this.userScene.scene, this.userScene.camera);
+        }
+        else {
+            const viewportArray = this.viewport.toArray();
+            this.renderer.setScissor(...viewportArray);
+            this.renderer.setViewport(...viewportArray);
+            this.renderer.setScissorTest(true);
+            this.renderer.clear();
+            setGeometryViewport(this.viewport);
+            this.renderer.render(this.userScene.scene, this.userScene.camera);
+        }
     }
     tick(deltaTime, render = true) {
         if (this.firstFrame) {
@@ -98498,9 +98541,7 @@ class SceneController {
             this.animationIndex += 1;
             this.finishedAnimationCount = newFinishedAnimationCount;
         }
-        if (render) {
-            this.userScene.renderer.render(this.userScene.scene, this.userScene.camera);
-        }
+        this.render();
     }
     play() {
         this.paused = false;
@@ -98524,25 +98565,6 @@ class SceneController {
     pause() {
         this.paused = true;
         this.userScene.renderer.setAnimationLoop(null);
-        this.signalUpdate();
-    }
-    seekForward(duration) {
-        if (duration < 0)
-            throw new Error("Scene.seekForward() requires a nonnegative offset");
-        if (duration !== 0) {
-            const target = MathUtils.clamp(this.elapsedTime + duration, this.startTime, this.endTime);
-            const spf = 1 / this.fps;
-            while (this.elapsedTime !== target) {
-                try {
-                    this.tick(Math.min(spf, target - this.elapsedTime), 
-                    /*render=*/ false);
-                }
-                catch (e) {
-                    throw new Error(`Error advancing scene: ${e.toString()}`);
-                }
-            }
-        }
-        this.userScene.renderer.render(this.userScene.scene, this.userScene.camera);
         this.signalUpdate();
     }
     dispose() {
@@ -98657,4 +98679,4 @@ Object3D.prototype.setVisible = function () {
     return this.setOpacity(1);
 };
 
-export { animation as Animation, constants as Constants, diagram as Diagram, geometry as Geometry, SceneController, three_module as THREE, text as Text, utils as Utils, setupCanvas };
+export { animation as Animation, constants as Constants, diagram as Diagram, geometry as Geometry, SceneController, THREE, text as Text, utils as Utils, setupCanvas };

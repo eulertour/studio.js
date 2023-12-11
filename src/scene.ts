@@ -1,11 +1,12 @@
 import * as THREE from "three";
 import { Animation } from "./animation";
 import { HeightSetupConfig, WidthSetupConfig, setupCanvas } from "./utils";
+import { setGeometryViewport } from "./geometry";
 
 type Class<T> = new (
   scene: THREE.Scene,
   camera: THREE.Camera,
-  renderer: THREE.Renderer
+  renderer: THREE.WebGLRenderer
 ) => T;
 
 export type AnimationRepresentation = Animation | Array<Animation> | {
@@ -15,10 +16,10 @@ export type AnimationRepresentation = Animation | Array<Animation> | {
   parent?: THREE.Object3D,
 }
 
-export interface StudioScene {
+export interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
   scene: THREE.Scene;
-  camera: THREE.Camera;
-  renderer: THREE.Renderer;
+  camera: T;
+  renderer: THREE.WebGLRenderer;
   animations?: Array<AnimationRepresentation>;
   loop?: (time: number, deltaTime: number) => void;
 }
@@ -37,12 +38,15 @@ export class SceneController {
   finishedAnimationCount = 0;
   userScene: StudioScene;
   signalUpdate: () => void;
+  three = THREE;
+  viewport: THREE.Vector4;
 
   constructor(
-    UserScene: Class<StudioScene>,
+    public UserScene: Class<StudioScene>,
     canvasRef: HTMLCanvasElement,
     config: WidthSetupConfig | HeightSetupConfig | undefined
   ) {
+    this.viewport = "viewport" in config ? config.viewport : undefined;
     this.userScene = new UserScene(...setupCanvas(canvasRef, config));
   }
 
@@ -56,6 +60,23 @@ export class SceneController {
 
   get renderer() {
     return this.userScene.renderer;
+  }
+  
+  render() {
+    if (!this.viewport) {
+      this.userScene.renderer.render(
+        this.userScene.scene,
+        this.userScene.camera
+      );
+    } else {
+      const viewportArray = this.viewport.toArray();
+      this.renderer.setScissor(...viewportArray);
+      this.renderer.setViewport(...viewportArray);
+      this.renderer.setScissorTest(true);
+      this.renderer.clear();
+      setGeometryViewport(this.viewport);
+      this.renderer.render(this.userScene.scene, this.userScene.camera);
+    }
   }
 
   tick(deltaTime: number, render = true) {
@@ -125,12 +146,7 @@ export class SceneController {
       this.finishedAnimationCount = newFinishedAnimationCount;
     }
 
-    if (render) {
-      this.userScene.renderer.render(
-        this.userScene.scene,
-        this.userScene.camera
-      );
-    }
+    this.render();
   }
 
   play() {
@@ -158,32 +174,6 @@ export class SceneController {
     this.signalUpdate();
   }
 
-  seekForward(duration: number) {
-    if (duration < 0)
-      throw new Error("Scene.seekForward() requires a nonnegative offset");
-
-    if (duration !== 0) {
-      const target = THREE.MathUtils.clamp(
-        this.elapsedTime + duration,
-        this.startTime,
-        this.endTime
-      );
-      const spf = 1 / this.fps;
-      while (this.elapsedTime !== target) {
-        try {
-          this.tick(
-            Math.min(spf, target - this.elapsedTime),
-            /*render=*/ false
-          );
-        } catch (e: any) {
-          throw new Error(`Error advancing scene: ${e.toString()}`);
-        }
-      }
-    }
-
-    this.userScene.renderer.render(this.userScene.scene, this.userScene.camera);
-    this.signalUpdate();
-  }
 
   dispose() {
     this.userScene.scene.traverse((child) => {

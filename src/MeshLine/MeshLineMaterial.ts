@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { GeometryResolution } from "../geometry";
+import { CanvasViewport } from "../geometry";
 import type { ShaderMaterialParameters } from "three";
 import { MESHLINE_FRAG, MESHLINE_VERT } from "./meshline.glsl";
 
@@ -18,8 +18,8 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
       uniforms: Object.assign({}, THREE.UniformsLib.fog, {
         color: { value: new THREE.Color(0x0000ff) },
         opacity: { value: 1 },
-        resolution: { value: GeometryResolution },
-        pixelsPerUnit: { value: GeometryResolution.y / 8 },
+        viewport: { value: CanvasViewport },
+        // pixelsPerUnit: { value: CanvasViewport.w / 8 },
         unitWidth: { value: 1 / 10 },
         drawRange: { value: new THREE.Vector2(0, 1) },
       }),

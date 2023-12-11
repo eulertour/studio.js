@@ -8,7 +8,7 @@ export const MESHLINE_VERT = /*glsl*/ `
   // https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
   // uniform mat4 modelViewMatrix;
   // uniform mat4 projectionMatrix;
-  uniform vec2 resolution;
+  uniform vec4 viewport;
   uniform float unitWidth;
 
   // Passed by WebGLProgram
@@ -29,7 +29,9 @@ export const MESHLINE_VERT = /*glsl*/ `
   }
 
   vec2 fragmentCoords(vec4 v) {
-    return resolution / 2. * (1. + v.xy / v.w);
+    vec2 viewportFragment = viewport.zw / 2. * (1. + v.xy / v.w);
+    viewportFragment += viewport.xy;
+    return viewportFragment;
   }
 
   void main()	{
@@ -43,8 +45,8 @@ export const MESHLINE_VERT = /*glsl*/ `
     vEndFragment = fragmentCoords(end);
     vNextFragment = fragmentCoords(next);
 
-    // Add 0.1 so all pixels are covered.
-    vec2 segmentVec = 1.1 * normalize(vEndFragment - vStartFragment);
+    // Add 0.2 so all pixels are covered.
+    vec2 segmentVec = 1.2 * normalize(vEndFragment - vStartFragment);
     vec2 segmentNormal = vec2(-segmentVec.y, segmentVec.x);
     float textureDivide = textureCoords / 2.;
     float startEnd = 2. * (ceil(floor(textureDivide)) - 0.5);
@@ -75,7 +77,7 @@ export const MESHLINE_FRAG = /*glsl*/ `
   uniform float unitWidth;
   uniform float opacity;
   uniform vec2 drawRange;
-  uniform float pixelsPerUnit;
+  uniform vec4 viewport;
 
   varying vec2 vStartFragment;
   varying vec2 vEndFragment;
@@ -87,6 +89,7 @@ export const MESHLINE_FRAG = /*glsl*/ `
   }
 
   bool segmentCoversFragment(vec2 fragment, vec2 startFragment, vec2 endFragment) {
+    float pixelsPerUnit = viewport.w / 8.;
     float pixelWidth = unitWidth * pixelsPerUnit;
     float halfWidthSquared = 0.25 * pixelWidth * pixelWidth;
 
@@ -104,8 +107,8 @@ export const MESHLINE_FRAG = /*glsl*/ `
       && lengthSquared(segmentProjection) < lengthSquared(segmentVec)
       && lengthSquared(segmentNormal) < halfWidthSquared;
 
-    bool segmentStart = !towardSegment && lengthSquared(startToFrag) < halfWidthSquared;
-    bool segmentEnd = towardSegment && lengthSquared(endToFrag) < halfWidthSquared;
+    bool segmentStart = lengthSquared(startToFrag) < halfWidthSquared;
+    bool segmentEnd = lengthSquared(endToFrag) < halfWidthSquared;
 
     return segmentStem || segmentStart || segmentEnd;
   }

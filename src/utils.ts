@@ -54,12 +54,26 @@ const isHeightSetup = (config: object): config is HeightSetupConfig => {
 
 const setupCanvas = (
   canvas: HTMLCanvasElement,
-  config: WidthSetupConfig | HeightSetupConfig = {
+  config: (WidthSetupConfig | HeightSetupConfig)
+    & { setRendererSize: boolean }
+    & { viewport: THREE.Vector4 } = {
     aspectRatio: 16 / 9,
     pixelHeight: 720,
     coordinateHeight: 8,
+    setRendererSize: true,
+    viewport: new THREE.Vector4(),
   }
 ): [THREE.Scene, THREE.Camera, THREE.WebGLRenderer] => {
+  config = Object.assign(
+    {
+      aspectRatio: 16 / 9,
+      pixelHeight: 720,
+      coordinateHeight: 8,
+      setRendererSize: true,
+      viewport: new THREE.Vector4(),
+    },
+    config,
+  );
   let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
   if (isWidthSetup(config)) {
     aspectRatio = config.aspectRatio;
@@ -87,13 +101,18 @@ const setupCanvas = (
   );
   camera.position.z = 6;
 
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
   renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
-  renderer.setSize(pixelWidth, pixelHeight, false);
-  renderer.getSize(Geometry.GeometryResolution);
+  renderer.autoClear = false;
+  if (config.setRendererSize) {
+    renderer.setSize(pixelWidth, pixelHeight, false);
+    Geometry.CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
+  } else {
+    Geometry.CanvasViewport.copy(config.viewport);
+  }
   if (typeof window !== "undefined") {
     renderer.setPixelRatio(window.devicePixelRatio);
-    Geometry.GeometryResolution.multiplyScalar(window.devicePixelRatio);
+    Geometry.CanvasViewport.multiplyScalar(window.devicePixelRatio);
   }
   return [new THREE.Scene(), camera, renderer];
 };

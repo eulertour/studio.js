@@ -72,7 +72,8 @@ declare namespace Geometry {
     type PolygonAttributes = {
         points: Array<THREE.Vector3>;
     };
-    const GeometryResolution: THREE.Vector2;
+    const CanvasViewport: THREE.Vector4;
+    const setGeometryViewport: (viewport: THREE.Vector4) => void;
     type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
     type Stroke = THREE.Mesh<MeshLineGeometry, MeshLineMaterial>;
     abstract class Shape extends THREE.Group {
@@ -191,6 +192,7 @@ declare namespace Geometry {
         }[];
         getCurveEndIndices(): Array<Array<number>>;
     }
+    /** This is a square. */
     class Square extends Rectangle {
         sideLength: number;
         constructor(sideLength?: number, config?: {});
@@ -280,7 +282,11 @@ declare namespace Utils {
         pixelHeight: number;
         coordinateHeight: number;
     }
-    const setupCanvas: (canvas: HTMLCanvasElement, config?: WidthSetupConfig | HeightSetupConfig) => [
+    const setupCanvas: (canvas: HTMLCanvasElement, config?: (WidthSetupConfig | HeightSetupConfig) & {
+        setRendererSize: boolean;
+    } & {
+        viewport: THREE.Vector4;
+    }) => [
         THREE.Scene,
         THREE.Camera,
         THREE.WebGLRenderer
@@ -484,21 +490,22 @@ declare namespace Text {
     }
     const textFromJson: (json: object) => Text;
 }
-type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.Renderer) => T;
+type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
 type AnimationRepresentation = Animation | Array<Animation> | {
     animations: Array<Animation>;
     before?: () => void;
     after?: () => void;
     parent?: THREE.Object3D;
 };
-interface StudioScene {
+interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
     scene: THREE.Scene;
-    camera: THREE.Camera;
-    renderer: THREE.Renderer;
+    camera: T;
+    renderer: THREE.WebGLRenderer;
     animations?: Array<AnimationRepresentation>;
     loop?: (time: number, deltaTime: number) => void;
 }
 declare class SceneController {
+    UserScene: Class<StudioScene>;
     animationIndex: number;
     deltaTime: number;
     elapsedTime: number;
@@ -512,14 +519,16 @@ declare class SceneController {
     finishedAnimationCount: number;
     userScene: StudioScene;
     signalUpdate: () => void;
+    three: typeof THREE;
+    viewport: THREE.Vector4;
     constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: WidthSetupConfig | HeightSetupConfig | undefined);
     get scene(): THREE.Scene;
-    get camera(): THREE.Camera;
-    get renderer(): THREE.Renderer;
+    get camera(): THREE.OrthographicCamera;
+    get renderer(): THREE.WebGLRenderer;
+    render(): void;
     tick(deltaTime: number, render?: boolean): void;
     play(): void;
     pause(): void;
-    seekForward(duration: number): void;
     dispose(): void;
 }
 declare namespace Diagram {
