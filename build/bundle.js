@@ -98466,6 +98466,7 @@ class SceneController {
     }
     render() {
         if (!this.viewport) {
+            this.renderer.clear();
             this.userScene.renderer.render(this.userScene.scene, this.userScene.camera);
         }
         else {
