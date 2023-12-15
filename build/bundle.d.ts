@@ -518,7 +518,6 @@ declare class SceneController {
     loopAnimations: Array<Animation>;
     finishedAnimationCount: number;
     userScene: StudioScene;
-    signalUpdate: () => void;
     three: typeof THREE;
     viewport: THREE.Vector4;
     constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: WidthSetupConfig | HeightSetupConfig | undefined);

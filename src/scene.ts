@@ -37,7 +37,6 @@ export class SceneController {
   loopAnimations: Array<Animation> = [];
   finishedAnimationCount = 0;
   userScene: StudioScene;
-  signalUpdate: () => void;
   three = THREE;
   viewport: THREE.Vector4;
 
@@ -164,7 +163,6 @@ export class SceneController {
           this.tick(endTimeTickLength);
           this.pause();
         }
-        this.signalUpdate();
       });
     });
   }
@@ -172,7 +170,6 @@ export class SceneController {
   pause() {
     this.paused = true;
     this.userScene.renderer.setAnimationLoop(null);
-    this.signalUpdate();
   }
 
 

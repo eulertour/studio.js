@@ -98559,14 +98559,12 @@ class SceneController {
                     this.tick(endTimeTickLength);
                     this.pause();
                 }
-                this.signalUpdate();
             });
         });
     }
     pause() {
         this.paused = true;
         this.userScene.renderer.setAnimationLoop(null);
-        this.signalUpdate();
     }
     dispose() {
         this.userScene.scene.traverse((child) => {
