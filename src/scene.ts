@@ -146,7 +146,9 @@ export class SceneController {
       this.finishedAnimationCount = newFinishedAnimationCount;
     }
 
-    this.render();
+    if (render) {
+      this.render();
+    }
   }
 
   play() {

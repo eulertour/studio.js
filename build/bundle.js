@@ -52380,9 +52380,8 @@ class Shape extends Group {
         if (recursive === true) {
             throw Error("Recursive Shape.clone() isn't implemented.");
         }
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const clone = new this.constructor(...this.getCloneAttributes(), Object.assign(Object.assign({}, this.getStyle()), this.getClassConfig()));
+        const cloneFunc = this.constructor;
+        const clone = new cloneFunc(...this.getCloneAttributes(), Object.assign(Object.assign({}, this.getStyle()), this.getClassConfig()));
         Object3D.prototype.copy.call(clone, this, false);
         return clone;
     }
@@ -98239,18 +98238,18 @@ class Text extends Group {
     }
     dispose() {
         this.traverse((child) => {
-            var _a, _b;
-            (_a = child.geometry) === null || _a === void 0 ? void 0 : _a.dispose();
-            (_b = child.material) === null || _b === void 0 ? void 0 : _b.dispose();
+            if (child instanceof Mesh) {
+                child.geometry.dispose();
+                child.material.dispose();
+            }
         });
     }
     clone(recursive) {
         if (recursive === false) {
             throw Error("Text.clone() is always recursive");
         }
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const clone = new this.constructor(...this.getCloneAttributes());
+        const cloneFunc = this.constructor;
+        const clone = new cloneFunc(...this.getCloneAttributes());
         Object3D.prototype.copy.call(clone, this, false);
         return clone;
     }
@@ -98303,38 +98302,22 @@ class Text extends Group {
     }
     getTransform() {
         return {
-            position: this.position.toArray(),
-            rotation: [this.rotation.x, this.rotation.y, this.rotation.z],
-            scale: this.scale.x,
+            position: this.position.clone(),
+            rotation: this.rotation.clone(),
+            scale: this.scale.clone(),
         };
     }
     setTransform(transform) {
         const { position, rotation, scale } = transform;
-        this.position.set(...position);
-        this.setRotationFromEuler(new Euler(...rotation));
-        this.scale.set(scale, scale, scale);
+        this.position.copy(position);
+        this.rotation.copy(rotation);
+        this.scale.copy(scale);
     }
 }
-Text.styleToJson = (style) => {
-    const { strokeColor, strokeOpacity, strokeWidth, stroke, fillColor, fillOpacity, fill, } = style;
-    return {
-        strokeColor: strokeColor ? strokeColor.toArray() : undefined,
-        strokeOpacity,
-        strokeWidth,
-        stroke,
-        fillColor: fillColor ? fillColor.toArray() : undefined,
-        fillOpacity,
-        fill,
-    };
-};
-const textFromJson = (json) => {
-    return Text.fromJson(json);
-};
 
 var text = /*#__PURE__*/Object.freeze({
 	__proto__: null,
-	Text: Text,
-	textFromJson: textFromJson
+	Text: Text
 });
 
 class SceneController {
@@ -98442,7 +98425,9 @@ class SceneController {
             this.animationIndex += 1;
             this.finishedAnimationCount = newFinishedAnimationCount;
         }
-        this.render();
+        if (render) {
+            this.render();
+        }
     }
     play() {
         this.paused = false;

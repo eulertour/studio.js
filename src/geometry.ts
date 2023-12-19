@@ -114,9 +114,10 @@ abstract class Shape extends THREE.Group {
     if (recursive === true) {
       throw Error("Recursive Shape.clone() isn't implemented.");
     }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const clone = new this.constructor(...this.getCloneAttributes(), {
+
+    const cloneFunc = (this.constructor as new (...args: any[]) => this)
+    const clone = new cloneFunc(
+      ...this.getCloneAttributes(), {
       ...this.getStyle(),
       ...this.getClassConfig(),
     });

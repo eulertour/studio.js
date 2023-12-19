@@ -390,7 +390,7 @@ declare namespace Text {
             batchMaterials?: boolean;
         });
         dispose(): void;
-        clone(recursive: boolean): any;
+        clone(recursive: boolean): this;
         copy(source: this, recursive: boolean): this;
         getDimensions(): THREE.Vector2;
         getCloneAttributes(): string[];
@@ -416,9 +416,7 @@ declare namespace Text {
         static fromJson(json: any): Text;
         getTransform(): Transform;
         setTransform(transform: Transform): void;
-        static styleToJson: (style: Style) => StyleJson;
     }
-    const textFromJson: (json: object) => Text;
 }
 type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
 type AnimationRepresentation = Animation | Array<Animation> | {

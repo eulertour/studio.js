@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { SVGLoader } from "./SVGLoader.js";
-import type { Style, StyleJson, Transform } from "./geometry.types";
+import type { Style, Transform } from "./geometry.types";
 import tex2svg from "./mathjax";
 
 class Text extends THREE.Group {
@@ -98,8 +98,10 @@ class Text extends THREE.Group {
 
   dispose() {
     this.traverse((child) => {
-      child.geometry?.dispose();
-      child.material?.dispose();
+      if (child instanceof THREE.Mesh) {
+        child.geometry.dispose();
+        child.material.dispose();
+      }
     });
   }
 
@@ -107,9 +109,8 @@ class Text extends THREE.Group {
     if (recursive === false) {
       throw Error("Text.clone() is always recursive");
     }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const clone = new this.constructor(...this.getCloneAttributes());
+    const cloneFunc = (this.constructor as new (...args: any[]) => this)
+    const clone = new cloneFunc(...this.getCloneAttributes());
     THREE.Object3D.prototype.copy.call(clone, this, false);
     return clone;
   }
@@ -173,43 +174,18 @@ class Text extends THREE.Group {
 
   getTransform(): Transform {
     return {
-      position: this.position.toArray(),
-      rotation: [this.rotation.x, this.rotation.y, this.rotation.z],
-      scale: this.scale.x,
+      position: this.position.clone(),
+      rotation: this.rotation.clone(),
+      scale: this.scale.clone(),
     };
   }
 
   setTransform(transform: Transform): void {
     const { position, rotation, scale } = transform;
-    this.position.set(...position);
-    this.setRotationFromEuler(new THREE.Euler(...rotation));
-    this.scale.set(scale, scale, scale);
+    this.position.copy(position);
+    this.rotation.copy(rotation);
+    this.scale.copy(scale);
   }
-
-  static styleToJson = (style: Style): StyleJson => {
-    const {
-      strokeColor,
-      strokeOpacity,
-      strokeWidth,
-      stroke,
-      fillColor,
-      fillOpacity,
-      fill,
-    } = style;
-    return {
-      strokeColor: strokeColor ? strokeColor.toArray() : undefined,
-      strokeOpacity,
-      strokeWidth,
-      stroke,
-      fillColor: fillColor ? fillColor.toArray() : undefined,
-      fillOpacity,
-      fill,
-    };
-  };
 }
 
-const textFromJson = (json: object) => {
-  return Text.fromJson(json);
-};
-
-export { Text, textFromJson };
+export { Text };
