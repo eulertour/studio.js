@@ -1,12 +1,9 @@
-// @ts-nocheck
 import * as THREE from "three";
 import { ERROR_THRESHOLD, PIXELS_TO_COORDS } from "./constants";
 import { MeshLineGeometry, MeshLineMaterial } from "./MeshLine";
 import type {
   Transform,
   Style,
-  StyleJson,
-  Representation,
   LineAttributes,
   PolygonAttributes,
   ArcAttributes,
@@ -131,111 +128,7 @@ abstract class Shape extends THREE.Group {
     return {};
   }
 
-  copy<T extends Shape>(source: T, recursive: boolean): T {
-    if (recursive === false) {
-      throw Error("Recursive Shape.copy() isn't implemented.");
-    }
-
-    const originalFillVisible = source.children.includes(source.fill);
-    const originalStrokeVisible = source.children.includes(source.stroke);
-
-    this.clear();
-    source.clear();
-    source.add(source.fill);
-    source.add(source.stroke);
-
-    super.copy(source, true);
-    this.fill = this.children[0] as Fill;
-    this.stroke = this.children[1] as Stroke;
-    this.stroke.raycast = source.stroke.raycast;
-
-    source.clear();
-    this.clear();
-
-    if (originalFillVisible) {
-      this.add(this.fill);
-    }
-
-    if (originalStrokeVisible) {
-      this.add(this.stroke);
-    }
-
-    for (const { attribute } of source.attributeData) {
-      this[attribute] = source[attribute];
-    }
-    this.curveEndIndices = source.curveEndIndices;
-
-    return this;
-  }
-
   abstract getAttributes(): object;
-
-  static styleToJson = (style: Style): StyleJson => {
-    const {
-      strokeColor,
-      strokeOpacity,
-      strokeWidth,
-      stroke,
-      fillColor,
-      fillOpacity,
-      fill,
-    } = style;
-    return {
-      strokeColor: strokeColor ? strokeColor.toArray() : undefined,
-      strokeOpacity,
-      strokeWidth,
-      stroke,
-      fillColor: fillColor ? fillColor.toArray() : undefined,
-      fillOpacity,
-      fill,
-    };
-  };
-
-  static jsonToStyle = (styleJson: StyleJson): Style => {
-    const {
-      strokeColor,
-      strokeOpacity,
-      strokeWidth,
-      stroke,
-      fillColor,
-      fillOpacity,
-      fill,
-    } = styleJson;
-    return {
-      strokeColor: strokeColor
-        ? new THREE.Color().fromArray(strokeColor)
-        : undefined,
-      strokeOpacity,
-      strokeWidth,
-      stroke,
-      fillColor: fillColor ? new THREE.Color().fromArray(fillColor) : undefined,
-      fillOpacity,
-      fill,
-    };
-  };
-
-  toJson() {
-    return {
-      className: this.constructor.name,
-      attributes: this.getAttributes(),
-      transform: this.getTransform(),
-      style: Shape.styleToJson(this.getStyle()),
-    };
-  }
-
-  static fromJson(json: Representation) {
-    const shape = this.fromAttributes(json.attributes);
-
-    if (json.transform !== undefined) {
-      shape.setTransform(json.transform);
-    }
-
-    if (json.style !== undefined) {
-      shape.setStyle(Shape.jsonToStyle(json.style));
-    }
-
-    return shape;
-  }
 
   getCloneAttributes(): Array<unknown> {
     return [this.points];
@@ -252,7 +145,7 @@ abstract class Shape extends THREE.Group {
   }
 
   setStyle(style: Style): void {
-    const { fillColor, fillOpacity, fill } = style;
+    const { fillColor, fillOpacity } = style;
     if (fillColor !== undefined) {
       this.fill.material.color = fillColor;
     }
@@ -260,7 +153,7 @@ abstract class Shape extends THREE.Group {
       this.fill.material.opacity = fillOpacity;
     }
 
-    const { strokeColor, strokeOpacity, strokeWidth, stroke } = style;
+    const { strokeColor, strokeOpacity, strokeWidth } = style;
     if (strokeColor !== undefined) {
       this.stroke.material.color = strokeColor;
     }
@@ -268,23 +161,23 @@ abstract class Shape extends THREE.Group {
       this.stroke.material.opacity = strokeOpacity;
     }
     if (strokeWidth !== undefined) {
-      this.stroke.material.lineWidth = strokeWidth;
+      this.stroke.material.width = strokeWidth;
     }
   }
 
   getTransform(): Transform {
     return {
-      position: this.position.toArray(),
-      rotation: [this.rotation.x, this.rotation.y, this.rotation.z],
-      scale: this.scale.x,
+      position: this.position.clone(),
+      rotation: this.rotation.clone(),
+      scale: this.scale.clone(),
     };
   }
 
   setTransform(transform: Transform): void {
     const { position, rotation, scale } = transform;
-    this.position.set(...position);
-    this.setRotationFromEuler(new THREE.Euler(...rotation));
-    this.scale.set(scale, scale, scale);
+    this.position.copy(position);
+    this.rotation.copy(rotation);
+    this.scale.copy(scale);
   }
 
   dispose() {
@@ -664,31 +557,9 @@ class Square extends Rectangle {
   }
 }
 
-const shapeFromJson = (json: object): Shape => {
-  switch (json.className) {
-    case "Line":
-      return Line.fromJson(json);
-    case "Arc":
-      return Arc.fromJson(json);
-    case "Circle":
-      return Circle.fromJson(json);
-    case "Point":
-      return Point.fromJson(json);
-    case "Polygon":
-      return Polygon.fromJson(json);
-    case "Rectangle":
-      return Rectangle.fromJson(json);
-    case "Square":
-      return Square.fromJson(json);
-    default:
-      throw Error(`Invalid JSON ${json}`);
-  }
-};
-
 export {
   CanvasViewport,
   setGeometryViewport,
-  shapeFromJson,
   Shape,
   Line,
   Point,

@@ -52251,7 +52251,7 @@ class MeshLineMaterial extends ShaderMaterial {
     constructor(parameters) {
         super({
             uniforms: Object.assign({}, UniformsLib.fog, {
-                color: { value: new Color(0x0000ff) },
+                color: { value: new Color() },
                 opacity: { value: 1 },
                 viewport: { value: CanvasViewport },
                 // pixelsPerUnit: { value: CanvasViewport.w / 8 },
@@ -52272,24 +52272,6 @@ class MeshLineMaterial extends ShaderMaterial {
                     this.uniforms.opacity.value = value;
                 },
             },
-            width: {
-                enumerable: true,
-                get: () => {
-                    return this.uniforms.unitWidth.value * 8 * 10;
-                },
-                set: (value) => {
-                    this.uniforms.unitWidth.value = value / 8 / 10;
-                },
-            },
-            color: {
-                enumerable: true,
-                get: () => {
-                    return this.uniforms.color.value;
-                },
-                set: (value) => {
-                    this.uniforms.color.value = value;
-                },
-            },
             drawRange: {
                 enumerable: true,
                 get: () => {
@@ -52305,9 +52287,20 @@ class MeshLineMaterial extends ShaderMaterial {
             .convertLinearToSRGB();
         this.setValues(parameters);
     }
+    get color() {
+        return this.uniforms.color.value;
+    }
+    set color(value) {
+        this.uniforms.color.value = value;
+    }
+    get width() {
+        return this.uniforms.unitWidth.value * 8 * 10;
+    }
+    set width(value) {
+        this.uniforms.unitWidth.value = value / 8 / 10;
+    }
 }
 
-// @ts-nocheck
 const CanvasViewport = new Vector4();
 const setGeometryViewport = (viewport) => {
     CanvasViewport.copy(viewport);
@@ -52396,52 +52389,6 @@ class Shape extends Group {
     getClassConfig() {
         return {};
     }
-    copy(source, recursive) {
-        if (recursive === false) {
-            throw Error("Recursive Shape.copy() isn't implemented.");
-        }
-        const originalFillVisible = source.children.includes(source.fill);
-        const originalStrokeVisible = source.children.includes(source.stroke);
-        this.clear();
-        source.clear();
-        source.add(source.fill);
-        source.add(source.stroke);
-        super.copy(source, true);
-        this.fill = this.children[0];
-        this.stroke = this.children[1];
-        this.stroke.raycast = source.stroke.raycast;
-        source.clear();
-        this.clear();
-        if (originalFillVisible) {
-            this.add(this.fill);
-        }
-        if (originalStrokeVisible) {
-            this.add(this.stroke);
-        }
-        for (const { attribute } of source.attributeData) {
-            this[attribute] = source[attribute];
-        }
-        this.curveEndIndices = source.curveEndIndices;
-        return this;
-    }
-    toJson() {
-        return {
-            className: this.constructor.name,
-            attributes: this.getAttributes(),
-            transform: this.getTransform(),
-            style: Shape.styleToJson(this.getStyle()),
-        };
-    }
-    static fromJson(json) {
-        const shape = this.fromAttributes(json.attributes);
-        if (json.transform !== undefined) {
-            shape.setTransform(json.transform);
-        }
-        if (json.style !== undefined) {
-            shape.setStyle(Shape.jsonToStyle(json.style));
-        }
-        return shape;
-    }
     getCloneAttributes() {
         return [this.points];
     }
@@ -52455,14 +52402,14 @@ class Shape extends Group {
         };
     }
     setStyle(style) {
-        const { fillColor, fillOpacity, fill } = style;
+        const { fillColor, fillOpacity } = style;
         if (fillColor !== undefined) {
             this.fill.material.color = fillColor;
         }
         if (fillOpacity !== undefined) {
             this.fill.material.opacity = fillOpacity;
         }
-        const { strokeColor, strokeOpacity, strokeWidth, stroke } = style;
+        const { strokeColor, strokeOpacity, strokeWidth } = style;
         if (strokeColor !== undefined) {
             this.stroke.material.color = strokeColor;
         }
@@ -52470,21 +52417,21 @@ class Shape extends Group {
             this.stroke.material.opacity = strokeOpacity;
         }
         if (strokeWidth !== undefined) {
-            this.stroke.material.lineWidth = strokeWidth;
+            this.stroke.material.width = strokeWidth;
         }
     }
     getTransform() {
         return {
-            position: this.position.toArray(),
-            rotation: [this.rotation.x, this.rotation.y, this.rotation.z],
-            scale: this.scale.x,
+            position: this.position.clone(),
+            rotation: this.rotation.clone(),
+            scale: this.scale.clone(),
         };
     }
     setTransform(transform) {
         const { position, rotation, scale } = transform;
-        this.position.set(...position);
-        this.setRotationFromEuler(new Euler(...rotation));
-        this.scale.set(scale, scale, scale);
+        this.position.copy(position);
+        this.rotation.copy(rotation);
+        this.scale.copy(scale);
     }
     dispose() {
         this.fill.geometry.dispose();
@@ -52501,32 +52448,6 @@ class Shape extends Group {
         return new Vector2(width, height);
     }
 }
-Shape.styleToJson = (style) => {
-    const { strokeColor, strokeOpacity, strokeWidth, stroke, fillColor, fillOpacity, fill, } = style;
-    return {
-        strokeColor: strokeColor ? strokeColor.toArray() : undefined,
-        strokeOpacity,
-        strokeWidth,
-        stroke,
-        fillColor: fillColor ? fillColor.toArray() : undefined,
-        fillOpacity,
-        fill,
-    };
-};
-Shape.jsonToStyle = (styleJson) => {
-    const { strokeColor, strokeOpacity, strokeWidth, stroke, fillColor, fillOpacity, fill, } = styleJson;
-    return {
-        strokeColor: strokeColor
-            ? new Color().fromArray(strokeColor)
-            : undefined,
-        strokeOpacity,
-        strokeWidth,
-        stroke,
-        fillColor: fillColor ? new Color().fromArray(fillColor) : undefined,
-        fillOpacity,
-        fill,
-    };
-};
 class Line extends Shape {
     constructor(start, end, config = {}) {
         config = Object.assign({ transformCenter: false }, config);
@@ -52824,26 +52745,6 @@ class Square extends Rectangle {
         ];
     }
 }
-const shapeFromJson = (json) => {
-    switch (json.className) {
-        case "Line":
-            return Line.fromJson(json);
-        case "Arc":
-            return Arc.fromJson(json);
-        case "Circle":
-            return Circle.fromJson(json);
-        case "Point":
-            return Point.fromJson(json);
-        case "Polygon":
-            return Polygon.fromJson(json);
-        case "Rectangle":
-            return Rectangle.fromJson(json);
-        case "Square":
-            return Square.fromJson(json);
-        default:
-            throw Error(`Invalid JSON ${json}`);
-    }
-};
 
 var geometry = /*#__PURE__*/Object.freeze({
 	__proto__: null,
@@ -52857,8 +52758,7 @@ var geometry = /*#__PURE__*/Object.freeze({
 	Rectangle: Rectangle,
 	Shape: Shape,
 	Square: Square,
-	setGeometryViewport: setGeometryViewport,
-	shapeFromJson: shapeFromJson
+	setGeometryViewport: setGeometryViewport
 });
 
 const BUFFER = 0.5;

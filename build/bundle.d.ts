@@ -22,39 +22,22 @@ declare namespace Geometry {
             opacity: number;
             width: number;
         });
+        get color(): any;
+        set color(value: any);
+        get width(): number;
+        set width(value: number);
     }
     type Transform = {
-        position: [
-            number,
-            number,
-            number
-        ];
-        rotation: [
-            number,
-            number,
-            number
-        ];
-        scale: number;
+        position: THREE.Vector3;
+        rotation: THREE.Euler;
+        scale: THREE.Vector3;
     };
     type Style = {
-        strokeColor?: THREE.ColorRepresentation;
+        strokeColor?: THREE.Color;
         strokeWidth?: number;
         strokeOpacity?: number;
-        fillColor?: THREE.ColorRepresentation;
+        fillColor?: THREE.Color;
         fillOpacity?: number;
-    };
-    type StyleJson = {
-        strokeColor?: Array<number>;
-        strokeWidth?: number;
-        strokeOpacity?: number;
-        fillColor?: Array<number>;
-        fillOpacity?: number;
-    };
-    type Representation = {
-        class: string;
-        attributes: object;
-        transform: Transform;
-        style: StyleJson;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -88,17 +71,7 @@ declare namespace Geometry {
         clear(): this;
         clone(recursive?: boolean): this;
         getClassConfig(): {};
-        copy<T extends Shape>(source: T, recursive: boolean): T;
         abstract getAttributes(): object;
-        static styleToJson: (style: Style) => StyleJson;
-        static jsonToStyle: (styleJson: StyleJson) => Style;
-        toJson(): {
-            className: string;
-            attributes: object;
-            transform: Transform;
-            style: StyleJson;
-        };
-        static fromJson(json: Representation): any;
         getCloneAttributes(): Array<unknown>;
         getStyle(): Style;
         setStyle(style: Style): void;
@@ -205,41 +178,19 @@ declare namespace Geometry {
             default: number;
         }[];
     }
-    const shapeFromJson: (json: object) => Shape;
 }
 declare namespace Utils {
     type Transform = {
-        position: [
-            number,
-            number,
-            number
-        ];
-        rotation: [
-            number,
-            number,
-            number
-        ];
-        scale: number;
+        position: THREE.Vector3;
+        rotation: THREE.Euler;
+        scale: THREE.Vector3;
     };
     type Style = {
-        strokeColor?: THREE.ColorRepresentation;
+        strokeColor?: THREE.Color;
         strokeWidth?: number;
         strokeOpacity?: number;
-        fillColor?: THREE.ColorRepresentation;
+        fillColor?: THREE.Color;
         fillOpacity?: number;
-    };
-    type StyleJson = {
-        strokeColor?: Array<number>;
-        strokeWidth?: number;
-        strokeOpacity?: number;
-        fillColor?: Array<number>;
-        fillOpacity?: number;
-    };
-    type Representation = {
-        class: string;
-        attributes: object;
-        transform: Transform;
-        style: StyleJson;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -400,37 +351,16 @@ declare namespace Animation {
 }
 declare namespace Text {
     type Transform = {
-        position: [
-            number,
-            number,
-            number
-        ];
-        rotation: [
-            number,
-            number,
-            number
-        ];
-        scale: number;
+        position: THREE.Vector3;
+        rotation: THREE.Euler;
+        scale: THREE.Vector3;
     };
     type Style = {
-        strokeColor?: THREE.ColorRepresentation;
+        strokeColor?: THREE.Color;
         strokeWidth?: number;
         strokeOpacity?: number;
-        fillColor?: THREE.ColorRepresentation;
+        fillColor?: THREE.Color;
         fillOpacity?: number;
-    };
-    type StyleJson = {
-        strokeColor?: Array<number>;
-        strokeWidth?: number;
-        strokeOpacity?: number;
-        fillColor?: Array<number>;
-        fillOpacity?: number;
-    };
-    type Representation = {
-        class: string;
-        attributes: object;
-        transform: Transform;
-        style: StyleJson;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -601,37 +531,16 @@ declare namespace Diagram {
         constructor(config?: any);
     }
     type Transform = {
-        position: [
-            number,
-            number,
-            number
-        ];
-        rotation: [
-            number,
-            number,
-            number
-        ];
-        scale: number;
+        position: THREE.Vector3;
+        rotation: THREE.Euler;
+        scale: THREE.Vector3;
     };
     type Style = {
-        strokeColor?: THREE.ColorRepresentation;
+        strokeColor?: THREE.Color;
         strokeWidth?: number;
         strokeOpacity?: number;
-        fillColor?: THREE.ColorRepresentation;
+        fillColor?: THREE.Color;
         fillOpacity?: number;
-    };
-    type StyleJson = {
-        strokeColor?: Array<number>;
-        strokeWidth?: number;
-        strokeOpacity?: number;
-        fillColor?: Array<number>;
-        fillOpacity?: number;
-    };
-    type Representation = {
-        class: string;
-        attributes: object;
-        transform: Transform;
-        style: StyleJson;
     };
     type LineAttributes = {
         start: THREE.Vector3;

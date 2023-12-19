@@ -1,30 +1,15 @@
 type Transform = {
-	position: [number, number, number];
-	rotation: [number, number, number];
-	scale: number;
+	position: THREE.Vector3;
+	rotation: THREE.Euler;
+	scale: THREE.Vector3;
 };
 
 type Style = {
-	strokeColor?: THREE.ColorRepresentation;
+	strokeColor?: THREE.Color;
 	strokeWidth?: number;
 	strokeOpacity?: number;
-	fillColor?: THREE.ColorRepresentation;
+	fillColor?: THREE.Color;
 	fillOpacity?: number;
-};
-
-type StyleJson = {
-	strokeColor?: Array<number>;
-	strokeWidth?: number;
-	strokeOpacity?: number;
-	fillColor?: Array<number>;
-	fillOpacity?: number;
-};
-
-type Representation = {
-	class: string;
-	attributes: object;
-	transform: Transform;
-	style: StyleJson;
 };
 
 type LineAttributes = {
@@ -50,8 +35,6 @@ type PolygonAttributes = {
 export type {
 	Transform,
 	Style,
-	StyleJson,
-	Representation,
 	PolygonAttributes,
 	LineAttributes,
 	ArcAttributes,
