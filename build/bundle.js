@@ -98484,18 +98484,19 @@ class SceneController {
 
 class Indicator extends Group {
     constructor(start, end, config = {}) {
-        config = Object.assign({ transformCenter: true, tickLength: 0.4 }, config);
+        const { tickLength = 0.4 } = config;
         super();
         this.start = start;
         this.end = end;
         const center = new Vector3().addVectors(start, end).divideScalar(2);
         const vec = new Vector3().subVectors(end, start).normalize();
-        this.stem = new Line(start, end, config);
+        const lineConfig = Object.assign({ transformCenter: true }, config);
+        this.stem = new Line(start, end, lineConfig);
         const normal = vec
             .clone()
             .applyAxisAngle(new Vector3(0, 0, 1), Math.PI / 2);
-        this.startTick = new Line(new Vector3().addVectors(start, normal.clone().multiplyScalar(config.tickLength / 2)), new Vector3().addVectors(start, normal.clone().multiplyScalar(-config.tickLength / 2)), config);
-        this.endTick = new Line(new Vector3().addVectors(end, normal.clone().multiplyScalar(config.tickLength / 2)), new Vector3().addVectors(end, normal.clone().multiplyScalar(-config.tickLength / 2)), config);
+        this.startTick = new Line(new Vector3().addVectors(start, normal.clone().multiplyScalar(tickLength / 2)), new Vector3().addVectors(start, normal.clone().multiplyScalar(-tickLength / 2)), lineConfig);
+        this.endTick = new Line(new Vector3().addVectors(end, normal.clone().multiplyScalar(tickLength / 2)), new Vector3().addVectors(end, normal.clone().multiplyScalar(-tickLength / 2)), lineConfig);
         for (const mesh of [this.stem, this.startTick, this.endTick]) {
             mesh.position.sub(center);
             this.add(mesh);

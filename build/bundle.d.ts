@@ -558,13 +558,17 @@ declare namespace Diagram {
     type PolygonAttributes = {
         points: Array<THREE.Vector3>;
     };
+    interface IndicatorConfig {
+        transformCenter?: boolean;
+        tickLength?: number;
+    }
     class Indicator extends THREE.Group {
         start: THREE.Vector3;
         end: THREE.Vector3;
         startTick: Geometry.Line;
         endTick: Geometry.Line;
         stem: any;
-        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: {});
+        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig);
         grow(config: any): Animation;
     }
     class Congruent extends THREE.Group {

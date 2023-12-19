@@ -3,6 +3,11 @@ import { Animation } from "./animation";
 import { Style } from "./geometry.types";
 import * as Geometry from "./geometry";
 
+interface IndicatorConfig {
+  transformCenter?: boolean;
+  tickLength?: number;
+}
+
 class Indicator extends THREE.Group {
   public startTick: Geometry.Line;
   public endTick: Geometry.Line;
@@ -11,14 +16,16 @@ class Indicator extends THREE.Group {
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
-    config = {}
+    config: IndicatorConfig = {}
   ) {
-    config = Object.assign({ transformCenter: true, tickLength: 0.4 }, config);
+    const { tickLength = 0.4 } = config;
+
     super();
     const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
     const vec = new THREE.Vector3().subVectors(end, start).normalize();
 
-    this.stem = new Geometry.Line(start, end, config);
+    const lineConfig = { transformCenter: true, ...config};
+    this.stem = new Geometry.Line(start, end, lineConfig);
 
     const normal = vec
       .clone()
@@ -26,25 +33,25 @@ class Indicator extends THREE.Group {
     this.startTick = new Geometry.Line(
       new THREE.Vector3().addVectors(
         start,
-        normal.clone().multiplyScalar(config.tickLength / 2)
+        normal.clone().multiplyScalar(tickLength / 2)
       ),
       new THREE.Vector3().addVectors(
         start,
-        normal.clone().multiplyScalar(-config.tickLength / 2)
+        normal.clone().multiplyScalar(-tickLength / 2)
       ),
-      config
+      lineConfig
     );
 
     this.endTick = new Geometry.Line(
       new THREE.Vector3().addVectors(
         end,
-        normal.clone().multiplyScalar(config.tickLength / 2)
+        normal.clone().multiplyScalar(tickLength / 2)
       ),
       new THREE.Vector3().addVectors(
         end,
-        normal.clone().multiplyScalar(-config.tickLength / 2)
+        normal.clone().multiplyScalar(-tickLength / 2)
       ),
-      config
+      lineConfig
     );
 
     for (const mesh of [this.stem, this.startTick, this.endTick]) {
