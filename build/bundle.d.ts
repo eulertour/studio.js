@@ -291,15 +291,15 @@ declare namespace Animation {
         object: any;
         before: any;
         after: any;
-        scale: any;
+        scale: number;
+        runTime: number;
         finished: boolean;
         elapsedSinceStart: number;
-        constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, scale }?: {
-            object: any;
-            parent: any;
-            before: any;
-            after: any;
-            scale: any;
+        constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after }?: {
+            object?: any;
+            parent?: any;
+            before?: any;
+            after?: any;
         });
         setUp(): void;
         tearDown(): void;
@@ -473,15 +473,15 @@ declare namespace Diagram {
         object: any;
         before: any;
         after: any;
-        scale: any;
+        scale: number;
+        runTime: number;
         finished: boolean;
         elapsedSinceStart: number;
-        constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, scale }?: {
-            object: any;
-            parent: any;
-            before: any;
-            after: any;
-            scale: any;
+        constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after }?: {
+            object?: any;
+            parent?: any;
+            before?: any;
+            after?: any;
         });
         setUp(): void;
         tearDown(): void;

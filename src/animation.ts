@@ -7,7 +7,7 @@ let smooth = (t) => {
   return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
 };
 
-const modulate = (t, dt) => {
+const modulate = (t, dt): [number, number] => {
   let tSeconds = t;
   let modulatedDelta = smooth(tSeconds) - smooth(t - dt);
   let modulatedTime = smooth(tSeconds);
@@ -25,16 +25,19 @@ class Animation {
   public object;
   public before;
   public after;
-  public scale;
+  public scale = 1;
+  public runTime = 1;
   public finished = false;
   public elapsedSinceStart = 0;
 
   constructor(
-    public func: (elapsedTime: number, deltaTime: number) => void,
-    { object, parent, before, after, scale } = {}
+    public func: (elapsedTime: number, deltaTime: number) => void, {
+      object = undefined,
+      parent = undefined,
+      before = undefined,
+      after = undefined,
+    } = {}
   ) {
-    this.runTime = 1;
-    this.scale = scale || 1;
     this.object = object;
     this.parent = parent;
     this.before = before;
@@ -70,12 +73,7 @@ class Animation {
     this.prevUpdateTime = worldTime;
     this.elapsedSinceStart += deltaTime;
 
-    this.func(
-      ...modulate(
-        this.elapsedSinceStart / (this.scale * this.runTime),
-        deltaTime / (this.scale * this.runTime)
-      ).map((t) => t * this.runTime)
-    );
+    this.func(...modulate(this.elapsedSinceStart, deltaTime));
 
     if (worldTime >= this.endTime) {
       this.finished = true;

@@ -53201,12 +53201,12 @@ const modulate = (t, dt) => {
     return [modulatedTime, modulatedDelta];
 };
 class Animation {
-    constructor(func, { object, parent, before, after, scale } = {}) {
+    constructor(func, { object = undefined, parent = undefined, before = undefined, after = undefined, } = {}) {
         this.func = func;
+        this.scale = 1;
+        this.runTime = 1;
         this.finished = false;
         this.elapsedSinceStart = 0;
-        this.runTime = 1;
-        this.scale = scale || 1;
         this.object = object;
         this.parent = parent;
         this.before = before;
@@ -53239,7 +53239,7 @@ class Animation {
         }
         this.prevUpdateTime = worldTime;
         this.elapsedSinceStart += deltaTime;
-        this.func(...modulate(this.elapsedSinceStart / (this.scale * this.runTime), deltaTime / (this.scale * this.runTime)).map((t) => t * this.runTime));
+        this.func(...modulate(this.elapsedSinceStart, deltaTime));
         if (worldTime >= this.endTime) {
             this.finished = true;
             this.tearDown();
