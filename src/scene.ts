@@ -45,8 +45,9 @@ export class SceneController {
     canvasRef: HTMLCanvasElement,
     config: WidthSetupConfig | HeightSetupConfig | undefined
   ) {
-    this.viewport = "viewport" in config ? config.viewport : undefined;
-    this.userScene = new UserScene(...setupCanvas(canvasRef, config));
+    //TODO: fix typings
+    // this.viewport = "viewport" in config ? config.viewport : undefined;
+    // this.userScene = new UserScene(...setupCanvas(canvasRef, config));
   }
 
   get scene() {
@@ -101,8 +102,8 @@ export class SceneController {
             currentEndTime = animation.endTime;
           } else if (typeof o === "object") {
             const animationArray = o.animations;
-            const runTime = o.runTime || 1;
-            const scale = o.scale || 1;
+            const runTime = (o as { runTime?: number, scale?: number }).runTime || 1;
+            const scale = (o as { scale?: number }).scale || 1;
             const before = o.before || (() => {});
             const after = o.after || (() => {});
             animationArray.forEach((animation) => {
@@ -112,8 +113,9 @@ export class SceneController {
               animation.scale = scale;
               animation.before && animation.addBefore(animation.before);
               animation.after && animation.addAfter(animation.after);
-              animation.parent =
-                animation.parent || o.parent || this.userScene.scene;
+              //TODO: fix typings
+              // animation.parent =
+              //   animation.parent || o.parent || this.userScene.scene;
               this.loopAnimations.push(...animationArray);
             });
             animationArray.at(0).addBefore(before);

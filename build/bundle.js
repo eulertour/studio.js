@@ -98335,8 +98335,9 @@ class SceneController {
         this.loopAnimations = [];
         this.finishedAnimationCount = 0;
         this.three = THREE;
-        this.viewport = "viewport" in config ? config.viewport : undefined;
-        this.userScene = new UserScene(...setupCanvas(canvasRef, config));
+        //TODO: fix typings
+        // this.viewport = "viewport" in config ? config.viewport : undefined;
+        // this.userScene = new UserScene(...setupCanvas(canvasRef, config));
     }
     get scene() {
         return this.userScene.scene;
@@ -98396,8 +98397,9 @@ class SceneController {
                             animation.scale = scale;
                             animation.before && animation.addBefore(animation.before);
                             animation.after && animation.addAfter(animation.after);
-                            animation.parent =
-                                animation.parent || o.parent || this.userScene.scene;
+                            //TODO: fix typings
+                            // animation.parent =
+                            //   animation.parent || o.parent || this.userScene.scene;
                             this.loopAnimations.push(...animationArray);
                         });
                         animationArray.at(0).addBefore(before);
