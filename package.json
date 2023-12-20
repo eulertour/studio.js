@@ -8,6 +8,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup --config rollup.config.ts --configPlugin typescript",
+    "apiExtract": "api-extractor run --local --verbose",
+    "genDocs": "bun ./scripts/gendocs.ts",
     "genTypes": "rollup --config rollup.three-types.config.ts --configPlugin typescript",
     "serve": "npm run build && cross-env PORT=8081 serve ./build --cors",
     "dev": "nodemon -w src -e js,ts --exec 'npm run serve'"
@@ -27,9 +29,11 @@
     "rollup-plugin-ts": "^3.4.5",
     "serve": "^14.2.0",
     "tslib": "^2.5.0",
+    "typedoc": "^0.25.4",
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@microsoft/api-extractor-model": "^7.28.3",
     "mathjax-full": "^3.2.2",
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-typescript2": "^0.36.0",

@@ -52247,13 +52247,15 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
     this.setIndex(__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index);
 };
 
+//TODO: fixed circular reference
+const CanvasViewport$1 = new Vector4();
 class MeshLineMaterial extends ShaderMaterial {
     constructor(parameters) {
         super({
             uniforms: Object.assign({}, UniformsLib.fog, {
                 color: { value: new Color() },
                 opacity: { value: 1 },
-                viewport: { value: CanvasViewport },
+                viewport: { value: CanvasViewport$1 },
                 // pixelsPerUnit: { value: CanvasViewport.w / 8 },
                 unitWidth: { value: 1 / 10 },
                 drawRange: { value: new Vector2(0, 1) },

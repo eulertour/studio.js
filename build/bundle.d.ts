@@ -1,6 +1,8 @@
 /// <reference types="three" />
 import * as THREE from "three";
 import { BufferGeometry, Vector3, ShaderMaterialParameters } from "three";
+//TODO: temp fix that will be blown away on next build
+import { HeightSetupConfig, WidthSetupConfig, setupCanvas } from "../src/utils";
 declare namespace Geometry {
     class MeshLineGeometry extends BufferGeometry {
         #private;
@@ -585,5 +587,8 @@ declare namespace Constants {
     const DEFAULT_BACKGROUND_HEX = 16775920;
 }
 export { Geometry, Animation, Text, SceneController, setupCanvas, Utils, Diagram, Constants };
-export * as THREE from "three";
+//TODO: Adjusted export spread (import is at top of file)
+export {THREE};
+// export * as THREE from "three";
 export type { StudioScene, AnimationRepresentation };
+//# sourceMappingURL=bundle.d.ts.map

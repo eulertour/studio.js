@@ -1,8 +1,10 @@
 import * as THREE from "three";
-import { CanvasViewport } from "../geometry";
+//import { CanvasViewport } from "../geometry.js";
 import type { ShaderMaterialParameters } from "three";
 import { MESHLINE_FRAG, MESHLINE_VERT } from "./meshline.glsl";
 
+//TODO: fixed circular reference added this locally instead of the geometry file
+const CanvasViewport = new THREE.Vector4();
 export default class MeshLineMaterial extends THREE.ShaderMaterial {
   constructor(
     parameters: ShaderMaterialParameters & {
