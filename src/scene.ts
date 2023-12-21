@@ -15,6 +15,8 @@ export type AnimationRepresentation = Animation | Array<Animation> | {
   before?: () => void,
   after?: () => void,
   parent?: THREE.Object3D,
+  runTime?: number,
+  scale?: number,
 }
 
 export interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
@@ -44,9 +46,9 @@ export class SceneController {
   constructor(
     public UserScene: Class<StudioScene>,
     canvasRef: HTMLCanvasElement,
-    config: WidthSetupConfig | HeightSetupConfig | undefined
+    config: (WidthSetupConfig | HeightSetupConfig) & { viewport?: THREE.Vector4 }
   ) {
-    this.viewport = "viewport" in config ? config.viewport : undefined;
+    this.viewport = config.viewport;
     this.userScene = new UserScene(...setupCanvas(canvasRef, config));
   }
 
@@ -107,7 +109,8 @@ export class SceneController {
             const scale = o.scale || 1;
             const before = o.before || (() => {});
             const after = o.after || (() => {});
-            animationArray.forEach((animation) => {
+            for (let i = 0; i < animationArray.length; i++) {
+              const animation = animationArray[i];
               animation.startTime = currentEndTime;
               animation.endTime = currentEndTime + runTime * scale;
               animation.runTime = runTime;
@@ -117,7 +120,7 @@ export class SceneController {
               animation.parent =
                 animation.parent || o.parent || this.userScene.scene;
               this.loopAnimations.push(...animationArray);
-            });
+            }
             animationArray.at(0).addBefore(before);
             animationArray.at(-1).addAfter(after);
             currentEndTime = animationArray[0].endTime;

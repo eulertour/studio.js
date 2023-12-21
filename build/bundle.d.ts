@@ -236,9 +236,7 @@ declare namespace Utils {
         coordinateHeight: number;
     }
     const setupCanvas: (canvas: HTMLCanvasElement, config?: (WidthSetupConfig | HeightSetupConfig) & {
-        setRendererSize: boolean;
-    } & {
-        viewport: THREE.Vector4;
+        viewport?: THREE.Vector4;
     }) => [
         THREE.Scene,
         THREE.Camera,
@@ -426,6 +424,8 @@ type AnimationRepresentation = Animation | Array<Animation> | {
     before?: () => void;
     after?: () => void;
     parent?: THREE.Object3D;
+    runTime?: number;
+    scale?: number;
 };
 interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
     scene: THREE.Scene;
@@ -450,7 +450,9 @@ declare class SceneController {
     userScene: StudioScene;
     three: typeof THREE;
     viewport: THREE.Vector4;
-    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: WidthSetupConfig | HeightSetupConfig | undefined);
+    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: (WidthSetupConfig | HeightSetupConfig) & {
+        viewport?: THREE.Vector4;
+    });
     get scene(): THREE.Scene;
     get camera(): THREE.OrthographicCamera;
     get renderer(): THREE.WebGLRenderer;

@@ -52798,15 +52798,13 @@ const setupCanvas = (canvas, config = {
     aspectRatio: 16 / 9,
     pixelHeight: 720,
     coordinateHeight: 8,
-    setRendererSize: true,
-    viewport: new Vector4(),
+    viewport: undefined,
 }) => {
     config = Object.assign({
         aspectRatio: 16 / 9,
         pixelHeight: 720,
         coordinateHeight: 8,
-        setRendererSize: true,
-        viewport: new Vector4(),
+        viewport: undefined,
     }, config);
     let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
     if (isWidthSetup(config)) {
@@ -52832,12 +52830,12 @@ const setupCanvas = (canvas, config = {
     const renderer = new WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
     renderer.setClearColor(new Color(DEFAULT_BACKGROUND_HEX));
     renderer.autoClear = false;
-    if (config.setRendererSize) {
-        renderer.setSize(pixelWidth, pixelHeight, false);
-        CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
+    if (config.viewport) {
+        CanvasViewport.copy(config.viewport);
     }
     else {
-        CanvasViewport.copy(config.viewport);
+        renderer.setSize(pixelWidth, pixelHeight, false);
+        CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
     }
     if (typeof window !== "undefined") {
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -98342,7 +98340,7 @@ class SceneController {
         this.loopAnimations = [];
         this.finishedAnimationCount = 0;
         this.three = THREE;
-        this.viewport = "viewport" in config ? config.viewport : undefined;
+        this.viewport = config.viewport;
         this.userScene = new UserScene(...setupCanvas(canvasRef, config));
     }
     get scene() {
@@ -98397,7 +98395,8 @@ class SceneController {
                         const scale = o.scale || 1;
                         const before = o.before || (() => { });
                         const after = o.after || (() => { });
-                        animationArray.forEach((animation) => {
+                        for (let i = 0; i < animationArray.length; i++) {
+                            const animation = animationArray[i];
                             animation.startTime = currentEndTime;
                             animation.endTime = currentEndTime + runTime * scale;
                             animation.runTime = runTime;
@@ -98407,7 +98406,7 @@ class SceneController {
                             animation.parent =
                                 animation.parent || o.parent || this.userScene.scene;
                             this.loopAnimations.push(...animationArray);
-                        });
+                        }
                         animationArray.at(0).addBefore(before);
                         animationArray.at(-1).addAfter(after);
                         currentEndTime = animationArray[0].endTime;
