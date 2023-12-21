@@ -785,5 +785,5 @@ declare class MeshLineMaterial extends THREE.ShaderMaterial {
     set width(value: number);
 }
 export { Geometry, Animation, Text, Scene, THREE, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport };
-// export type { StudioScene, AnimationRepresentation };
+//export type { StudioScene, AnimationRepresentation };
 //# sourceMappingURL=bundle.d.ts.map
