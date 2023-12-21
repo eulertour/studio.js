@@ -78,6 +78,7 @@ export const MESHLINE_FRAG = /*glsl*/ `
   uniform float opacity;
   uniform vec2 drawRange;
   uniform vec4 viewport;
+  uniform vec4 dimensions;
 
   varying vec2 vStartFragment;
   varying vec2 vEndFragment;
@@ -89,7 +90,7 @@ export const MESHLINE_FRAG = /*glsl*/ `
   }
 
   bool segmentCoversFragment(vec2 fragment, vec2 startFragment, vec2 endFragment) {
-    float pixelsPerUnit = viewport.w / 8.;
+    float pixelsPerUnit = viewport.w / dimensions.y;
     float pixelWidth = unitWidth * pixelsPerUnit;
     float halfWidthSquared = 0.25 * pixelWidth * pixelWidth;
 

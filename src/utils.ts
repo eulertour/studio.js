@@ -2,6 +2,8 @@ import * as THREE from "three";
 import { DEFAULT_BACKGROUND_HEX, PIXELS_TO_COORDS } from "./constants";
 import * as Geometry from "./geometry";
 import { Style } from "./geometry.types";
+import { Camera } from "build/three-types";
+import { CameraDimensions, setCameraDimensions } from "./MeshLine/MeshLineMaterial";
 
 const BUFFER = 0.5;
 const RIGHT = Object.freeze(new THREE.Vector3(1, 0, 0));
@@ -100,6 +102,7 @@ const setupCanvas = (
     11
   );
   camera.position.z = 6;
+  setCameraDimensions(camera);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
   renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));

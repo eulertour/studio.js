@@ -52026,6 +52026,7 @@ const MESHLINE_FRAG = /*glsl*/ `
   uniform float opacity;
   uniform vec2 drawRange;
   uniform vec4 viewport;
+  uniform vec4 dimensions;
 
   varying vec2 vStartFragment;
   varying vec2 vEndFragment;
@@ -52037,7 +52038,7 @@ const MESHLINE_FRAG = /*glsl*/ `
   }
 
   bool segmentCoversFragment(vec2 fragment, vec2 startFragment, vec2 endFragment) {
-    float pixelsPerUnit = viewport.w / 8.;
+    float pixelsPerUnit = viewport.w / dimensions.y;
     float pixelWidth = unitWidth * pixelsPerUnit;
     float halfWidthSquared = 0.25 * pixelWidth * pixelWidth;
 
@@ -52247,6 +52248,11 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
     this.setIndex(__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index);
 };
 
+const CameraDimensions = new Vector2();
+const setCameraDimensions = (camera) => {
+    const { left, right, top, bottom } = camera;
+    CameraDimensions.set(right - left, top - bottom);
+};
 class MeshLineMaterial extends ShaderMaterial {
     constructor(parameters) {
         super({
@@ -52254,7 +52260,7 @@ class MeshLineMaterial extends ShaderMaterial {
                 color: { value: new Color() },
                 opacity: { value: 1 },
                 viewport: { value: CanvasViewport },
-                // pixelsPerUnit: { value: CanvasViewport.w / 8 },
+                dimensions: { value: CameraDimensions },
                 unitWidth: { value: 1 / 10 },
                 drawRange: { value: new Vector2(0, 1) },
             }),
@@ -52822,6 +52828,7 @@ const setupCanvas = (canvas, config = {
     }
     const camera = new OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
     camera.position.z = 6;
+    setCameraDimensions(camera);
     const renderer = new WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
     renderer.setClearColor(new Color(DEFAULT_BACKGROUND_HEX));
     renderer.autoClear = false;
@@ -98359,7 +98366,8 @@ class SceneController {
             this.renderer.setScissorTest(true);
             this.renderer.clear();
             setGeometryViewport(this.viewport);
-            this.renderer.render(this.userScene.scene, this.userScene.camera);
+            setCameraDimensions(this.camera);
+            this.renderer.render(this.scene, this.camera);
         }
     }
     tick(deltaTime, render = true) {
@@ -98564,4 +98572,4 @@ Object3D.prototype.setVisible = function () {
     return this.setOpacity(1);
 };
 
-export { animation as Animation, constants as Constants, diagram as Diagram, geometry as Geometry, SceneController, THREE, text as Text, utils as Utils, setupCanvas };
+export { animation as Animation, constants as Constants, diagram as Diagram, geometry as Geometry, SceneController, THREE, text as Text, utils as Utils, setCameraDimensions, setupCanvas };

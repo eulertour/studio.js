@@ -16,6 +16,8 @@ declare namespace Geometry {
         readonly length: number;
         [n: number]: T;
     }
+    const CameraDimensions: THREE.Vector2;
+    const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
     class MeshLineMaterial extends THREE.ShaderMaterial {
         constructor(parameters: ShaderMaterialParameters & {
             color: THREE.ColorRepresentation;
@@ -584,6 +586,18 @@ declare namespace Constants {
     const ERROR_THRESHOLD = 0.001;
     const DEFAULT_BACKGROUND_HEX = 16775920;
 }
-export { Geometry, Animation, Text, SceneController, setupCanvas, Utils, Diagram, Constants };
+declare const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
+declare class MeshLineMaterial extends THREE.ShaderMaterial {
+    constructor(parameters: ShaderMaterialParameters & {
+        color: THREE.ColorRepresentation;
+        opacity: number;
+        width: number;
+    });
+    get color(): any;
+    set color(value: any);
+    get width(): number;
+    set width(value: number);
+}
+export { Geometry, Animation, Text, SceneController, setupCanvas, Utils, Diagram, Constants, setCameraDimensions };
 export * as THREE from "three";
 export type { StudioScene, AnimationRepresentation };

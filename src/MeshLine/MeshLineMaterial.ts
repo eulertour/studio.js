@@ -3,6 +3,13 @@ import { CanvasViewport } from "../geometry";
 import type { ShaderMaterialParameters } from "three";
 import { MESHLINE_FRAG, MESHLINE_VERT } from "./meshline.glsl";
 
+export const CameraDimensions = new THREE.Vector2();
+
+export const setCameraDimensions = (camera: THREE.OrthographicCamera) => {
+  const { left, right, top, bottom } = camera;
+  CameraDimensions.set(right - left, top - bottom);
+}
+
 export default class MeshLineMaterial extends THREE.ShaderMaterial {
   constructor(
     parameters: ShaderMaterialParameters & {
@@ -16,7 +23,7 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
         color: { value: new THREE.Color() },
         opacity: { value: 1 },
         viewport: { value: CanvasViewport },
-        // pixelsPerUnit: { value: CanvasViewport.w / 8 },
+        dimensions: { value: CameraDimensions },
         unitWidth: { value: 1 / 10 },
         drawRange: { value: new THREE.Vector2(0, 1) },
       }),
