@@ -52026,6 +52026,7 @@ const MESHLINE_FRAG = /*glsl*/ `
   uniform float opacity;
   uniform vec2 drawRange;
   uniform vec4 viewport;
+  uniform vec4 dimensions;
 
   varying vec2 vStartFragment;
   varying vec2 vEndFragment;
@@ -52037,7 +52038,7 @@ const MESHLINE_FRAG = /*glsl*/ `
   }
 
   bool segmentCoversFragment(vec2 fragment, vec2 startFragment, vec2 endFragment) {
-    float pixelsPerUnit = viewport.w / 8.;
+    float pixelsPerUnit = viewport.w / dimensions.y;
     float pixelWidth = unitWidth * pixelsPerUnit;
     float halfWidthSquared = 0.25 * pixelWidth * pixelWidth;
 
@@ -52247,16 +52248,26 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
     this.setIndex(__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index);
 };
 
-//TODO: fixed circular reference
-const CanvasViewport$1 = new Vector4();
+const CameraDimensions = new Vector2();
+const setCameraDimensions = (camera) => {
+    const { left, right, top, bottom } = camera;
+    CameraDimensions.set(right - left, top - bottom);
+};
+const CanvasViewport = new Vector4();
+const setCanvasViewport = (viewport) => {
+    CanvasViewport.copy(viewport);
+    if (typeof window !== "undefined") {
+        CanvasViewport.multiplyScalar(window.devicePixelRatio);
+    }
+};
 class MeshLineMaterial extends ShaderMaterial {
     constructor(parameters) {
         super({
             uniforms: Object.assign({}, UniformsLib.fog, {
                 color: { value: new Color() },
                 opacity: { value: 1 },
-                viewport: { value: CanvasViewport$1 },
-                // pixelsPerUnit: { value: CanvasViewport.w / 8 },
+                viewport: { value: CanvasViewport },
+                dimensions: { value: CameraDimensions },
                 unitWidth: { value: 1 / 10 },
                 drawRange: { value: new Vector2(0, 1) },
             }),
@@ -52303,13 +52314,6 @@ class MeshLineMaterial extends ShaderMaterial {
     }
 }
 
-const CanvasViewport = new Vector4();
-const setGeometryViewport = (viewport) => {
-    CanvasViewport.copy(viewport);
-    if (typeof window !== "undefined") {
-        CanvasViewport.multiplyScalar(window.devicePixelRatio);
-    }
-};
 const getFillGeometry = (points) => {
     const shape = new Shape$1();
     shape.moveTo(points[0].x, points[0].y);
@@ -52750,7 +52754,6 @@ class Square extends Rectangle {
 var geometry = /*#__PURE__*/Object.freeze({
 	__proto__: null,
 	Arc: Arc,
-	CanvasViewport: CanvasViewport,
 	Circle: Circle,
 	Line: Line,
 	Point: Point,
@@ -52758,8 +52761,7 @@ var geometry = /*#__PURE__*/Object.freeze({
 	Polyline: Polyline,
 	Rectangle: Rectangle,
 	Shape: Shape,
-	Square: Square,
-	setGeometryViewport: setGeometryViewport
+	Square: Square
 });
 
 const BUFFER = 0.5;
@@ -52794,15 +52796,13 @@ const setupCanvas = (canvas, config = {
     aspectRatio: 16 / 9,
     pixelHeight: 720,
     coordinateHeight: 8,
-    setRendererSize: true,
-    viewport: new Vector4(),
+    viewport: undefined,
 }) => {
     config = Object.assign({
         aspectRatio: 16 / 9,
         pixelHeight: 720,
         coordinateHeight: 8,
-        setRendererSize: true,
-        viewport: new Vector4(),
+        viewport: undefined,
     }, config);
     let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
     if (isWidthSetup(config)) {
@@ -52824,15 +52824,16 @@ const setupCanvas = (canvas, config = {
     }
     const camera = new OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
     camera.position.z = 6;
+    setCameraDimensions(camera);
     const renderer = new WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
     renderer.setClearColor(new Color(DEFAULT_BACKGROUND_HEX));
     renderer.autoClear = false;
-    if (config.setRendererSize) {
-        renderer.setSize(pixelWidth, pixelHeight, false);
-        CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
+    if (config.viewport) {
+        CanvasViewport.copy(config.viewport);
     }
     else {
-        CanvasViewport.copy(config.viewport);
+        renderer.setSize(pixelWidth, pixelHeight, false);
+        CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
     }
     if (typeof window !== "undefined") {
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -98337,9 +98338,8 @@ class SceneController {
         this.loopAnimations = [];
         this.finishedAnimationCount = 0;
         this.three = THREE;
-        //TODO: fix typings
-        // this.viewport = "viewport" in config ? config.viewport : undefined;
-        // this.userScene = new UserScene(...setupCanvas(canvasRef, config));
+        this.viewport = config.viewport;
+        this.userScene = new UserScene(...setupCanvas(canvasRef, config));
     }
     get scene() {
         return this.userScene.scene;
@@ -98361,8 +98361,9 @@ class SceneController {
             this.renderer.setViewport(...viewportArray);
             this.renderer.setScissorTest(true);
             this.renderer.clear();
-            setGeometryViewport(this.viewport);
-            this.renderer.render(this.userScene.scene, this.userScene.camera);
+            setCanvasViewport(this.viewport);
+            setCameraDimensions(this.camera);
+            this.renderer.render(this.scene, this.camera);
         }
     }
     tick(deltaTime, render = true) {
@@ -98392,18 +98393,18 @@ class SceneController {
                         const scale = o.scale || 1;
                         const before = o.before || (() => { });
                         const after = o.after || (() => { });
-                        animationArray.forEach((animation) => {
+                        for (let i = 0; i < animationArray.length; i++) {
+                            const animation = animationArray[i];
                             animation.startTime = currentEndTime;
                             animation.endTime = currentEndTime + runTime * scale;
                             animation.runTime = runTime;
                             animation.scale = scale;
                             animation.before && animation.addBefore(animation.before);
                             animation.after && animation.addAfter(animation.after);
-                            //TODO: fix typings
-                            // animation.parent =
-                            //   animation.parent || o.parent || this.userScene.scene;
+                            animation.parent =
+                                animation.parent || o.parent || this.userScene.scene;
                             this.loopAnimations.push(...animationArray);
-                        });
+                        }
                         animationArray.at(0).addBefore(before);
                         animationArray.at(-1).addAfter(after);
                         currentEndTime = animationArray[0].endTime;
@@ -98470,6 +98471,11 @@ class SceneController {
         this.userScene.scene.clear();
     }
 }
+
+var scene = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	SceneController: SceneController
+});
 
 class Indicator extends Group {
     constructor(start, end, config = {}) {
@@ -98568,4 +98574,4 @@ Object3D.prototype.setVisible = function () {
     return this.setOpacity(1);
 };
 
-export { animation as Animation, constants as Constants, diagram as Diagram, geometry as Geometry, SceneController, THREE, text as Text, utils as Utils, setupCanvas };
+export { animation as Animation, constants as Constants, diagram as Diagram, geometry as Geometry, scene as Scene, SceneController, THREE, text as Text, utils as Utils, setCameraDimensions, setCanvasViewport, setupCanvas };

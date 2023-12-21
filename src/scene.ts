@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { Animation } from "./animation";
 import { HeightSetupConfig, WidthSetupConfig, setupCanvas } from "./utils";
-import { setGeometryViewport } from "./geometry";
+import { setCanvasViewport, setCameraDimensions } from "./MeshLine/MeshLineMaterial";
 
 type Class<T> = new (
   scene: THREE.Scene,
@@ -14,6 +14,8 @@ export type AnimationRepresentation = Animation | Array<Animation> | {
   before?: () => void,
   after?: () => void,
   parent?: THREE.Object3D,
+  runTime?: number,
+  scale?: number,
 }
 
 export interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
@@ -43,11 +45,10 @@ export class SceneController {
   constructor(
     public UserScene: Class<StudioScene>,
     canvasRef: HTMLCanvasElement,
-    config: WidthSetupConfig | HeightSetupConfig | undefined
+    config: (WidthSetupConfig | HeightSetupConfig) & { viewport?: THREE.Vector4 }
   ) {
-    //TODO: fix typings
-    // this.viewport = "viewport" in config ? config.viewport : undefined;
-    // this.userScene = new UserScene(...setupCanvas(canvasRef, config));
+    this.viewport = config.viewport;
+    this.userScene = new UserScene(...setupCanvas(canvasRef, config));
   }
 
   get scene() {
@@ -75,8 +76,9 @@ export class SceneController {
       this.renderer.setViewport(...viewportArray);
       this.renderer.setScissorTest(true);
       this.renderer.clear();
-      setGeometryViewport(this.viewport);
-      this.renderer.render(this.userScene.scene, this.userScene.camera);
+      setCanvasViewport(this.viewport);
+      setCameraDimensions(this.camera);
+      this.renderer.render(this.scene, this.camera);
     }
   }
 
@@ -102,22 +104,22 @@ export class SceneController {
             currentEndTime = animation.endTime;
           } else if (typeof o === "object") {
             const animationArray = o.animations;
-            const runTime = (o as { runTime?: number, scale?: number }).runTime || 1;
-            const scale = (o as { scale?: number }).scale || 1;
+            const runTime = o.runTime || 1;
+            const scale = o.scale || 1;
             const before = o.before || (() => {});
             const after = o.after || (() => {});
-            animationArray.forEach((animation) => {
+            for (let i = 0; i < animationArray.length; i++) {
+              const animation = animationArray[i];
               animation.startTime = currentEndTime;
               animation.endTime = currentEndTime + runTime * scale;
               animation.runTime = runTime;
               animation.scale = scale;
               animation.before && animation.addBefore(animation.before);
               animation.after && animation.addAfter(animation.after);
-              //TODO: fix typings
-              // animation.parent =
-              //   animation.parent || o.parent || this.userScene.scene;
+              animation.parent =
+                animation.parent || o.parent || this.userScene.scene;
               this.loopAnimations.push(...animationArray);
-            });
+            }
             animationArray.at(0).addBefore(before);
             animationArray.at(-1).addAfter(after);
             currentEndTime = animationArray[0].endTime;

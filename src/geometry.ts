@@ -10,16 +10,6 @@ import type {
   RectangleAttributes,
 } from "./geometry.types.js";
 
-const CanvasViewport = new THREE.Vector4();
-
-const setGeometryViewport = (viewport: THREE.Vector4) => {
-  CanvasViewport.copy(viewport);
-   
-  if (typeof window !== "undefined") {
-    CanvasViewport.multiplyScalar(window.devicePixelRatio);
-  }
-};
-
 const getFillGeometry = (points: Array<THREE.Vector3>) => {
   const shape = new THREE.Shape();
   shape.moveTo(points[0].x, points[0].y);
@@ -559,8 +549,6 @@ class Square extends Rectangle {
 }
 
 export {
-  CanvasViewport,
-  setGeometryViewport,
   Shape,
   Line,
   Point,
