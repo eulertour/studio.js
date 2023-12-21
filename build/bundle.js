@@ -52253,6 +52253,13 @@ const setCameraDimensions = (camera) => {
     const { left, right, top, bottom } = camera;
     CameraDimensions.set(right - left, top - bottom);
 };
+const CanvasViewport = new Vector4();
+const setCanvasViewport = (viewport) => {
+    CanvasViewport.copy(viewport);
+    if (typeof window !== "undefined") {
+        CanvasViewport.multiplyScalar(window.devicePixelRatio);
+    }
+};
 class MeshLineMaterial extends ShaderMaterial {
     constructor(parameters) {
         super({
@@ -52307,13 +52314,6 @@ class MeshLineMaterial extends ShaderMaterial {
     }
 }
 
-const CanvasViewport = new Vector4();
-const setGeometryViewport = (viewport) => {
-    CanvasViewport.copy(viewport);
-    if (typeof window !== "undefined") {
-        CanvasViewport.multiplyScalar(window.devicePixelRatio);
-    }
-};
 const getFillGeometry = (points) => {
     const shape = new Shape$1();
     shape.moveTo(points[0].x, points[0].y);
@@ -52754,7 +52754,6 @@ class Square extends Rectangle {
 var geometry = /*#__PURE__*/Object.freeze({
 	__proto__: null,
 	Arc: Arc,
-	CanvasViewport: CanvasViewport,
 	Circle: Circle,
 	Line: Line,
 	Point: Point,
@@ -52762,8 +52761,7 @@ var geometry = /*#__PURE__*/Object.freeze({
 	Polyline: Polyline,
 	Rectangle: Rectangle,
 	Shape: Shape,
-	Square: Square,
-	setGeometryViewport: setGeometryViewport
+	Square: Square
 });
 
 const BUFFER = 0.5;
@@ -98363,7 +98361,7 @@ class SceneController {
             this.renderer.setViewport(...viewportArray);
             this.renderer.setScissorTest(true);
             this.renderer.clear();
-            setGeometryViewport(this.viewport);
+            setCanvasViewport(this.viewport);
             setCameraDimensions(this.camera);
             this.renderer.render(this.scene, this.camera);
         }
@@ -98571,4 +98569,4 @@ Object3D.prototype.setVisible = function () {
     return this.setOpacity(1);
 };
 
-export { animation as Animation, constants as Constants, diagram as Diagram, geometry as Geometry, SceneController, THREE, text as Text, utils as Utils, setCameraDimensions, setupCanvas };
+export { animation as Animation, constants as Constants, diagram as Diagram, geometry as Geometry, SceneController, THREE, text as Text, utils as Utils, setCameraDimensions, setCanvasViewport, setupCanvas };

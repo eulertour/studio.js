@@ -2,8 +2,9 @@ import * as THREE from "three";
 import { DEFAULT_BACKGROUND_HEX, PIXELS_TO_COORDS } from "./constants";
 import * as Geometry from "./geometry";
 import { Style } from "./geometry.types";
-import { Camera } from "build/three-types";
-import { CameraDimensions, setCameraDimensions } from "./MeshLine/MeshLineMaterial";
+// import { Camera } from "build/three-types";
+import { setCameraDimensions } from "./MeshLine/MeshLineMaterial";
+import { CanvasViewport } from "./MeshLine/MeshLineMaterial";
 
 const BUFFER = 0.5;
 const RIGHT = Object.freeze(new THREE.Vector3(1, 0, 0));
@@ -105,14 +106,14 @@ const setupCanvas = (
   renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
   renderer.autoClear = false;
   if (config.viewport) {
-    Geometry.CanvasViewport.copy(config.viewport);
+    CanvasViewport.copy(config.viewport);
   } else {
     renderer.setSize(pixelWidth, pixelHeight, false);
-    Geometry.CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
+    CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
   }
   if (typeof window !== "undefined") {
     renderer.setPixelRatio(window.devicePixelRatio);
-    Geometry.CanvasViewport.multiplyScalar(window.devicePixelRatio);
+    CanvasViewport.multiplyScalar(window.devicePixelRatio);
   }
   return [new THREE.Scene(), camera, renderer];
 };

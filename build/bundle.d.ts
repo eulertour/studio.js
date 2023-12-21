@@ -18,6 +18,8 @@ declare namespace Geometry {
     }
     const CameraDimensions: THREE.Vector2;
     const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
+    const CanvasViewport: THREE.Vector4;
+    const setCanvasViewport: (viewport: THREE.Vector4) => void;
     class MeshLineMaterial extends THREE.ShaderMaterial {
         constructor(parameters: ShaderMaterialParameters & {
             color: THREE.ColorRepresentation;
@@ -57,8 +59,6 @@ declare namespace Geometry {
     type PolygonAttributes = {
         points: Array<THREE.Vector3>;
     };
-    const CanvasViewport: THREE.Vector4;
-    const setGeometryViewport: (viewport: THREE.Vector4) => void;
     type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
     type Stroke = THREE.Mesh<MeshLineGeometry, MeshLineMaterial>;
     abstract class Shape extends THREE.Group {
@@ -589,6 +589,7 @@ declare namespace Constants {
     const DEFAULT_BACKGROUND_HEX = 16775920;
 }
 declare const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
+declare const setCanvasViewport: (viewport: THREE.Vector4) => void;
 declare class MeshLineMaterial extends THREE.ShaderMaterial {
     constructor(parameters: ShaderMaterialParameters & {
         color: THREE.ColorRepresentation;
@@ -600,6 +601,6 @@ declare class MeshLineMaterial extends THREE.ShaderMaterial {
     get width(): number;
     set width(value: number);
 }
-export { Geometry, Animation, Text, SceneController, setupCanvas, Utils, Diagram, Constants, setCameraDimensions };
+export { Geometry, Animation, Text, SceneController, setupCanvas, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport };
 export * as THREE from "three";
 export type { StudioScene, AnimationRepresentation };

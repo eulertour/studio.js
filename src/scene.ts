@@ -1,8 +1,7 @@
 import * as THREE from "three";
 import { Animation } from "./animation";
 import { HeightSetupConfig, WidthSetupConfig, setupCanvas } from "./utils";
-import { setGeometryViewport } from "./geometry";
-import { setCameraDimensions } from "./MeshLine/MeshLineMaterial";
+import { setCanvasViewport, setCameraDimensions } from "./MeshLine/MeshLineMaterial";
 
 type Class<T> = new (
   scene: THREE.Scene,
@@ -77,7 +76,7 @@ export class SceneController {
       this.renderer.setViewport(...viewportArray);
       this.renderer.setScissorTest(true);
       this.renderer.clear();
-      setGeometryViewport(this.viewport);
+      setCanvasViewport(this.viewport);
       setCameraDimensions(this.camera);
       this.renderer.render(this.scene, this.camera);
     }
