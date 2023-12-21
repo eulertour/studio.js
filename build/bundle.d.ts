@@ -295,6 +295,16 @@ declare namespace Animation {
         runTime: number;
         finished: boolean;
         elapsedSinceStart: number;
+        /**
+         * Constructs the Animation
+         *
+         * @remarks
+         * This is the remark for constructor
+         *
+         * @param elapsedTime - the time tht has elapsed
+         * @param deltaTime - the change in time
+         * @returns Void
+         */
         constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after }?: {
             object?: any;
             parent?: any;
@@ -435,6 +445,16 @@ declare namespace Scene {
         runTime: number;
         finished: boolean;
         elapsedSinceStart: number;
+        /**
+         * Constructs the Animation
+         *
+         * @remarks
+         * This is the remark for constructor
+         *
+         * @param elapsedTime - the time tht has elapsed
+         * @param deltaTime - the change in time
+         * @returns Void
+         */
         constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after }?: {
             object?: any;
             parent?: any;
@@ -632,6 +652,16 @@ declare namespace Diagram {
         runTime: number;
         finished: boolean;
         elapsedSinceStart: number;
+        /**
+         * Constructs the Animation
+         *
+         * @remarks
+         * This is the remark for constructor
+         *
+         * @param elapsedTime - the time tht has elapsed
+         * @param deltaTime - the change in time
+         * @returns Void
+         */
         constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after }?: {
             object?: any;
             parent?: any;
@@ -754,6 +784,6 @@ declare class MeshLineMaterial extends THREE.ShaderMaterial {
     get width(): number;
     set width(value: number);
 }
-export { Geometry, Animation, Text, Scene, SceneController, setupCanvas, THREE, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport };
-export type { StudioScene, AnimationRepresentation };
+export { Geometry, Animation, Text, Scene, THREE, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport };
+// export type { StudioScene, AnimationRepresentation };
 //# sourceMappingURL=bundle.d.ts.map

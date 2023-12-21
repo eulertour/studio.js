@@ -15,96 +15,108 @@ const modulate = (t, dt): [number, number] => {
 };
 
 class Animation {
-  public scene;
-  public startTime: number;
-  public endTime: number;
-  public prevUpdateTime: number;
-  public beforeFunc: () => void;
-  public afterFunc: () => void;
-  public parent;
-  public object;
-  public before;
-  public after;
-  public scale = 1;
-  public runTime = 1;
-  public finished = false;
-  public elapsedSinceStart = 0;
+	public scene;
+	public startTime: number;
+	public endTime: number;
+	public prevUpdateTime: number;
+	public beforeFunc: () => void;
+	public afterFunc: () => void;
+	public parent;
+	public object;
+	public before;
+	public after;
+	public scale = 1;
+	public runTime = 1;
+	public finished = false;
 
-  constructor(
-    public func: (elapsedTime: number, deltaTime: number) => void, {
-      object = undefined,
-      parent = undefined,
-      before = undefined,
-      after = undefined,
-    } = {}
-  ) {
-    this.object = object;
-    this.parent = parent;
-    this.before = before;
-    this.after = after;
-  }
-  
-  setUp() {}
+	public elapsedSinceStart = 0;
+	/**
+	 * Constructs the Animation
+	 *
+	 * @remarks
+	 * This is the remark for constructor
+	 *
+	 * @param elapsedTime - the time tht has elapsed
+	 * @param deltaTime - the change in time
+	 * @returns Void
+	 */
+	constructor(
+		public func: (elapsedTime: number, deltaTime: number) => void,
+		{
+			object = undefined,
+			parent = undefined,
+			before = undefined,
+			after = undefined,
+		} = {}
+	) {
+		this.object = object;
+		this.parent = parent;
+		this.before = before;
+		this.after = after;
+	}
 
-  tearDown() {}
+	setUp() {}
 
-  update(worldTime) {
-    if (worldTime <= this.startTime || this.finished) {
-      return;
-    }
+	tearDown() {}
 
-    let deltaTime;
-    if (this.prevUpdateTime === undefined) {
-      if (this.object instanceof Function) {
-        this.object = this.object();
-      }
-      if (this.object !== undefined && this.object.parent === null) {
-        const parent = this.parent;
-        !parent.children.includes(this.object) && parent.add(this.object);
-      }
-      this.beforeFunc && this.beforeFunc();
-      this.setUp();
-      deltaTime = worldTime - this.startTime;
-    } else if (worldTime > this.endTime) {
-      deltaTime = this.endTime - this.prevUpdateTime;
-    } else {
-      deltaTime = worldTime - this.prevUpdateTime;
-    }
-    this.prevUpdateTime = worldTime;
-    this.elapsedSinceStart += deltaTime;
+	update(worldTime) {
+		if (worldTime <= this.startTime || this.finished) {
+			return;
+		}
 
-    this.func(...modulate(this.elapsedSinceStart, deltaTime));
+		let deltaTime;
+		if (this.prevUpdateTime === undefined) {
+			if (this.object instanceof Function) {
+				this.object = this.object();
+			}
+			if (this.object !== undefined && this.object.parent === null) {
+				const parent = this.parent;
+				!parent.children.includes(this.object) &&
+					parent.add(this.object);
+			}
+			this.beforeFunc && this.beforeFunc();
+			this.setUp();
+			deltaTime = worldTime - this.startTime;
+		} else if (worldTime > this.endTime) {
+			deltaTime = this.endTime - this.prevUpdateTime;
+		} else {
+			deltaTime = worldTime - this.prevUpdateTime;
+		}
+		this.prevUpdateTime = worldTime;
+		this.elapsedSinceStart += deltaTime;
 
-    if (worldTime >= this.endTime) {
-      this.finished = true;
-      this.tearDown();
-      this.afterFunc && this.afterFunc();
-    }
-  }
+		this.func(...modulate(this.elapsedSinceStart, deltaTime));
 
-  addBefore(before) {
-    if (this.beforeFunc) {
-      const oldBeforeFunc = this.beforeFunc;
-      this.beforeFunc = () => {
-        before();
-        oldBeforeFunc();
-      };
-    } else {
-      this.beforeFunc = before;
-    }
-  }
+		if (worldTime >= this.endTime) {
+			this.finished = true;
+			this.tearDown();
+			this.afterFunc && this.afterFunc();
+		}
+	}
 
-  addAfter(after) {
-    if (this.afterFunc) {
-      const oldAfterFunc = this.afterFunc;
-      this.afterFunc = () => {
-        oldAfterFunc();
-        after();
-      };
-    } else {
-      this.afterFunc = after;
-    }
-  }
+	addBefore(before) {
+		if (this.beforeFunc) {
+			const oldBeforeFunc = this.beforeFunc;
+			this.beforeFunc = () => {
+				before();
+				oldBeforeFunc();
+			};
+		} else {
+			this.beforeFunc = before;
+		}
+	}
+
+	addAfter(after) {
+		if (this.afterFunc) {
+			const oldAfterFunc = this.afterFunc;
+			this.afterFunc = () => {
+				oldAfterFunc();
+				after();
+			};
+		} else {
+			this.afterFunc = after;
+		}
+	}
 }
 
 class Shift extends Animation {

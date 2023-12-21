@@ -53203,6 +53203,16 @@ const modulate = (t, dt) => {
     return [modulatedTime, modulatedDelta];
 };
 class Animation {
+    /**
+     * Constructs the Animation
+     *
+     * @remarks
+     * This is the remark for constructor
+     *
+     * @param elapsedTime - the time tht has elapsed
+     * @param deltaTime - the change in time
+     * @returns Void
+     */
     constructor(func, { object = undefined, parent = undefined, before = undefined, after = undefined, } = {}) {
         this.func = func;
         this.scale = 1;
@@ -53227,7 +53237,8 @@ class Animation {
             }
             if (this.object !== undefined && this.object.parent === null) {
                 const parent = this.parent;
-                !parent.children.includes(this.object) && parent.add(this.object);
+                !parent.children.includes(this.object) &&
+                    parent.add(this.object);
             }
             this.beforeFunc && this.beforeFunc();
             this.setUp();
