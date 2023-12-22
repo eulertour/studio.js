@@ -7,6 +7,7 @@ import { setCameraDimensions } from "./MeshLine/MeshLineMaterial";
 import { CanvasViewport } from "./MeshLine/MeshLineMaterial";
 
 const BUFFER = 0.5;
+const ORIGIN = Object.freeze(new THREE.Vector3(0, 0, 0));
 const RIGHT = Object.freeze(new THREE.Vector3(1, 0, 0));
 const LEFT = Object.freeze(new THREE.Vector3(-1, 0, 0));
 const UP = Object.freeze(new THREE.Vector3(0, 1, 0));
@@ -568,4 +569,5 @@ export {
   DOWN,
   OUT,
   IN,
+  ORIGIN,
 };

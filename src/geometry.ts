@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { ERROR_THRESHOLD, PIXELS_TO_COORDS } from "./constants";
+import { ERROR_THRESHOLD } from "./constants";
 import { MeshLineGeometry, MeshLineMaterial } from "./MeshLine";
 import type {
   Transform,
@@ -9,6 +9,7 @@ import type {
   ArcAttributes,
   RectangleAttributes,
 } from "./geometry.types.js";
+import { ORIGIN } from "./utils";
 
 const getFillGeometry = (points: Array<THREE.Vector3>) => {
   const shape = new THREE.Shape();
@@ -189,38 +190,30 @@ abstract class Shape extends THREE.Group {
 }
 
 class Line extends Shape {
-  transformCenter: boolean;
-
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
-    config: Style & { transformCenter?: boolean } = {}
+    config: Style = {}
   ) {
-    config = Object.assign({ transformCenter: false }, config);
-    let lineStart, lineEnd;
-    const strokeCenter = new THREE.Vector3()
-      .addVectors(start, end)
-      .divideScalar(2);
-    if (config.transformCenter) {
-      lineStart = new THREE.Vector3().subVectors(start, strokeCenter);
-      lineEnd = new THREE.Vector3().subVectors(end, strokeCenter);
-    } else {
-      lineStart = start;
-      lineEnd = end;
-    }
-    super([lineStart, lineEnd], { ...config, fillOpacity: 0 });
-    this.start = lineStart;
-    this.end = lineEnd;
-    this.transformCenter = config.transformCenter;
-    if (config.transformCenter) {
-      this.position.copy(strokeCenter);
-    }
-
+    super([start, end], { ...config, fillOpacity: 0 });
     this.curveEndIndices = [[0, 1]];
   }
 
+  static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config: Style = {}) {
+    const center = new THREE.Vector3()
+      .addVectors(start, end)
+      .divideScalar(2);
+    const line = new Line(
+      new THREE.Vector3().subVectors(start, center),
+      new THREE.Vector3().subVectors(end, center),
+      config,
+    );
+    line.position.copy(center);
+    return line;
+  }
+
   getClassConfig() {
-    return { transformCenter: this.transformCenter };
+    return {};
   }
 
   getAttributes(): LineAttributes {
@@ -381,18 +374,18 @@ class Circle extends Arc {
 }
 
 class Point extends Circle {
-  // TODO: this.location should return this.position
   constructor(
-    public location: THREE.Vector2 | THREE.Vector3,
+    position: THREE.Vector2 | THREE.Vector3 = ORIGIN,
     config: Style & { radius?: number } = {}
   ) {
-    config = Object.assign({ radius: 0.08 }, config);
-    super(config.radius, {
+    config = {
+      radius: 0.08,
       fillColor: new THREE.Color("black"),
       fillOpacity: 1,
       ...config,
-    });
-    this.position.set(location.x, location.y, 0);
+    };
+    super(config.radius, config);
+    this.position.set(position.x, position.y, 0);
   }
 
   getAttributes(): ArcAttributes {
@@ -409,31 +402,11 @@ class Point extends Circle {
 }
 
 class Polygon extends Shape {
-  transformCenter: boolean;
-
   constructor(
     points: Array<THREE.Vector3>,
-    config: Style & { transformCenter?: boolean } = {}
+    config: Style = {}
   ) {
-    config = Object.assign({ transformCenter: false }, config);
-    if (config.transformCenter) {
-      const min = new THREE.Vector3(Infinity, Infinity, Infinity);
-      const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
-      for (const point of points.slice(0, points.length - 1)) {
-        min.min(point);
-        max.max(point);
-      }
-      const center = new THREE.Vector3().addVectors(min, max).divideScalar(2);
-      const newPoints = points.map((p) =>
-        new THREE.Vector3().subVectors(p, center)
-      );
-      super(newPoints, config);
-      this.position.copy(center);
-    } else {
-      super(points, config);
-    }
-    this.transformCenter = config.transformCenter;
-
+    super(points, config);
     this.curveEndIndices = [];
     for (let i = 0; i < points.length - 1; i++) {
       this.curveEndIndices.push([i, i + 1]);
@@ -441,13 +414,11 @@ class Polygon extends Shape {
   }
 
   getClassConfig() {
-    return { transformCenter: this.transformCenter };
+    return {};
   }
 
   getAttributes(): PolygonAttributes {
-    return {
-      points: this.points,
-    };
+    return { points: this.points };
   }
 
   static fromAttributes(attributes: PolygonAttributes): Polygon {

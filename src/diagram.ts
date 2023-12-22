@@ -2,9 +2,9 @@ import * as THREE from "three";
 import { Animation } from "./animation";
 import { Style } from "./geometry.types";
 import * as Geometry from "./geometry";
+import { OUT } from "./utils";
 
 interface IndicatorConfig {
-  transformCenter?: boolean;
   tickLength?: number;
 }
 
@@ -16,51 +16,40 @@ class Indicator extends THREE.Group {
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
-    config: IndicatorConfig = {}
+    config: IndicatorConfig & Style = {}
   ) {
     const { tickLength = 0.4 } = config;
 
     super();
-    const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
-    const vec = new THREE.Vector3().subVectors(end, start).normalize();
+    this.stem = Geometry.Line.centeredLine(start, end, config);
 
-    const lineConfig = { transformCenter: true, ...config};
-    this.stem = new Geometry.Line(start, end, lineConfig);
+    const tickVector = new THREE.Vector3()
+      .subVectors(end, start)
+      .normalize()
+      .applyAxisAngle(OUT, Math.PI / 2)
+      .multiplyScalar(tickLength / 2);
+    const negativeTickVector = tickVector.clone().multiplyScalar(-1);
 
-    const normal = vec
-      .clone()
-      .applyAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2);
-    this.startTick = new Geometry.Line(
-      new THREE.Vector3().addVectors(
-        start,
-        normal.clone().multiplyScalar(tickLength / 2)
-      ),
-      new THREE.Vector3().addVectors(
-        start,
-        normal.clone().multiplyScalar(-tickLength / 2)
-      ),
-      lineConfig
+    this.startTick = Geometry.Line.centeredLine(
+      new THREE.Vector3().addVectors(start, tickVector),
+      new THREE.Vector3().addVectors(start, negativeTickVector),
+      config,
     );
 
-    this.endTick = new Geometry.Line(
-      new THREE.Vector3().addVectors(
-        end,
-        normal.clone().multiplyScalar(tickLength / 2)
-      ),
-      new THREE.Vector3().addVectors(
-        end,
-        normal.clone().multiplyScalar(-tickLength / 2)
-      ),
-      lineConfig
+    this.endTick = Geometry.Line.centeredLine(
+      new THREE.Vector3().addVectors(end, tickVector),
+      new THREE.Vector3().addVectors(end, negativeTickVector),
+      config,
     );
 
+    const center = new THREE.Vector3()
+      .addVectors(start, end)
+      .divideScalar(2);
     for (const mesh of [this.stem, this.startTick, this.endTick]) {
       mesh.position.sub(center);
       this.add(mesh);
     }
-    this.position.copy(
-      new THREE.Vector3().addVectors(start, end).divideScalar(2)
-    );
+    this.position.copy(center);
   }
 
   grow(config): Animation {

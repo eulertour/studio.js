@@ -85,13 +85,9 @@ declare namespace Geometry {
     class Line extends Shape {
         start: THREE.Vector3;
         end: THREE.Vector3;
-        transformCenter: boolean;
-        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
-            transformCenter?: boolean;
-        });
-        getClassConfig(): {
-            transformCenter: boolean;
-        };
+        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style);
+        static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
+        getClassConfig(): {};
         getAttributes(): LineAttributes;
         toVector(global: boolean): THREE.Vector3;
         static fromAttributes(attributes: LineAttributes): Line;
@@ -133,22 +129,15 @@ declare namespace Geometry {
         }[];
     }
     class Point extends Circle {
-        location: THREE.Vector2 | THREE.Vector3;
-        // TODO: this.location should return this.position
-        constructor(location: THREE.Vector2 | THREE.Vector3, config?: Style & {
+        constructor(position?: THREE.Vector2 | THREE.Vector3, config?: Style & {
             radius?: number;
         });
         getAttributes(): ArcAttributes;
         static fromAttributes(): Point;
     }
     class Polygon extends Shape {
-        transformCenter: boolean;
-        constructor(points: Array<THREE.Vector3>, config?: Style & {
-            transformCenter?: boolean;
-        });
-        getClassConfig(): {
-            transformCenter: boolean;
-        };
+        constructor(points: Array<THREE.Vector3>, config?: Style);
+        getClassConfig(): {};
         getAttributes(): PolygonAttributes;
         static fromAttributes(attributes: PolygonAttributes): Polygon;
         get attributeData(): any[];
@@ -211,6 +200,7 @@ declare namespace Utils {
         points: Array<THREE.Vector3>;
     };
     const BUFFER = 0.5;
+    const ORIGIN: Readonly<THREE.Vector3>;
     const RIGHT: Readonly<THREE.Vector3>;
     const LEFT: Readonly<THREE.Vector3>;
     const UP: Readonly<THREE.Vector3>;
@@ -561,7 +551,6 @@ declare namespace Diagram {
         points: Array<THREE.Vector3>;
     };
     interface IndicatorConfig {
-        transformCenter?: boolean;
         tickLength?: number;
     }
     class Indicator extends THREE.Group {
@@ -570,7 +559,7 @@ declare namespace Diagram {
         startTick: Geometry.Line;
         endTick: Geometry.Line;
         stem: any;
-        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig);
+        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig & Style);
         grow(config: any): Animation;
     }
     class Congruent extends THREE.Group {

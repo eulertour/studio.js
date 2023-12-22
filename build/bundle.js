@@ -52455,32 +52455,21 @@ class Shape extends Group {
 }
 class Line extends Shape {
     constructor(start, end, config = {}) {
-        config = Object.assign({ transformCenter: false }, config);
-        let lineStart, lineEnd;
-        const strokeCenter = new Vector3()
-            .addVectors(start, end)
-            .divideScalar(2);
-        if (config.transformCenter) {
-            lineStart = new Vector3().subVectors(start, strokeCenter);
-            lineEnd = new Vector3().subVectors(end, strokeCenter);
-        }
-        else {
-            lineStart = start;
-            lineEnd = end;
-        }
-        super([lineStart, lineEnd], Object.assign(Object.assign({}, config), { fillOpacity: 0 }));
+        super([start, end], Object.assign(Object.assign({}, config), { fillOpacity: 0 }));
         this.start = start;
         this.end = end;
-        this.start = lineStart;
-        this.end = lineEnd;
-        this.transformCenter = config.transformCenter;
-        if (config.transformCenter) {
-            this.position.copy(strokeCenter);
-        }
         this.curveEndIndices = [[0, 1]];
     }
+    static centeredLine(start, end, config = {}) {
+        const center = new Vector3()
+            .addVectors(start, end)
+            .divideScalar(2);
+        const line = new Line(new Vector3().subVectors(start, center), new Vector3().subVectors(end, center), config);
+        line.position.copy(center);
+        return line;
+    }
     getClassConfig() {
-        return { transformCenter: this.transformCenter };
+        return {};
     }
     getAttributes() {
         return {
@@ -52615,12 +52604,10 @@ class Circle extends Arc {
     }
 }
 class Point extends Circle {
-    // TODO: this.location should return this.position
-    constructor(location, config = {}) {
-        config = Object.assign({ radius: 0.08 }, config);
-        super(config.radius, Object.assign({ fillColor: new Color("black"), fillOpacity: 1 }, config));
-        this.location = location;
-        this.position.set(location.x, location.y, 0);
+    constructor(position = ORIGIN, config = {}) {
+        config = Object.assign({ radius: 0.08, fillColor: new Color("black"), fillOpacity: 1 }, config);
+        super(config.radius, config);
+        this.position.set(position.x, position.y, 0);
     }
     getAttributes() {
         return {
@@ -52635,35 +52622,17 @@ class Point extends Circle {
 }
 class Polygon extends Shape {
     constructor(points, config = {}) {
-        config = Object.assign({ transformCenter: false }, config);
-        if (config.transformCenter) {
-            const min = new Vector3(Infinity, Infinity, Infinity);
-            const max = new Vector3(-Infinity, -Infinity, -Infinity);
-            for (const point of points.slice(0, points.length - 1)) {
-                min.min(point);
-                max.max(point);
-            }
-            const center = new Vector3().addVectors(min, max).divideScalar(2);
-            const newPoints = points.map((p) => new Vector3().subVectors(p, center));
-            super(newPoints, config);
-            this.position.copy(center);
-        }
-        else {
-            super(points, config);
-        }
-        this.transformCenter = config.transformCenter;
+        super(points, config);
         this.curveEndIndices = [];
         for (let i = 0; i < points.length - 1; i++) {
             this.curveEndIndices.push([i, i + 1]);
         }
     }
     getClassConfig() {
-        return { transformCenter: this.transformCenter };
+        return {};
     }
     getAttributes() {
-        return {
-            points: this.points,
-        };
+        return { points: this.points };
     }
     static fromAttributes(attributes) {
         const { points } = attributes;
@@ -52765,6 +52734,7 @@ var geometry = /*#__PURE__*/Object.freeze({
 });
 
 const BUFFER = 0.5;
+const ORIGIN = Object.freeze(new Vector3(0, 0, 0));
 const RIGHT = Object.freeze(new Vector3(1, 0, 0));
 const LEFT = Object.freeze(new Vector3(-1, 0, 0));
 const UP = Object.freeze(new Vector3(0, 1, 0));
@@ -53172,6 +53142,7 @@ var utils = /*#__PURE__*/Object.freeze({
 	DOWN: DOWN,
 	IN: IN,
 	LEFT: LEFT,
+	ORIGIN: ORIGIN,
 	OUT: OUT,
 	RIGHT: RIGHT,
 	ShapeFromCurves: ShapeFromCurves,
@@ -98478,20 +98449,23 @@ class Indicator extends Group {
         super();
         this.start = start;
         this.end = end;
-        const center = new Vector3().addVectors(start, end).divideScalar(2);
-        const vec = new Vector3().subVectors(end, start).normalize();
-        const lineConfig = Object.assign({ transformCenter: true }, config);
-        this.stem = new Line(start, end, lineConfig);
-        const normal = vec
-            .clone()
-            .applyAxisAngle(new Vector3(0, 0, 1), Math.PI / 2);
-        this.startTick = new Line(new Vector3().addVectors(start, normal.clone().multiplyScalar(tickLength / 2)), new Vector3().addVectors(start, normal.clone().multiplyScalar(-tickLength / 2)), lineConfig);
-        this.endTick = new Line(new Vector3().addVectors(end, normal.clone().multiplyScalar(tickLength / 2)), new Vector3().addVectors(end, normal.clone().multiplyScalar(-tickLength / 2)), lineConfig);
+        this.stem = Line.centeredLine(start, end, config);
+        const tickVector = new Vector3()
+            .subVectors(end, start)
+            .normalize()
+            .applyAxisAngle(OUT, Math.PI / 2)
+            .multiplyScalar(tickLength / 2);
+        const negativeTickVector = tickVector.clone().multiplyScalar(-1);
+        this.startTick = Line.centeredLine(new Vector3().addVectors(start, tickVector), new Vector3().addVectors(start, negativeTickVector), config);
+        this.endTick = Line.centeredLine(new Vector3().addVectors(end, tickVector), new Vector3().addVectors(end, negativeTickVector), config);
+        const center = new Vector3()
+            .addVectors(start, end)
+            .divideScalar(2);
         for (const mesh of [this.stem, this.startTick, this.endTick]) {
             mesh.position.sub(center);
             this.add(mesh);
         }
-        this.position.copy(new Vector3().addVectors(start, end).divideScalar(2));
+        this.position.copy(center);
     }
     grow(config) {
         const vec = new Vector3().subVectors(this.end, this.start);
