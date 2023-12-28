@@ -10,6 +10,7 @@ import type {
   RectangleAttributes,
 } from "./geometry.types.js";
 import { ORIGIN } from "./utils";
+import MeshLineRaycast from "./MeshLine/MeshLineRaycast";
 
 const getFillGeometry = (points: Array<THREE.Vector3>) => {
   const shape = new THREE.Shape();
@@ -60,6 +61,7 @@ abstract class Shape extends THREE.Group {
       transparent: true,
     });
     this.stroke = new THREE.Mesh(strokeGeometry, strokeMaterial);
+    this.stroke.raycast = MeshLineRaycast;
     this.add(this.stroke);
 
     this.curveEndIndices = this.getCurveEndIndices();

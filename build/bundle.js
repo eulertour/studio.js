@@ -52314,6 +52314,54 @@ class MeshLineMaterial extends ShaderMaterial {
     }
 }
 
+function MeshLineRaycast(raycaster, intersects) {
+    const inverseMatrix = new Matrix4();
+    const ray = new Ray();
+    const interRay = new Vector3();
+    const geometry = this.geometry;
+    inverseMatrix.copy(this.matrixWorld).invert();
+    ray.copy(raycaster.ray).applyMatrix4(inverseMatrix);
+    const vStart = new Vector3();
+    const vEnd = new Vector3();
+    const interSegment = new Vector3();
+    const index = geometry.index;
+    const attributes = geometry.attributes;
+    if (index !== null) {
+        index.array;
+        const positions = attributes.position.array;
+        const endPositions = attributes.endPosition.array;
+        let minDistance = Infinity;
+        for (let i = 0; i < positions.length; i += 12) {
+            vStart.fromArray(positions, i);
+            vEnd.fromArray(endPositions, i);
+            const precision = raycaster.params.Line.threshold;
+            const precisionSq = precision * precision;
+            const distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment);
+            if (distSq > precisionSq)
+                continue;
+            // Move back to world space for distance calculation
+            interRay.applyMatrix4(this.matrixWorld);
+            interSegment.applyMatrix4(this.matrixWorld);
+            const distance = interSegment.distanceTo(interRay);
+            if (distance < raycaster.near || distance > raycaster.far)
+                continue;
+            if (distance < minDistance) {
+                minDistance = distance;
+                intersects[0] = {
+                    distance,
+                    // What do we want? intersection point on the ray or on the segment??
+                    // point: raycaster.ray.at( distance ),
+                    point: interSegment.clone(),
+                    index: i,
+                    face: null,
+                    faceIndex: undefined,
+                    object: this,
+                };
+            }
+        }
+    }
+}
+
 const getFillGeometry = (points) => {
     const shape = new Shape$1();
     shape.moveTo(points[0].x, points[0].y);
@@ -52350,6 +52398,7 @@ class Shape extends Group {
             transparent: true,
         });
         this.stroke = new Mesh(strokeGeometry, strokeMaterial);
+        this.stroke.raycast = MeshLineRaycast;
         this.add(this.stroke);
         this.curveEndIndices = this.getCurveEndIndices();
     }
