@@ -4,9 +4,11 @@ import { BufferGeometry, Vector3, ShaderMaterialParameters } from "three";
 declare namespace Geometry {
     class MeshLineGeometry extends BufferGeometry {
         #private;
+        arrow: boolean;
         readonly isMeshLineGeometry = true;
         readonly type = "MeshLineGeometry";
         points: Vector3[];
+        constructor(arrow?: boolean);
         setPoints(points: Array<Vector3>, updateBounds?: boolean): void;
         setVertexData(array: WritableArrayLike<number>, offset: number, x: number, y: number, z: number): void;
         setTextureCoords(array: WritableArrayLike<number>, offset: number): void;

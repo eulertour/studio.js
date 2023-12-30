@@ -23,6 +23,9 @@ export const MESHLINE_VERT = /*glsl*/ `
   varying vec2 vEndFragment;
   varying vec2 vNextFragment;
   varying float vProportion;
+  varying float vFlag;
+  varying float vArrow;
+  varying float vBeforeArrow;
   
   float eq(float x, float y) {
     return 1.0 - abs(sign(x - y));
@@ -48,16 +51,43 @@ export const MESHLINE_VERT = /*glsl*/ `
     // Add 0.2 so all pixels are covered.
     vec2 segmentVec = 1.2 * normalize(vEndFragment - vStartFragment);
     vec2 segmentNormal = vec2(-segmentVec.y, segmentVec.x);
-    float textureDivide = textureCoords / 2.;
-    float startEnd = 2. * (ceil(floor(textureDivide)) - 0.5);
-    float bottomTop = 2. * (ceil(fract(textureDivide)) - 0.5);
-    segmentVec *= startEnd;
-    segmentNormal *= bottomTop;
 
-    vec2 fragmentOffset = 0.5 * unitWidth * (segmentVec + segmentNormal);
+    vBeforeArrow = floor(textureCoords / 8.);
+    float remaining = textureCoords - 8. * vBeforeArrow;
+
+    vArrow = floor(remaining / 4.);
+    remaining -= 4. * vArrow;
+
+    // float textureDivide = remaining / 2.;
+    // float f = fract(textureDivide);
+    // float c = ceil(f);
+    // c = f;
+    // if (
+    //   vArrow > 0.
+    //   // textureCoords == 0. && f == 0. && c == 0.
+    //   // textureCoords == 1. && f == 0. && c == 0.
+    //   // textureCoords == 2. && f == 1. && c == 1.
+    //   // textureCoords == 3. && f == 1. && c == 1.
+    // ) {
+    //   vFlag = 1.;
+    // }
+
+    float startEnd = floor(remaining / 2.);
+    remaining -= 2. * startEnd;
+
+    float bottomTop = remaining;
+
+    // [0, 1] -> [1, -1]
+    segmentVec *= (2. * startEnd - 1.);
+    segmentNormal *= (2. * bottomTop - 1.);
+
+    vec2 fragmentOffset
+      = 0.5 * unitWidth * segmentVec
+      + 0.5 * unitWidth * segmentNormal * eq(vArrow, 0.) * 1.
+      + 0.5 * unitWidth * segmentNormal * eq(vArrow, 1.) * 2.618033988;
     vec2 offset = (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
 
-    gl_Position = start * eq(startEnd, -1.) + end * eq(startEnd, 1.);
+    gl_Position = start * eq(startEnd, 0.) + end * eq(startEnd, 1.);
     gl_Position.xy += offset;
 
     ${ShaderChunk.logdepthbuf_vertex}
@@ -84,6 +114,9 @@ export const MESHLINE_FRAG = /*glsl*/ `
   varying vec2 vEndFragment;
   varying vec2 vNextFragment;
   varying float vProportion;
+  varying float vFlag;
+  varying float vArrow;
+  varying float vBeforeArrow;
   
   float lengthSquared(vec2 vec) {
     return dot(vec, vec);
@@ -117,11 +150,66 @@ export const MESHLINE_FRAG = /*glsl*/ `
   void main() {
     ${ShaderChunk.logdepthbuf_fragment}
 
-    bool hasNext = vNextFragment != vEndFragment;
-    if (hasNext && segmentCoversFragment(gl_FragCoord.xy, vEndFragment, vNextFragment)) discard;
-    if (!segmentCoversFragment(gl_FragCoord.xy, vStartFragment, vEndFragment)) discard;
-    if (vProportion < drawRange[0] || drawRange[1] < vProportion) discard;
-    gl_FragColor = vec4(color, opacity);
+    if (vArrow == 0.) {
+      if (vBeforeArrow == 0.) {
+        bool hasNext = vNextFragment != vEndFragment;
+        if (hasNext && segmentCoversFragment(gl_FragCoord.xy, vEndFragment, vNextFragment)) discard;
+      } else {
+        vec2 endToNext = vNextFragment - vEndFragment;
+        vec2 endToFrag = gl_FragCoord.xy - vEndFragment;
+        if (dot(endToNext, endToFrag) > 0.) discard;
+      }
+      if (!segmentCoversFragment(gl_FragCoord.xy, vStartFragment, vEndFragment)) discard;
+      if (vProportion < drawRange[0] || drawRange[1] < vProportion) discard;
+      gl_FragColor = vec4(color, 0.3);
+    } else {
+      vec2 segmentVec = vEndFragment - vStartFragment;
+      vec2 startToFrag = gl_FragCoord.xy - vStartFragment;
+      float dotProduct = dot(segmentVec, startToFrag);
+      vec2 segmentProjection = dotProduct / lengthSquared(segmentVec) * segmentVec;
+      vec2 segmentNormal = startToFrag - segmentProjection;
+      
+      if (dotProduct < 0.) discard;
+
+      // if (sqrt(lengthSquared(segmentNormal)) > 3.) discard;
+      // if (sqrt(lengthSquared(segmentProjection)) > 10.) discard;
+
+      float pixelsPerUnit = viewport.w / dimensions.y;
+      // y = -width / segmentLength * x + width
+      float x = sqrt(lengthSquared(segmentProjection));
+      float y = sqrt(lengthSquared(segmentNormal));
+      float rise = 0.5 * unitWidth * pixelsPerUnit * 2.618033988;
+      float run = sqrt(lengthSquared(segmentVec));
+      float m = -rise / run;
+      float b = rise;
+
+      // y = x
+      // if (abs(y - x) < 2.) {
+
+      // y = x + 10
+      // if (abs(y - x - 10.) < 2.) {
+
+      // y = -x + 10
+      // if (abs(y + x - 10.) < 2.) {
+
+      // y = -x + b
+      // if (abs(y + x - b) < 2.) {
+
+      // y = mx + b
+      // if (abs(y - m * x - b) < 2.) {
+
+      if (y > m * x + b) discard;
+
+      gl_FragColor = vec4(color, 0.3);
+
+      // if (lengthSquared(segmentNormal) > lengthSquared(segmentProjection)) discard;
+      
+    }
+    // if (vFlag > 0.) {
+    //   gl_FragColor = vec4(1., 0., 0., 1.);
+    // } else {
+    //   gl_FragColor = vec4(0., 0., 0., 0.3);
+    // }
 
     ${ShaderChunk.fog_fragment}
 	}

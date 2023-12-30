@@ -32,7 +32,47 @@ export default class MeshLineGeometry extends BufferGeometry {
   #previousPointCount = 0;
   #pointCount = 0;
 
+  constructor(public arrow = false) {
+    super();
+  }
+
   setPoints(points: Array<Vector3>, updateBounds: boolean = true) {
+    const arrowLength = 0.3;
+    if (this.arrow) {
+      // Find the index of the last point that is at least arrowLength away from the end.
+      let arrowIndex = 0;
+      for (let i = points.length - 2; i >= 0; i--) {
+        const point = points[i];
+        if (point.distanceTo(points[points.length - 1]) >= arrowLength) {
+          arrowIndex = i;
+          break;
+        }
+      }
+      
+      // Find the point that is arrowLength away from the end.
+      const aVec = points[arrowIndex];
+      const bVec = points[points.length - 1];
+      const vVec = new Vector3().subVectors(points[arrowIndex + 1], aVec);
+      const d = arrowLength;      
+      const a = vVec.dot(vVec); 
+      const b = 2 * (aVec.dot(vVec) - bVec.dot(vVec));
+      const c = aVec.dot(aVec) - 2 * aVec.dot(bVec) + bVec.dot(bVec) - d * d;
+      const rootDiscriminant = Math.sqrt(b * b - 4 * a * c);
+      const t1 = (-b + rootDiscriminant) / (2 * a);
+      const t2 = (-b - rootDiscriminant) / (2 * a);
+      let t;
+      if (0 <= t1 && t1 <= 1) {
+        t = t1;
+      } else if (0 <= t2 && t2 <= 1) {
+        t = t2;
+      } else {
+        throw new Error("No valid solution");
+      }
+      points[arrowIndex + 1] = aVec.clone().add(vVec.clone().multiplyScalar(t));
+      points[arrowIndex + 2] = points[points.length - 1];
+      points.length = arrowIndex + 3;
+    }
+
     this.points = points;
     this.#pointCount = points.length;
 
@@ -99,6 +139,18 @@ export default class MeshLineGeometry extends BufferGeometry {
         (position.z - endPosition.z) ** 2) **
         0.5;
     this.#addSegment(points.length - 2, position, endPosition, nextPosition);
+    
+    if (this.arrow) {
+      this.#textureCoords[4 * (points.length - 3)] = 9;      // 8 * 1 + 2 * 0 + 1;
+      this.#textureCoords[4 * (points.length - 3) + 1] = 8;  // 8 * 1 + 2 * 0 + 0;
+      this.#textureCoords[4 * (points.length - 3) + 2] = 10; // 8 * 1 + 2 * 1 + 0;
+      this.#textureCoords[4 * (points.length - 3) + 3] = 11; // 8 * 1 + 2 * 1 + 1;
+
+      this.#textureCoords[4 * (points.length - 2)] = 5;     // 4 * 1 + 2 * 0 + 1;
+      this.#textureCoords[4 * (points.length - 2) + 1] = 4; // 4 * 1 + 2 * 0 + 0;
+      this.#textureCoords[4 * (points.length - 2) + 2] = 6; // 4 * 1 + 2 * 1 + 0;
+      this.#textureCoords[4 * (points.length - 2) + 3] = 7; // 4 * 1 + 2 * 1 + 1;
+    }
 
     const totalLength = lengths.at(-1);
     if (totalLength === undefined) {
@@ -205,10 +257,10 @@ export default class MeshLineGeometry extends BufferGeometry {
   }
 
   setTextureCoords(array: WritableArrayLike<number>, offset: number) {
-    array[offset] = 1; // 2 * 0 + 1;
-    // array[offset + 1] = 0; // 2 * 0 + 0;
-    array[offset + 2] = 2; // 2 * 1 + 0;
-    array[offset + 3] = 3; // 2 * 1 + 1;
+    array[offset] = 1;        // 8 * 0 + 4 * 0 + 2 * 0 + 1;
+    // array[offset + 1] = 0; // 8 * 0 + 4 * 0 + 2 * 0 + 0;
+    array[offset + 2] = 2;    // 8 * 0 + 4 * 0 + 2 * 1 + 0;
+    array[offset + 3] = 3;    // 8 * 0 + 4 * 0 + 2 * 1 + 1;
   }
 
   setIndices(

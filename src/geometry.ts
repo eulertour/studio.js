@@ -52,7 +52,7 @@ abstract class Shape extends THREE.Group {
     this.fill = new THREE.Mesh(fillGeometry, fillMaterial);
     this.add(this.fill);
 
-    const strokeGeometry = new MeshLineGeometry();
+    const strokeGeometry = new MeshLineGeometry(config.arrow);
     strokeGeometry.setPoints(points);
     const strokeMaterial = new MeshLineMaterial({
       color: config.strokeColor,
