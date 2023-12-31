@@ -52002,11 +52002,11 @@ const MESHLINE_VERT = /*glsl*/ `
 
     // Extract bools.
     float remaining = textureCoords;
-    vBeforeArrow = floor(textureCoords / 8.);
+    vBeforeArrow = floor(0.125 * textureCoords);
     remaining -= 8. * vBeforeArrow;
-    vArrow = floor(remaining / 4.);
+    vArrow = floor(0.25 * remaining);
     remaining -= 4. * vArrow;
-    float startEnd = floor(remaining / 2.);
+    float startEnd = floor(0.5 * remaining);
     remaining -= 2. * startEnd;
     float bottomTop = remaining;
 
@@ -52051,25 +52051,11 @@ const MESHLINE_FRAG = /*glsl*/ `
   varying float vArrow;
   varying float vBeforeArrow;
   
-  float gt(float x, float y) {
-    return max(sign(x - y), 0.0);
-  }
-  
-  float lt(float x, float y) {
-    return max(sign(y - x), 0.0);
-  }
-  
-  float and(float a, float b, float c) {
-    return a * b * c;
-  }
-
-  float or(float a, float b, float c) {
-    return min(a + b + c, 1.0);
-  }
-  
-  float lengthSquared(vec2 vec) {
-    return dot(vec, vec);
-  }
+  float gt(float x, float y) { return max(sign(x - y), 0.0); }
+  float lt(float x, float y) { return max(sign(y - x), 0.0); }
+  float and(float a, float b, float c) { return a * b * c; }
+  float or(float a, float b, float c) { return min(a + b + c, 1.0); }
+  float lengthSquared(vec2 vec) { return dot(vec, vec); }
 
   float segmentCoversFragment(
     float halfWidthSquared,
@@ -52100,8 +52086,8 @@ const MESHLINE_FRAG = /*glsl*/ `
     float x = sqrt(lengthSquared(startToEndProjection));
     float y = sqrt(lengthSquared(startToEndNormal));
     float rise = 0.5 * unitWidth * pixelsPerUnit * 2.618033988;
-    float run = sqrt(lengthSquared(startToEnd));
-    float m = -rise / run;
+    // float run = sqrt(lengthSquared(startToEnd));
+    float m = -rise * inversesqrt(lengthSquared(startToEnd));
     float b = rise;
     return lt(y, m * x + b);
   }
@@ -52179,7 +52165,7 @@ const MESHLINE_FRAG = /*glsl*/ `
       // Exclude fragments that are outside the draw range.
       if (vProportion < drawRange[0] || drawRange[1] < vProportion) discard;
 
-      gl_FragColor = vec4(color, 0.3);
+      gl_FragColor = vec4(color, opacity);
 
     ${ShaderChunk.fog_fragment}
 	}
