@@ -52020,8 +52020,8 @@ const MESHLINE_VERT = /*glsl*/ `
 
     vec2 fragmentOffset
       = 0.5 * unitWidth * segmentVec
-      + 0.5 * unitWidth * segmentNormal * eq(vArrow, 0.) * 1.
-      + 0.5 * unitWidth * segmentNormal * eq(vArrow, 1.) * 2.618033988;
+      + 0.5 * unitWidth * segmentNormal
+        * (eq(vArrow, 0.) + eq(vArrow, 1.) * 2.618033988);
 
     gl_Position = start * eq(startEnd, 0.) + end * eq(startEnd, 1.);
     gl_Position.xy += (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
