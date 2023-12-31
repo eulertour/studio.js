@@ -52098,66 +52098,44 @@ const MESHLINE_FRAG = /*glsl*/ `
   void main() {
     ${ShaderChunk.logdepthbuf_fragment}
 
-    if (vArrow == 0.) {
-      if (vBeforeArrow == 0.) {
-        bool hasNext = vNextFragment != vEndFragment;
-        if (hasNext && segmentCoversFragment(gl_FragCoord.xy, vEndFragment, vNextFragment)) discard;
-      } else {
-        vec2 endToNext = vNextFragment - vEndFragment;
-        vec2 endToFrag = gl_FragCoord.xy - vEndFragment;
-        if (dot(endToNext, endToFrag) > 0.) discard;
-      }
-      if (!segmentCoversFragment(gl_FragCoord.xy, vStartFragment, vEndFragment)) discard;
-      if (vProportion < drawRange[0] || drawRange[1] < vProportion) discard;
-      gl_FragColor = vec4(color, 0.3);
-    } else {
+      bool discardFragment = false;
+      // For regular segments, exclude the fragment if it is covered by the next segment.
+      if (
+        vBeforeArrow == 0.
+        && vNextFragment != vEndFragment
+        && segmentCoversFragment(gl_FragCoord.xy, vEndFragment, vNextFragment)
+      ) discardFragment = true;
+
+      // For segments preceding an arrow, exclude the fragment if it is covered by the arrow.
+      vec2 endToNext = vNextFragment - vEndFragment;
+      vec2 endToFrag = gl_FragCoord.xy - vEndFragment;
+      if (vBeforeArrow == 1. && dot(endToNext, endToFrag) > 0.) discardFragment = true;
+      if (!segmentCoversFragment(gl_FragCoord.xy, vStartFragment, vEndFragment)) discardFragment = true;
+
+      if (vArrow == 0. && discardFragment) discard;
+
+
+      bool discardArrowFragment = false;
       vec2 segmentVec = vEndFragment - vStartFragment;
       vec2 startToFrag = gl_FragCoord.xy - vStartFragment;
       float dotProduct = dot(segmentVec, startToFrag);
       vec2 segmentProjection = dotProduct / lengthSquared(segmentVec) * segmentVec;
       vec2 segmentNormal = startToFrag - segmentProjection;
-      
-      if (dotProduct < 0.) discard;
-
-      // if (sqrt(lengthSquared(segmentNormal)) > 3.) discard;
-      // if (sqrt(lengthSquared(segmentProjection)) > 10.) discard;
+      if (dotProduct < 0.) discardArrowFragment = true;
 
       float pixelsPerUnit = viewport.w / dimensions.y;
-      // y = -width / segmentLength * x + width
       float x = sqrt(lengthSquared(segmentProjection));
       float y = sqrt(lengthSquared(segmentNormal));
       float rise = 0.5 * unitWidth * pixelsPerUnit * 2.618033988;
       float run = sqrt(lengthSquared(segmentVec));
       float m = -rise / run;
       float b = rise;
+      if (y > m * x + b) discardArrowFragment = true;
+      if (vArrow == 1. && discardArrowFragment) discard;
 
-      // y = x
-      // if (abs(y - x) < 2.) {
-
-      // y = x + 10
-      // if (abs(y - x - 10.) < 2.) {
-
-      // y = -x + 10
-      // if (abs(y + x - 10.) < 2.) {
-
-      // y = -x + b
-      // if (abs(y + x - b) < 2.) {
-
-      // y = mx + b
-      // if (abs(y - m * x - b) < 2.) {
-
-      if (y > m * x + b) discard;
+      if (vProportion < drawRange[0] || drawRange[1] < vProportion) discard;
 
       gl_FragColor = vec4(color, 0.3);
-
-      // if (lengthSquared(segmentNormal) > lengthSquared(segmentProjection)) discard;
-      
-    }
-    // if (vFlag > 0.) {
-    //   gl_FragColor = vec4(1., 0., 0., 1.);
-    // } else {
-    //   gl_FragColor = vec4(0., 0., 0., 0.3);
-    // }
 
     ${ShaderChunk.fog_fragment}
 	}
