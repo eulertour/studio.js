@@ -39,6 +39,7 @@ export const MESHLINE_VERT = /*glsl*/ `
 
   void main()	{
     vProportion = proportion;
+
     mat4 modelViewProjection = projectionMatrix * modelViewMatrix;
     vec4 start = modelViewProjection * vec4(position, 1.0);
     vec4 end = modelViewProjection * vec4(endPosition, 1.0);
@@ -48,34 +49,19 @@ export const MESHLINE_VERT = /*glsl*/ `
     vEndFragment = fragmentCoords(end);
     vNextFragment = fragmentCoords(next);
 
+    // Extract bools.
+    float remaining = textureCoords;
+    vBeforeArrow = floor(textureCoords / 8.);
+    remaining -= 8. * vBeforeArrow;
+    vArrow = floor(remaining / 4.);
+    remaining -= 4. * vArrow;
+    float startEnd = floor(remaining / 2.);
+    remaining -= 2. * startEnd;
+    float bottomTop = remaining;
+
     // Add 0.2 so all pixels are covered.
     vec2 segmentVec = 1.2 * normalize(vEndFragment - vStartFragment);
     vec2 segmentNormal = vec2(-segmentVec.y, segmentVec.x);
-
-    vBeforeArrow = floor(textureCoords / 8.);
-    float remaining = textureCoords - 8. * vBeforeArrow;
-
-    vArrow = floor(remaining / 4.);
-    remaining -= 4. * vArrow;
-
-    // float textureDivide = remaining / 2.;
-    // float f = fract(textureDivide);
-    // float c = ceil(f);
-    // c = f;
-    // if (
-    //   vArrow > 0.
-    //   // textureCoords == 0. && f == 0. && c == 0.
-    //   // textureCoords == 1. && f == 0. && c == 0.
-    //   // textureCoords == 2. && f == 1. && c == 1.
-    //   // textureCoords == 3. && f == 1. && c == 1.
-    // ) {
-    //   vFlag = 1.;
-    // }
-
-    float startEnd = floor(remaining / 2.);
-    remaining -= 2. * startEnd;
-
-    float bottomTop = remaining;
 
     // [0, 1] -> [1, -1]
     segmentVec *= (2. * startEnd - 1.);
@@ -85,10 +71,9 @@ export const MESHLINE_VERT = /*glsl*/ `
       = 0.5 * unitWidth * segmentVec
       + 0.5 * unitWidth * segmentNormal * eq(vArrow, 0.) * 1.
       + 0.5 * unitWidth * segmentNormal * eq(vArrow, 1.) * 2.618033988;
-    vec2 offset = (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
 
     gl_Position = start * eq(startEnd, 0.) + end * eq(startEnd, 1.);
-    gl_Position.xy += offset;
+    gl_Position.xy += (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
 
     ${ShaderChunk.logdepthbuf_vertex}
     ${
@@ -118,73 +103,132 @@ export const MESHLINE_FRAG = /*glsl*/ `
   varying float vArrow;
   varying float vBeforeArrow;
   
+  float gt(float x, float y) {
+    return max(sign(x - y), 0.0);
+  }
+  
+  float lt(float x, float y) {
+    return max(sign(y - x), 0.0);
+  }
+  
+  float and(float a, float b, float c) {
+    return a * b * c;
+  }
+
+  float or(float a, float b, float c) {
+    return min(a + b + c, 1.0);
+  }
+  
   float lengthSquared(vec2 vec) {
     return dot(vec, vec);
   }
 
-  bool segmentCoversFragment(vec2 fragment, vec2 startFragment, vec2 endFragment) {
-    float pixelsPerUnit = viewport.w / dimensions.y;
-    float pixelWidth = unitWidth * pixelsPerUnit;
-    float halfWidthSquared = 0.25 * pixelWidth * pixelWidth;
-
-    vec2 segmentVec = endFragment - startFragment;
-    vec2 startToFrag = fragment - startFragment;
-    vec2 endToFrag = fragment - endFragment;
-
-    float dotProduct = dot(startToFrag, segmentVec);
-    vec2 segmentProjection = dotProduct / lengthSquared(segmentVec) * segmentVec;
-    vec2 segmentNormal = startToFrag - segmentProjection;
-
-    bool towardSegment = dotProduct > 0.;
-
-    bool segmentStem = towardSegment
-      && lengthSquared(segmentProjection) < lengthSquared(segmentVec)
-      && lengthSquared(segmentNormal) < halfWidthSquared;
-
-    bool segmentStart = lengthSquared(startToFrag) < halfWidthSquared;
-    bool segmentEnd = lengthSquared(endToFrag) < halfWidthSquared;
-
-    return segmentStem || segmentStart || segmentEnd;
+  float segmentCoversFragment(
+    float halfWidthSquared,
+    vec2 segmentVec,
+    vec2 startToFrag,
+    vec2 endToFrag,
+    float dotProduct,
+    vec2 segmentProjection,
+    vec2 segmentNormal
+  ) {
+    float segmentStart = lt(lengthSquared(startToFrag), halfWidthSquared);
+    float segmentEnd = lt(lengthSquared(endToFrag), halfWidthSquared);
+    float segmentStem = and(
+      gt(dotProduct, 0.),
+      lt(lengthSquared(segmentProjection), lengthSquared(segmentVec)),
+      lt(lengthSquared(segmentNormal), halfWidthSquared)
+    );
+    return or(segmentStem, segmentStart, segmentEnd);
+  }
+  
+  float arrowCoversFragment(
+    vec2 startToEnd,
+    vec2 startToEndProjection,
+    vec2 startToEndNormal,
+    float unitWidth,
+    float pixelsPerUnit
+  ) {
+    float x = sqrt(lengthSquared(startToEndProjection));
+    float y = sqrt(lengthSquared(startToEndNormal));
+    float rise = 0.5 * unitWidth * pixelsPerUnit * 2.618033988;
+    float run = sqrt(lengthSquared(startToEnd));
+    float m = -rise / run;
+    float b = rise;
+    return lt(y, m * x + b);
   }
 
   void main() {
     ${ShaderChunk.logdepthbuf_fragment}
 
-      bool discardFragment = false;
+      float pixelsPerUnit = viewport.w / dimensions.y;
+      float pixelWidth = unitWidth * pixelsPerUnit;
+      float halfWidthSquared = 0.25 * pixelWidth * pixelWidth;
+      vec2 startToFrag = gl_FragCoord.xy - vStartFragment;
+      vec2 startToEnd = vEndFragment - vStartFragment;
+      float startToEndDotProduct = dot(startToEnd, startToFrag);
+      vec2 startToEndProjection = startToEndDotProduct / lengthSquared(startToEnd) * startToEnd;
+      vec2 startToEndNormal = startToFrag - startToEndProjection;
+      vec2 endToFrag = gl_FragCoord.xy - vEndFragment;
+      vec2 endToNext = vNextFragment - vEndFragment;
+      float endToNextDotProduct = dot(endToNext, endToFrag);
+      vec2 endToNextProjection = endToNextDotProduct / lengthSquared(endToNext) * endToNext;
+      vec2 endToNextNormal = endToFrag - endToNextProjection;
+      vec2 nextToFrag = gl_FragCoord.xy - vNextFragment;
+
       // For regular segments, exclude the fragment if it is covered by the next segment.
       if (
         vBeforeArrow == 0.
+        && vArrow == 0.
         && vNextFragment != vEndFragment
-        && segmentCoversFragment(gl_FragCoord.xy, vEndFragment, vNextFragment)
-      ) discardFragment = true;
+        && segmentCoversFragment(
+          halfWidthSquared,
+          endToNext,
+          endToFrag,
+          nextToFrag,
+          endToNextDotProduct,
+          endToNextProjection,
+          endToNextNormal
+        ) == 1.
+      ) discard;
 
       // For segments preceding an arrow, exclude the fragment if it is covered by the arrow.
-      vec2 endToNext = vNextFragment - vEndFragment;
-      vec2 endToFrag = gl_FragCoord.xy - vEndFragment;
-      if (vBeforeArrow == 1. && dot(endToNext, endToFrag) > 0.) discardFragment = true;
-      if (!segmentCoversFragment(gl_FragCoord.xy, vStartFragment, vEndFragment)) discardFragment = true;
+      if (
+        vBeforeArrow == 1.
+        && vArrow == 0.
+        && endToNextDotProduct > 0.
+      ) discard;
 
-      if (vArrow == 0. && discardFragment) discard;
+      // For segments that aren't part of arrows, exclude the fragment if it is not covered by the segment.
+      if (
+        vArrow == 0.
+        && segmentCoversFragment(
+          halfWidthSquared,
+          startToEnd,
+          startToFrag,
+          endToFrag,
+          startToEndDotProduct,
+          startToEndProjection,
+          startToEndNormal
+        ) == 0.
+      ) discard;
 
+      // For segments that are part of arrows, exclude fragments that aren't in the direction of the arrow.
+      if (vArrow == 1. && startToEndDotProduct < 0.) discard;
 
-      bool discardArrowFragment = false;
-      vec2 segmentVec = vEndFragment - vStartFragment;
-      vec2 startToFrag = gl_FragCoord.xy - vStartFragment;
-      float dotProduct = dot(segmentVec, startToFrag);
-      vec2 segmentProjection = dotProduct / lengthSquared(segmentVec) * segmentVec;
-      vec2 segmentNormal = startToFrag - segmentProjection;
-      if (dotProduct < 0.) discardArrowFragment = true;
-
-      float pixelsPerUnit = viewport.w / dimensions.y;
-      float x = sqrt(lengthSquared(segmentProjection));
-      float y = sqrt(lengthSquared(segmentNormal));
-      float rise = 0.5 * unitWidth * pixelsPerUnit * 2.618033988;
-      float run = sqrt(lengthSquared(segmentVec));
-      float m = -rise / run;
-      float b = rise;
-      if (y > m * x + b) discardArrowFragment = true;
-      if (vArrow == 1. && discardArrowFragment) discard;
-
+      // For segments that are part of arrows, exclude fragments that aren't covered by the arrow.
+      if (
+        vArrow == 1.
+        && arrowCoversFragment(
+          startToEnd,
+          startToEndProjection,
+          startToEndNormal,
+          unitWidth,
+          pixelsPerUnit
+        ) == 0.
+      ) discard;
+      
+      // Exclude fragments that are outside the draw range.
       if (vProportion < drawRange[0] || drawRange[1] < vProportion) discard;
 
       gl_FragColor = vec4(color, 0.3);
