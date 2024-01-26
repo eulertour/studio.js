@@ -67,7 +67,7 @@ declare namespace Geometry {
         fill: Fill;
         stroke: Stroke;
         curveEndIndices: Array<Array<number>>;
-        constructor(points: Array<THREE.Vector3>, config?: Style);
+        constructor(points: Array<THREE.Vector3>, config?: Style & ArrowConfig);
         get points(): Array<THREE.Vector3>;
         curve(curveIndex: number, worldTransform?: boolean): THREE.Vector3[];
         get numCurves(): number;
@@ -84,15 +84,26 @@ declare namespace Geometry {
         dispose(): this;
         getDimensions(): THREE.Vector2;
     }
+    interface ArrowConfig {
+        arrow?: boolean;
+    }
+    interface ArcConfig {
+        closed?: boolean;
+    }
     class Line extends Shape {
         start: THREE.Vector3;
         end: THREE.Vector3;
-        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style);
+        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & ArrowConfig);
         static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
         getClassConfig(): {};
         getAttributes(): LineAttributes;
         toVector(global: boolean): THREE.Vector3;
         static fromAttributes(attributes: LineAttributes): Line;
+    }
+    class Arrow extends Line {
+        start: THREE.Vector3;
+        end: THREE.Vector3;
+        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & ArrowConfig);
     }
     class Polyline extends Shape {
         constructor(points: Array<THREE.Vector3>, config?: Style);
@@ -104,7 +115,7 @@ declare namespace Geometry {
         radius: number;
         angle: number;
         closed: boolean;
-        constructor(radius?: number, angle?: number, closed?: boolean, config?: Style);
+        constructor(radius?: number, angle?: number, config?: Style & ArcConfig);
         getCloneAttributes(): (number | boolean)[];
         getAttributes(): ArcAttributes;
         static fromAttributes(attributes: ArcAttributes): Arc;

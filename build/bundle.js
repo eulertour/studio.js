@@ -52222,9 +52222,7 @@ class MeshLineGeometry extends BufferGeometry {
             else {
                 throw new Error("No valid solution");
             }
-            points[arrowIndex + 1] = aVec.clone().add(vVec.clone().multiplyScalar(t));
-            points[arrowIndex + 2] = points[points.length - 1];
-            points.length = arrowIndex + 3;
+            points.splice(arrowIndex + 1, points.length - arrowIndex - 1, aVec.clone().add(vVec.clone().multiplyScalar(t)), points.at(-1));
         }
         this.points = points;
         __classPrivateFieldSet(this, _MeshLineGeometry_pointCount, points.length, "f");
@@ -52680,6 +52678,13 @@ class Line extends Shape {
         return new Line(start, end);
     }
 }
+class Arrow extends Line {
+    constructor(start, end, config = {}) {
+        super(start, end, Object.assign(Object.assign({}, config), { arrow: true }));
+        this.start = start;
+        this.end = end;
+    }
+}
 class Polyline extends Shape {
     constructor(points, config = {}) {
         super(points, Object.assign(Object.assign({}, config), { fillOpacity: 0 }));
@@ -52699,12 +52704,22 @@ class Polyline extends Shape {
     }
 }
 class Arc extends Shape {
-    constructor(radius = 1, angle = Math.PI / 2, closed = false, config = {}) {
+    constructor(radius = 1, angle = Math.PI / 2, config = {}) {
         let points = [];
-        for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
-            points.push(new Vector3(radius * Math.cos(i), radius * Math.sin(i), 0));
+        let negative = false;
+        if (angle < 0) {
+            negative = true;
+            angle *= -1;
         }
-        if (closed) {
+        if (angle > 0) {
+            for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
+                points.push(new Vector3(radius * Math.cos(i), radius * Math.sin(i) * (negative ? -1 : 1), 0));
+            }
+        }
+        else {
+            points.push(new Vector3(radius, 0, 0), new Vector3(radius, 0, 0));
+        }
+        if (config.closed) {
             points = [
                 new Vector3(0, 0, 0),
                 ...points,
@@ -52714,11 +52729,10 @@ class Arc extends Shape {
         super(points, config);
         this.radius = radius;
         this.angle = angle;
-        this.closed = closed;
         this.radius = radius;
         this.angle = angle;
-        this.closed = closed;
-        if (closed) {
+        this.closed = config.closed;
+        if (this.closed) {
             this.curveEndIndices = [
                 [0, 1],
                 [1, points.length - 2],
@@ -52741,7 +52755,7 @@ class Arc extends Shape {
     }
     static fromAttributes(attributes) {
         const { radius, angle, closed } = attributes;
-        return new Arc(radius, angle, closed);
+        return new Arc(radius, angle, { closed });
     }
     get attributeData() {
         return [
@@ -52769,7 +52783,7 @@ class Arc extends Shape {
 }
 class Circle extends Arc {
     constructor(radius = 1, config = {}) {
-        super(radius, 2 * Math.PI, false, config);
+        super(radius, 2 * Math.PI, config);
     }
     getCloneAttributes() {
         return [this.radius];
@@ -52915,6 +52929,7 @@ class Square extends Rectangle {
 var geometry = /*#__PURE__*/Object.freeze({
 	__proto__: null,
 	Arc: Arc,
+	Arrow: Arrow,
 	Circle: Circle,
 	Line: Line,
 	Point: Point,

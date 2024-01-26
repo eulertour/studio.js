@@ -30,7 +30,7 @@ abstract class Shape extends THREE.Group {
   stroke: Stroke;
   curveEndIndices: Array<Array<number>>;
 
-  constructor(points: Array<THREE.Vector3>, config: Style = {}) {
+  constructor(points: Array<THREE.Vector3>, config: Style & ArrowConfig = {}) {
     super();
     config = Object.assign(
       {
@@ -191,11 +191,19 @@ abstract class Shape extends THREE.Group {
   }
 }
 
+interface ArrowConfig {
+  arrow?: boolean;
+}
+
+interface ArcConfig {
+  closed?: boolean;
+}
+
 class Line extends Shape {
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
-    config: Style = {}
+    config: Style & ArrowConfig = {}
   ) {
     super([start, end], { ...config, fillOpacity: 0 });
     this.curveEndIndices = [[0, 1]];
@@ -241,6 +249,16 @@ class Line extends Shape {
   }
 }
 
+class Arrow extends Line {
+  constructor(
+    public start: THREE.Vector3,
+    public end: THREE.Vector3,
+    config: Style & ArrowConfig = {}
+  ) {
+    super(start, end, { ...config, arrow: true });
+  }
+}
+
 class Polyline extends Shape {
   constructor(points: Array<THREE.Vector3>, config: Style = {}) {
     super(points, { ...config, fillOpacity: 0 });
@@ -265,19 +283,36 @@ class Polyline extends Shape {
 }
 
 class Arc extends Shape {
+  public closed: boolean;
+
   constructor(
     public radius = 1,
     public angle: number = Math.PI / 2,
-    public closed = false,
-    config: Style = {}
+    config: Style & ArcConfig = {}
   ) {
     let points = [];
-    for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
+    let negative = false;
+    if (angle < 0) {
+      negative = true;
+      angle *= -1; 
+    }
+    if (angle > 0) {
+      for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
+        points.push(
+          new THREE.Vector3(
+            radius * Math.cos(i),
+            radius * Math.sin(i) * (negative ? -1 : 1),
+            0,
+          )
+        );
+      }
+    } else {
       points.push(
-        new THREE.Vector3(radius * Math.cos(i), radius * Math.sin(i), 0)
+        new THREE.Vector3(radius, 0, 0),
+        new THREE.Vector3(radius, 0, 0),
       );
     }
-    if (closed) {
+    if (config.closed) {
       points = [
         new THREE.Vector3(0, 0, 0),
         ...points,
@@ -287,8 +322,8 @@ class Arc extends Shape {
     super(points, config);
     this.radius = radius;
     this.angle = angle;
-    this.closed = closed;
-    if (closed) {
+    this.closed = config.closed;
+    if (this.closed) {
       this.curveEndIndices = [
         [0, 1],
         [1, points.length - 2],
@@ -313,7 +348,7 @@ class Arc extends Shape {
 
   static fromAttributes(attributes: ArcAttributes): Arc {
     const { radius, angle, closed } = attributes;
-    return new Arc(radius, angle, closed);
+    return new Arc(radius, angle, { closed });
   }
 
   get attributeData() {
@@ -344,7 +379,7 @@ class Arc extends Shape {
 
 class Circle extends Arc {
   constructor(radius = 1, config: Style = {}) {
-    super(radius, 2 * Math.PI, false, config);
+    super(radius, 2 * Math.PI, config);
   }
 
   getCloneAttributes() {
@@ -524,6 +559,7 @@ class Square extends Rectangle {
 export {
   Shape,
   Line,
+  Arrow,
   Point,
   Circle,
   Arc,

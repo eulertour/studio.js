@@ -68,9 +68,12 @@ export default class MeshLineGeometry extends BufferGeometry {
       } else {
         throw new Error("No valid solution");
       }
-      points[arrowIndex + 1] = aVec.clone().add(vVec.clone().multiplyScalar(t));
-      points[arrowIndex + 2] = points[points.length - 1];
-      points.length = arrowIndex + 3;
+      points.splice(
+        arrowIndex + 1,
+        points.length - arrowIndex - 1,
+        aVec.clone().add(vVec.clone().multiplyScalar(t)),
+        points.at(-1),
+      );
     }
 
     this.points = points;
