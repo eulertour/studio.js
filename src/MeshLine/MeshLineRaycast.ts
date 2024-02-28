@@ -6,6 +6,7 @@ export default function MeshLineRaycast(
   raycaster: THREE.Raycaster,
   intersects: THREE.Intersection[],
 ): void {
+  const nextIntersectIndex = intersects.length;
   const inverseMatrix = new THREE.Matrix4()
   const ray = new THREE.Ray()
   const interRay = new THREE.Vector3()
@@ -34,7 +35,7 @@ export default function MeshLineRaycast(
 
       const distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment)
 
-      if (distSq > precisionSq) continue
+      if (distSq > precisionSq) continue;
 
       // Move back to world space for distance calculation
       interRay.applyMatrix4(this.matrixWorld)
@@ -45,16 +46,17 @@ export default function MeshLineRaycast(
 
       if (distance < minDistance) {
         minDistance = distance;
-        intersects[0] = {
+        intersects[nextIntersectIndex] = {
           distance,
           // What do we want? intersection point on the ray or on the segment??
           // point: raycaster.ray.at( distance ),
           point: interSegment.clone(),
-          index: i,
+          index: i / 12,
           face: null,
           faceIndex: undefined,
           object: this,
         };
+        break;
       }
     }
   }

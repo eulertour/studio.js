@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { ERROR_THRESHOLD } from "./constants";
-import { MeshLineGeometry, MeshLineMaterial } from "./MeshLine";
+import { MeshLine, MeshLineGeometry, MeshLineMaterial } from "./MeshLine";
 import type {
   Transform,
   Style,
@@ -10,7 +10,6 @@ import type {
   RectangleAttributes,
 } from "./geometry.types.js";
 import { ORIGIN } from "./utils";
-import MeshLineRaycast from "./MeshLine/MeshLineRaycast";
 
 const getFillGeometry = (points: Array<THREE.Vector3>) => {
   const shape = new THREE.Shape();
@@ -23,7 +22,7 @@ const getFillGeometry = (points: Array<THREE.Vector3>) => {
 };
 
 type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
-type Stroke = THREE.Mesh<MeshLineGeometry, MeshLineMaterial>;
+type Stroke = MeshLine;
 
 abstract class Shape extends THREE.Group {
   fill: Fill;
@@ -60,15 +59,37 @@ abstract class Shape extends THREE.Group {
       width: config.strokeWidth,
       transparent: true,
     });
-    this.stroke = new THREE.Mesh(strokeGeometry, strokeMaterial);
-    this.stroke.raycast = MeshLineRaycast;
+    this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
     this.add(this.stroke);
 
     this.curveEndIndices = this.getCurveEndIndices();
   }
 
+  reshape(...args: any[]) {
+    throw new Error("Reshape not implemented.");
+  }
+
+  copyStroke(shape: Shape) {
+    this.stroke.geometry.dispose();
+    this.stroke.geometry = shape.stroke.geometry;
+  }
+
+  copyFill(shape: Shape) {
+    this.fill.geometry.dispose();
+    this.fill.geometry = shape.fill.geometry;
+  }
+
+  copyStrokeFill(shape: Shape) {
+    this.copyStroke(shape);
+    this.copyFill(shape);
+  }
+
   get points(): Array<THREE.Vector3> {
     return this.stroke.geometry.points;
+  }
+
+  segment(index: number) {
+    return new THREE.Line3(this.points[index].clone(), this.points[index + 1].clone());
   }
 
   curve(curveIndex: number, worldTransform = true) {
@@ -189,6 +210,29 @@ abstract class Shape extends THREE.Group {
     const height = box.max.y - box.min.y;
     return new THREE.Vector2(width, height);
   }
+
+  closestPointToPoint(
+    point: THREE.Vector3,
+    target?: THREE.Vector3,
+  ) {
+    if (target === undefined) {
+      target = new THREE.Vector3();
+    }
+    const segment = new THREE.Line3();
+    const closestPointOnSegment = new THREE.Vector3();
+    let minDistance = Infinity;
+    for (let i = 0; i < this.points.length - 1; i++) {
+      segment.set(this.points[i], this.points[i + 1]);
+      const distance = segment
+        .closestPointToPoint(point, true, closestPointOnSegment)
+        .distanceTo(point);
+      if (distance < minDistance) {
+        minDistance = distance;
+        target.copy(closestPointOnSegment);
+      }
+    }
+    return target;
+  }
 }
 
 interface ArrowConfig {
@@ -222,6 +266,15 @@ class Line extends Shape {
     return line;
   }
 
+  reshape(
+    start: THREE.Vector3,
+    end: THREE.Vector3,
+    config: Style & ArrowConfig = {}
+  ) {
+    this.start.copy(start);
+    this.end.copy(end);
+    this.copyStrokeFill(new Line(start, end, config));
+  }
   getClassConfig() {
     return {};
   }
@@ -253,9 +306,19 @@ class Arrow extends Line {
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
-    config: Style & ArrowConfig = {}
+    config: Style = {}
   ) {
     super(start, end, { ...config, arrow: true });
+  }
+
+  reshape(
+    start: THREE.Vector3,
+    end: THREE.Vector3,
+    config: Style = {},
+  ) {
+    this.start.copy(start);
+    this.end.copy(end);
+    this.copyStrokeFill(new Arrow(start, end, config));
   }
 }
 
@@ -264,6 +327,10 @@ class Polyline extends Shape {
     super(points, { ...config, fillOpacity: 0 });
 
     this.curveEndIndices = [[0, 1]];
+  }
+
+  reshape(points: Array<THREE.Vector3>, config: Style = {}) {
+    this.copyStrokeFill(new Polyline(points, config));
   }
 
   getClassConfig() {
@@ -334,6 +401,16 @@ class Arc extends Shape {
     }
   }
 
+  reshape(
+    radius = 1,
+    angle: number = Math.PI / 2,
+    config: Style & ArcConfig = {}
+  ) {
+    this.radius = radius;
+    this.angle = angle;
+    this.copyStrokeFill(new Arc(radius, angle, config));
+  }
+
   getCloneAttributes() {
     return [this.radius, this.angle, this.closed];
   }
@@ -380,6 +457,11 @@ class Arc extends Shape {
 class Circle extends Arc {
   constructor(radius = 1, config: Style = {}) {
     super(radius, 2 * Math.PI, config);
+  }
+
+  reshape(radius: number, config = {}) {
+    this.radius = radius;
+    this.copyStrokeFill(new Circle(radius, config));
   }
 
   getCloneAttributes() {
@@ -527,6 +609,11 @@ class Rectangle extends Shape {
 class Square extends Rectangle {
   constructor(public sideLength = 2, config = {}) {
     super(sideLength, sideLength, config);
+  }
+
+  reshape(sideLength: number, config = {}) {
+    this.sideLength = sideLength;
+    this.copyStrokeFill(new Square(sideLength, config));
   }
 
   getCloneAttributes() {

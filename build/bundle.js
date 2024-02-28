@@ -52348,6 +52348,20 @@ class MeshLineGeometry extends BufferGeometry {
         array[offset + 4] = startIndex + 2;
         array[offset + 5] = startIndex + 3;
     }
+    computeBoundingSphere() {
+        if (this.boundingSphere === null) {
+            this.boundingSphere = new Sphere();
+        }
+        const center = new Vector3();
+        for (const point of this.points) {
+            this.boundingSphere.center.add(point);
+        }
+        this.boundingSphere.center.divideScalar(this.points.length);
+        this.boundingSphere.radius = 0;
+        for (const point of this.points) {
+            this.boundingSphere.radius = Math.max(this.boundingSphere.radius, center.distanceTo(point));
+        }
+    }
 }
 _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new WeakMap(), _MeshLineGeometry_nextPosition = new WeakMap(), _MeshLineGeometry_textureCoords = new WeakMap(), _MeshLineGeometry_proportion = new WeakMap(), _MeshLineGeometry_indices = new WeakMap(), _MeshLineGeometry_attributes = new WeakMap(), _MeshLineGeometry_previousPointCount = new WeakMap(), _MeshLineGeometry_pointCount = new WeakMap(), _MeshLineGeometry_instances = new WeakSet(), _MeshLineGeometry_addSegment = function _MeshLineGeometry_addSegment(index, start, end, next) {
     let x, y, z;
@@ -52456,6 +52470,7 @@ class MeshLineMaterial extends ShaderMaterial {
 }
 
 function MeshLineRaycast(raycaster, intersects) {
+    const nextIntersectIndex = intersects.length;
     const inverseMatrix = new Matrix4();
     const ray = new Ray();
     const interRay = new Vector3();
@@ -52488,18 +52503,26 @@ function MeshLineRaycast(raycaster, intersects) {
                 continue;
             if (distance < minDistance) {
                 minDistance = distance;
-                intersects[0] = {
+                intersects[nextIntersectIndex] = {
                     distance,
                     // What do we want? intersection point on the ray or on the segment??
                     // point: raycaster.ray.at( distance ),
                     point: interSegment.clone(),
-                    index: i,
+                    index: i / 12,
                     face: null,
                     faceIndex: undefined,
                     object: this,
                 };
+                break;
             }
         }
+    }
+}
+
+class MeshLine extends Mesh {
+    constructor(geometry, material) {
+        super(geometry, material);
+        this.raycast = MeshLineRaycast;
     }
 }
 
@@ -52538,13 +52561,30 @@ class Shape extends Group {
             width: config.strokeWidth,
             transparent: true,
         });
-        this.stroke = new Mesh(strokeGeometry, strokeMaterial);
-        this.stroke.raycast = MeshLineRaycast;
+        this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
         this.add(this.stroke);
         this.curveEndIndices = this.getCurveEndIndices();
     }
+    reshape(...args) {
+        throw new Error("Reshape not implemented.");
+    }
+    copyStroke(shape) {
+        this.stroke.geometry.dispose();
+        this.stroke.geometry = shape.stroke.geometry;
+    }
+    copyFill(shape) {
+        this.fill.geometry.dispose();
+        this.fill.geometry = shape.fill.geometry;
+    }
+    copyStrokeFill(shape) {
+        this.copyStroke(shape);
+        this.copyFill(shape);
+    }
     get points() {
         return this.stroke.geometry.points;
+    }
+    segment(index) {
+        return new Line3(this.points[index].clone(), this.points[index + 1].clone());
     }
     curve(curveIndex, worldTransform = true) {
         const curveEndIndices = this.curveEndIndices[curveIndex];
@@ -52642,6 +52682,25 @@ class Shape extends Group {
         const height = box.max.y - box.min.y;
         return new Vector2(width, height);
     }
+    closestPointToPoint(point, target) {
+        if (target === undefined) {
+            target = new Vector3();
+        }
+        const segment = new Line3();
+        const closestPointOnSegment = new Vector3();
+        let minDistance = Infinity;
+        for (let i = 0; i < this.points.length - 1; i++) {
+            segment.set(this.points[i], this.points[i + 1]);
+            const distance = segment
+                .closestPointToPoint(point, true, closestPointOnSegment)
+                .distanceTo(point);
+            if (distance < minDistance) {
+                minDistance = distance;
+                target.copy(closestPointOnSegment);
+            }
+        }
+        return target;
+    }
 }
 class Line extends Shape {
     constructor(start, end, config = {}) {
@@ -52657,6 +52716,11 @@ class Line extends Shape {
         const line = new Line(new Vector3().subVectors(start, center), new Vector3().subVectors(end, center), config);
         line.position.copy(center);
         return line;
+    }
+    reshape(start, end, config = {}) {
+        this.start.copy(start);
+        this.end.copy(end);
+        this.copyStrokeFill(new Line(start, end, config));
     }
     getClassConfig() {
         return {};
@@ -52684,11 +52748,19 @@ class Arrow extends Line {
         this.start = start;
         this.end = end;
     }
+    reshape(start, end, config = {}) {
+        this.start.copy(start);
+        this.end.copy(end);
+        this.copyStrokeFill(new Arrow(start, end, config));
+    }
 }
 class Polyline extends Shape {
     constructor(points, config = {}) {
         super(points, Object.assign(Object.assign({}, config), { fillOpacity: 0 }));
         this.curveEndIndices = [[0, 1]];
+    }
+    reshape(points, config = {}) {
+        this.copyStrokeFill(new Polyline(points, config));
     }
     getClassConfig() {
         return {};
@@ -52743,6 +52815,11 @@ class Arc extends Shape {
             this.curveEndIndices = [[0, points.length - 1]];
         }
     }
+    reshape(radius = 1, angle = Math.PI / 2, config = {}) {
+        this.radius = radius;
+        this.angle = angle;
+        this.copyStrokeFill(new Arc(radius, angle, config));
+    }
     getCloneAttributes() {
         return [this.radius, this.angle, this.closed];
     }
@@ -52784,6 +52861,10 @@ class Arc extends Shape {
 class Circle extends Arc {
     constructor(radius = 1, config = {}) {
         super(radius, 2 * Math.PI, config);
+    }
+    reshape(radius, config = {}) {
+        this.radius = radius;
+        this.copyStrokeFill(new Circle(radius, config));
     }
     getCloneAttributes() {
         return [this.radius];
@@ -52901,6 +52982,10 @@ class Square extends Rectangle {
     constructor(sideLength = 2, config = {}) {
         super(sideLength, sideLength, config);
         this.sideLength = sideLength;
+    }
+    reshape(sideLength, config = {}) {
+        this.sideLength = sideLength;
+        this.copyStrokeFill(new Square(sideLength, config));
     }
     getCloneAttributes() {
         return [this.sideLength];

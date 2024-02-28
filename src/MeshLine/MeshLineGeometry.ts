@@ -4,6 +4,7 @@ import {
   Float32BufferAttribute,
   Uint16BufferAttribute,
   Vector3,
+  Sphere,
 } from "three";
 import "./meshline.glsl.js";
 
@@ -277,6 +278,23 @@ export default class MeshLineGeometry extends BufferGeometry {
     array[offset + 3] = startIndex;
     array[offset + 4] = startIndex + 2;
     array[offset + 5] = startIndex + 3;
+  }
+
+  computeBoundingSphere(): void {
+    if (this.boundingSphere === null) {
+      this.boundingSphere = new Sphere();
+    }
+
+    const center = new Vector3();
+    for (const point of this.points) {
+      this.boundingSphere.center.add(point);
+    }
+    this.boundingSphere.center.divideScalar(this.points.length);
+
+    this.boundingSphere.radius = 0;
+    for (const point of this.points) {
+      this.boundingSphere.radius = Math.max(this.boundingSphere.radius, center.distanceTo(point));
+    }
   }
 }
 

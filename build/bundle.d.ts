@@ -13,6 +13,7 @@ declare namespace Geometry {
         setVertexData(array: WritableArrayLike<number>, offset: number, x: number, y: number, z: number): void;
         setTextureCoords(array: WritableArrayLike<number>, offset: number): void;
         setIndices(array: WritableArrayLike<number>, offset: number, startIndex: number): void;
+        computeBoundingSphere(): void;
     }
     interface WritableArrayLike<T> {
         readonly length: number;
@@ -32,6 +33,9 @@ declare namespace Geometry {
         set color(value: any);
         get width(): number;
         set width(value: number);
+    }
+    class MeshLine extends THREE.Mesh {
+        constructor(geometry: any, material: any);
     }
     type Transform = {
         position: THREE.Vector3;
@@ -62,13 +66,18 @@ declare namespace Geometry {
         points: Array<THREE.Vector3>;
     };
     type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
-    type Stroke = THREE.Mesh<MeshLineGeometry, MeshLineMaterial>;
+    type Stroke = MeshLine;
     abstract class Shape extends THREE.Group {
         fill: Fill;
         stroke: Stroke;
         curveEndIndices: Array<Array<number>>;
         constructor(points: Array<THREE.Vector3>, config?: Style & ArrowConfig);
+        reshape(...args: any[]): void;
+        copyStroke(shape: Shape): void;
+        copyFill(shape: Shape): void;
+        copyStrokeFill(shape: Shape): void;
         get points(): Array<THREE.Vector3>;
+        segment(index: number): THREE.Line3;
         curve(curveIndex: number, worldTransform?: boolean): THREE.Vector3[];
         get numCurves(): number;
         getCurveEndIndices(): any[];
@@ -83,6 +92,7 @@ declare namespace Geometry {
         setTransform(transform: Transform): void;
         dispose(): this;
         getDimensions(): THREE.Vector2;
+        closestPointToPoint(point: THREE.Vector3, target?: THREE.Vector3): THREE.Vector3;
     }
     interface ArrowConfig {
         arrow?: boolean;
@@ -95,6 +105,7 @@ declare namespace Geometry {
         end: THREE.Vector3;
         constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & ArrowConfig);
         static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
+        reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style & ArrowConfig): void;
         getClassConfig(): {};
         getAttributes(): LineAttributes;
         toVector(global: boolean): THREE.Vector3;
@@ -103,10 +114,12 @@ declare namespace Geometry {
     class Arrow extends Line {
         start: THREE.Vector3;
         end: THREE.Vector3;
-        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & ArrowConfig);
+        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style);
+        reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
     }
     class Polyline extends Shape {
         constructor(points: Array<THREE.Vector3>, config?: Style);
+        reshape(points: Array<THREE.Vector3>, config?: Style): void;
         getClassConfig(): {};
         getAttributes(): PolygonAttributes;
         static fromAttributes(attributes: PolygonAttributes): Polyline;
@@ -116,6 +129,7 @@ declare namespace Geometry {
         angle: number;
         closed: boolean;
         constructor(radius?: number, angle?: number, config?: Style & ArcConfig);
+        reshape(radius?: number, angle?: number, config?: Style & ArcConfig): void;
         getCloneAttributes(): (number | boolean)[];
         getAttributes(): ArcAttributes;
         static fromAttributes(attributes: ArcAttributes): Arc;
@@ -132,6 +146,7 @@ declare namespace Geometry {
     }
     class Circle extends Arc {
         constructor(radius?: number, config?: Style);
+        reshape(radius: number, config?: {}): void;
         getCloneAttributes(): number[];
         getAttributes(): ArcAttributes;
         static fromAttributes(attributes: ArcAttributes): Circle;
@@ -173,6 +188,7 @@ declare namespace Geometry {
     class Square extends Rectangle {
         sideLength: number;
         constructor(sideLength?: number, config?: {});
+        reshape(sideLength: number, config?: {}): void;
         getCloneAttributes(): number[];
         getAttributes(): RectangleAttributes;
         static fromAttributes(attributes: RectangleAttributes): Square;
@@ -592,17 +608,6 @@ declare namespace Constants {
 }
 declare const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
 declare const setCanvasViewport: (viewport: THREE.Vector4) => void;
-declare class MeshLineMaterial extends THREE.ShaderMaterial {
-    constructor(parameters: ShaderMaterialParameters & {
-        color: THREE.ColorRepresentation;
-        opacity: number;
-        width: number;
-    });
-    get color(): any;
-    set color(value: any);
-    get width(): number;
-    set width(value: number);
-}
 export { Geometry, Animation, Text, SceneController, setupCanvas, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport };
 export * as THREE from "three";
 export type { StudioScene, AnimationRepresentation };
