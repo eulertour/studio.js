@@ -59,14 +59,29 @@ Object3D.prototype.setVisible = function (): Object3D {
   return this.setOpacity(1);
 }
 
-export * as Geometry from "./geometry";
-export * as Animation from "./animation";
-export * as Text from "./text";
-export { SceneController } from "./scene";
-export { setupCanvas } from "./utils";
-export * as THREE from "three";
-export type { StudioScene, AnimationRepresentation } from "./scene";
-export { Utils };
-export * as Diagram from "./diagram";
-export * as Constants from "./constants";
-export { setCameraDimensions, setCanvasViewport } from "./MeshLine/MeshLineMaterial";
+import * as Geometry from "./geometry";
+import * as Animation from "./animation";
+import * as Text from "./text";
+import { SceneController } from "./scene";
+import { setupCanvas } from "./utils";
+import * as THREE from "three";
+import type { StudioScene, AnimationRepresentation } from "./scene";
+import * as Diagram from "./diagram";
+import * as Constants from "./constants";
+import { setCameraDimensions, setCanvasViewport } from "./MeshLine/MeshLineMaterial";
+
+export {
+  Geometry,
+  Animation,
+  Text,
+  SceneController,
+  setupCanvas,
+  THREE,
+  type StudioScene,
+  type AnimationRepresentation,
+  Utils,
+  Diagram,
+  Constants,
+  setCameraDimensions,
+  setCanvasViewport
+};

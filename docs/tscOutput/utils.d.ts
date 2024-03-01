@@ -1,0 +1,55 @@
+import * as THREE from "three";
+import * as Geometry from "./geometry";
+import { Style } from "./geometry.types";
+declare const BUFFER = 0.5;
+declare const ORIGIN: Readonly<THREE.Vector3>;
+declare const RIGHT: Readonly<THREE.Vector3>;
+declare const LEFT: Readonly<THREE.Vector3>;
+declare const UP: Readonly<THREE.Vector3>;
+declare const DOWN: Readonly<THREE.Vector3>;
+declare const OUT: Readonly<THREE.Vector3>;
+declare const IN: Readonly<THREE.Vector3>;
+declare const clamp: (num: any, min: any, max: any) => number;
+declare const getFrameAttributes: (aspectRatio: number, height: number) => {
+    aspectRatio: number;
+    height: number;
+    width: number;
+    coordinateHeight: number;
+    coordinateWidth: number;
+};
+export interface WidthSetupConfig {
+    aspectRatio: number;
+    pixelWidth: number;
+    coordinateWidth: number;
+}
+export interface HeightSetupConfig {
+    aspectRatio: number;
+    pixelHeight: number;
+    coordinateHeight: number;
+}
+declare const setupCanvas: (canvas: HTMLCanvasElement, config?: (WidthSetupConfig | HeightSetupConfig) & {
+    viewport?: THREE.Vector4;
+}) => [THREE.Scene, THREE.Camera, THREE.WebGLRenderer];
+declare const furthestInDirection: (object: any, direction: any) => THREE.Vector3;
+declare const moveNextTo: (target: any, object: any, direction: any, distance?: number) => void;
+declare const moveToRightOf: (target: any, object: any, distance?: number) => void;
+declare const moveToLeftOf: (target: any, object: any, distance?: number) => void;
+declare const moveAbove: (target: any, object: any, distance?: number) => void;
+declare const moveBelow: (target: any, object: any, distance?: number) => void;
+declare const getBoundingBoxCenter: (obj: THREE.Object3D, target: THREE.Vector3) => THREE.Vector3;
+declare const getBoundingBoxHelper: (obj: THREE.Object3D, color: string) => THREE.Box3Helper;
+declare const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;
+declare const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
+declare class ShapeFromCurves {
+    adjacentThreshold: number;
+    segmentClosestToPoint: THREE.Vector3;
+    pointToSegment: THREE.Vector3;
+    points: Array<THREE.Vector3>;
+    style: Style;
+    withStyle(style: Style): this;
+    startAt(start: THREE.Vector3): this;
+    extendAlong(shape: Geometry.Shape, direction: THREE.Vector3, until?: THREE.Vector3 | undefined): this;
+    extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until?: THREE.Vector3 | undefined): void;
+    finish(): Geometry.Polygon;
+}
+export { getFrameAttributes, setupCanvas, clamp, furthestInDirection, moveToRightOf, moveToLeftOf, moveAbove, moveBelow, moveNextTo, getBoundingBoxCenter, getBoundingBoxHelper, transformBetweenSpaces, intersectionsBetween, ShapeFromCurves, BUFFER, RIGHT, LEFT, UP, DOWN, OUT, IN, ORIGIN, };
