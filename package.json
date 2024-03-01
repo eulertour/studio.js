@@ -23,14 +23,16 @@
     "http-server": "^14.1.1",
     "nodemon": "^2.0.22",
     "rollup": "^3.20.2",
-    "rollup-plugin-ts": "^3.4.5",
     "serve": "^14.2.0",
     "tslib": "^2.5.0",
+    "typedoc": "^0.25.9",
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@types/node": "^20.11.24",
     "mathjax-full": "^3.2.2",
     "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-ts": "^3.4.5",
     "rollup-plugin-typescript2": "^0.36.0",
     "three": "^0.153.0"
   }

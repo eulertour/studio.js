@@ -34,8 +34,8 @@ declare namespace Geometry {
         get width(): number;
         set width(value: number);
     }
-    class MeshLine extends THREE.Mesh {
-        constructor(geometry: any, material: any);
+    class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
+        constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
     }
     type Transform = {
         position: THREE.Vector3;
@@ -608,6 +608,17 @@ declare namespace Constants {
 }
 declare const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
 declare const setCanvasViewport: (viewport: THREE.Vector4) => void;
+declare class MeshLineMaterial extends THREE.ShaderMaterial {
+    constructor(parameters: ShaderMaterialParameters & {
+        color: THREE.ColorRepresentation;
+        opacity: number;
+        width: number;
+    });
+    get color(): any;
+    set color(value: any);
+    get width(): number;
+    set width(value: number);
+}
 export { Geometry, Animation, Text, SceneController, setupCanvas, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport };
 export * as THREE from "three";
 export type { StudioScene, AnimationRepresentation };
