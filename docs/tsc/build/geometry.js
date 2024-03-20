@@ -11,6 +11,9 @@ const getFillGeometry = (points) => {
     shape.closePath();
     return new THREE.ShapeGeometry(shape);
 };
+/**
+ * An abstract class representing a generalized shape.
+ */
 class Shape extends THREE.Group {
     constructor(points, config = {}) {
         super();
@@ -178,6 +181,11 @@ class Shape extends THREE.Group {
         return target;
     }
 }
+/**
+ * A segment between two points.
+ *
+ * @example line.ts
+ */
 class Line extends Shape {
     constructor(start, end, config = {}) {
         super([start, end], Object.assign(Object.assign({}, config), { fillOpacity: 0 }));
@@ -186,9 +194,7 @@ class Line extends Shape {
         this.curveEndIndices = [[0, 1]];
     }
     static centeredLine(start, end, config = {}) {
-        const center = new THREE.Vector3()
-            .addVectors(start, end)
-            .divideScalar(2);
+        const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
         const line = new Line(new THREE.Vector3().subVectors(start, center), new THREE.Vector3().subVectors(end, center), config);
         line.position.copy(center);
         return line;
@@ -218,6 +224,11 @@ class Line extends Shape {
         return new Line(start, end);
     }
 }
+/**
+ * An arrow derived from a line.
+ *
+ * @example arrow.ts
+ */
 class Arrow extends Line {
     constructor(start, end, config = {}) {
         super(start, end, Object.assign(Object.assign({}, config), { arrow: true }));
@@ -230,6 +241,11 @@ class Arrow extends Line {
         this.copyStrokeFill(new Arrow(start, end, config));
     }
 }
+/**
+ * A series of connected line segments.
+ *
+ * @example polyline.ts
+ */
 class Polyline extends Shape {
     constructor(points, config = {}) {
         super(points, Object.assign(Object.assign({}, config), { fillOpacity: 0 }));
@@ -251,6 +267,11 @@ class Polyline extends Shape {
         return new Polyline(points);
     }
 }
+/**
+ * A part of the circumference of a circle.
+ *
+ * @example arc.ts
+ */
 class Arc extends Shape {
     constructor(radius = 1, angle = Math.PI / 2, config = {}) {
         let points = [];
@@ -334,6 +355,12 @@ class Arc extends Shape {
         return new THREE.Vector2(worldDiameter, worldDiameter);
     }
 }
+/**
+ * A shape consisting of all points in a plane that are at a given distance
+ * from a given point, the center.
+ *
+ * @example circle.ts
+ */
 class Circle extends Arc {
     constructor(radius = 1, config = {}) {
         super(radius, 2 * Math.PI, config);
@@ -366,6 +393,11 @@ class Circle extends Arc {
         ];
     }
 }
+/**
+ * A small circle representing a precise location in space.
+ *
+ * @example point.ts
+ */
 class Point extends Circle {
     constructor(position = ORIGIN, config = {}) {
         config = Object.assign({ radius: 0.08, fillColor: new THREE.Color("black"), fillOpacity: 1 }, config);
@@ -383,6 +415,12 @@ class Point extends Circle {
         return new Point(new THREE.Vector3());
     }
 }
+/**
+ * A shape made up of line segments connected
+ * to form a (usually) closed shape.
+ *
+ * @example polygon.ts
+ */
 class Polygon extends Shape {
     constructor(points, config = {}) {
         super(points, config);
@@ -405,6 +443,11 @@ class Polygon extends Shape {
         return [];
     }
 }
+/**
+ * A shape with four sides and four right angles.
+ *
+ * @example rectangle.ts
+ */
 class Rectangle extends Shape {
     constructor(width = 4, height = 2, config = {}) {
         super([
@@ -453,7 +496,11 @@ class Rectangle extends Shape {
         ];
     }
 }
-/** This is a square. */
+/**
+ * A shape with four sides of equal length and four right angles.
+ *
+ * @example square.ts
+ */
 class Square extends Rectangle {
     constructor(sideLength = 2, config = {}) {
         super(sideLength, sideLength, config);
@@ -474,7 +521,7 @@ class Square extends Rectangle {
     }
     static fromAttributes(attributes) {
         const { width } = attributes;
-        return new Square(width, width);
+        return new Square(width);
     }
     get attributeData() {
         return [

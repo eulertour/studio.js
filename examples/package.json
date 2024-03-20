@@ -1,0 +1,9 @@
+{
+  "name": "",
+  "description": "",
+  "version": "0.1.0",
+  "dependencies": {
+    "@eulertour/studio": ".."
+  },
+  "devDependencies": {}
+}

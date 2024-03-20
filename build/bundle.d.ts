@@ -67,6 +67,9 @@ declare namespace Geometry {
     };
     type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
     type Stroke = MeshLine;
+    /**
+     * An abstract class representing a generalized shape.
+     */
     abstract class Shape extends THREE.Group {
         fill: Fill;
         stroke: Stroke;
@@ -100,6 +103,11 @@ declare namespace Geometry {
     interface ArcConfig {
         closed?: boolean;
     }
+    /**
+     * A segment between two points.
+     *
+     * @example line.ts
+     */
     class Line extends Shape {
         start: THREE.Vector3;
         end: THREE.Vector3;
@@ -111,12 +119,22 @@ declare namespace Geometry {
         toVector(global: boolean): THREE.Vector3;
         static fromAttributes(attributes: LineAttributes): Line;
     }
+    /**
+     * An arrow derived from a line.
+     *
+     * @example arrow.ts
+     */
     class Arrow extends Line {
         start: THREE.Vector3;
         end: THREE.Vector3;
         constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style);
         reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
     }
+    /**
+     * A series of connected line segments.
+     *
+     * @example polyline.ts
+     */
     class Polyline extends Shape {
         constructor(points: Array<THREE.Vector3>, config?: Style);
         reshape(points: Array<THREE.Vector3>, config?: Style): void;
@@ -124,6 +142,11 @@ declare namespace Geometry {
         getAttributes(): PolygonAttributes;
         static fromAttributes(attributes: PolygonAttributes): Polyline;
     }
+    /**
+     * A part of the circumference of a circle.
+     *
+     * @example arc.ts
+     */
     class Arc extends Shape {
         radius: number;
         angle: number;
@@ -144,6 +167,12 @@ declare namespace Geometry {
         })[];
         getDimensions(): THREE.Vector2;
     }
+    /**
+     * A shape consisting of all points in a plane that are at a given distance
+     * from a given point, the center.
+     *
+     * @example circle.ts
+     */
     class Circle extends Arc {
         constructor(radius?: number, config?: Style);
         reshape(radius: number, config?: {}): void;
@@ -156,6 +185,11 @@ declare namespace Geometry {
             default: number;
         }[];
     }
+    /**
+     * A small circle representing a precise location in space.
+     *
+     * @example point.ts
+     */
     class Point extends Circle {
         constructor(position?: THREE.Vector2 | THREE.Vector3, config?: Style & {
             radius?: number;
@@ -163,6 +197,12 @@ declare namespace Geometry {
         getAttributes(): ArcAttributes;
         static fromAttributes(): Point;
     }
+    /**
+     * A shape made up of line segments connected
+     * to form a (usually) closed shape.
+     *
+     * @example polygon.ts
+     */
     class Polygon extends Shape {
         constructor(points: Array<THREE.Vector3>, config?: Style);
         getClassConfig(): {};
@@ -170,6 +210,11 @@ declare namespace Geometry {
         static fromAttributes(attributes: PolygonAttributes): Polygon;
         get attributeData(): any[];
     }
+    /**
+     * A shape with four sides and four right angles.
+     *
+     * @example rectangle.ts
+     */
     class Rectangle extends Shape {
         width: number;
         height: number;
@@ -184,10 +229,14 @@ declare namespace Geometry {
         }[];
         getCurveEndIndices(): Array<Array<number>>;
     }
-    /** This is a square. */
+    /**
+     * A shape with four sides of equal length and four right angles.
+     *
+     * @example square.ts
+     */
     class Square extends Rectangle {
         sideLength: number;
-        constructor(sideLength?: number, config?: {});
+        constructor(sideLength?: number, config?: Style);
         reshape(sideLength: number, config?: {}): void;
         getCloneAttributes(): number[];
         getAttributes(): RectangleAttributes;

@@ -24,6 +24,9 @@ const getFillGeometry = (points: Array<THREE.Vector3>) => {
 type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
 type Stroke = MeshLine;
 
+/**
+ * An abstract class representing a generalized shape.
+ */
 abstract class Shape extends THREE.Group {
   fill: Fill;
   stroke: Stroke;
@@ -39,7 +42,7 @@ abstract class Shape extends THREE.Group {
         fillColor: new THREE.Color(0xfffaf0),
         fillOpacity: 0.0,
       },
-      config
+      config,
     );
 
     const fillGeometry = getFillGeometry(points);
@@ -89,14 +92,17 @@ abstract class Shape extends THREE.Group {
   }
 
   segment(index: number) {
-    return new THREE.Line3(this.points[index].clone(), this.points[index + 1].clone());
+    return new THREE.Line3(
+      this.points[index].clone(),
+      this.points[index + 1].clone(),
+    );
   }
 
   curve(curveIndex: number, worldTransform = true) {
     const curveEndIndices = this.curveEndIndices[curveIndex];
     const curvePoints = this.points.slice(
       curveEndIndices[0],
-      curveEndIndices[1] + 1
+      curveEndIndices[1] + 1,
     );
     if (worldTransform) {
       return curvePoints.map((p) => p.clone().applyMatrix4(this.matrixWorld));
@@ -129,9 +135,8 @@ abstract class Shape extends THREE.Group {
       throw Error("Recursive Shape.clone() isn't implemented.");
     }
 
-    const cloneFunc = (this.constructor as new (...args: any[]) => this)
-    const clone = new cloneFunc(
-      ...this.getCloneAttributes(), {
+    const cloneFunc = this.constructor as new (...args: any[]) => this;
+    const clone = new cloneFunc(...this.getCloneAttributes(), {
       ...this.getStyle(),
       ...this.getClassConfig(),
     });
@@ -211,10 +216,7 @@ abstract class Shape extends THREE.Group {
     return new THREE.Vector2(width, height);
   }
 
-  closestPointToPoint(
-    point: THREE.Vector3,
-    target?: THREE.Vector3,
-  ) {
+  closestPointToPoint(point: THREE.Vector3, target?: THREE.Vector3) {
     if (target === undefined) {
       target = new THREE.Vector3();
     }
@@ -243,20 +245,27 @@ interface ArcConfig {
   closed?: boolean;
 }
 
+/**
+ * A segment between two points.
+ *
+ * @example line.ts
+ */
 class Line extends Shape {
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
-    config: Style & ArrowConfig = {}
+    config: Style & ArrowConfig = {},
   ) {
     super([start, end], { ...config, fillOpacity: 0 });
     this.curveEndIndices = [[0, 1]];
   }
 
-  static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config: Style = {}) {
-    const center = new THREE.Vector3()
-      .addVectors(start, end)
-      .divideScalar(2);
+  static centeredLine(
+    start: THREE.Vector3,
+    end: THREE.Vector3,
+    config: Style = {},
+  ) {
+    const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
     const line = new Line(
       new THREE.Vector3().subVectors(start, center),
       new THREE.Vector3().subVectors(end, center),
@@ -269,7 +278,7 @@ class Line extends Shape {
   reshape(
     start: THREE.Vector3,
     end: THREE.Vector3,
-    config: Style & ArrowConfig = {}
+    config: Style & ArrowConfig = {},
   ) {
     this.start.copy(start);
     this.end.copy(end);
@@ -291,7 +300,7 @@ class Line extends Shape {
     return global
       ? new THREE.Vector3().subVectors(
           new THREE.Vector3().copy(this.end).applyMatrix4(this.matrixWorld),
-          new THREE.Vector3().copy(this.start).applyMatrix4(this.matrixWorld)
+          new THREE.Vector3().copy(this.start).applyMatrix4(this.matrixWorld),
         )
       : new THREE.Vector3().subVectors(this.end, this.start);
   }
@@ -302,26 +311,32 @@ class Line extends Shape {
   }
 }
 
+/**
+ * An arrow derived from a line.
+ *
+ * @example arrow.ts
+ */
 class Arrow extends Line {
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
-    config: Style = {}
+    config: Style = {},
   ) {
     super(start, end, { ...config, arrow: true });
   }
 
-  reshape(
-    start: THREE.Vector3,
-    end: THREE.Vector3,
-    config: Style = {},
-  ) {
+  reshape(start: THREE.Vector3, end: THREE.Vector3, config: Style = {}) {
     this.start.copy(start);
     this.end.copy(end);
     this.copyStrokeFill(new Arrow(start, end, config));
   }
 }
 
+/**
+ * A series of connected line segments.
+ *
+ * @example polyline.ts
+ */
 class Polyline extends Shape {
   constructor(points: Array<THREE.Vector3>, config: Style = {}) {
     super(points, { ...config, fillOpacity: 0 });
@@ -349,19 +364,24 @@ class Polyline extends Shape {
   }
 }
 
+/**
+ * A part of the circumference of a circle.
+ *
+ * @example arc.ts
+ */
 class Arc extends Shape {
   public closed: boolean;
 
   constructor(
     public radius = 1,
     public angle: number = Math.PI / 2,
-    config: Style & ArcConfig = {}
+    config: Style & ArcConfig = {},
   ) {
     let points = [];
     let negative = false;
     if (angle < 0) {
       negative = true;
-      angle *= -1; 
+      angle *= -1;
     }
     if (angle > 0) {
       for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
@@ -370,7 +390,7 @@ class Arc extends Shape {
             radius * Math.cos(i),
             radius * Math.sin(i) * (negative ? -1 : 1),
             0,
-          )
+          ),
         );
       }
     } else {
@@ -404,7 +424,7 @@ class Arc extends Shape {
   reshape(
     radius = 1,
     angle: number = Math.PI / 2,
-    config: Style & ArcConfig = {}
+    config: Style & ArcConfig = {},
   ) {
     this.radius = radius;
     this.angle = angle;
@@ -454,6 +474,12 @@ class Arc extends Shape {
   }
 }
 
+/**
+ * A shape consisting of all points in a plane that are at a given distance
+ * from a given point, the center.
+ *
+ * @example circle.ts
+ */
 class Circle extends Arc {
   constructor(radius = 1, config: Style = {}) {
     super(radius, 2 * Math.PI, config);
@@ -492,10 +518,15 @@ class Circle extends Arc {
   }
 }
 
+/**
+ * A small circle representing a precise location in space.
+ *
+ * @example point.ts
+ */
 class Point extends Circle {
   constructor(
     position: THREE.Vector2 | THREE.Vector3 = ORIGIN,
-    config: Style & { radius?: number } = {}
+    config: Style & { radius?: number } = {},
   ) {
     config = {
       radius: 0.08,
@@ -520,11 +551,14 @@ class Point extends Circle {
   }
 }
 
+/**
+ * A shape made up of line segments connected
+ * to form a (usually) closed shape.
+ *
+ * @example polygon.ts
+ */
 class Polygon extends Shape {
-  constructor(
-    points: Array<THREE.Vector3>,
-    config: Style = {}
-  ) {
+  constructor(points: Array<THREE.Vector3>, config: Style = {}) {
     super(points, config);
     this.curveEndIndices = [];
     for (let i = 0; i < points.length - 1; i++) {
@@ -550,8 +584,17 @@ class Polygon extends Shape {
   }
 }
 
+/**
+ * A shape with four sides and four right angles.
+ *
+ * @example rectangle.ts
+ */
 class Rectangle extends Shape {
-  constructor(public width = 4, public height = 2, config: Style = {}) {
+  constructor(
+    public width = 4,
+    public height = 2,
+    config: Style = {},
+  ) {
     super(
       [
         new THREE.Vector3(-width / 2, height / 2, 0),
@@ -560,7 +603,7 @@ class Rectangle extends Shape {
         new THREE.Vector3(-width / 2, -height / 2, 0),
         new THREE.Vector3(-width / 2, height / 2, 0),
       ],
-      config
+      config,
     );
   }
 
@@ -605,9 +648,16 @@ class Rectangle extends Shape {
   }
 }
 
-/** This is a square. */
+/**
+ * A shape with four sides of equal length and four right angles.
+ *
+ * @example square.ts
+ */
 class Square extends Rectangle {
-  constructor(public sideLength = 2, config = {}) {
+  constructor(
+    public sideLength: number = 2,
+    config: Style = {},
+  ) {
     super(sideLength, sideLength, config);
   }
 
@@ -629,7 +679,7 @@ class Square extends Rectangle {
 
   static fromAttributes(attributes: RectangleAttributes): Square {
     const { width } = attributes;
-    return new Square(width, width);
+    return new Square(width);
   }
 
   get attributeData() {
