@@ -31,8 +31,12 @@ abstract class Shape extends THREE.Group {
   fill: Fill;
   stroke: Stroke;
   curveEndIndices: Array<Array<number>>;
+  arrow: boolean;
 
-  constructor(points: Array<THREE.Vector3>, config: Style & ArrowConfig = {}) {
+  constructor(
+    points: Array<THREE.Vector3>,
+    config: Style & { arrow?: boolean } = {},
+  ) {
     super();
     config = Object.assign(
       {
@@ -237,14 +241,6 @@ abstract class Shape extends THREE.Group {
   }
 }
 
-interface ArrowConfig {
-  arrow?: boolean;
-}
-
-interface ArcConfig {
-  closed?: boolean;
-}
-
 /**
  * A segment between two points.
  *
@@ -254,7 +250,7 @@ class Line extends Shape {
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
-    config: Style & ArrowConfig = {},
+    config: Style & { arrow?: boolean } = {},
   ) {
     super([start, end], { ...config, fillOpacity: 0 });
     this.curveEndIndices = [[0, 1]];
@@ -278,7 +274,7 @@ class Line extends Shape {
   reshape(
     start: THREE.Vector3,
     end: THREE.Vector3,
-    config: Style & ArrowConfig = {},
+    config: Style & { arrow?: boolean } = {},
   ) {
     this.start.copy(start);
     this.end.copy(end);
@@ -365,7 +361,7 @@ class Polyline extends Shape {
 }
 
 /**
- * A part of the circumference of a circle.
+ * A part of a circle's circumference.
  *
  * @example arc.ts
  */
@@ -375,7 +371,7 @@ class Arc extends Shape {
   constructor(
     public radius = 1,
     public angle: number = Math.PI / 2,
-    config: Style & ArcConfig = {},
+    config: Style & { closed?: boolean } = {},
   ) {
     let points = [];
     let negative = false;
@@ -424,7 +420,7 @@ class Arc extends Shape {
   reshape(
     radius = 1,
     angle: number = Math.PI / 2,
-    config: Style & ArcConfig = {},
+    config: Style & { closed?: boolean } = {},
   ) {
     this.radius = radius;
     this.angle = angle;
@@ -475,8 +471,7 @@ class Arc extends Shape {
 }
 
 /**
- * A shape consisting of all points in a plane that are at a given distance
- * from a given point, the center.
+ * A shape consisting of all points at a fixed distance from a given center.
  *
  * @example circle.ts
  */

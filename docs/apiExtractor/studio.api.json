@@ -2819,7 +2819,7 @@
             {
               "kind": "Class",
               "canonicalReference": "@eulertour/studio!Geometry.Arc:class",
-              "docComment": "/**\n * A part of the circumference of a circle.\n *\n * @example\n *\n * arc.ts\n */\n",
+              "docComment": "/**\n * A part of a circle's circumference.\n *\n * @example\n *\n * arc.ts\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -2873,12 +2873,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": " & "
-                    },
-                    {
-                      "kind": "Reference",
-                      "text": "ArcConfig",
-                      "canonicalReference": "@eulertour/studio!~ArcConfig:interface"
+                      "text": " & {\n        closed?: boolean;\n    }"
                     },
                     {
                       "kind": "Content",
@@ -2909,7 +2904,7 @@
                       "parameterName": "config",
                       "parameterTypeTokenRange": {
                         "startIndex": 5,
-                        "endIndex": 8
+                        "endIndex": 7
                       },
                       "isOptional": true
                     }
@@ -3212,12 +3207,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": " & "
-                    },
-                    {
-                      "kind": "Reference",
-                      "text": "ArcConfig",
-                      "canonicalReference": "@eulertour/studio!~ArcConfig:interface"
+                      "text": " & {\n        closed?: boolean;\n    }"
                     },
                     {
                       "kind": "Content",
@@ -3234,8 +3224,8 @@
                   ],
                   "isStatic": false,
                   "returnTypeTokenRange": {
-                    "startIndex": 9,
-                    "endIndex": 10
+                    "startIndex": 8,
+                    "endIndex": 9
                   },
                   "releaseTag": "Public",
                   "isProtected": false,
@@ -3261,7 +3251,7 @@
                       "parameterName": "config",
                       "parameterTypeTokenRange": {
                         "startIndex": 5,
-                        "endIndex": 8
+                        "endIndex": 7
                       },
                       "isOptional": true
                     }
@@ -3524,7 +3514,7 @@
             {
               "kind": "Class",
               "canonicalReference": "@eulertour/studio!Geometry.Circle:class",
-              "docComment": "/**\n * A shape consisting of all points in a plane that are at a given distance from a given point, the center.\n *\n * @example\n *\n * circle.ts\n */\n",
+              "docComment": "/**\n * A shape consisting of all points at a fixed distance from a given center.\n *\n * @example\n *\n * circle.ts\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
@@ -3868,12 +3858,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": " & "
-                    },
-                    {
-                      "kind": "Reference",
-                      "text": "ArrowConfig",
-                      "canonicalReference": "@eulertour/studio!~ArrowConfig:interface"
+                      "text": " & {\n        arrow?: boolean;\n    }"
                     },
                     {
                       "kind": "Content",
@@ -3904,7 +3889,7 @@
                       "parameterName": "config",
                       "parameterTypeTokenRange": {
                         "startIndex": 5,
-                        "endIndex": 8
+                        "endIndex": 7
                       },
                       "isOptional": true
                     }
@@ -4172,12 +4157,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": " & "
-                    },
-                    {
-                      "kind": "Reference",
-                      "text": "ArrowConfig",
-                      "canonicalReference": "@eulertour/studio!~ArrowConfig:interface"
+                      "text": " & {\n        arrow?: boolean;\n    }"
                     },
                     {
                       "kind": "Content",
@@ -4194,8 +4174,8 @@
                   ],
                   "isStatic": false,
                   "returnTypeTokenRange": {
-                    "startIndex": 9,
-                    "endIndex": 10
+                    "startIndex": 8,
+                    "endIndex": 9
                   },
                   "releaseTag": "Public",
                   "isProtected": false,
@@ -4221,7 +4201,7 @@
                       "parameterName": "config",
                       "parameterTypeTokenRange": {
                         "startIndex": 5,
-                        "endIndex": 8
+                        "endIndex": 7
                       },
                       "isOptional": true
                     }
@@ -5409,12 +5389,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": " & "
-                    },
-                    {
-                      "kind": "Reference",
-                      "text": "ArrowConfig",
-                      "canonicalReference": "@eulertour/studio!~ArrowConfig:interface"
+                      "text": " & {\n        arrow?: boolean;\n    }"
                     },
                     {
                       "kind": "Content",
@@ -5437,11 +5412,41 @@
                       "parameterName": "config",
                       "parameterTypeTokenRange": {
                         "startIndex": 6,
-                        "endIndex": 9
+                        "endIndex": 8
                       },
                       "isOptional": true
                     }
                   ]
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Geometry.Shape#arrow:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "arrow: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "boolean"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "arrow",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
                 },
                 {
                   "kind": "Method",

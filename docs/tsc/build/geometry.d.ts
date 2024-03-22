@@ -10,7 +10,10 @@ declare abstract class Shape extends THREE.Group {
     fill: Fill;
     stroke: Stroke;
     curveEndIndices: Array<Array<number>>;
-    constructor(points: Array<THREE.Vector3>, config?: Style & ArrowConfig);
+    arrow: boolean;
+    constructor(points: Array<THREE.Vector3>, config?: Style & {
+        arrow?: boolean;
+    });
     reshape(...args: any[]): void;
     copyStroke(shape: Shape): void;
     copyFill(shape: Shape): void;
@@ -33,12 +36,6 @@ declare abstract class Shape extends THREE.Group {
     getDimensions(): THREE.Vector2;
     closestPointToPoint(point: THREE.Vector3, target?: THREE.Vector3): THREE.Vector3;
 }
-interface ArrowConfig {
-    arrow?: boolean;
-}
-interface ArcConfig {
-    closed?: boolean;
-}
 /**
  * A segment between two points.
  *
@@ -47,9 +44,13 @@ interface ArcConfig {
 declare class Line extends Shape {
     start: THREE.Vector3;
     end: THREE.Vector3;
-    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & ArrowConfig);
+    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
+        arrow?: boolean;
+    });
     static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
-    reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style & ArrowConfig): void;
+    reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
+        arrow?: boolean;
+    }): void;
     getClassConfig(): {};
     getAttributes(): LineAttributes;
     toVector(global: boolean): THREE.Vector3;
@@ -79,7 +80,7 @@ declare class Polyline extends Shape {
     static fromAttributes(attributes: PolygonAttributes): Polyline;
 }
 /**
- * A part of the circumference of a circle.
+ * A part of a circle's circumference.
  *
  * @example arc.ts
  */
@@ -87,8 +88,12 @@ declare class Arc extends Shape {
     radius: number;
     angle: number;
     closed: boolean;
-    constructor(radius?: number, angle?: number, config?: Style & ArcConfig);
-    reshape(radius?: number, angle?: number, config?: Style & ArcConfig): void;
+    constructor(radius?: number, angle?: number, config?: Style & {
+        closed?: boolean;
+    });
+    reshape(radius?: number, angle?: number, config?: Style & {
+        closed?: boolean;
+    }): void;
     getCloneAttributes(): (number | boolean)[];
     getAttributes(): ArcAttributes;
     static fromAttributes(attributes: ArcAttributes): Arc;
@@ -104,8 +109,7 @@ declare class Arc extends Shape {
     getDimensions(): THREE.Vector2;
 }
 /**
- * A shape consisting of all points in a plane that are at a given distance
- * from a given point, the center.
+ * A shape consisting of all points at a fixed distance from a given center.
  *
  * @example circle.ts
  */

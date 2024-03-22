@@ -268,7 +268,7 @@ class Polyline extends Shape {
     }
 }
 /**
- * A part of the circumference of a circle.
+ * A part of a circle's circumference.
  *
  * @example arc.ts
  */
@@ -356,8 +356,7 @@ class Arc extends Shape {
     }
 }
 /**
- * A shape consisting of all points in a plane that are at a given distance
- * from a given point, the center.
+ * A shape consisting of all points at a fixed distance from a given center.
  *
  * @example circle.ts
  */

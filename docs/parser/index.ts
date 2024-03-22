@@ -111,6 +111,7 @@ for (const module of apiEntryPoint.members) {
 
   const moduleJson: any = {};
   for (const studioClass of module.members) {
+    console.log("studioClass.displayName", studioClass.displayName);
     if (studioClass.kind !== ApiItemKind.Class) {
       console.log("Skipping", studioClass.displayName);
     }

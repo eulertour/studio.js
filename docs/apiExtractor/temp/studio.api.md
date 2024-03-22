@@ -88,8 +88,9 @@ export type AnimationRepresentation = Animation_3 | Array<Animation_3> | {
 // @public
 class Arc extends Shape {
     // Warning: (ae-forgotten-export) The symbol "Style" needs to be exported by the entry point index.d.ts
-    // Warning: (ae-forgotten-export) The symbol "ArcConfig" needs to be exported by the entry point index.d.ts
-    constructor(radius?: number, angle?: number, config?: Style & ArcConfig);
+    constructor(radius?: number, angle?: number, config?: Style & {
+        closed?: boolean;
+    });
     // (undocumented)
     angle: number;
     // (undocumented)
@@ -117,7 +118,9 @@ class Arc extends Shape {
     // (undocumented)
     radius: number;
     // (undocumented)
-    reshape(radius?: number, angle?: number, config?: Style & ArcConfig): void;
+    reshape(radius?: number, angle?: number, config?: Style & {
+        closed?: boolean;
+    }): void;
 }
 
 // @public
@@ -309,7 +312,9 @@ const LEFT: Readonly<THREE_2.Vector3>;
 
 // @public
 class Line extends Shape {
-    constructor(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style & ArrowConfig);
+    constructor(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style & {
+        arrow?: boolean;
+    });
     // (undocumented)
     static centeredLine(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style): Line;
     // (undocumented)
@@ -323,7 +328,9 @@ class Line extends Shape {
     // (undocumented)
     getClassConfig(): {};
     // (undocumented)
-    reshape(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style & ArrowConfig): void;
+    reshape(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style & {
+        arrow?: boolean;
+    }): void;
     // (undocumented)
     start: THREE_2.Vector3;
     // (undocumented)
@@ -514,8 +521,11 @@ export const setupCanvas: (canvas: HTMLCanvasElement, config?: (WidthSetupConfig
 
 // @public
 abstract class Shape extends THREE_2.Group {
-    // Warning: (ae-forgotten-export) The symbol "ArrowConfig" needs to be exported by the entry point index.d.ts
-    constructor(points: Array<THREE_2.Vector3>, config?: Style & ArrowConfig);
+    constructor(points: Array<THREE_2.Vector3>, config?: Style & {
+        arrow?: boolean;
+    });
+    // (undocumented)
+    arrow: boolean;
     // (undocumented)
     clear(): this;
     // (undocumented)
