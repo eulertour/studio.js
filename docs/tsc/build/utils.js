@@ -77,10 +77,6 @@ const setupCanvas = (canvas, config = {
         CanvasViewport.copy(config.viewport);
     }
     else {
-        if (typeof window !== "undefined") {
-            pixelWidth /= window.devicePixelRatio;
-            pixelHeight /= window.devicePixelRatio;
-        }
         renderer.setSize(pixelWidth, pixelHeight, false);
         CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
     }
