@@ -20,6 +20,7 @@
     "genTypes": "rollup --config rollup.three-types.config.ts --configPlugin typescript",
     "serve": "npm run build && cross-env PORT=8081 serve . --cors",
     "dev": "nodemon -w src -e js,ts --exec 'npm run serve'",
+    "examples": "([ -d examples/build ] && ln -sfh $(pwd)/build/ examples/build); (cd examples/ && tsc); serve -S examples",
     "deploy-staging": "npm run deploy-build-staging && npm run deploy-source-staging && npm run deploy-examples-staging",
     "deploy-build-staging": "gsutil -m rsync -r build/ gs://euler-studio-staging.appspot.com/studio.js/build",
     "deploy-source-staging": "gsutil -m rsync -r src/ gs://euler-studio-staging.appspot.com/studio.js/src",

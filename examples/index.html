@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <script type="importmap">
+            {
+                "imports": {
+                    "@eulertour/studio": "./build/bundle.js",
+                    "basic": "./dist/basic.js"
+                }
+            }
+        </script>
+        <script type="module">
+            import Example from "basic";
+            import { SceneController, THREE } from "@eulertour/studio";
+
+            const canvas = document.getElementById("canvas");
+            const sceneController = new SceneController(Example, canvas, {
+              aspectRatio: 16 / 9,
+              pixelHeight: 400,
+              coordinateHeight: 8,
+            });
+            sceneController.play();
+        </script>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+    </body>
+</html>

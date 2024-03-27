@@ -58,13 +58,14 @@ const isHeightSetup = (config: object): config is HeightSetupConfig => {
 
 const setupCanvas = (
   canvas: HTMLCanvasElement,
-  config: (WidthSetupConfig | HeightSetupConfig)
-    & { viewport?: THREE.Vector4 } = {
+  config: (WidthSetupConfig | HeightSetupConfig) & {
+    viewport?: THREE.Vector4;
+  } = {
     aspectRatio: 16 / 9,
     pixelHeight: 720,
     coordinateHeight: 8,
     viewport: undefined,
-  }
+  },
 ): [THREE.Scene, THREE.Camera, THREE.WebGLRenderer] => {
   config = Object.assign(
     {
@@ -98,17 +99,25 @@ const setupCanvas = (
     coordinateHeight / 2,
     -coordinateHeight / 2,
     1,
-    11
+    11,
   );
   camera.position.z = 6;
   setCameraDimensions(camera);
 
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    preserveDrawingBuffer: true,
+  });
   renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
   renderer.autoClear = false;
   if (config.viewport) {
     CanvasViewport.copy(config.viewport);
   } else {
+    if (typeof window !== "undefined") {
+      pixelWidth /= window.devicePixelRatio;
+      pixelHeight /= window.devicePixelRatio;
+    }
     renderer.setSize(pixelWidth, pixelHeight, false);
     CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
   }
@@ -164,13 +173,14 @@ const moveNextTo = (target, object, direction, distance = 0.5) => {
   let objectCenter = new THREE.Vector3();
   const targetBox = new THREE.Box3().expandByObject(target);
   const objectBox = new THREE.Box3().expandByObject(object);
-  
+
   targetBox.getCenter(targetCenter);
   objectBox.getCenter(objectCenter);
-  
-  let objectWorldPosition = object.parent !== null
-    ? object.parent.localToWorld(object.position.clone())
-    : object.position.clone();
+
+  let objectWorldPosition =
+    object.parent !== null
+      ? object.parent.localToWorld(object.position.clone())
+      : object.position.clone();
   const objectPositionToCenter = objectCenter.clone().sub(objectWorldPosition);
 
   let targetCenterToHorizontalEdge = 0;
@@ -192,7 +202,7 @@ const moveNextTo = (target, object, direction, distance = 0.5) => {
     targetCenterToVerticalEdge = targetBox.min.y - targetCenter.y;
     objectCenterToVerticalEdge = objectBox.max.y - objectCenter.y;
   }
-  
+
   const finalObjectPosition = new THREE.Vector3()
     .copy(targetCenter)
     .addScaledVector(direction, distance)
@@ -207,7 +217,7 @@ const moveNextTo = (target, object, direction, distance = 0.5) => {
   } else {
     object.position.copy(finalObjectPosition);
   }
-}
+};
 
 const moveToRightOf = (target, object, distance = 0.5) => {
   moveNextTo(target, object, RIGHT, distance);
@@ -244,7 +254,7 @@ const transformBetweenSpaces = (
   point: THREE.Vector3,
 ) => {
   return to.worldToLocal(from.localToWorld(point));
-}
+};
 
 /*
  * Solves
@@ -258,7 +268,7 @@ const matrixSolve = (
   mc: number,
   md: number,
   ba: number,
-  bb: number
+  bb: number,
 ): [number, number] | null => {
   const determinant = ma * md - mb * mc;
   if (determinant === 0) {
@@ -272,7 +282,7 @@ const getIntersection = (
   p1: THREE.Vector3,
   p2: THREE.Vector3,
   q1: THREE.Vector3,
-  q2: THREE.Vector3
+  q2: THREE.Vector3,
 ) => {
   const p2MinusP1 = new THREE.Vector3().subVectors(p2, p1);
   const q1MinusQ2 = new THREE.Vector3().subVectors(q1, q2);
@@ -283,7 +293,7 @@ const getIntersection = (
     p2MinusP1.y,
     q1MinusQ2.y,
     q1MinusP1.x,
-    q1MinusP1.y
+    q1MinusP1.y,
   );
   if (solution === null) {
     // TODO: Handle parallel lines.
@@ -308,7 +318,7 @@ const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
 
 const intersectionsBetween = (
   shape1: Geometry.Shape,
-  shape2: Geometry.Shape
+  shape2: Geometry.Shape,
 ): Array<THREE.Vector3> => {
   let intersections: Array<THREE.Vector3> = [];
   shape1.updateMatrixWorld();
@@ -316,18 +326,18 @@ const intersectionsBetween = (
   for (let i = 0; i < shape1.points.length - 1; i++) {
     const segment1 = new THREE.Line3(
       shape1.points[i]?.clone().applyMatrix4(shape1.matrixWorld),
-      shape1.points[i + 1]?.clone().applyMatrix4(shape1.matrixWorld)
+      shape1.points[i + 1]?.clone().applyMatrix4(shape1.matrixWorld),
     );
     for (let j = 0; j < shape2.points.length - 1; j++) {
       const segment2 = new THREE.Line3(
         shape2.points[j]?.clone().applyMatrix4(shape2.matrixWorld),
-        shape2.points[j + 1]?.clone().applyMatrix4(shape2.matrixWorld)
+        shape2.points[j + 1]?.clone().applyMatrix4(shape2.matrixWorld),
       );
       const maybeIntersection = getIntersection(
         segment1.start,
         segment1.end,
         segment2.start,
-        segment2.end
+        segment2.end,
       );
       if (maybeIntersection !== null) {
         intersections.push(maybeIntersection);
@@ -357,7 +367,7 @@ class ShapeFromCurves {
   extendAlong(
     shape: Geometry.Shape,
     direction: THREE.Vector3,
-    until?: THREE.Vector3 | undefined
+    until?: THREE.Vector3 | undefined,
   ) {
     const startPoint = this.points.at(-1)?.clone();
     if (startPoint === undefined) {
@@ -374,7 +384,7 @@ class ShapeFromCurves {
         shape.points
           .at(j + 1)
           ?.clone()
-          .applyMatrix4(shape.matrixWorld)
+          .applyMatrix4(shape.matrixWorld),
       );
       segment.closestPointToPoint(startPoint, true, this.segmentClosestToPoint);
       const distanceToSegment = this.pointToSegment
@@ -388,7 +398,7 @@ class ShapeFromCurves {
     }
     if (intersectSegment === null || intersectIndex === null) {
       throw new Error(
-        `No intersection between ${startPoint.toArray()} and ${shape}`
+        `No intersection between ${startPoint.toArray()} and ${shape}`,
       );
     }
 
@@ -411,7 +421,7 @@ class ShapeFromCurves {
     // debugger;
     towardStartVector = new THREE.Vector3().subVectors(
       intersectSegment.start,
-      this.segmentClosestToPoint
+      this.segmentClosestToPoint,
     );
     if (towardStartVector.length() < this.adjacentThreshold) {
       // The point intersects at the start of this segment, so try using the previous point instead.
@@ -423,7 +433,7 @@ class ShapeFromCurves {
       if (prevIndex !== -1) {
         towardStartVector = vectorFromPointToIndex(
           intersectSegment.start,
-          prevIndex
+          prevIndex,
         );
         forwardInitialPointIndex = intersectIndex + 1;
         backwardInitialPointIndex = prevIndex;
@@ -478,7 +488,7 @@ class ShapeFromCurves {
       shape,
       forward ? forwardInitialPointIndex : backwardInitialPointIndex,
       forward,
-      until
+      until,
     );
     return this;
   }
@@ -487,7 +497,7 @@ class ShapeFromCurves {
     shape: Geometry.Shape,
     initialPointIndex: number,
     forward: boolean,
-    until?: THREE.Vector3 | undefined
+    until?: THREE.Vector3 | undefined,
   ) {
     const advance = (i: number) => {
       i += increment;

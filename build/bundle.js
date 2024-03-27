@@ -53133,13 +53133,21 @@ const setupCanvas = (canvas, config = {
     const camera = new OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
     camera.position.z = 6;
     setCameraDimensions(camera);
-    const renderer = new WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    const renderer = new WebGLRenderer({
+        canvas,
+        antialias: true,
+        preserveDrawingBuffer: true,
+    });
     renderer.setClearColor(new Color(DEFAULT_BACKGROUND_HEX));
     renderer.autoClear = false;
     if (config.viewport) {
         CanvasViewport.copy(config.viewport);
     }
     else {
+        if (typeof window !== "undefined") {
+            pixelWidth /= window.devicePixelRatio;
+            pixelHeight /= window.devicePixelRatio;
+        }
         renderer.setSize(pixelWidth, pixelHeight, false);
         CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
     }
