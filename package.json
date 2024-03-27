@@ -46,7 +46,6 @@
   },
   "dependencies": {
     "@microsoft/api-extractor": "^7.42.1",
-    "@types/node": "^20.11.24",
     "colors": "^1.4.0",
     "mathjax-full": "^3.2.2",
     "rollup-plugin-dts": "^6.1.0",

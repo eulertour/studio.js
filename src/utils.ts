@@ -28,11 +28,11 @@ const getFrameAttributes = (aspectRatio: number, height: number) => {
   };
 };
 
-export interface WidthSetupConfig {
+export type WidthSetupConfig = {
   aspectRatio: number;
   pixelWidth: number;
   coordinateWidth: number;
-}
+};
 
 const isWidthSetup = (config: object): config is WidthSetupConfig => {
   return (
@@ -42,11 +42,11 @@ const isWidthSetup = (config: object): config is WidthSetupConfig => {
   );
 };
 
-export interface HeightSetupConfig {
+export type HeightSetupConfig = {
   aspectRatio: number;
   pixelHeight: number;
   coordinateHeight: number;
-}
+};
 
 const isHeightSetup = (config: object): config is HeightSetupConfig => {
   return (

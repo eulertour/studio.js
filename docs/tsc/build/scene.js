@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { Animation } from "./animation";
-import { setupCanvas } from "./utils";
-import { setCanvasViewport, setCameraDimensions } from "./MeshLine/MeshLineMaterial";
+import { setupCanvas, } from "./utils";
+import { setCanvasViewport, setCameraDimensions, } from "./MeshLine/MeshLineMaterial";
 export class SceneController {
     constructor(UserScene, canvasRef, config) {
         this.UserScene = UserScene;

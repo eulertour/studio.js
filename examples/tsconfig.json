@@ -8,8 +8,6 @@
     "strict": true,
     "esModuleInterop": true
   },
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["./build/bundle.d.ts"],
+  "exclude": ["dist"]
 }

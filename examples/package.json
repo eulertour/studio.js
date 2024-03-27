@@ -6,7 +6,7 @@
     "@eulertour/studio": ".."
   },
   "devDependencies": {
-    "tsc": "^2.0.4",
+    "@types/node": "^20.5.0",
     "typescript": "^5.4.3"
   }
 }
