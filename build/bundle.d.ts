@@ -297,16 +297,16 @@ declare namespace Utils {
         coordinateHeight: number;
         coordinateWidth: number;
     };
-    interface WidthSetupConfig {
+    type WidthSetupConfig = {
         aspectRatio: number;
         pixelWidth: number;
         coordinateWidth: number;
-    }
-    interface HeightSetupConfig {
+    };
+    type HeightSetupConfig = {
         aspectRatio: number;
         pixelHeight: number;
         coordinateHeight: number;
-    }
+    };
     const setupCanvas: (canvas: HTMLCanvasElement, config?: (WidthSetupConfig | HeightSetupConfig) & {
         viewport?: THREE.Vector4;
     }) => [

@@ -1,10 +1,10 @@
-import { Geometry } from "@eulertour/studio";
+import { Geometry, StudioScene } from "@eulertour/studio";
 
-export default class Example {
+export default class Example implements StudioScene {
   constructor(
-    public scene,
-    public camera,
-    public renderer,
+    public scene: THREE.Scene,
+    public camera: THREE.OrthographicCamera,
+    public renderer: THREE.WebGLRenderer,
   ) {
     const square = new Geometry.Square(2);
     scene.add(square);

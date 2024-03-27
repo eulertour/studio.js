@@ -274,14 +274,11 @@ const getFrameAttributes: (aspectRatio: number, height: number) => {
 };
 
 // @public (undocumented)
-interface HeightSetupConfig {
-    // (undocumented)
+type HeightSetupConfig = {
     aspectRatio: number;
-    // (undocumented)
-    coordinateHeight: number;
-    // (undocumented)
     pixelHeight: number;
-}
+    coordinateHeight: number;
+};
 
 // @public (undocumented)
 const IN: Readonly<THREE_2.Vector3>;
@@ -748,14 +745,11 @@ class Wait extends Animation_3 {
 }
 
 // @public (undocumented)
-interface WidthSetupConfig {
-    // (undocumented)
+type WidthSetupConfig = {
     aspectRatio: number;
-    // (undocumented)
-    coordinateWidth: number;
-    // (undocumented)
     pixelWidth: number;
-}
+    coordinateWidth: number;
+};
 
 // (No @packageDocumentation comment for this package)
 

@@ -6831,7 +6831,7 @@
                 {
                   "kind": "Reference",
                   "text": "WidthSetupConfig",
-                  "canonicalReference": "@eulertour/studio!Utils.WidthSetupConfig:interface"
+                  "canonicalReference": "@eulertour/studio!Utils.WidthSetupConfig:type"
                 },
                 {
                   "kind": "Content",
@@ -6840,7 +6840,7 @@
                 {
                   "kind": "Reference",
                   "text": "HeightSetupConfig",
-                  "canonicalReference": "@eulertour/studio!Utils.HeightSetupConfig:interface"
+                  "canonicalReference": "@eulertour/studio!Utils.HeightSetupConfig:type"
                 },
                 {
                   "kind": "Content",
@@ -7768,7 +7768,7 @@
             {
               "kind": "Reference",
               "text": "WidthSetupConfig",
-              "canonicalReference": "@eulertour/studio!Utils.WidthSetupConfig:interface"
+              "canonicalReference": "@eulertour/studio!Utils.WidthSetupConfig:type"
             },
             {
               "kind": "Content",
@@ -7777,7 +7777,7 @@
             {
               "kind": "Reference",
               "text": "HeightSetupConfig",
-              "canonicalReference": "@eulertour/studio!Utils.HeightSetupConfig:interface"
+              "canonicalReference": "@eulertour/studio!Utils.HeightSetupConfig:type"
             },
             {
               "kind": "Content",
@@ -9063,103 +9063,30 @@
               "name": "getFrameAttributes"
             },
             {
-              "kind": "Interface",
-              "canonicalReference": "@eulertour/studio!Utils.HeightSetupConfig:interface",
+              "kind": "TypeAlias",
+              "canonicalReference": "@eulertour/studio!Utils.HeightSetupConfig:type",
               "docComment": "",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "export interface HeightSetupConfig "
+                  "text": "export type HeightSetupConfig = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n    aspectRatio: number;\n    pixelHeight: number;\n    coordinateHeight: number;\n}"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
                 }
               ],
               "fileUrlPath": "build/utils.d.ts",
               "releaseTag": "Public",
               "name": "HeightSetupConfig",
-              "preserveMemberOrder": false,
-              "members": [
-                {
-                  "kind": "PropertySignature",
-                  "canonicalReference": "@eulertour/studio!Utils.HeightSetupConfig#aspectRatio:member",
-                  "docComment": "",
-                  "excerptTokens": [
-                    {
-                      "kind": "Content",
-                      "text": "aspectRatio: "
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "number"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": ";"
-                    }
-                  ],
-                  "isReadonly": false,
-                  "isOptional": false,
-                  "releaseTag": "Public",
-                  "name": "aspectRatio",
-                  "propertyTypeTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 2
-                  }
-                },
-                {
-                  "kind": "PropertySignature",
-                  "canonicalReference": "@eulertour/studio!Utils.HeightSetupConfig#coordinateHeight:member",
-                  "docComment": "",
-                  "excerptTokens": [
-                    {
-                      "kind": "Content",
-                      "text": "coordinateHeight: "
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "number"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": ";"
-                    }
-                  ],
-                  "isReadonly": false,
-                  "isOptional": false,
-                  "releaseTag": "Public",
-                  "name": "coordinateHeight",
-                  "propertyTypeTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 2
-                  }
-                },
-                {
-                  "kind": "PropertySignature",
-                  "canonicalReference": "@eulertour/studio!Utils.HeightSetupConfig#pixelHeight:member",
-                  "docComment": "",
-                  "excerptTokens": [
-                    {
-                      "kind": "Content",
-                      "text": "pixelHeight: "
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "number"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": ";"
-                    }
-                  ],
-                  "isReadonly": false,
-                  "isOptional": false,
-                  "releaseTag": "Public",
-                  "name": "pixelHeight",
-                  "propertyTypeTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 2
-                  }
-                }
-              ],
-              "extendsTokenRanges": []
+              "typeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
             },
             {
               "kind": "Variable",
@@ -9825,7 +9752,7 @@
                 {
                   "kind": "Reference",
                   "text": "WidthSetupConfig",
-                  "canonicalReference": "@eulertour/studio!Utils.WidthSetupConfig:interface"
+                  "canonicalReference": "@eulertour/studio!Utils.WidthSetupConfig:type"
                 },
                 {
                   "kind": "Content",
@@ -9834,7 +9761,7 @@
                 {
                   "kind": "Reference",
                   "text": "HeightSetupConfig",
-                  "canonicalReference": "@eulertour/studio!Utils.HeightSetupConfig:interface"
+                  "canonicalReference": "@eulertour/studio!Utils.HeightSetupConfig:type"
                 },
                 {
                   "kind": "Content",
@@ -10532,103 +10459,30 @@
               }
             },
             {
-              "kind": "Interface",
-              "canonicalReference": "@eulertour/studio!Utils.WidthSetupConfig:interface",
+              "kind": "TypeAlias",
+              "canonicalReference": "@eulertour/studio!Utils.WidthSetupConfig:type",
               "docComment": "",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "export interface WidthSetupConfig "
+                  "text": "export type WidthSetupConfig = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n    aspectRatio: number;\n    pixelWidth: number;\n    coordinateWidth: number;\n}"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
                 }
               ],
               "fileUrlPath": "build/utils.d.ts",
               "releaseTag": "Public",
               "name": "WidthSetupConfig",
-              "preserveMemberOrder": false,
-              "members": [
-                {
-                  "kind": "PropertySignature",
-                  "canonicalReference": "@eulertour/studio!Utils.WidthSetupConfig#aspectRatio:member",
-                  "docComment": "",
-                  "excerptTokens": [
-                    {
-                      "kind": "Content",
-                      "text": "aspectRatio: "
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "number"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": ";"
-                    }
-                  ],
-                  "isReadonly": false,
-                  "isOptional": false,
-                  "releaseTag": "Public",
-                  "name": "aspectRatio",
-                  "propertyTypeTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 2
-                  }
-                },
-                {
-                  "kind": "PropertySignature",
-                  "canonicalReference": "@eulertour/studio!Utils.WidthSetupConfig#coordinateWidth:member",
-                  "docComment": "",
-                  "excerptTokens": [
-                    {
-                      "kind": "Content",
-                      "text": "coordinateWidth: "
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "number"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": ";"
-                    }
-                  ],
-                  "isReadonly": false,
-                  "isOptional": false,
-                  "releaseTag": "Public",
-                  "name": "coordinateWidth",
-                  "propertyTypeTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 2
-                  }
-                },
-                {
-                  "kind": "PropertySignature",
-                  "canonicalReference": "@eulertour/studio!Utils.WidthSetupConfig#pixelWidth:member",
-                  "docComment": "",
-                  "excerptTokens": [
-                    {
-                      "kind": "Content",
-                      "text": "pixelWidth: "
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "number"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": ";"
-                    }
-                  ],
-                  "isReadonly": false,
-                  "isOptional": false,
-                  "releaseTag": "Public",
-                  "name": "pixelWidth",
-                  "propertyTypeTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 2
-                  }
-                }
-              ],
-              "extendsTokenRanges": []
+              "typeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
             }
           ]
         }

@@ -1,24 +1,36 @@
 import * as THREE from "three";
 import { Animation } from "./animation";
-import { HeightSetupConfig, WidthSetupConfig, setupCanvas } from "./utils";
-import { setCanvasViewport, setCameraDimensions } from "./MeshLine/MeshLineMaterial";
+import {
+  type HeightSetupConfig,
+  type WidthSetupConfig,
+  setupCanvas,
+} from "./utils";
+import {
+  setCanvasViewport,
+  setCameraDimensions,
+} from "./MeshLine/MeshLineMaterial";
 
 type Class<T> = new (
   scene: THREE.Scene,
   camera: THREE.Camera,
-  renderer: THREE.WebGLRenderer
+  renderer: THREE.WebGLRenderer,
 ) => T;
 
-export type AnimationRepresentation = Animation | Array<Animation> | {
-  animations: Array<Animation>,
-  before?: () => void,
-  after?: () => void,
-  parent?: THREE.Object3D,
-  runTime?: number,
-  scale?: number,
-}
+export type AnimationRepresentation =
+  | Animation
+  | Array<Animation>
+  | {
+      animations: Array<Animation>;
+      before?: () => void;
+      after?: () => void;
+      parent?: THREE.Object3D;
+      runTime?: number;
+      scale?: number;
+    };
 
-export interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
+export interface StudioScene<
+  T extends THREE.Camera = THREE.OrthographicCamera,
+> {
   scene: THREE.Scene;
   camera: T;
   renderer: THREE.WebGLRenderer;
@@ -45,7 +57,9 @@ export class SceneController {
   constructor(
     public UserScene: Class<StudioScene>,
     canvasRef: HTMLCanvasElement,
-    config: (WidthSetupConfig | HeightSetupConfig) & { viewport?: THREE.Vector4 }
+    config: (WidthSetupConfig | HeightSetupConfig) & {
+      viewport?: THREE.Vector4;
+    },
   ) {
     this.viewport = config.viewport;
     this.userScene = new UserScene(...setupCanvas(canvasRef, config));
@@ -62,13 +76,13 @@ export class SceneController {
   get renderer() {
     return this.userScene.renderer;
   }
-  
+
   render() {
     if (!this.viewport) {
       this.renderer.clear();
       this.userScene.renderer.render(
         this.userScene.scene,
-        this.userScene.camera
+        this.userScene.camera,
       );
     } else {
       const viewportArray = this.viewport.toArray();
@@ -143,7 +157,7 @@ export class SceneController {
 
     const newFinishedAnimationCount = this.loopAnimations.reduce(
       (acc, cur) => acc + (cur.finished ? 1 : 0),
-      0
+      0,
     );
     if (newFinishedAnimationCount !== this.finishedAnimationCount) {
       this.animationIndex += 1;
@@ -177,7 +191,6 @@ export class SceneController {
     this.paused = true;
     this.userScene.renderer.setAnimationLoop(null);
   }
-
 
   dispose() {
     this.userScene.scene.traverse((child) => {

@@ -17,16 +17,16 @@ declare const getFrameAttributes: (aspectRatio: number, height: number) => {
     coordinateHeight: number;
     coordinateWidth: number;
 };
-export interface WidthSetupConfig {
+export type WidthSetupConfig = {
     aspectRatio: number;
     pixelWidth: number;
     coordinateWidth: number;
-}
-export interface HeightSetupConfig {
+};
+export type HeightSetupConfig = {
     aspectRatio: number;
     pixelHeight: number;
     coordinateHeight: number;
-}
+};
 declare const setupCanvas: (canvas: HTMLCanvasElement, config?: (WidthSetupConfig | HeightSetupConfig) & {
     viewport?: THREE.Vector4;
 }) => [THREE.Scene, THREE.Camera, THREE.WebGLRenderer];

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { Animation } from "./animation";
-import { HeightSetupConfig, WidthSetupConfig } from "./utils";
+import { type HeightSetupConfig, type WidthSetupConfig } from "./utils";
 type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
 export type AnimationRepresentation = Animation | Array<Animation> | {
     animations: Array<Animation>;

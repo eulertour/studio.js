@@ -9,10 +9,6 @@ export default [
       file: "build/bundle.js",
       format: "es",
     },
-    plugins: [
-      nodeResolve({ extensions: [".js", ".ts"] }),
-      ts({ transpileOnly: true }),
-      commonjs(),
-    ],
-  }
+    plugins: [nodeResolve({ extensions: [".js", ".ts"] }), ts(), commonjs()],
+  },
 ];

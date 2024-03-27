@@ -66,7 +66,11 @@ const setupCanvas = (canvas, config = {
     const camera = new THREE.OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
     camera.position.z = 6;
     setCameraDimensions(camera);
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        preserveDrawingBuffer: true,
+    });
     renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
     renderer.autoClear = false;
     if (config.viewport) {
