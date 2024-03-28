@@ -6,8 +6,11 @@
     "declaration": false,
     "outDir": "dist",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {
+      "@eulertour/studio": ["./build/bundle.js"],
+    }
   },
-  "include": ["./build/bundle.d.ts"],
+  "include": ["*.ts"],
   "exclude": ["dist"]
 }
