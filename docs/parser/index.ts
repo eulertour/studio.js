@@ -75,7 +75,6 @@ const dumpTSDocTree = (docNode: DocNode, indent: string): void => {
   } else {
     dumpText += `${indent}- ${docNode.kind}`;
   }
-  console.log(dumpText);
 
   for (const child of docNode.getChildNodes()) {
     dumpTSDocTree(child, indent + "  ");
@@ -111,7 +110,6 @@ for (const module of apiEntryPoint.members) {
 
   const moduleJson: any = {};
   for (const studioClass of module.members) {
-    console.log("studioClass.displayName", studioClass.displayName);
     if (studioClass.kind !== ApiItemKind.Class) {
       console.log("Skipping", studioClass.displayName);
     }
