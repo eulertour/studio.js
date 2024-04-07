@@ -16,7 +16,7 @@
     "buildApi": "npm run transpileJs && npm run extractApi && npm run parseJson",
     "transpileJs": "cd docs/tsc && tsc",
     "extractApi": "api-extractor run --config docs/apiExtractor/api-extractor.json --local --verbose",
-    "parseJson": "cd docs/parser && tsc && node index.js ../apiExtractor/studio.api.json ../../build/api.json",
+    "parseJson": "cd docs/parser && tsc ; node index.js ../apiExtractor/studio.api.json ../../build/api.json",
     "genTypes": "rollup --config rollup.three-types.config.ts --configPlugin typescript",
     "serve": "npm run build && cross-env PORT=8081 serve . --cors",
     "dev": "nodemon -w src -e js,ts --exec 'npm run serve'",

@@ -14,6 +14,14 @@ declare abstract class Shape extends THREE.Group {
     constructor(points: Array<THREE.Vector3>, config?: Style & {
         arrow?: boolean;
     });
+    static defaultStyle(): {
+        strokeColor: THREE.Color;
+        strokeOpacity: number;
+        strokeWidth: number;
+        fillColor: THREE.Color;
+        fillOpacity: number;
+    };
+    static defaultConfig(): {};
     reshape(...args: any[]): void;
     copyStroke(shape: Shape): void;
     copyFill(shape: Shape): void;
@@ -47,6 +55,9 @@ declare class Line extends Shape {
     constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
         arrow?: boolean;
     });
+    static defaultConfig(): {
+        arrow: boolean;
+    };
     static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
     reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
         arrow?: boolean;
@@ -91,6 +102,9 @@ declare class Arc extends Shape {
     constructor(radius?: number, angle?: number, config?: Style & {
         closed?: boolean;
     });
+    static defaultConfig(): {
+        closed: boolean;
+    };
     reshape(radius?: number, angle?: number, config?: Style & {
         closed?: boolean;
     }): void;
@@ -134,6 +148,10 @@ declare class Point extends Circle {
     constructor(position?: THREE.Vector2 | THREE.Vector3, config?: Style & {
         radius?: number;
     });
+    static defaultConfig(): {
+        radius: number;
+        closed: boolean;
+    };
     getAttributes(): ArcAttributes;
     static fromAttributes(): Point;
 }

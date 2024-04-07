@@ -78,6 +78,14 @@ declare namespace Geometry {
         constructor(points: Array<THREE.Vector3>, config?: Style & {
             arrow?: boolean;
         });
+        static defaultStyle(): {
+            strokeColor: THREE.Color;
+            strokeOpacity: number;
+            strokeWidth: number;
+            fillColor: THREE.Color;
+            fillOpacity: number;
+        };
+        static defaultConfig(): {};
         reshape(...args: any[]): void;
         copyStroke(shape: Shape): void;
         copyFill(shape: Shape): void;
@@ -111,6 +119,9 @@ declare namespace Geometry {
         constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
             arrow?: boolean;
         });
+        static defaultConfig(): {
+            arrow: boolean;
+        };
         static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
         reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
             arrow?: boolean;
@@ -155,6 +166,9 @@ declare namespace Geometry {
         constructor(radius?: number, angle?: number, config?: Style & {
             closed?: boolean;
         });
+        static defaultConfig(): {
+            closed: boolean;
+        };
         reshape(radius?: number, angle?: number, config?: Style & {
             closed?: boolean;
         }): void;
@@ -198,6 +212,10 @@ declare namespace Geometry {
         constructor(position?: THREE.Vector2 | THREE.Vector3, config?: Style & {
             radius?: number;
         });
+        static defaultConfig(): {
+            radius: number;
+            closed: boolean;
+        };
         getAttributes(): ArcAttributes;
         static fromAttributes(): Point;
     }
@@ -450,17 +468,20 @@ declare namespace Text {
     type PolygonAttributes = {
         points: Array<THREE.Vector3>;
     };
+    type TextStyle = {
+        fillColor?: THREE.Color;
+        fillOpacity?: number;
+    };
+    type TextConfig = {
+        groupColoring?: Array<[
+            number,
+            string?
+        ]>;
+        batchMaterials?: boolean;
+    };
     class Text extends THREE.Group {
         text: string;
-        constructor(text: string, config?: {
-            fillColor?: THREE.Color;
-            fillOpacity?: number;
-            groupColoring?: Array<[
-                number,
-                string?
-            ]>;
-            batchMaterials?: boolean;
-        });
+        constructor(text: string, config?: TextStyle & TextConfig);
         dispose(): void;
         clone(recursive: boolean): this;
         copy(source: this, recursive: boolean): this;

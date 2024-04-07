@@ -3,6 +3,7 @@ import { ApiItemKind, ApiModel, ApiNamespace, } from "@microsoft/api-extractor-m
 import { DocExcerpt, DocNodeKind, } from "@microsoft/tsdoc";
 import fs from "fs";
 import colors from "colors";
+import * as Studio from "../../build/bundle.js";
 if (process.argv.length < 3) {
     console.error("Usage: node index.js <path to studio.api.json> <output json path>");
     process.exit(1);
@@ -69,7 +70,7 @@ for (const module of apiEntryPoint.members) {
     const moduleName = module.displayName.replace("_2", "");
     if (!(module instanceof ApiNamespace))
         continue;
-    if (!["Geometry", "Animation"].includes(moduleName)) {
+    if (moduleName === "Utils") {
         console.log("Skipping", moduleName);
         continue;
     }
@@ -77,11 +78,16 @@ for (const module of apiEntryPoint.members) {
     for (const studioClass of module.members) {
         if (studioClass.kind !== ApiItemKind.Class) {
             console.log("Skipping", studioClass.displayName);
+            continue;
         }
         const classJson = {};
         apiJson.extendsMap[studioClass.displayName] =
             ((_a = studioClass.extendsType) === null || _a === void 0 ? void 0 : _a.excerpt.text) || "";
         const docComment = studioClass.tsdocComment;
+        const curClass = Studio[moduleName][studioClass.displayName];
+        if (curClass.defaultConfig) {
+            classJson.defaultConfig = JSON.stringify(curClass.defaultConfig());
+        }
         let parsedDocComment;
         if (docComment !== undefined) {
             // dumpTSDocTree(docComment, "");

@@ -17,6 +17,7 @@ import {
 } from "@microsoft/tsdoc";
 import fs from "fs";
 import colors from "colors";
+import * as Studio from "../../build/bundle.js";
 
 if (process.argv.length < 3) {
   console.error(
@@ -103,7 +104,7 @@ for (const module of apiEntryPoint.members) {
   const moduleName = module.displayName.replace("_2", "");
 
   if (!(module instanceof ApiNamespace)) continue;
-  if (!["Geometry", "Animation"].includes(moduleName)) {
+  if (moduleName === "Utils") {
     console.log("Skipping", moduleName);
     continue;
   }
@@ -112,12 +113,18 @@ for (const module of apiEntryPoint.members) {
   for (const studioClass of module.members) {
     if (studioClass.kind !== ApiItemKind.Class) {
       console.log("Skipping", studioClass.displayName);
+      continue;
     }
 
     const classJson: any = {};
     apiJson.extendsMap[studioClass.displayName] =
       (studioClass as ApiClass).extendsType?.excerpt.text || "";
     const docComment = (studioClass as ApiDocumentedItem).tsdocComment;
+
+    const curClass = (Studio as any)[moduleName][studioClass.displayName];
+    if (curClass.defaultConfig) {
+      classJson.defaultConfig = JSON.stringify(curClass.defaultConfig());
+    }
 
     let parsedDocComment;
     if (docComment !== undefined) {

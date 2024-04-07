@@ -1,13 +1,16 @@
 import * as THREE from "three";
 import type { Transform } from "./geometry.types";
+type TextStyle = {
+    fillColor?: THREE.Color;
+    fillOpacity?: number;
+};
+type TextConfig = {
+    groupColoring?: Array<[number, string?]>;
+    batchMaterials?: boolean;
+};
 declare class Text extends THREE.Group {
     text: string;
-    constructor(text: string, config?: {
-        fillColor?: THREE.Color;
-        fillOpacity?: number;
-        groupColoring?: Array<[number, string?]>;
-        batchMaterials?: boolean;
-    });
+    constructor(text: string, config?: TextStyle & TextConfig);
     dispose(): void;
     clone(recursive: boolean): this;
     copy(source: this, recursive: boolean): this;
