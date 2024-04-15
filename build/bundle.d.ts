@@ -1,15 +1,14 @@
 /// <reference types="three" />
 import * as THREE from "three";
-import { BufferGeometry, Vector3, ShaderMaterialParameters } from "three";
 declare namespace Geometry {
-    class MeshLineGeometry extends BufferGeometry {
+    class MeshLineGeometry extends THREE.BufferGeometry {
         #private;
         arrow: boolean;
         readonly isMeshLineGeometry = true;
         readonly type = "MeshLineGeometry";
-        points: Vector3[];
+        points: THREE.Vector3[];
         constructor(arrow?: boolean);
-        setPoints(points: Array<Vector3>, updateBounds?: boolean): void;
+        setPoints(points: Array<THREE.Vector3>, updateBounds?: boolean): void;
         setVertexData(array: WritableArrayLike<number>, offset: number, x: number, y: number, z: number): void;
         setTextureCoords(array: WritableArrayLike<number>, offset: number): void;
         setIndices(array: WritableArrayLike<number>, offset: number, startIndex: number): void;
@@ -24,7 +23,7 @@ declare namespace Geometry {
     const CanvasViewport: THREE.Vector4;
     const setCanvasViewport: (viewport: THREE.Vector4) => void;
     class MeshLineMaterial extends THREE.ShaderMaterial {
-        constructor(parameters: ShaderMaterialParameters & {
+        constructor(parameters: THREE.ShaderMaterialParameters & {
             color: THREE.ColorRepresentation;
             opacity: number;
             width: number;
@@ -357,15 +356,15 @@ declare namespace Utils {
 }
 declare module "three" {
     interface Object3D {
-        setScale(factor: number): Object3D;
-        moveNextTo(target: Object3D, direction: Vector3, distance?: any): void;
-        moveToRightOf(target: Object3D, distance?: any): void;
-        moveToLeftOf(target: Object3D, distance?: any): void;
-        moveAbove(target: Object3D, distance?: any): void;
-        moveBelow(target: Object3D, distance?: any): void;
-        setOpacity(opacity: number): Object3D;
-        setInvisible(): Object3D;
-        setVisible(): Object3D;
+        setScale(factor: number): THREE.Object3D;
+        moveNextTo(target: THREE.Object3D, direction: THREE.Vector3, distance?: any): void;
+        moveToRightOf(target: THREE.Object3D, distance?: any): void;
+        moveToLeftOf(target: THREE.Object3D, distance?: any): void;
+        moveAbove(target: THREE.Object3D, distance?: any): void;
+        moveBelow(target: THREE.Object3D, distance?: any): void;
+        setOpacity(opacity: number): THREE.Object3D;
+        setInvisible(): THREE.Object3D;
+        setVisible(): THREE.Object3D;
     }
 }
 declare namespace Animation {
@@ -683,7 +682,7 @@ declare namespace Constants {
 declare const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
 declare const setCanvasViewport: (viewport: THREE.Vector4) => void;
 declare class MeshLineMaterial extends THREE.ShaderMaterial {
-    constructor(parameters: ShaderMaterialParameters & {
+    constructor(parameters: THREE.ShaderMaterialParameters & {
         color: THREE.ColorRepresentation;
         opacity: number;
         width: number;

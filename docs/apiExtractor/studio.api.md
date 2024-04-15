@@ -4,10 +4,7 @@
 
 ```ts
 
-import { BufferGeometry } from 'three';
-import type { ShaderMaterialParameters } from 'three';
 import * as THREE_2 from 'three';
-import { Vector3 } from 'three';
 
 declare namespace Animation_2 {
     export {

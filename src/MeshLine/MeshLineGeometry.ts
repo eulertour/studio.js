@@ -1,14 +1,7 @@
-import {
-  BufferAttribute,
-  BufferGeometry,
-  Float32BufferAttribute,
-  Uint16BufferAttribute,
-  Vector3,
-  Sphere,
-} from "three";
+import * as THREE from "three";
 import "./meshline.glsl.js";
 
-export default class MeshLineGeometry extends BufferGeometry {
+export default class MeshLineGeometry extends THREE.BufferGeometry {
   readonly isMeshLineGeometry = true;
   override readonly type = "MeshLineGeometry";
 
@@ -20,15 +13,15 @@ export default class MeshLineGeometry extends BufferGeometry {
   #indices = new Uint16Array();
 
   #attributes: {
-    position: Float32BufferAttribute;
-    endPosition: Float32BufferAttribute;
-    nextPosition: Float32BufferAttribute;
-    textureCoords: Float32BufferAttribute;
-    proportion: Float32BufferAttribute;
-    index: Uint16BufferAttribute;
+    position: THREE.Float32BufferAttribute;
+    endPosition: THREE.Float32BufferAttribute;
+    nextPosition: THREE.Float32BufferAttribute;
+    textureCoords: THREE.Float32BufferAttribute;
+    proportion: THREE.Float32BufferAttribute;
+    index: THREE.Uint16BufferAttribute;
   } | null = null;
 
-  points: Vector3[];
+  points: THREE.Vector3[];
 
   #previousPointCount = 0;
   #pointCount = 0;
@@ -37,7 +30,7 @@ export default class MeshLineGeometry extends BufferGeometry {
     super();
   }
 
-  setPoints(points: Array<Vector3>, updateBounds: boolean = true) {
+  setPoints(points: Array<THREE.Vector3>, updateBounds: boolean = true) {
     const arrowLength = 0.3;
     if (this.arrow) {
       // Find the index of the last point that is at least arrowLength away from the end.
@@ -49,13 +42,13 @@ export default class MeshLineGeometry extends BufferGeometry {
           break;
         }
       }
-      
+
       // Find the point that is arrowLength away from the end.
       const aVec = points[arrowIndex];
       const bVec = points[points.length - 1];
-      const vVec = new Vector3().subVectors(points[arrowIndex + 1], aVec);
-      const d = arrowLength;      
-      const a = vVec.dot(vVec); 
+      const vVec = new THREE.Vector3().subVectors(points[arrowIndex + 1], aVec);
+      const d = arrowLength;
+      const a = vVec.dot(vVec);
       const b = 2 * (aVec.dot(vVec) - bVec.dot(vVec));
       const c = aVec.dot(aVec) - 2 * aVec.dot(bVec) + bVec.dot(bVec) - d * d;
       const rootDiscriminant = Math.sqrt(b * b - 4 * a * c);
@@ -118,8 +111,10 @@ export default class MeshLineGeometry extends BufferGeometry {
       throw new Error("invalid endpoints");
     }
 
-    let nextPosition: Vector3 | undefined;
-    if (new Vector3().subVectors(firstPoint, lastPoint).length() < 0.001) {
+    let nextPosition: THREE.Vector3 | undefined;
+    if (
+      new THREE.Vector3().subVectors(firstPoint, lastPoint).length() < 0.001
+    ) {
       nextPosition = points.at(1);
     } else {
       nextPosition = points.at(-1);
@@ -143,14 +138,14 @@ export default class MeshLineGeometry extends BufferGeometry {
         (position.z - endPosition.z) ** 2) **
         0.5;
     this.#addSegment(points.length - 2, position, endPosition, nextPosition);
-    
+
     if (this.arrow) {
-      this.#textureCoords[4 * (points.length - 3)] = 9;      // 8 * 1 + 2 * 0 + 1;
-      this.#textureCoords[4 * (points.length - 3) + 1] = 8;  // 8 * 1 + 2 * 0 + 0;
+      this.#textureCoords[4 * (points.length - 3)] = 9; // 8 * 1 + 2 * 0 + 1;
+      this.#textureCoords[4 * (points.length - 3) + 1] = 8; // 8 * 1 + 2 * 0 + 0;
       this.#textureCoords[4 * (points.length - 3) + 2] = 10; // 8 * 1 + 2 * 1 + 0;
       this.#textureCoords[4 * (points.length - 3) + 3] = 11; // 8 * 1 + 2 * 1 + 1;
 
-      this.#textureCoords[4 * (points.length - 2)] = 5;     // 4 * 1 + 2 * 0 + 1;
+      this.#textureCoords[4 * (points.length - 2)] = 5; // 4 * 1 + 2 * 0 + 1;
       this.#textureCoords[4 * (points.length - 2) + 1] = 4; // 4 * 1 + 2 * 0 + 0;
       this.#textureCoords[4 * (points.length - 2) + 2] = 6; // 4 * 1 + 2 * 1 + 0;
       this.#textureCoords[4 * (points.length - 2) + 3] = 7; // 4 * 1 + 2 * 1 + 1;
@@ -189,7 +184,12 @@ export default class MeshLineGeometry extends BufferGeometry {
     }
   }
 
-  #addSegment(index: number, start: Vector3, end: Vector3, next: Vector3) {
+  #addSegment(
+    index: number,
+    start: THREE.Vector3,
+    end: THREE.Vector3,
+    next: THREE.Vector3,
+  ) {
     let x, y, z;
 
     const vertexOffset = 12 * index;
@@ -223,12 +223,12 @@ export default class MeshLineGeometry extends BufferGeometry {
     this.#indices = new Uint16Array(6 * rectCount);
 
     this.#attributes = {
-      position: new BufferAttribute(this.#position, 3),
-      endPosition: new BufferAttribute(this.#endPosition, 3),
-      nextPosition: new BufferAttribute(this.#nextPosition, 3),
-      textureCoords: new BufferAttribute(this.#textureCoords, 1),
-      proportion: new BufferAttribute(this.#proportion, 1),
-      index: new BufferAttribute(this.#indices, 1),
+      position: new THREE.BufferAttribute(this.#position, 3),
+      endPosition: new THREE.BufferAttribute(this.#endPosition, 3),
+      nextPosition: new THREE.BufferAttribute(this.#nextPosition, 3),
+      textureCoords: new THREE.BufferAttribute(this.#textureCoords, 1),
+      proportion: new THREE.BufferAttribute(this.#proportion, 1),
+      index: new THREE.BufferAttribute(this.#indices, 1),
     };
 
     this.setAttribute("position", this.#attributes.position);
@@ -244,7 +244,7 @@ export default class MeshLineGeometry extends BufferGeometry {
     offset: number,
     x: number,
     y: number,
-    z: number
+    z: number,
   ) {
     array[offset] = x;
     array[offset + 1] = y;
@@ -261,16 +261,16 @@ export default class MeshLineGeometry extends BufferGeometry {
   }
 
   setTextureCoords(array: WritableArrayLike<number>, offset: number) {
-    array[offset] = 1;        // 8 * 0 + 4 * 0 + 2 * 0 + 1;
+    array[offset] = 1; // 8 * 0 + 4 * 0 + 2 * 0 + 1;
     // array[offset + 1] = 0; // 8 * 0 + 4 * 0 + 2 * 0 + 0;
-    array[offset + 2] = 2;    // 8 * 0 + 4 * 0 + 2 * 1 + 0;
-    array[offset + 3] = 3;    // 8 * 0 + 4 * 0 + 2 * 1 + 1;
+    array[offset + 2] = 2; // 8 * 0 + 4 * 0 + 2 * 1 + 0;
+    array[offset + 3] = 3; // 8 * 0 + 4 * 0 + 2 * 1 + 1;
   }
 
   setIndices(
     array: WritableArrayLike<number>,
     offset: number,
-    startIndex: number
+    startIndex: number,
   ) {
     array[offset] = startIndex;
     array[offset + 1] = startIndex + 1;
@@ -282,10 +282,10 @@ export default class MeshLineGeometry extends BufferGeometry {
 
   computeBoundingSphere(): void {
     if (this.boundingSphere === null) {
-      this.boundingSphere = new Sphere();
+      this.boundingSphere = new THREE.Sphere();
     }
 
-    const center = new Vector3();
+    const center = new THREE.Vector3();
     for (const point of this.points) {
       this.boundingSphere.center.add(point);
     }
@@ -293,7 +293,10 @@ export default class MeshLineGeometry extends BufferGeometry {
 
     this.boundingSphere.radius = 0;
     for (const point of this.points) {
-      this.boundingSphere.radius = Math.max(this.boundingSphere.radius, center.distanceTo(point));
+      this.boundingSphere.radius = Math.max(
+        this.boundingSphere.radius,
+        center.distanceTo(point),
+      );
     }
   }
 }

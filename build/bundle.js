@@ -98888,7 +98888,7 @@ Object3D.prototype.setOpacity = function (opacity) {
     return this;
 };
 Object3D.prototype.setInvisible = function () {
-    return this.setOpacity(0);
+    return Object3D.prototype.setOpacity(0);
 };
 Object3D.prototype.setVisible = function () {
     return this.setOpacity(1);
