@@ -1,13 +1,13 @@
-import { BufferGeometry, Vector3 } from "three";
+import * as THREE from "three";
 import "./meshline.glsl.js";
-export default class MeshLineGeometry extends BufferGeometry {
+export default class MeshLineGeometry extends THREE.BufferGeometry {
     #private;
     arrow: boolean;
     readonly isMeshLineGeometry = true;
     readonly type = "MeshLineGeometry";
-    points: Vector3[];
+    points: THREE.Vector3[];
     constructor(arrow?: boolean);
-    setPoints(points: Array<Vector3>, updateBounds?: boolean): void;
+    setPoints(points: Array<THREE.Vector3>, updateBounds?: boolean): void;
     setVertexData(array: WritableArrayLike<number>, offset: number, x: number, y: number, z: number): void;
     setTextureCoords(array: WritableArrayLike<number>, offset: number): void;
     setIndices(array: WritableArrayLike<number>, offset: number, startIndex: number): void;

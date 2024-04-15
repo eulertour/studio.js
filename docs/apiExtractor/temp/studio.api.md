@@ -4,10 +4,7 @@
 
 ```ts
 
-import { BufferGeometry } from 'three';
-import type { ShaderMaterialParameters } from 'three';
 import * as THREE_2 from 'three';
-import { Vector3 } from 'three';
 
 declare namespace Animation_2 {
     export {
@@ -105,6 +102,10 @@ class Arc extends Shape {
     })[];
     // (undocumented)
     closed: boolean;
+    // (undocumented)
+    static defaultConfig(): {
+        closed: boolean;
+    };
     // (undocumented)
     static fromAttributes(attributes: ArcAttributes): Arc;
     // Warning: (ae-forgotten-export) The symbol "ArcAttributes" needs to be exported by the entry point index.d.ts
@@ -315,6 +316,10 @@ class Line extends Shape {
     // (undocumented)
     static centeredLine(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style): Line;
     // (undocumented)
+    static defaultConfig(): {
+        arrow: boolean;
+    };
+    // (undocumented)
     end: THREE_2.Vector3;
     // (undocumented)
     static fromAttributes(attributes: LineAttributes): Line;
@@ -378,6 +383,11 @@ class Point extends Circle {
     constructor(position?: THREE_2.Vector2 | THREE_2.Vector3, config?: Style & {
         radius?: number;
     });
+    // (undocumented)
+    static defaultConfig(): {
+        radius: number;
+        closed: boolean;
+    };
     // (undocumented)
     static fromAttributes(): Point;
     // (undocumented)
@@ -540,6 +550,16 @@ abstract class Shape extends THREE_2.Group {
     // (undocumented)
     curveEndIndices: Array<Array<number>>;
     // (undocumented)
+    static defaultConfig(): {};
+    // (undocumented)
+    static defaultStyle(): {
+        strokeColor: THREE_2.Color;
+        strokeOpacity: number;
+        strokeWidth: number;
+        fillColor: THREE_2.Color;
+        fillOpacity: number;
+    };
+    // (undocumented)
     dispose(): this;
     // Warning: (ae-forgotten-export) The symbol "Fill" needs to be exported by the entry point index.d.ts
     //
@@ -652,12 +672,9 @@ export { Text_2 as Text }
 
 // @public (undocumented)
 class Text_3 extends THREE_2.Group {
-    constructor(text: string, config?: {
-        fillColor?: THREE_2.Color;
-        fillOpacity?: number;
-        groupColoring?: Array<[number, string?]>;
-        batchMaterials?: boolean;
-    });
+    // Warning: (ae-forgotten-export) The symbol "TextStyle" needs to be exported by the entry point index.d.ts
+    // Warning: (ae-forgotten-export) The symbol "TextConfig" needs to be exported by the entry point index.d.ts
+    constructor(text: string, config?: TextStyle & TextConfig);
     // (undocumented)
     get attributeData(): {
         attribute: string;

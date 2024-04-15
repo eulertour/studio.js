@@ -52541,13 +52541,7 @@ const getFillGeometry = (points) => {
 class Shape extends Group {
     constructor(points, config = {}) {
         super();
-        config = Object.assign({
-            strokeColor: new Color(0x000000),
-            strokeOpacity: 1.0,
-            strokeWidth: 8,
-            fillColor: new Color(0xfffaf0),
-            fillOpacity: 0.0,
-        }, config);
+        config = Object.assign(Shape.defaultStyle(), config);
         const fillGeometry = getFillGeometry(points);
         const fillMaterial = new MeshBasicMaterial({
             color: config.fillColor,
@@ -52567,6 +52561,18 @@ class Shape extends Group {
         this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
         this.add(this.stroke);
         this.curveEndIndices = this.getCurveEndIndices();
+    }
+    static defaultStyle() {
+        return {
+            strokeColor: new Color(0x000000),
+            strokeOpacity: 1.0,
+            strokeWidth: 8,
+            fillColor: new Color(0xfffaf0),
+            fillOpacity: 0.0,
+        };
+    }
+    static defaultConfig() {
+        return {};
     }
     reshape(...args) {
         throw new Error("Reshape not implemented.");
@@ -52712,10 +52718,15 @@ class Shape extends Group {
  */
 class Line extends Shape {
     constructor(start, end, config = {}) {
-        super([start, end], Object.assign(Object.assign({}, config), { fillOpacity: 0 }));
+        config = Object.assign(Object.assign({}, Line.defaultConfig()), config);
+        super([start, end], config);
         this.start = start;
         this.end = end;
+        this.arrow = config.arrow;
         this.curveEndIndices = [[0, 1]];
+    }
+    static defaultConfig() {
+        return Object.assign(Object.assign({}, super.defaultConfig()), { arrow: false });
     }
     static centeredLine(start, end, config = {}) {
         const center = new Vector3().addVectors(start, end).divideScalar(2);
@@ -52755,7 +52766,7 @@ class Line extends Shape {
  */
 class Arrow extends Line {
     constructor(start, end, config = {}) {
-        super(start, end, Object.assign(Object.assign({}, config), { arrow: true }));
+        super(start, end, Object.assign(Object.assign(Object.assign({}, Arrow.defaultConfig()), config), { arrow: true }));
         this.start = start;
         this.end = end;
     }
@@ -52772,7 +52783,7 @@ class Arrow extends Line {
  */
 class Polyline extends Shape {
     constructor(points, config = {}) {
-        super(points, Object.assign(Object.assign({}, config), { fillOpacity: 0 }));
+        super(points, Object.assign(Object.assign(Object.assign({}, Polyline.defaultConfig()), config), { fillOpacity: 0 }));
         this.curveEndIndices = [[0, 1]];
     }
     reshape(points, config = {}) {
@@ -52798,6 +52809,7 @@ class Polyline extends Shape {
  */
 class Arc extends Shape {
     constructor(radius = 1, angle = Math.PI / 2, config = {}) {
+        config = Object.assign(Object.assign({}, Arc.defaultConfig()), config);
         let points = [];
         let negative = false;
         if (angle < 0) {
@@ -52822,8 +52834,6 @@ class Arc extends Shape {
         super(points, config);
         this.radius = radius;
         this.angle = angle;
-        this.radius = radius;
-        this.angle = angle;
         this.closed = config.closed;
         if (this.closed) {
             this.curveEndIndices = [
@@ -52835,6 +52845,9 @@ class Arc extends Shape {
         else {
             this.curveEndIndices = [[0, points.length - 1]];
         }
+    }
+    static defaultConfig() {
+        return Object.assign(Object.assign({}, super.defaultConfig()), { closed: false });
     }
     reshape(radius = 1, angle = Math.PI / 2, config = {}) {
         this.radius = radius;
@@ -52886,7 +52899,7 @@ class Arc extends Shape {
  */
 class Circle extends Arc {
     constructor(radius = 1, config = {}) {
-        super(radius, 2 * Math.PI, config);
+        super(radius, 2 * Math.PI, Object.assign(Object.assign({}, Circle.defaultConfig()), config));
     }
     reshape(radius, config = {}) {
         this.radius = radius;
@@ -52923,9 +52936,12 @@ class Circle extends Arc {
  */
 class Point extends Circle {
     constructor(position = ORIGIN, config = {}) {
-        config = Object.assign({ radius: 0.08, fillColor: new Color("black"), fillOpacity: 1 }, config);
+        config = Object.assign(Object.assign({ fillColor: new Color("black"), fillOpacity: 1 }, Point.defaultConfig()), config);
         super(config.radius, config);
         this.position.set(position.x, position.y, 0);
+    }
+    static defaultConfig() {
+        return Object.assign(Object.assign({}, super.defaultConfig()), { radius: 0.08 });
     }
     getAttributes() {
         return {
@@ -52946,7 +52962,7 @@ class Point extends Circle {
  */
 class Polygon extends Shape {
     constructor(points, config = {}) {
-        super(points, config);
+        super(points, Object.assign(Object.assign({}, Polygon.defaultConfig()), config));
         this.curveEndIndices = [];
         for (let i = 0; i < points.length - 1; i++) {
             this.curveEndIndices.push([i, i + 1]);
@@ -52979,7 +52995,7 @@ class Rectangle extends Shape {
             new Vector3(width / 2, -height / 2, 0),
             new Vector3(-width / 2, -height / 2, 0),
             new Vector3(-width / 2, height / 2, 0),
-        ], config);
+        ], Object.assign(Object.assign({}, Rectangle.defaultConfig()), config));
         this.width = width;
         this.height = height;
     }
@@ -53026,7 +53042,7 @@ class Rectangle extends Shape {
  */
 class Square extends Rectangle {
     constructor(sideLength = 2, config = {}) {
-        super(sideLength, sideLength, config);
+        super(sideLength, sideLength, Object.assign(Object.assign({}, Square.defaultConfig()), config));
         this.sideLength = sideLength;
     }
     reshape(sideLength, config = {}) {
@@ -98876,7 +98892,7 @@ Object3D.prototype.setOpacity = function (opacity) {
     return this;
 };
 Object3D.prototype.setInvisible = function () {
-    return this.setOpacity(0);
+    return Object3D.prototype.setOpacity(0);
 };
 Object3D.prototype.setVisible = function () {
     return this.setOpacity(1);

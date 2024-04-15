@@ -3,21 +3,25 @@ import { SVGLoader } from "./SVGLoader.js";
 import type { Style, Transform } from "./geometry.types";
 import tex2svg from "./mathjax";
 
+type TextStyle = {
+  fillColor?: THREE.Color;
+  fillOpacity?: number;
+};
+type TextConfig = {
+  groupColoring?: Array<[number, string?]>;
+  batchMaterials?: boolean;
+};
+
 class Text extends THREE.Group {
   constructor(
     public text: string,
-    config: {
-      fillColor?: THREE.Color;
-      fillOpacity?: number;
-      groupColoring?: Array<[number, string?]>;
-      batchMaterials?: boolean;
-    } = {}
+    config: TextStyle & TextConfig = {},
   ) {
     super();
 
     config = Object.assign(
       { fillColor: new THREE.Color("black"), fillOpacity: 1 },
-      config
+      config,
     );
 
     let svgString = tex2svg(this.text);
@@ -109,7 +113,7 @@ class Text extends THREE.Group {
     if (recursive === false) {
       throw Error("Text.clone() is always recursive");
     }
-    const cloneFunc = (this.constructor as new (...args: any[]) => this)
+    const cloneFunc = this.constructor as new (...args: any[]) => this;
     const clone = new cloneFunc(...this.getCloneAttributes());
     THREE.Object3D.prototype.copy.call(clone, this, false);
     return clone;

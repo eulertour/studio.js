@@ -38,16 +38,7 @@ abstract class Shape extends THREE.Group {
     config: Style & { arrow?: boolean } = {},
   ) {
     super();
-    config = Object.assign(
-      {
-        strokeColor: new THREE.Color(0x000000),
-        strokeOpacity: 1.0,
-        strokeWidth: 8,
-        fillColor: new THREE.Color(0xfffaf0),
-        fillOpacity: 0.0,
-      },
-      config,
-    );
+    config = Object.assign(Shape.defaultStyle(), config);
 
     const fillGeometry = getFillGeometry(points);
     const fillMaterial = new THREE.MeshBasicMaterial({
@@ -70,6 +61,20 @@ abstract class Shape extends THREE.Group {
     this.add(this.stroke);
 
     this.curveEndIndices = this.getCurveEndIndices();
+  }
+
+  static defaultStyle() {
+    return {
+      strokeColor: new THREE.Color(0x000000),
+      strokeOpacity: 1.0,
+      strokeWidth: 8,
+      fillColor: new THREE.Color(0xfffaf0),
+      fillOpacity: 0.0,
+    };
+  }
+
+  static defaultConfig() {
+    return {};
   }
 
   reshape(...args: any[]) {
@@ -252,8 +257,14 @@ class Line extends Shape {
     public end: THREE.Vector3,
     config: Style & { arrow?: boolean } = {},
   ) {
-    super([start, end], { ...config, fillOpacity: 0 });
+    config = { ...Line.defaultConfig(), ...config };
+    super([start, end], config);
+    this.arrow = config.arrow;
     this.curveEndIndices = [[0, 1]];
+  }
+
+  static defaultConfig() {
+    return { ...super.defaultConfig(), arrow: false };
   }
 
   static centeredLine(
@@ -280,6 +291,7 @@ class Line extends Shape {
     this.end.copy(end);
     this.copyStrokeFill(new Line(start, end, config));
   }
+
   getClassConfig() {
     return {};
   }
@@ -318,7 +330,7 @@ class Arrow extends Line {
     public end: THREE.Vector3,
     config: Style = {},
   ) {
-    super(start, end, { ...config, arrow: true });
+    super(start, end, { ...Arrow.defaultConfig(), ...config, arrow: true });
   }
 
   reshape(start: THREE.Vector3, end: THREE.Vector3, config: Style = {}) {
@@ -335,7 +347,7 @@ class Arrow extends Line {
  */
 class Polyline extends Shape {
   constructor(points: Array<THREE.Vector3>, config: Style = {}) {
-    super(points, { ...config, fillOpacity: 0 });
+    super(points, { ...Polyline.defaultConfig(), ...config, fillOpacity: 0 });
 
     this.curveEndIndices = [[0, 1]];
   }
@@ -373,6 +385,7 @@ class Arc extends Shape {
     public angle: number = Math.PI / 2,
     config: Style & { closed?: boolean } = {},
   ) {
+    config = { ...Arc.defaultConfig(), ...config };
     let points = [];
     let negative = false;
     if (angle < 0) {
@@ -403,8 +416,6 @@ class Arc extends Shape {
       ];
     }
     super(points, config);
-    this.radius = radius;
-    this.angle = angle;
     this.closed = config.closed;
     if (this.closed) {
       this.curveEndIndices = [
@@ -415,6 +426,10 @@ class Arc extends Shape {
     } else {
       this.curveEndIndices = [[0, points.length - 1]];
     }
+  }
+
+  static defaultConfig() {
+    return { ...super.defaultConfig(), closed: false };
   }
 
   reshape(
@@ -477,7 +492,7 @@ class Arc extends Shape {
  */
 class Circle extends Arc {
   constructor(radius = 1, config: Style = {}) {
-    super(radius, 2 * Math.PI, config);
+    super(radius, 2 * Math.PI, { ...Circle.defaultConfig(), ...config });
   }
 
   reshape(radius: number, config = {}) {
@@ -524,13 +539,17 @@ class Point extends Circle {
     config: Style & { radius?: number } = {},
   ) {
     config = {
-      radius: 0.08,
       fillColor: new THREE.Color("black"),
       fillOpacity: 1,
+      ...Point.defaultConfig(),
       ...config,
     };
     super(config.radius, config);
     this.position.set(position.x, position.y, 0);
+  }
+
+  static defaultConfig() {
+    return { ...super.defaultConfig(), radius: 0.08 };
   }
 
   getAttributes(): ArcAttributes {
@@ -554,7 +573,7 @@ class Point extends Circle {
  */
 class Polygon extends Shape {
   constructor(points: Array<THREE.Vector3>, config: Style = {}) {
-    super(points, config);
+    super(points, { ...Polygon.defaultConfig(), ...config });
     this.curveEndIndices = [];
     for (let i = 0; i < points.length - 1; i++) {
       this.curveEndIndices.push([i, i + 1]);
@@ -598,7 +617,7 @@ class Rectangle extends Shape {
         new THREE.Vector3(-width / 2, -height / 2, 0),
         new THREE.Vector3(-width / 2, height / 2, 0),
       ],
-      config,
+      { ...Rectangle.defaultConfig(), ...config },
     );
   }
 
@@ -653,7 +672,7 @@ class Square extends Rectangle {
     public sideLength: number = 2,
     config: Style = {},
   ) {
-    super(sideLength, sideLength, config);
+    super(sideLength, sideLength, { ...Square.defaultConfig(), ...config });
   }
 
   reshape(sideLength: number, config = {}) {

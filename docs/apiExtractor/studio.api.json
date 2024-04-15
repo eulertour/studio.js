@@ -3002,6 +3002,37 @@
                 },
                 {
                   "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Arc.defaultConfig:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static defaultConfig(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{\n        closed: boolean;\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": true,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "defaultConfig"
+                },
+                {
+                  "kind": "Method",
                   "canonicalReference": "@eulertour/studio!Geometry.Arc.fromAttributes:member(1)",
                   "docComment": "",
                   "excerptTokens": [
@@ -3980,6 +4011,37 @@
                   "name": "centeredLine"
                 },
                 {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Line.defaultConfig:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static defaultConfig(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{\n        arrow: boolean;\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": true,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "defaultConfig"
+                },
+                {
                   "kind": "Property",
                   "canonicalReference": "@eulertour/studio!Geometry.Line#end:member",
                   "docComment": "",
@@ -4384,6 +4446,37 @@
                       "isOptional": true
                     }
                   ]
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Point.defaultConfig:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static defaultConfig(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{\n        radius: number;\n        closed: boolean;\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": true,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "defaultConfig"
                 },
                 {
                   "kind": "Method",
@@ -5853,6 +5946,86 @@
                   "isStatic": false,
                   "isProtected": false,
                   "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Shape.defaultConfig:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static defaultConfig(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{}"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": true,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "defaultConfig"
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Shape.defaultStyle:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static defaultStyle(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{\n        strokeColor: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Color",
+                      "canonicalReference": "@types/three!Color:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";\n        strokeOpacity: number;\n        strokeWidth: number;\n        fillColor: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Color",
+                      "canonicalReference": "@types/three!Color:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";\n        fillOpacity: number;\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": true,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 6
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "defaultStyle"
                 },
                 {
                   "kind": "Method",
@@ -8108,26 +8281,18 @@
                       "text": ", config?: "
                     },
                     {
+                      "kind": "Reference",
+                      "text": "TextStyle",
+                      "canonicalReference": "@eulertour/studio!~TextStyle:type"
+                    },
+                    {
                       "kind": "Content",
-                      "text": "{\n        fillColor?: "
+                      "text": " & "
                     },
                     {
                       "kind": "Reference",
-                      "text": "THREE.Color",
-                      "canonicalReference": "@types/three!Color:class"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": ";\n        fillOpacity?: number;\n        groupColoring?: "
-                    },
-                    {
-                      "kind": "Reference",
-                      "text": "Array",
-                      "canonicalReference": "!Array:interface"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "<[number, string?]>;\n        batchMaterials?: boolean;\n    }"
+                      "text": "TextConfig",
+                      "canonicalReference": "@eulertour/studio!~TextConfig:type"
                     },
                     {
                       "kind": "Content",
@@ -8150,7 +8315,7 @@
                       "parameterName": "config",
                       "parameterTypeTokenRange": {
                         "startIndex": 3,
-                        "endIndex": 8
+                        "endIndex": 6
                       },
                       "isOptional": true
                     }

@@ -10,9 +10,9 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _MeshLineGeometry_instances, _MeshLineGeometry_position, _MeshLineGeometry_endPosition, _MeshLineGeometry_nextPosition, _MeshLineGeometry_textureCoords, _MeshLineGeometry_proportion, _MeshLineGeometry_indices, _MeshLineGeometry_attributes, _MeshLineGeometry_previousPointCount, _MeshLineGeometry_pointCount, _MeshLineGeometry_addSegment, _MeshLineGeometry_makeNewBuffers;
-import { BufferAttribute, BufferGeometry, Vector3, Sphere, } from "three";
+import * as THREE from "three";
 import "./meshline.glsl.js";
-class MeshLineGeometry extends BufferGeometry {
+class MeshLineGeometry extends THREE.BufferGeometry {
     constructor(arrow = false) {
         super();
         _MeshLineGeometry_instances.add(this);
@@ -44,7 +44,7 @@ class MeshLineGeometry extends BufferGeometry {
             // Find the point that is arrowLength away from the end.
             const aVec = points[arrowIndex];
             const bVec = points[points.length - 1];
-            const vVec = new Vector3().subVectors(points[arrowIndex + 1], aVec);
+            const vVec = new THREE.Vector3().subVectors(points[arrowIndex + 1], aVec);
             const d = arrowLength;
             const a = vVec.dot(vVec);
             const b = 2 * (aVec.dot(vVec) - bVec.dot(vVec));
@@ -98,7 +98,7 @@ class MeshLineGeometry extends BufferGeometry {
             throw new Error("invalid endpoints");
         }
         let nextPosition;
-        if (new Vector3().subVectors(firstPoint, lastPoint).length() < 0.001) {
+        if (new THREE.Vector3().subVectors(firstPoint, lastPoint).length() < 0.001) {
             nextPosition = points.at(1);
         }
         else {
@@ -190,9 +190,9 @@ class MeshLineGeometry extends BufferGeometry {
     }
     computeBoundingSphere() {
         if (this.boundingSphere === null) {
-            this.boundingSphere = new Sphere();
+            this.boundingSphere = new THREE.Sphere();
         }
-        const center = new Vector3();
+        const center = new THREE.Vector3();
         for (const point of this.points) {
             this.boundingSphere.center.add(point);
         }
@@ -228,12 +228,12 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
     __classPrivateFieldSet(this, _MeshLineGeometry_proportion, new Float32Array(4 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_indices, new Uint16Array(6 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_attributes, {
-        position: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_position, "f"), 3),
-        endPosition: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_endPosition, "f"), 3),
-        nextPosition: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_nextPosition, "f"), 3),
-        textureCoords: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f"), 1),
-        proportion: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f"), 1),
-        index: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), 1),
+        position: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_position, "f"), 3),
+        endPosition: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_endPosition, "f"), 3),
+        nextPosition: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_nextPosition, "f"), 3),
+        textureCoords: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f"), 1),
+        proportion: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f"), 1),
+        index: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), 1),
     }, "f");
     this.setAttribute("position", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position);
     this.setAttribute("endPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endPosition);
