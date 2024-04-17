@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader";
 import * as Utils from "./utils";
 THREE.Object3D.prototype.setScale = function (factor) {
     this.scale.x = factor;
@@ -43,5 +44,5 @@ import { setupCanvas } from "./utils";
 import * as Diagram from "./diagram";
 import * as Constants from "./constants";
 import { setCameraDimensions, setCanvasViewport, } from "./MeshLine/MeshLineMaterial";
-export { Geometry, Animation, Text, SceneController, setupCanvas, THREE, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, };
+export { Geometry, Animation, Text, SceneController, setupCanvas, THREE, SVGLoader, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, };
 //# sourceMappingURL=index.js.map

@@ -51903,1851 +51903,6 @@ var THREE = /*#__PURE__*/Object.freeze({
 	sRGBEncoding: sRGBEncoding
 });
 
-const PIXELS_TO_COORDS = 8 / 450;
-const COORDS_TO_PIXELS = 1 / PIXELS_TO_COORDS;
-const ERROR_THRESHOLD = 0.001;
-const DEFAULT_BACKGROUND_HEX = 0xfffaf0;
-
-var constants = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	COORDS_TO_PIXELS: COORDS_TO_PIXELS,
-	DEFAULT_BACKGROUND_HEX: DEFAULT_BACKGROUND_HEX,
-	ERROR_THRESHOLD: ERROR_THRESHOLD,
-	PIXELS_TO_COORDS: PIXELS_TO_COORDS
-});
-
-/******************************************************************************
-Copyright (c) Microsoft Corporation.
-
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.
-***************************************************************************** */
-/* global Reflect, Promise, SuppressedError, Symbol */
-
-
-function __classPrivateFieldGet(receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-}
-
-function __classPrivateFieldSet(receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-}
-
-typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
-    var e = new Error(message);
-    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-};
-
-const MESHLINE_VERT = /*glsl*/ `
-  ${ShaderChunk.logdepthbuf_pars_vertex}
-  ${ShaderChunk.fog_pars_vertex}
-
-  // Passed by WebGLProgram
-  // https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
-  // uniform mat4 modelViewMatrix;
-  // uniform mat4 projectionMatrix;
-  uniform vec4 viewport;
-  uniform float unitWidth;
-
-  // Passed by WebGLProgram
-  // https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
-  // attribute vec3 position;
-  attribute vec3 endPosition;
-  attribute vec3 nextPosition;
-  attribute float textureCoords;
-  attribute float proportion;
-
-  varying vec2 vStartFragment;
-  varying vec2 vEndFragment;
-  varying vec2 vNextFragment;
-  varying float vProportion;
-  varying float vFlag;
-  varying float vArrow;
-  varying float vBeforeArrow;
-  
-  float eq(float x, float y) {
-    return 1.0 - abs(sign(x - y));
-  }
-
-  vec2 fragmentCoords(vec4 v) {
-    vec2 viewportFragment = viewport.zw / 2. * (1. + v.xy / v.w);
-    viewportFragment += viewport.xy;
-    return viewportFragment;
-  }
-
-  void main()	{
-    vProportion = proportion;
-
-    mat4 modelViewProjection = projectionMatrix * modelViewMatrix;
-    vec4 start = modelViewProjection * vec4(position, 1.0);
-    vec4 end = modelViewProjection * vec4(endPosition, 1.0);
-    vec4 next = modelViewProjection * vec4(nextPosition, 1.0);
-
-    vStartFragment = fragmentCoords(start);
-    vEndFragment = fragmentCoords(end);
-    vNextFragment = fragmentCoords(next);
-
-    // Extract bools.
-    float remaining = textureCoords;
-    vBeforeArrow = floor(0.125 * textureCoords);
-    remaining -= 8. * vBeforeArrow;
-    vArrow = floor(0.25 * remaining);
-    remaining -= 4. * vArrow;
-    float startEnd = floor(0.5 * remaining);
-    remaining -= 2. * startEnd;
-    float bottomTop = remaining;
-
-    // Add 0.2 so all pixels are covered.
-    vec2 segmentVec = 1.2 * normalize(vEndFragment - vStartFragment);
-    vec2 segmentNormal = vec2(-segmentVec.y, segmentVec.x);
-
-    // [0, 1] -> [1, -1]
-    segmentVec *= (2. * startEnd - 1.);
-    segmentNormal *= (2. * bottomTop - 1.);
-
-    vec2 fragmentOffset
-      = 0.5 * unitWidth * segmentVec
-      + 0.5 * unitWidth * segmentNormal
-        * (eq(vArrow, 0.) + eq(vArrow, 1.) * 2.618033988);
-
-    gl_Position = start * eq(startEnd, 0.) + end * eq(startEnd, 1.);
-    gl_Position.xy += (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
-
-    ${ShaderChunk.logdepthbuf_vertex}
-    ${ShaderChunk.fog_vertex &&
-    /*glsl*/ `vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );`}
-    ${ShaderChunk.fog_vertex}
-	}
-`;
-const MESHLINE_FRAG = /*glsl*/ `
-  ${ShaderChunk.fog_pars_fragment}
-  ${ShaderChunk.logdepthbuf_pars_fragment}
-
-  uniform vec3 color;
-  uniform float unitWidth;
-  uniform float opacity;
-  uniform vec2 drawRange;
-  uniform vec4 viewport;
-  uniform vec4 dimensions;
-
-  varying vec2 vStartFragment;
-  varying vec2 vEndFragment;
-  varying vec2 vNextFragment;
-  varying float vProportion;
-  varying float vFlag;
-  varying float vArrow;
-  varying float vBeforeArrow;
-  
-  float gt(float x, float y) { return max(sign(x - y), 0.0); }
-  float lt(float x, float y) { return max(sign(y - x), 0.0); }
-  float and(float a, float b, float c) { return a * b * c; }
-  float or(float a, float b, float c) { return min(a + b + c, 1.0); }
-  float lengthSquared(vec2 vec) { return dot(vec, vec); }
-
-  float segmentCoversFragment(
-    float halfWidthSquared,
-    vec2 segmentVec,
-    vec2 startToFrag,
-    vec2 endToFrag,
-    float dotProduct,
-    vec2 segmentProjection,
-    vec2 segmentNormal
-  ) {
-    float segmentStart = lt(lengthSquared(startToFrag), halfWidthSquared);
-    float segmentEnd = lt(lengthSquared(endToFrag), halfWidthSquared);
-    float segmentStem = and(
-      gt(dotProduct, 0.),
-      lt(lengthSquared(segmentProjection), lengthSquared(segmentVec)),
-      lt(lengthSquared(segmentNormal), halfWidthSquared)
-    );
-    return or(segmentStem, segmentStart, segmentEnd);
-  }
-  
-  float arrowCoversFragment(
-    vec2 startToEnd,
-    vec2 startToEndProjection,
-    vec2 startToEndNormal,
-    float unitWidth,
-    float pixelsPerUnit
-  ) {
-    float x = sqrt(lengthSquared(startToEndProjection));
-    float y = sqrt(lengthSquared(startToEndNormal));
-    float rise = 0.5 * unitWidth * pixelsPerUnit * 2.618033988;
-    // float run = sqrt(lengthSquared(startToEnd));
-    float m = -rise * inversesqrt(lengthSquared(startToEnd));
-    float b = rise;
-    return lt(y, m * x + b);
-  }
-
-  void main() {
-    ${ShaderChunk.logdepthbuf_fragment}
-
-      float pixelsPerUnit = viewport.w / dimensions.y;
-      float pixelWidth = unitWidth * pixelsPerUnit;
-      float halfWidthSquared = 0.25 * pixelWidth * pixelWidth;
-      vec2 startToFrag = gl_FragCoord.xy - vStartFragment;
-      vec2 startToEnd = vEndFragment - vStartFragment;
-      float startToEndDotProduct = dot(startToEnd, startToFrag);
-      vec2 startToEndProjection = startToEndDotProduct / lengthSquared(startToEnd) * startToEnd;
-      vec2 startToEndNormal = startToFrag - startToEndProjection;
-      vec2 endToFrag = gl_FragCoord.xy - vEndFragment;
-      vec2 endToNext = vNextFragment - vEndFragment;
-      float endToNextDotProduct = dot(endToNext, endToFrag);
-      vec2 endToNextProjection = endToNextDotProduct / lengthSquared(endToNext) * endToNext;
-      vec2 endToNextNormal = endToFrag - endToNextProjection;
-      vec2 nextToFrag = gl_FragCoord.xy - vNextFragment;
-
-      // For regular segments, exclude the fragment if it is covered by the next segment.
-      if (
-        vBeforeArrow == 0.
-        && vArrow == 0.
-        && vNextFragment != vEndFragment
-        && segmentCoversFragment(
-          halfWidthSquared,
-          endToNext,
-          endToFrag,
-          nextToFrag,
-          endToNextDotProduct,
-          endToNextProjection,
-          endToNextNormal
-        ) == 1.
-      ) discard;
-
-      // For segments preceding an arrow, exclude the fragment if it is covered by the arrow.
-      if (
-        vBeforeArrow == 1.
-        && vArrow == 0.
-        && endToNextDotProduct > 0.
-      ) discard;
-
-      // For segments that aren't part of arrows, exclude the fragment if it is not covered by the segment.
-      if (
-        vArrow == 0.
-        && segmentCoversFragment(
-          halfWidthSquared,
-          startToEnd,
-          startToFrag,
-          endToFrag,
-          startToEndDotProduct,
-          startToEndProjection,
-          startToEndNormal
-        ) == 0.
-      ) discard;
-
-      // For segments that are part of arrows, exclude fragments that aren't in the direction of the arrow.
-      if (vArrow == 1. && startToEndDotProduct < 0.) discard;
-
-      // For segments that are part of arrows, exclude fragments that aren't covered by the arrow.
-      if (
-        vArrow == 1.
-        && arrowCoversFragment(
-          startToEnd,
-          startToEndProjection,
-          startToEndNormal,
-          unitWidth,
-          pixelsPerUnit
-        ) == 0.
-      ) discard;
-      
-      // Exclude fragments that are outside the draw range.
-      if (vProportion < drawRange[0] || drawRange[1] < vProportion) discard;
-
-      gl_FragColor = vec4(color, opacity);
-
-    ${ShaderChunk.fog_fragment}
-	}
-`;
-
-var _MeshLineGeometry_instances, _MeshLineGeometry_position, _MeshLineGeometry_endPosition, _MeshLineGeometry_nextPosition, _MeshLineGeometry_textureCoords, _MeshLineGeometry_proportion, _MeshLineGeometry_indices, _MeshLineGeometry_attributes, _MeshLineGeometry_previousPointCount, _MeshLineGeometry_pointCount, _MeshLineGeometry_addSegment, _MeshLineGeometry_makeNewBuffers;
-class MeshLineGeometry extends BufferGeometry {
-    constructor(arrow = false) {
-        super();
-        _MeshLineGeometry_instances.add(this);
-        this.arrow = arrow;
-        this.isMeshLineGeometry = true;
-        this.type = "MeshLineGeometry";
-        _MeshLineGeometry_position.set(this, new Float32Array());
-        _MeshLineGeometry_endPosition.set(this, new Float32Array());
-        _MeshLineGeometry_nextPosition.set(this, new Float32Array());
-        _MeshLineGeometry_textureCoords.set(this, new Float32Array());
-        _MeshLineGeometry_proportion.set(this, new Float32Array());
-        _MeshLineGeometry_indices.set(this, new Uint16Array());
-        _MeshLineGeometry_attributes.set(this, null);
-        _MeshLineGeometry_previousPointCount.set(this, 0);
-        _MeshLineGeometry_pointCount.set(this, 0);
-    }
-    setPoints(points, updateBounds = true) {
-        const arrowLength = 0.3;
-        if (this.arrow) {
-            // Find the index of the last point that is at least arrowLength away from the end.
-            let arrowIndex = 0;
-            for (let i = points.length - 2; i >= 0; i--) {
-                const point = points[i];
-                if (point.distanceTo(points[points.length - 1]) >= arrowLength) {
-                    arrowIndex = i;
-                    break;
-                }
-            }
-            // Find the point that is arrowLength away from the end.
-            const aVec = points[arrowIndex];
-            const bVec = points[points.length - 1];
-            const vVec = new Vector3().subVectors(points[arrowIndex + 1], aVec);
-            const d = arrowLength;
-            const a = vVec.dot(vVec);
-            const b = 2 * (aVec.dot(vVec) - bVec.dot(vVec));
-            const c = aVec.dot(aVec) - 2 * aVec.dot(bVec) + bVec.dot(bVec) - d * d;
-            const rootDiscriminant = Math.sqrt(b * b - 4 * a * c);
-            const t1 = (-b + rootDiscriminant) / (2 * a);
-            const t2 = (-b - rootDiscriminant) / (2 * a);
-            let t;
-            if (0 <= t1 && t1 <= 1) {
-                t = t1;
-            }
-            else if (0 <= t2 && t2 <= 1) {
-                t = t2;
-            }
-            else {
-                throw new Error("No valid solution");
-            }
-            points.splice(arrowIndex + 1, points.length - arrowIndex - 1, aVec.clone().add(vVec.clone().multiplyScalar(t)), points.at(-1));
-        }
-        this.points = points;
-        __classPrivateFieldSet(this, _MeshLineGeometry_pointCount, points.length, "f");
-        const pointCount = __classPrivateFieldGet(this, _MeshLineGeometry_pointCount, "f");
-        const sizeChanged = __classPrivateFieldGet(this, _MeshLineGeometry_previousPointCount, "f") !== pointCount;
-        if (!__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f") || sizeChanged) {
-            __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_makeNewBuffers).call(this, pointCount);
-        }
-        __classPrivateFieldSet(this, _MeshLineGeometry_previousPointCount, pointCount, "f");
-        let lengths = new Float32Array(this.points.length);
-        lengths[0] = 0;
-        for (let i = 0; i < this.points.length - 2; i++) {
-            const position = points[i];
-            const endPosition = points[i + 1];
-            const nextPosition = points[i + 2];
-            const previousLength = lengths[i];
-            if (position === undefined ||
-                endPosition === undefined ||
-                nextPosition === undefined ||
-                previousLength === undefined) {
-                throw new Error("point missing");
-            }
-            lengths[i + 1] =
-                previousLength +
-                    Math.pow((Math.pow((position.x - endPosition.x), 2) +
-                        Math.pow((position.y - endPosition.y), 2) +
-                        Math.pow((position.z - endPosition.z), 2)), 0.5);
-            __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_addSegment).call(this, i, position, endPosition, nextPosition);
-        }
-        const firstPoint = points.at(0);
-        const lastPoint = points.at(-1);
-        if (firstPoint === undefined || lastPoint === undefined) {
-            throw new Error("invalid endpoints");
-        }
-        let nextPosition;
-        if (new Vector3().subVectors(firstPoint, lastPoint).length() < 0.001) {
-            nextPosition = points.at(1);
-        }
-        else {
-            nextPosition = points.at(-1);
-        }
-        const position = points.at(-2);
-        const endPosition = points.at(-1);
-        const previousLength = lengths.at(-2);
-        if (position === undefined ||
-            endPosition === undefined ||
-            nextPosition === undefined ||
-            previousLength === undefined) {
-            throw new Error("point missing");
-        }
-        lengths[this.points.length - 1] =
-            previousLength +
-                Math.pow((Math.pow((position.x - endPosition.x), 2) +
-                    Math.pow((position.y - endPosition.y), 2) +
-                    Math.pow((position.z - endPosition.z), 2)), 0.5);
-        __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_addSegment).call(this, points.length - 2, position, endPosition, nextPosition);
-        if (this.arrow) {
-            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 3)] = 9; // 8 * 1 + 2 * 0 + 1;
-            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 3) + 1] = 8; // 8 * 1 + 2 * 0 + 0;
-            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 3) + 2] = 10; // 8 * 1 + 2 * 1 + 0;
-            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 3) + 3] = 11; // 8 * 1 + 2 * 1 + 1;
-            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2)] = 5; // 4 * 1 + 2 * 0 + 1;
-            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2) + 1] = 4; // 4 * 1 + 2 * 0 + 0;
-            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2) + 2] = 6; // 4 * 1 + 2 * 1 + 0;
-            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2) + 3] = 7; // 4 * 1 + 2 * 1 + 1;
-        }
-        const totalLength = lengths.at(-1);
-        if (totalLength === undefined) {
-            throw new Error("Invalid length");
-        }
-        for (let i = 0; i < this.points.length - 1; i++) {
-            const startLength = lengths[i];
-            const endLength = lengths[i + 1];
-            if (startLength === undefined || endLength === undefined) {
-                throw new Error("Invalid length");
-            }
-            const startProportion = startLength / totalLength;
-            const endProportion = endLength / totalLength;
-            const offset = 4 * i;
-            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset] = startProportion;
-            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 1] = startProportion;
-            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 2] = endProportion;
-            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 3] = endProportion;
-        }
-        if (!__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f"))
-            throw new Error("missing attributes");
-        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position.needsUpdate = true;
-        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endPosition.needsUpdate = true;
-        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition.needsUpdate = true;
-        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords.needsUpdate = sizeChanged;
-        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion.needsUpdate = true;
-        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index.needsUpdate = sizeChanged;
-        if (updateBounds) {
-            this.computeBoundingSphere();
-            this.computeBoundingBox();
-        }
-    }
-    setVertexData(array, offset, x, y, z) {
-        array[offset] = x;
-        array[offset + 1] = y;
-        array[offset + 2] = z;
-        array[offset + 3] = x;
-        array[offset + 4] = y;
-        array[offset + 5] = z;
-        array[offset + 6] = x;
-        array[offset + 7] = y;
-        array[offset + 8] = z;
-        array[offset + 9] = x;
-        array[offset + 10] = y;
-        array[offset + 11] = z;
-    }
-    setTextureCoords(array, offset) {
-        array[offset] = 1; // 8 * 0 + 4 * 0 + 2 * 0 + 1;
-        // array[offset + 1] = 0; // 8 * 0 + 4 * 0 + 2 * 0 + 0;
-        array[offset + 2] = 2; // 8 * 0 + 4 * 0 + 2 * 1 + 0;
-        array[offset + 3] = 3; // 8 * 0 + 4 * 0 + 2 * 1 + 1;
-    }
-    setIndices(array, offset, startIndex) {
-        array[offset] = startIndex;
-        array[offset + 1] = startIndex + 1;
-        array[offset + 2] = startIndex + 2;
-        array[offset + 3] = startIndex;
-        array[offset + 4] = startIndex + 2;
-        array[offset + 5] = startIndex + 3;
-    }
-    computeBoundingSphere() {
-        if (this.boundingSphere === null) {
-            this.boundingSphere = new Sphere();
-        }
-        const center = new Vector3();
-        for (const point of this.points) {
-            this.boundingSphere.center.add(point);
-        }
-        this.boundingSphere.center.divideScalar(this.points.length);
-        this.boundingSphere.radius = 0;
-        for (const point of this.points) {
-            this.boundingSphere.radius = Math.max(this.boundingSphere.radius, center.distanceTo(point));
-        }
-    }
-}
-_MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new WeakMap(), _MeshLineGeometry_nextPosition = new WeakMap(), _MeshLineGeometry_textureCoords = new WeakMap(), _MeshLineGeometry_proportion = new WeakMap(), _MeshLineGeometry_indices = new WeakMap(), _MeshLineGeometry_attributes = new WeakMap(), _MeshLineGeometry_previousPointCount = new WeakMap(), _MeshLineGeometry_pointCount = new WeakMap(), _MeshLineGeometry_instances = new WeakSet(), _MeshLineGeometry_addSegment = function _MeshLineGeometry_addSegment(index, start, end, next) {
-    let x, y, z;
-    const vertexOffset = 12 * index;
-    ({ x, y, z } = start);
-    this.setVertexData(__classPrivateFieldGet(this, _MeshLineGeometry_position, "f"), vertexOffset, x, y, z);
-    ({ x, y, z } = end);
-    this.setVertexData(__classPrivateFieldGet(this, _MeshLineGeometry_endPosition, "f"), vertexOffset, x, y, z);
-    ({ x, y, z } = next);
-    this.setVertexData(__classPrivateFieldGet(this, _MeshLineGeometry_nextPosition, "f"), vertexOffset, x, y, z);
-    const textureOffset = 4 * index;
-    this.setTextureCoords(__classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f"), textureOffset);
-    const indexOffset = 6 * index;
-    const nextIndex = 4 * index;
-    this.setIndices(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), indexOffset, nextIndex);
-}, _MeshLineGeometry_makeNewBuffers = function _MeshLineGeometry_makeNewBuffers(pointCount) {
-    // Remove the previous buffers from the GPU
-    this.dispose();
-    const rectCount = pointCount - 1;
-    __classPrivateFieldSet(this, _MeshLineGeometry_position, new Float32Array(12 * rectCount), "f");
-    __classPrivateFieldSet(this, _MeshLineGeometry_endPosition, new Float32Array(12 * rectCount), "f");
-    __classPrivateFieldSet(this, _MeshLineGeometry_nextPosition, new Float32Array(12 * rectCount), "f");
-    __classPrivateFieldSet(this, _MeshLineGeometry_textureCoords, new Float32Array(4 * rectCount), "f");
-    __classPrivateFieldSet(this, _MeshLineGeometry_proportion, new Float32Array(4 * rectCount), "f");
-    __classPrivateFieldSet(this, _MeshLineGeometry_indices, new Uint16Array(6 * rectCount), "f");
-    __classPrivateFieldSet(this, _MeshLineGeometry_attributes, {
-        position: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_position, "f"), 3),
-        endPosition: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_endPosition, "f"), 3),
-        nextPosition: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_nextPosition, "f"), 3),
-        textureCoords: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f"), 1),
-        proportion: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f"), 1),
-        index: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), 1),
-    }, "f");
-    this.setAttribute("position", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position);
-    this.setAttribute("endPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endPosition);
-    this.setAttribute("nextPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition);
-    this.setAttribute("textureCoords", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords);
-    this.setAttribute("proportion", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion);
-    this.setIndex(__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index);
-};
-
-const CameraDimensions = new Vector2();
-const setCameraDimensions = (camera) => {
-    const { left, right, top, bottom } = camera;
-    CameraDimensions.set(right - left, top - bottom);
-};
-const CanvasViewport = new Vector4();
-const setCanvasViewport = (viewport) => {
-    CanvasViewport.copy(viewport);
-    if (typeof window !== "undefined") {
-        CanvasViewport.multiplyScalar(window.devicePixelRatio);
-    }
-};
-class MeshLineMaterial extends ShaderMaterial {
-    constructor(parameters) {
-        super({
-            uniforms: Object.assign({}, UniformsLib.fog, {
-                color: { value: new Color() },
-                opacity: { value: 1 },
-                viewport: { value: CanvasViewport },
-                dimensions: { value: CameraDimensions },
-                unitWidth: { value: 1 / 10 },
-                drawRange: { value: new Vector2(0, 1) },
-            }),
-            vertexShader: MESHLINE_VERT,
-            fragmentShader: MESHLINE_FRAG,
-            transparent: true,
-        });
-        Object.defineProperties(this, {
-            opacity: {
-                enumerable: true,
-                get: () => {
-                    return this.uniforms.opacity.value;
-                },
-                set: (value) => {
-                    this.uniforms.opacity.value = value;
-                },
-            },
-            drawRange: {
-                enumerable: true,
-                get: () => {
-                    return this.uniforms.drawRange.value;
-                },
-                set: (value) => {
-                    this.uniforms.drawRange.value = value;
-                },
-            },
-        });
-        parameters.color = new Color()
-            .set(parameters.color)
-            .convertLinearToSRGB();
-        this.setValues(parameters);
-    }
-    get color() {
-        return this.uniforms.color.value;
-    }
-    set color(value) {
-        this.uniforms.color.value = value;
-    }
-    get width() {
-        return this.uniforms.unitWidth.value * 8 * 10;
-    }
-    set width(value) {
-        this.uniforms.unitWidth.value = value / 8 / 10;
-    }
-}
-
-function MeshLineRaycast(raycaster, intersects) {
-    const nextIntersectIndex = intersects.length;
-    const inverseMatrix = new Matrix4();
-    const ray = new Ray();
-    const interRay = new Vector3();
-    const geometry = this.geometry;
-    inverseMatrix.copy(this.matrixWorld).invert();
-    ray.copy(raycaster.ray).applyMatrix4(inverseMatrix);
-    const vStart = new Vector3();
-    const vEnd = new Vector3();
-    const interSegment = new Vector3();
-    const index = geometry.index;
-    const attributes = geometry.attributes;
-    if (index !== null) {
-        index.array;
-        const positions = attributes.position.array;
-        const endPositions = attributes.endPosition.array;
-        let minDistance = Infinity;
-        for (let i = 0; i < positions.length; i += 12) {
-            vStart.fromArray(positions, i);
-            vEnd.fromArray(endPositions, i);
-            const precision = raycaster.params.Line.threshold;
-            const precisionSq = precision * precision;
-            const distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment);
-            if (distSq > precisionSq)
-                continue;
-            // Move back to world space for distance calculation
-            interRay.applyMatrix4(this.matrixWorld);
-            interSegment.applyMatrix4(this.matrixWorld);
-            const distance = interSegment.distanceTo(interRay);
-            if (distance < raycaster.near || distance > raycaster.far)
-                continue;
-            if (distance < minDistance) {
-                minDistance = distance;
-                intersects[nextIntersectIndex] = {
-                    distance,
-                    // What do we want? intersection point on the ray or on the segment??
-                    // point: raycaster.ray.at( distance ),
-                    point: interSegment.clone(),
-                    index: i / 12,
-                    face: null,
-                    faceIndex: undefined,
-                    object: this,
-                };
-                break;
-            }
-        }
-    }
-}
-
-class MeshLine extends Mesh {
-    constructor(geometry, material) {
-        super(geometry, material);
-        this.raycast = MeshLineRaycast;
-    }
-}
-
-const getFillGeometry = (points) => {
-    const shape = new Shape$1();
-    shape.moveTo(points[0].x, points[0].y);
-    for (const point of points.slice(1)) {
-        shape.lineTo(point.x, point.y);
-    }
-    shape.closePath();
-    return new ShapeGeometry(shape);
-};
-/**
- * An abstract class representing a generalized shape.
- */
-class Shape extends Group {
-    constructor(points, config = {}) {
-        super();
-        config = Object.assign(Shape.defaultStyle(), config);
-        const fillGeometry = getFillGeometry(points);
-        const fillMaterial = new MeshBasicMaterial({
-            color: config.fillColor,
-            opacity: config.fillOpacity,
-            transparent: true,
-        });
-        this.fill = new Mesh(fillGeometry, fillMaterial);
-        this.add(this.fill);
-        const strokeGeometry = new MeshLineGeometry(config.arrow);
-        strokeGeometry.setPoints(points);
-        const strokeMaterial = new MeshLineMaterial({
-            color: config.strokeColor,
-            opacity: config.strokeOpacity,
-            width: config.strokeWidth,
-            transparent: true,
-        });
-        this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
-        this.add(this.stroke);
-        this.curveEndIndices = this.getCurveEndIndices();
-    }
-    static defaultStyle() {
-        return {
-            strokeColor: new Color(0x000000),
-            strokeOpacity: 1.0,
-            strokeWidth: 8,
-            fillColor: new Color(0xfffaf0),
-            fillOpacity: 0.0,
-        };
-    }
-    static defaultConfig() {
-        return {};
-    }
-    reshape(...args) {
-        throw new Error("Reshape not implemented.");
-    }
-    copyStroke(shape) {
-        this.stroke.geometry.dispose();
-        this.stroke.geometry = shape.stroke.geometry;
-    }
-    copyFill(shape) {
-        this.fill.geometry.dispose();
-        this.fill.geometry = shape.fill.geometry;
-    }
-    copyStrokeFill(shape) {
-        this.copyStroke(shape);
-        this.copyFill(shape);
-    }
-    get points() {
-        return this.stroke.geometry.points;
-    }
-    segment(index) {
-        return new Line3(this.points[index].clone(), this.points[index + 1].clone());
-    }
-    curve(curveIndex, worldTransform = true) {
-        const curveEndIndices = this.curveEndIndices[curveIndex];
-        const curvePoints = this.points.slice(curveEndIndices[0], curveEndIndices[1] + 1);
-        if (worldTransform) {
-            return curvePoints.map((p) => p.clone().applyMatrix4(this.matrixWorld));
-        }
-        else {
-            return curvePoints;
-        }
-    }
-    get numCurves() {
-        return this.curveEndIndices.length;
-    }
-    getCurveEndIndices() {
-        const points = this.stroke.geometry.points;
-        const indices = [];
-        for (let i = 0; i < points.length - 1; i++) {
-            indices.push([i, i + 1]);
-        }
-        return indices;
-    }
-    clear() {
-        this.remove(this.stroke);
-        this.remove(this.fill);
-        return this;
-    }
-    clone(recursive) {
-        if (recursive === true) {
-            throw Error("Recursive Shape.clone() isn't implemented.");
-        }
-        const cloneFunc = this.constructor;
-        const clone = new cloneFunc(...this.getCloneAttributes(), Object.assign(Object.assign({}, this.getStyle()), this.getClassConfig()));
-        Object3D.prototype.copy.call(clone, this, false);
-        return clone;
-    }
-    getClassConfig() {
-        return {};
-    }
-    getCloneAttributes() {
-        return [this.points];
-    }
-    getStyle() {
-        return {
-            fillColor: this.fill.material.color,
-            fillOpacity: this.fill.material.opacity,
-            strokeColor: this.stroke.material.color,
-            strokeOpacity: this.stroke.material.opacity,
-            strokeWidth: this.stroke.material.width,
-        };
-    }
-    setStyle(style) {
-        const { fillColor, fillOpacity } = style;
-        if (fillColor !== undefined) {
-            this.fill.material.color = fillColor;
-        }
-        if (fillOpacity !== undefined) {
-            this.fill.material.opacity = fillOpacity;
-        }
-        const { strokeColor, strokeOpacity, strokeWidth } = style;
-        if (strokeColor !== undefined) {
-            this.stroke.material.color = strokeColor;
-        }
-        if (strokeOpacity !== undefined) {
-            this.stroke.material.opacity = strokeOpacity;
-        }
-        if (strokeWidth !== undefined) {
-            this.stroke.material.width = strokeWidth;
-        }
-    }
-    getTransform() {
-        return {
-            position: this.position.clone(),
-            rotation: this.rotation.clone(),
-            scale: this.scale.clone(),
-        };
-    }
-    setTransform(transform) {
-        const { position, rotation, scale } = transform;
-        this.position.copy(position);
-        this.rotation.copy(rotation);
-        this.scale.copy(scale);
-    }
-    dispose() {
-        this.fill.geometry.dispose();
-        this.fill.material.dispose();
-        this.stroke.geometry.dispose();
-        this.stroke.material.dispose();
-        return this;
-    }
-    getDimensions() {
-        const box = new Box3();
-        box.setFromObject(this);
-        const width = box.max.x - box.min.x;
-        const height = box.max.y - box.min.y;
-        return new Vector2(width, height);
-    }
-    closestPointToPoint(point, target) {
-        if (target === undefined) {
-            target = new Vector3();
-        }
-        const segment = new Line3();
-        const closestPointOnSegment = new Vector3();
-        let minDistance = Infinity;
-        for (let i = 0; i < this.points.length - 1; i++) {
-            segment.set(this.points[i], this.points[i + 1]);
-            const distance = segment
-                .closestPointToPoint(point, true, closestPointOnSegment)
-                .distanceTo(point);
-            if (distance < minDistance) {
-                minDistance = distance;
-                target.copy(closestPointOnSegment);
-            }
-        }
-        return target;
-    }
-}
-/**
- * A segment between two points.
- *
- * @example line.ts
- */
-class Line extends Shape {
-    constructor(start, end, config = {}) {
-        config = Object.assign(Object.assign({}, Line.defaultConfig()), config);
-        super([start, end], config);
-        this.start = start;
-        this.end = end;
-        this.arrow = config.arrow;
-        this.curveEndIndices = [[0, 1]];
-    }
-    static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { arrow: false });
-    }
-    static centeredLine(start, end, config = {}) {
-        const center = new Vector3().addVectors(start, end).divideScalar(2);
-        const line = new Line(new Vector3().subVectors(start, center), new Vector3().subVectors(end, center), config);
-        line.position.copy(center);
-        return line;
-    }
-    reshape(start, end, config = {}) {
-        this.start.copy(start);
-        this.end.copy(end);
-        this.copyStrokeFill(new Line(start, end, config));
-    }
-    getClassConfig() {
-        return {};
-    }
-    getAttributes() {
-        return {
-            start: this.start,
-            end: this.end,
-        };
-    }
-    toVector(global) {
-        this.updateWorldMatrix(true, false);
-        return global
-            ? new Vector3().subVectors(new Vector3().copy(this.end).applyMatrix4(this.matrixWorld), new Vector3().copy(this.start).applyMatrix4(this.matrixWorld))
-            : new Vector3().subVectors(this.end, this.start);
-    }
-    static fromAttributes(attributes) {
-        const { start, end } = attributes;
-        return new Line(start, end);
-    }
-}
-/**
- * An arrow derived from a line.
- *
- * @example arrow.ts
- */
-class Arrow extends Line {
-    constructor(start, end, config = {}) {
-        super(start, end, Object.assign(Object.assign(Object.assign({}, Arrow.defaultConfig()), config), { arrow: true }));
-        this.start = start;
-        this.end = end;
-    }
-    reshape(start, end, config = {}) {
-        this.start.copy(start);
-        this.end.copy(end);
-        this.copyStrokeFill(new Arrow(start, end, config));
-    }
-}
-/**
- * A series of connected line segments.
- *
- * @example polyline.ts
- */
-class Polyline extends Shape {
-    constructor(points, config = {}) {
-        super(points, Object.assign(Object.assign(Object.assign({}, Polyline.defaultConfig()), config), { fillOpacity: 0 }));
-        this.curveEndIndices = [[0, 1]];
-    }
-    reshape(points, config = {}) {
-        this.copyStrokeFill(new Polyline(points, config));
-    }
-    getClassConfig() {
-        return {};
-    }
-    getAttributes() {
-        return {
-            points: this.points,
-        };
-    }
-    static fromAttributes(attributes) {
-        const { points } = attributes;
-        return new Polyline(points);
-    }
-}
-/**
- * A part of a circle's circumference.
- *
- * @example arc.ts
- */
-class Arc extends Shape {
-    constructor(radius = 1, angle = Math.PI / 2, config = {}) {
-        config = Object.assign(Object.assign({}, Arc.defaultConfig()), config);
-        let points = [];
-        let negative = false;
-        if (angle < 0) {
-            negative = true;
-            angle *= -1;
-        }
-        if (angle > 0) {
-            for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
-                points.push(new Vector3(radius * Math.cos(i), radius * Math.sin(i) * (negative ? -1 : 1), 0));
-            }
-        }
-        else {
-            points.push(new Vector3(radius, 0, 0), new Vector3(radius, 0, 0));
-        }
-        if (config.closed) {
-            points = [
-                new Vector3(0, 0, 0),
-                ...points,
-                new Vector3(0, 0, 0),
-            ];
-        }
-        super(points, config);
-        this.radius = radius;
-        this.angle = angle;
-        this.closed = config.closed;
-        if (this.closed) {
-            this.curveEndIndices = [
-                [0, 1],
-                [1, points.length - 2],
-                [points.length - 2, points.length - 1],
-            ];
-        }
-        else {
-            this.curveEndIndices = [[0, points.length - 1]];
-        }
-    }
-    static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { closed: false });
-    }
-    reshape(radius = 1, angle = Math.PI / 2, config = {}) {
-        this.radius = radius;
-        this.angle = angle;
-        this.copyStrokeFill(new Arc(radius, angle, config));
-    }
-    getCloneAttributes() {
-        return [this.radius, this.angle, this.closed];
-    }
-    getAttributes() {
-        return {
-            radius: this.radius,
-            angle: this.angle,
-            closed: this.closed,
-        };
-    }
-    static fromAttributes(attributes) {
-        const { radius, angle, closed } = attributes;
-        return new Arc(radius, angle, { closed });
-    }
-    get attributeData() {
-        return [
-            {
-                attribute: "radius",
-                type: "number",
-                default: 1,
-            },
-            {
-                attribute: "angle",
-                type: "angle",
-                default: 45,
-            },
-            {
-                attribute: "closed",
-                type: "boolean",
-                default: false,
-            },
-        ];
-    }
-    getDimensions() {
-        const worldDiameter = 2 * this.radius * this.scale.x;
-        return new Vector2(worldDiameter, worldDiameter);
-    }
-}
-/**
- * A shape consisting of all points at a fixed distance from a given center.
- *
- * @example circle.ts
- */
-class Circle extends Arc {
-    constructor(radius = 1, config = {}) {
-        super(radius, 2 * Math.PI, Object.assign(Object.assign({}, Circle.defaultConfig()), config));
-    }
-    reshape(radius, config = {}) {
-        this.radius = radius;
-        this.copyStrokeFill(new Circle(radius, config));
-    }
-    getCloneAttributes() {
-        return [this.radius];
-    }
-    getAttributes() {
-        return {
-            radius: this.radius,
-            angle: 2 * Math.PI,
-            closed: false,
-        };
-    }
-    static fromAttributes(attributes) {
-        const { radius } = attributes;
-        return new Circle(radius);
-    }
-    get attributeData() {
-        return [
-            {
-                attribute: "radius",
-                type: "number",
-                default: 1,
-            },
-        ];
-    }
-}
-/**
- * A small circle representing a precise location in space.
- *
- * @example point.ts
- */
-class Point extends Circle {
-    constructor(position = ORIGIN, config = {}) {
-        config = Object.assign(Object.assign({ fillColor: new Color("black"), fillOpacity: 1 }, Point.defaultConfig()), config);
-        super(config.radius, config);
-        this.position.set(position.x, position.y, 0);
-    }
-    static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { radius: 0.08 });
-    }
-    getAttributes() {
-        return {
-            radius: this.radius,
-            angle: 2 * Math.PI,
-            closed: false,
-        };
-    }
-    static fromAttributes() {
-        return new Point(new Vector3());
-    }
-}
-/**
- * A shape made up of line segments connected
- * to form a (usually) closed shape.
- *
- * @example polygon.ts
- */
-class Polygon extends Shape {
-    constructor(points, config = {}) {
-        super(points, Object.assign(Object.assign({}, Polygon.defaultConfig()), config));
-        this.curveEndIndices = [];
-        for (let i = 0; i < points.length - 1; i++) {
-            this.curveEndIndices.push([i, i + 1]);
-        }
-    }
-    getClassConfig() {
-        return {};
-    }
-    getAttributes() {
-        return { points: this.points };
-    }
-    static fromAttributes(attributes) {
-        const { points } = attributes;
-        return new Polygon(points);
-    }
-    get attributeData() {
-        return [];
-    }
-}
-/**
- * A shape with four sides and four right angles.
- *
- * @example rectangle.ts
- */
-class Rectangle extends Shape {
-    constructor(width = 4, height = 2, config = {}) {
-        super([
-            new Vector3(-width / 2, height / 2, 0),
-            new Vector3(width / 2, height / 2, 0),
-            new Vector3(width / 2, -height / 2, 0),
-            new Vector3(-width / 2, -height / 2, 0),
-            new Vector3(-width / 2, height / 2, 0),
-        ], Object.assign(Object.assign({}, Rectangle.defaultConfig()), config));
-        this.width = width;
-        this.height = height;
-    }
-    getCloneAttributes() {
-        return [this.width, this.height];
-    }
-    getAttributes() {
-        return {
-            width: this.width,
-            height: this.height,
-        };
-    }
-    static fromAttributes(attributes) {
-        const { width, height } = attributes;
-        return new Rectangle(width, height);
-    }
-    get attributeData() {
-        return [
-            {
-                attribute: "width",
-                type: "number",
-                default: 4,
-            },
-            {
-                attribute: "height",
-                type: "number",
-                default: 2,
-            },
-        ];
-    }
-    getCurveEndIndices() {
-        return [
-            [0, 1],
-            [1, 2],
-            [2, 3],
-            [3, 4],
-        ];
-    }
-}
-/**
- * A shape with four sides of equal length and four right angles.
- *
- * @example square.ts
- */
-class Square extends Rectangle {
-    constructor(sideLength = 2, config = {}) {
-        super(sideLength, sideLength, Object.assign(Object.assign({}, Square.defaultConfig()), config));
-        this.sideLength = sideLength;
-    }
-    reshape(sideLength, config = {}) {
-        this.sideLength = sideLength;
-        this.copyStrokeFill(new Square(sideLength, config));
-    }
-    getCloneAttributes() {
-        return [this.sideLength];
-    }
-    getAttributes() {
-        return {
-            width: this.sideLength,
-            height: this.sideLength,
-        };
-    }
-    static fromAttributes(attributes) {
-        const { width } = attributes;
-        return new Square(width);
-    }
-    get attributeData() {
-        return [
-            {
-                attribute: "sideLength",
-                type: "number",
-                default: 2,
-            },
-        ];
-    }
-}
-
-var geometry = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	Arc: Arc,
-	Arrow: Arrow,
-	Circle: Circle,
-	Line: Line,
-	Point: Point,
-	Polygon: Polygon,
-	Polyline: Polyline,
-	Rectangle: Rectangle,
-	Shape: Shape,
-	Square: Square
-});
-
-const BUFFER = 0.5;
-const ORIGIN = Object.freeze(new Vector3(0, 0, 0));
-const RIGHT = Object.freeze(new Vector3(1, 0, 0));
-const LEFT = Object.freeze(new Vector3(-1, 0, 0));
-const UP = Object.freeze(new Vector3(0, 1, 0));
-const DOWN = Object.freeze(new Vector3(0, -1, 0));
-const OUT = Object.freeze(new Vector3(0, 0, 1));
-const IN = Object.freeze(new Vector3(0, 0, -1));
-const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-const getFrameAttributes = (aspectRatio, height) => {
-    const coordinateHeight = PIXELS_TO_COORDS * height;
-    return {
-        aspectRatio,
-        height,
-        width: height * aspectRatio,
-        coordinateHeight,
-        coordinateWidth: coordinateHeight * aspectRatio,
-    };
-};
-const isWidthSetup = (config) => {
-    return ("aspectRatio" in config &&
-        "pixelWidth" in config &&
-        "coordinateWidth" in config);
-};
-const isHeightSetup = (config) => {
-    return ("aspectRatio" in config &&
-        "pixelHeight" in config &&
-        "coordinateHeight" in config);
-};
-const setupCanvas = (canvas, config = {
-    aspectRatio: 16 / 9,
-    pixelHeight: 720,
-    coordinateHeight: 8,
-    viewport: undefined,
-}) => {
-    config = Object.assign({
-        aspectRatio: 16 / 9,
-        pixelHeight: 720,
-        coordinateHeight: 8,
-        viewport: undefined,
-    }, config);
-    let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
-    if (isWidthSetup(config)) {
-        aspectRatio = config.aspectRatio;
-        pixelWidth = config.pixelWidth;
-        coordinateWidth = config.coordinateWidth;
-        pixelHeight = pixelWidth / aspectRatio;
-        coordinateHeight = coordinateWidth / aspectRatio;
-    }
-    else if (isHeightSetup(config)) {
-        aspectRatio = config.aspectRatio;
-        pixelHeight = config.pixelHeight;
-        coordinateHeight = config.coordinateHeight;
-        pixelWidth = pixelHeight * aspectRatio;
-        coordinateWidth = coordinateHeight * aspectRatio;
-    }
-    else {
-        throw new Error("Invalid config:", config);
-    }
-    const camera = new OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
-    camera.position.z = 6;
-    setCameraDimensions(camera);
-    const renderer = new WebGLRenderer({
-        canvas,
-        antialias: true,
-        preserveDrawingBuffer: true,
-    });
-    renderer.setClearColor(new Color(DEFAULT_BACKGROUND_HEX));
-    renderer.autoClear = false;
-    if (config.viewport) {
-        CanvasViewport.copy(config.viewport);
-    }
-    else {
-        renderer.setSize(pixelWidth, pixelHeight, false);
-        CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
-    }
-    if (typeof window !== "undefined") {
-        renderer.setPixelRatio(window.devicePixelRatio);
-        CanvasViewport.multiplyScalar(window.devicePixelRatio);
-    }
-    return [new Scene(), camera, renderer];
-};
-const furthestInDirection = (object, direction) => {
-    object.updateWorldMatrix(true, true);
-    let maxPoint = new Vector3();
-    let maxVal = -Infinity;
-    let worldPoint = new Vector3();
-    object.traverse((child) => {
-        if (child instanceof Mesh) {
-            const positionArray = child.geometry.attributes.position.array;
-            if (positionArray.length % 3 !== 0) {
-                throw new Error("Invalid position array length");
-            }
-            for (let i = 0; i < positionArray.length; i += 3) {
-                worldPoint
-                    .set(positionArray[i], positionArray[i + 1], positionArray[i + 2])
-                    .applyMatrix4(child.matrixWorld);
-                let dot = worldPoint.dot(direction);
-                if (dot > maxVal) {
-                    maxPoint.copy(worldPoint);
-                    maxVal = dot;
-                }
-            }
-            if (child.geometry.attributes.nextPosition !== undefined) {
-                const nextArray = child.geometry.attributes.nextPosition.array;
-                worldPoint
-                    .set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1))
-                    .applyMatrix4(child.matrixWorld);
-                let dot = worldPoint.dot(direction);
-                if (dot > maxVal) {
-                    maxPoint.copy(worldPoint);
-                    maxVal = dot;
-                }
-            }
-        }
-    });
-    return maxPoint;
-};
-const moveNextTo = (target, object, direction, distance = 0.5) => {
-    target.updateWorldMatrix(true, true);
-    object.updateWorldMatrix(true, true);
-    let targetCenter = new Vector3();
-    let objectCenter = new Vector3();
-    const targetBox = new Box3().expandByObject(target);
-    const objectBox = new Box3().expandByObject(object);
-    targetBox.getCenter(targetCenter);
-    objectBox.getCenter(objectCenter);
-    let objectWorldPosition = object.parent !== null
-        ? object.parent.localToWorld(object.position.clone())
-        : object.position.clone();
-    const objectPositionToCenter = objectCenter.clone().sub(objectWorldPosition);
-    let targetCenterToHorizontalEdge = 0;
-    let objectCenterToHorizontalEdge = 0;
-    if (direction.x > 0) {
-        targetCenterToHorizontalEdge = targetBox.max.x - targetCenter.x;
-        objectCenterToHorizontalEdge = objectBox.min.x - objectCenter.x;
-    }
-    else if (direction.x < 0) {
-        targetCenterToHorizontalEdge = targetBox.min.x - targetCenter.x;
-        objectCenterToHorizontalEdge = objectBox.max.x - objectCenter.x;
-    }
-    let targetCenterToVerticalEdge = 0;
-    let objectCenterToVerticalEdge = 0;
-    if (direction.y > 0) {
-        targetCenterToVerticalEdge = targetBox.max.y - targetCenter.y;
-        objectCenterToVerticalEdge = objectBox.min.y - objectCenter.y;
-    }
-    else if (direction.y < 0) {
-        targetCenterToVerticalEdge = targetBox.min.y - targetCenter.y;
-        objectCenterToVerticalEdge = objectBox.max.y - objectCenter.y;
-    }
-    const finalObjectPosition = new Vector3()
-        .copy(targetCenter)
-        .addScaledVector(direction, distance)
-        .sub(objectPositionToCenter);
-    finalObjectPosition.x += targetCenterToHorizontalEdge;
-    finalObjectPosition.x -= objectCenterToHorizontalEdge;
-    finalObjectPosition.y += targetCenterToVerticalEdge;
-    finalObjectPosition.y -= objectCenterToVerticalEdge;
-    if (object.parent !== null) {
-        object.position.copy(object.parent.worldToLocal(finalObjectPosition));
-    }
-    else {
-        object.position.copy(finalObjectPosition);
-    }
-};
-const moveToRightOf = (target, object, distance = 0.5) => {
-    moveNextTo(target, object, RIGHT, distance);
-};
-const moveToLeftOf = (target, object, distance = 0.5) => {
-    moveNextTo(target, object, LEFT, distance);
-};
-const moveAbove = (target, object, distance = 0.5) => {
-    moveNextTo(target, object, UP, distance);
-};
-const moveBelow = (target, object, distance = 0.5) => {
-    moveNextTo(target, object, DOWN, distance);
-};
-const getBoundingBoxCenter = (obj, target) => {
-    obj.updateWorldMatrix(true, true);
-    new Box3().expandByObject(obj).getCenter(target);
-    return target;
-};
-const getBoundingBoxHelper = (obj, color) => {
-    obj.updateWorldMatrix(true, true);
-    const box = new Box3().expandByObject(obj);
-    const helper = new Box3Helper(box, new Color(color));
-    return helper;
-};
-const transformBetweenSpaces = (from, to, point) => {
-    return to.worldToLocal(from.localToWorld(point));
-};
-/*
- * Solves
- * [ a b ]   [ xa ]   [ ba ]
- * [ c d ] * [ xb ] = [ bb ]
- * for x.
- */
-const matrixSolve = (ma, mb, mc, md, ba, bb) => {
-    const determinant = ma * md - mb * mc;
-    if (determinant === 0) {
-        return null;
-    }
-    return [(md * ba - mb * bb) / determinant, (ma * bb - mc * ba) / determinant];
-};
-// https://blogs.sas.com/content/iml/2018/07/09/intersection-line-segments.html
-const getIntersection = (p1, p2, q1, q2) => {
-    const p2MinusP1 = new Vector3().subVectors(p2, p1);
-    const q1MinusQ2 = new Vector3().subVectors(q1, q2);
-    const q1MinusP1 = new Vector3().subVectors(q1, p1);
-    const solution = matrixSolve(p2MinusP1.x, q1MinusQ2.x, p2MinusP1.y, q1MinusQ2.y, q1MinusP1.x, q1MinusP1.y);
-    if (solution === null) {
-        // TODO: Handle parallel lines.
-        return null;
-    }
-    const [s, t] = solution;
-    if (s < 0 || 1 < s || t < 0 || 1 < t) {
-        return null;
-    }
-    return p1.multiplyScalar(1 - s).addScaledVector(p2, s);
-};
-const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
-    return (new Vector3()
-        .subVectors(shape.points.at(0), shape.points.at(-1))
-        .length() < adjacentThreshold);
-};
-const intersectionsBetween = (shape1, shape2) => {
-    var _a, _b, _c, _d;
-    let intersections = [];
-    shape1.updateMatrixWorld();
-    shape2.updateMatrixWorld();
-    for (let i = 0; i < shape1.points.length - 1; i++) {
-        const segment1 = new Line3((_a = shape1.points[i]) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape1.matrixWorld), (_b = shape1.points[i + 1]) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape1.matrixWorld));
-        for (let j = 0; j < shape2.points.length - 1; j++) {
-            const segment2 = new Line3((_c = shape2.points[j]) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape2.matrixWorld), (_d = shape2.points[j + 1]) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape2.matrixWorld));
-            const maybeIntersection = getIntersection(segment1.start, segment1.end, segment2.start, segment2.end);
-            if (maybeIntersection !== null) {
-                intersections.push(maybeIntersection);
-            }
-        }
-    }
-    return intersections;
-};
-class ShapeFromCurves {
-    constructor() {
-        this.adjacentThreshold = 0.0001;
-        this.segmentClosestToPoint = new Vector3();
-        this.pointToSegment = new Vector3();
-        this.style = {};
-    }
-    withStyle(style) {
-        this.style = style;
-        return this;
-    }
-    startAt(start) {
-        this.points = [start];
-        return this;
-    }
-    extendAlong(shape, direction, until) {
-        var _a, _b, _c, _d, _e;
-        const startPoint = (_a = this.points.at(-1)) === null || _a === void 0 ? void 0 : _a.clone();
-        if (startPoint === undefined) {
-            throw new Error("Cannot extend with no current points.");
-        }
-        // Find where the shape intersects the current endpoint.
-        let intersectSegment = null;
-        let intersectIndex = null;
-        shape.updateMatrixWorld();
-        for (let j = 0; j < shape.points.length - 1; j++) {
-            const segment = new Line3((_b = shape.points.at(j)) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape.matrixWorld), (_c = shape.points
-                .at(j + 1)) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape.matrixWorld));
-            segment.closestPointToPoint(startPoint, true, this.segmentClosestToPoint);
-            const distanceToSegment = this.pointToSegment
-                .subVectors(this.segmentClosestToPoint, startPoint)
-                .length();
-            if (distanceToSegment < this.adjacentThreshold) {
-                intersectSegment = segment;
-                intersectIndex = j;
-                break;
-            }
-        }
-        if (intersectSegment === null || intersectIndex === null) {
-            throw new Error(`No intersection between ${startPoint.toArray()} and ${shape}`);
-        }
-        const vectorFromPointToIndex = (point, index) => {
-            var _a;
-            let endPoint = (_a = shape.points
-                .at(index)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
-            if (endPoint === undefined) {
-                return new Vector3();
-            }
-            return new Vector3().subVectors(endPoint, point).normalize();
-        };
-        // Get potential directions to extend.
-        let towardStartVector;
-        let forwardInitialPointIndex = intersectIndex + 1;
-        let backwardInitialPointIndex = intersectIndex;
-        // debugger;
-        towardStartVector = new Vector3().subVectors(intersectSegment.start, this.segmentClosestToPoint);
-        if (towardStartVector.length() < this.adjacentThreshold) {
-            // The point intersects at the start of this segment, so try using the previous point instead.
-            let prevIndex = intersectIndex - 1;
-            if (prevIndex === -1 && shapeIsClosed(shape)) {
-                // The point intersects at the first point of a closed shape, so use the second to last point.
-                prevIndex = shape.points.length - 2;
-            }
-            if (prevIndex !== -1) {
-                towardStartVector = vectorFromPointToIndex(intersectSegment.start, prevIndex);
-                forwardInitialPointIndex = intersectIndex + 1;
-                backwardInitialPointIndex = prevIndex;
-            }
-            else {
-                // The vector is (effectively) zero.
-                towardStartVector.set(0, 0, 0);
-            }
-        }
-        towardStartVector.normalize();
-        // Ugh do this.
-        let towardEndVector;
-        const endToIntersection = new Vector3()
-            .subVectors(intersectSegment.end, this.segmentClosestToPoint)
-            .length();
-        if (endToIntersection < this.adjacentThreshold &&
-            intersectIndex + 2 < shape.points.length) {
-            let nextPoint = (_d = shape.points
-                .at(intersectIndex + 2)) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape.matrixWorld);
-            if (nextPoint === undefined) {
-                throw new Error("No next point");
-            }
-            towardEndVector = new Vector3()
-                .subVectors(nextPoint, intersectSegment.end)
-                .normalize();
-            // Handle closed curves (shape.points.at(0) === shape.points.at(-1))
-            if (towardEndVector.length() < this.adjacentThreshold) {
-                nextPoint = (_e = shape.points
-                    .at(intersectIndex + 3)) === null || _e === void 0 ? void 0 : _e.clone().applyMatrix4(shape.matrixWorld);
-                if (nextPoint === undefined) {
-                    throw new Error("No next point");
-                }
-            }
-            forwardInitialPointIndex = intersectIndex + 2;
-            backwardInitialPointIndex = intersectIndex;
-        }
-        else {
-            towardEndVector = new Vector3()
-                .subVectors(intersectSegment.end, this.segmentClosestToPoint)
-                .normalize();
-        }
-        const forward = direction.dot(towardEndVector) > direction.dot(towardStartVector);
-        this.extendCurve(shape, forward ? forwardInitialPointIndex : backwardInitialPointIndex, forward, until);
-        return this;
-    }
-    extendCurve(shape, initialPointIndex, forward, until) {
-        var _a, _b;
-        const advance = (i) => {
-            i += increment;
-            if (i === shape.points.length && shapeIsClosed(shape)) {
-                i = 1;
-            }
-            else if (i === -1 && shapeIsClosed(shape)) {
-                i = shape.points.length - 2;
-            }
-            return i;
-        };
-        // const initialPointIndex = forward ? segmentIndex + 1 : segmentIndex;
-        const increment = forward ? 1 : -1;
-        let i = initialPointIndex;
-        let count = 0;
-        while (0 <= i && i < shape.points.length) {
-            count += 1;
-            if (count === 500) {
-                console.log("rip");
-                break;
-            }
-            const newPoint = (_a = shape.points
-                .at(i)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
-            if (newPoint === undefined) {
-                throw new Error("Error extending curve.");
-            }
-            const newSegment = new Line3((_b = this.points.at(-1)) === null || _b === void 0 ? void 0 : _b.clone(), newPoint);
-            if (newSegment.distance() < this.adjacentThreshold) {
-                i += increment;
-                continue;
-            }
-            let pointsToCheck = this.points.slice(0, this.points.length - 1);
-            if (until !== undefined) {
-                pointsToCheck.push(until);
-            }
-            for (let point of pointsToCheck) {
-                newSegment.closestPointToPoint(point, true, this.segmentClosestToPoint);
-                const distanceToSegment = this.pointToSegment
-                    .subVectors(this.segmentClosestToPoint, point)
-                    .length();
-                if (distanceToSegment < this.adjacentThreshold) {
-                    this.points.push(point.clone());
-                    return;
-                }
-            }
-            this.points.push(newPoint);
-            i = advance(i);
-        }
-    }
-    finish() {
-        return new Polygon(this.points, this.style);
-    }
-}
-
-var utils = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	BUFFER: BUFFER,
-	DOWN: DOWN,
-	IN: IN,
-	LEFT: LEFT,
-	ORIGIN: ORIGIN,
-	OUT: OUT,
-	RIGHT: RIGHT,
-	ShapeFromCurves: ShapeFromCurves,
-	UP: UP,
-	clamp: clamp,
-	furthestInDirection: furthestInDirection,
-	getBoundingBoxCenter: getBoundingBoxCenter,
-	getBoundingBoxHelper: getBoundingBoxHelper,
-	getFrameAttributes: getFrameAttributes,
-	intersectionsBetween: intersectionsBetween,
-	moveAbove: moveAbove,
-	moveBelow: moveBelow,
-	moveNextTo: moveNextTo,
-	moveToLeftOf: moveToLeftOf,
-	moveToRightOf: moveToRightOf,
-	setupCanvas: setupCanvas,
-	transformBetweenSpaces: transformBetweenSpaces
-});
-
-let sigmoid = (x) => 1 / (1 + Math.exp(-x));
-let smooth = (t) => {
-    let error = sigmoid(-10 / 2);
-    return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
-};
-const modulate = (t, dt) => {
-    let tSeconds = t;
-    let modulatedDelta = smooth(tSeconds) - smooth(t - dt);
-    let modulatedTime = smooth(tSeconds);
-    return [modulatedTime, modulatedDelta];
-};
-class Animation {
-    constructor(func, { object = undefined, parent = undefined, before = undefined, after = undefined, } = {}) {
-        this.func = func;
-        this.scale = 1;
-        this.runTime = 1;
-        this.finished = false;
-        this.elapsedSinceStart = 0;
-        this.object = object;
-        this.parent = parent;
-        this.before = before;
-        this.after = after;
-    }
-    setUp() { }
-    tearDown() { }
-    update(worldTime) {
-        if (worldTime <= this.startTime || this.finished) {
-            return;
-        }
-        let deltaTime;
-        if (this.prevUpdateTime === undefined) {
-            if (this.object instanceof Function) {
-                this.object = this.object();
-            }
-            if (this.object !== undefined && this.object.parent === null) {
-                const parent = this.parent;
-                !parent.children.includes(this.object) && parent.add(this.object);
-            }
-            this.beforeFunc && this.beforeFunc();
-            this.setUp();
-            deltaTime = worldTime - this.startTime;
-        }
-        else if (worldTime > this.endTime) {
-            deltaTime = this.endTime - this.prevUpdateTime;
-        }
-        else {
-            deltaTime = worldTime - this.prevUpdateTime;
-        }
-        this.prevUpdateTime = worldTime;
-        this.elapsedSinceStart += deltaTime;
-        this.func(...modulate(this.elapsedSinceStart, deltaTime));
-        if (worldTime >= this.endTime) {
-            this.finished = true;
-            this.tearDown();
-            this.afterFunc && this.afterFunc();
-        }
-    }
-    addBefore(before) {
-        if (this.beforeFunc) {
-            const oldBeforeFunc = this.beforeFunc;
-            this.beforeFunc = () => {
-                before();
-                oldBeforeFunc();
-            };
-        }
-        else {
-            this.beforeFunc = before;
-        }
-    }
-    addAfter(after) {
-        if (this.afterFunc) {
-            const oldAfterFunc = this.afterFunc;
-            this.afterFunc = () => {
-                oldAfterFunc();
-                after();
-            };
-        }
-        else {
-            this.afterFunc = after;
-        }
-    }
-}
-class Shift extends Animation {
-    constructor(object, direction, config) {
-        super((_elapsedTime, deltaTime) => {
-            object.position.add(direction.clone().multiplyScalar(deltaTime));
-        }, Object.assign({ object }, config));
-    }
-}
-class MoveTo extends Animation {
-    constructor(target, obj, config) {
-        super(elapsedTime => {
-            obj
-                .position
-                .copy(this.start)
-                .addScaledVector(this.displacement, elapsedTime);
-        }, Object.assign({ obj }, config));
-        this.target = target;
-        this.obj = obj;
-    }
-    setUp() {
-        this.start = this.obj.position.clone();
-        const final = new Vector3();
-        const initial = new Vector3();
-        this.obj.parent.worldToLocal(getBoundingBoxCenter(this.target, final));
-        this.obj.parent.worldToLocal(getBoundingBoxCenter(this.obj, initial));
-        this.displacement = new Vector3().subVectors(final, initial);
-    }
-}
-class Rotate extends Animation {
-    constructor(object, angle, config) {
-        super((_elapsedTime, deltaTime) => {
-            object.rotation.z += angle * deltaTime;
-        }, Object.assign({ object }, config));
-    }
-}
-class Scale extends Animation {
-    constructor(object, factor, config) {
-        const initialScale = object.scale.x;
-        super((elapsedTime, deltaTime) => {
-            const scale = MathUtils.lerp(initialScale, factor, elapsedTime);
-            object.scale.set(scale, scale, scale);
-        }, Object.assign({ object }, config));
-    }
-}
-class Draw extends Animation {
-    constructor(object, config) {
-        super((elapsedTime) => {
-            object.stroke.material.uniforms.drawRange.value.y = elapsedTime;
-        }, Object.assign({ object }, config));
-    }
-}
-class Erase extends Animation {
-    constructor(object, config) {
-        super((elapsedTime) => {
-            object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
-        }, Object.assign({ object }, config));
-        this.object = object;
-        this.config = config;
-    }
-    tearDown() {
-        var _a, _b;
-        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
-            this.object.parent.remove(this.object);
-        }
-        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
-            this.object.stroke.material.uniforms.drawRange.value.y = 1;
-        }
-    }
-}
-class FadeIn extends Animation {
-    constructor(object, config) {
-        super((elapsedTime, _deltaTime) => {
-            this.object.traverse((child) => {
-                if (child instanceof Mesh) {
-                    child.material.opacity = MathUtils.lerp(0, this.initialOpacity.get(child), elapsedTime);
-                }
-            });
-        }, Object.assign({ object }, config));
-        this.initialOpacity = new Map();
-    }
-    setUp() {
-        this.object.traverse((child) => {
-            if (child instanceof Mesh) {
-                this.initialOpacity.set(child, child.material.opacity);
-            }
-        });
-    }
-}
-class FadeOut extends Animation {
-    constructor(objectOrFunc, config) {
-        super((elapsedTime, _deltaTime) => {
-            this.object.traverse((child) => {
-                if (child instanceof Mesh) {
-                    if (!this.initialOpacity.has(child)) {
-                        console.error("Unknown child");
-                    }
-                    child.material.opacity = MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
-                }
-            });
-        }, Object.assign({ object: objectOrFunc }, config));
-        this.config = config;
-        this.initialOpacity = new Map();
-    }
-    setUp() {
-        this.object.traverse((child) => {
-            if (child instanceof Mesh) {
-                this.initialOpacity.set(child, child.material.opacity);
-            }
-        });
-    }
-    tearDown() {
-        var _a, _b;
-        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
-            this.object.parent.remove(this.object);
-        }
-        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
-            this.object.traverse((child) => {
-                if (child instanceof Mesh) {
-                    if (!this.initialOpacity.has(child)) {
-                        console.error("Unknown child");
-                    }
-                    child.material.opacity = this.initialOpacity.get(child);
-                }
-            });
-        }
-    }
-}
-class Wait extends Animation {
-    constructor(config) {
-        super(() => { }, config);
-    }
-}
-
-var animation = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	Animation: Animation,
-	Draw: Draw,
-	Erase: Erase,
-	FadeIn: FadeIn,
-	FadeOut: FadeOut,
-	MoveTo: MoveTo,
-	Rotate: Rotate,
-	Scale: Scale,
-	Shift: Shift,
-	Wait: Wait
-});
-
 const COLOR_SPACE_SVG = SRGBColorSpace;
 
 class SVGLoader extends Loader {
@@ -54742,7 +52897,7 @@ class SVGLoader extends Loader {
 
 				if ( node.hasAttribute( svgName ) ) style[ jsName ] = adjustFunction( node.getAttribute( svgName ) );
 				if ( stylesheetStyles[ svgName ] ) style[ jsName ] = adjustFunction( stylesheetStyles[ svgName ] );
-				if ( node.style && node.style[ svgName ] ) style[ jsName ] = adjustFunction( node.style[ svgName ] );
+				if ( node.style && node.style[ svgName ] !== '' ) style[ jsName ] = adjustFunction( node.style[ svgName ] );
 
 			}
 
@@ -56894,6 +55049,1851 @@ class SVGLoader extends Loader {
 
 
 }
+
+const PIXELS_TO_COORDS = 8 / 450;
+const COORDS_TO_PIXELS = 1 / PIXELS_TO_COORDS;
+const ERROR_THRESHOLD = 0.001;
+const DEFAULT_BACKGROUND_HEX = 0xfffaf0;
+
+var constants = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	COORDS_TO_PIXELS: COORDS_TO_PIXELS,
+	DEFAULT_BACKGROUND_HEX: DEFAULT_BACKGROUND_HEX,
+	ERROR_THRESHOLD: ERROR_THRESHOLD,
+	PIXELS_TO_COORDS: PIXELS_TO_COORDS
+});
+
+/******************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise, SuppressedError, Symbol */
+
+
+function __classPrivateFieldGet(receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+}
+
+function __classPrivateFieldSet(receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+}
+
+typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    var e = new Error(message);
+    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+};
+
+const MESHLINE_VERT = /*glsl*/ `
+  ${ShaderChunk.logdepthbuf_pars_vertex}
+  ${ShaderChunk.fog_pars_vertex}
+
+  // Passed by WebGLProgram
+  // https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
+  // uniform mat4 modelViewMatrix;
+  // uniform mat4 projectionMatrix;
+  uniform vec4 viewport;
+  uniform float unitWidth;
+
+  // Passed by WebGLProgram
+  // https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
+  // attribute vec3 position;
+  attribute vec3 endPosition;
+  attribute vec3 nextPosition;
+  attribute float textureCoords;
+  attribute float proportion;
+
+  varying vec2 vStartFragment;
+  varying vec2 vEndFragment;
+  varying vec2 vNextFragment;
+  varying float vProportion;
+  varying float vFlag;
+  varying float vArrow;
+  varying float vBeforeArrow;
+  
+  float eq(float x, float y) {
+    return 1.0 - abs(sign(x - y));
+  }
+
+  vec2 fragmentCoords(vec4 v) {
+    vec2 viewportFragment = viewport.zw / 2. * (1. + v.xy / v.w);
+    viewportFragment += viewport.xy;
+    return viewportFragment;
+  }
+
+  void main()	{
+    vProportion = proportion;
+
+    mat4 modelViewProjection = projectionMatrix * modelViewMatrix;
+    vec4 start = modelViewProjection * vec4(position, 1.0);
+    vec4 end = modelViewProjection * vec4(endPosition, 1.0);
+    vec4 next = modelViewProjection * vec4(nextPosition, 1.0);
+
+    vStartFragment = fragmentCoords(start);
+    vEndFragment = fragmentCoords(end);
+    vNextFragment = fragmentCoords(next);
+
+    // Extract bools.
+    float remaining = textureCoords;
+    vBeforeArrow = floor(0.125 * textureCoords);
+    remaining -= 8. * vBeforeArrow;
+    vArrow = floor(0.25 * remaining);
+    remaining -= 4. * vArrow;
+    float startEnd = floor(0.5 * remaining);
+    remaining -= 2. * startEnd;
+    float bottomTop = remaining;
+
+    // Add 0.2 so all pixels are covered.
+    vec2 segmentVec = 1.2 * normalize(vEndFragment - vStartFragment);
+    vec2 segmentNormal = vec2(-segmentVec.y, segmentVec.x);
+
+    // [0, 1] -> [1, -1]
+    segmentVec *= (2. * startEnd - 1.);
+    segmentNormal *= (2. * bottomTop - 1.);
+
+    vec2 fragmentOffset
+      = 0.5 * unitWidth * segmentVec
+      + 0.5 * unitWidth * segmentNormal
+        * (eq(vArrow, 0.) + eq(vArrow, 1.) * 2.618033988);
+
+    gl_Position = start * eq(startEnd, 0.) + end * eq(startEnd, 1.);
+    gl_Position.xy += (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
+
+    ${ShaderChunk.logdepthbuf_vertex}
+    ${ShaderChunk.fog_vertex &&
+    /*glsl*/ `vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );`}
+    ${ShaderChunk.fog_vertex}
+	}
+`;
+const MESHLINE_FRAG = /*glsl*/ `
+  ${ShaderChunk.fog_pars_fragment}
+  ${ShaderChunk.logdepthbuf_pars_fragment}
+
+  uniform vec3 color;
+  uniform float unitWidth;
+  uniform float opacity;
+  uniform vec2 drawRange;
+  uniform vec4 viewport;
+  uniform vec4 dimensions;
+
+  varying vec2 vStartFragment;
+  varying vec2 vEndFragment;
+  varying vec2 vNextFragment;
+  varying float vProportion;
+  varying float vFlag;
+  varying float vArrow;
+  varying float vBeforeArrow;
+  
+  float gt(float x, float y) { return max(sign(x - y), 0.0); }
+  float lt(float x, float y) { return max(sign(y - x), 0.0); }
+  float and(float a, float b, float c) { return a * b * c; }
+  float or(float a, float b, float c) { return min(a + b + c, 1.0); }
+  float lengthSquared(vec2 vec) { return dot(vec, vec); }
+
+  float segmentCoversFragment(
+    float halfWidthSquared,
+    vec2 segmentVec,
+    vec2 startToFrag,
+    vec2 endToFrag,
+    float dotProduct,
+    vec2 segmentProjection,
+    vec2 segmentNormal
+  ) {
+    float segmentStart = lt(lengthSquared(startToFrag), halfWidthSquared);
+    float segmentEnd = lt(lengthSquared(endToFrag), halfWidthSquared);
+    float segmentStem = and(
+      gt(dotProduct, 0.),
+      lt(lengthSquared(segmentProjection), lengthSquared(segmentVec)),
+      lt(lengthSquared(segmentNormal), halfWidthSquared)
+    );
+    return or(segmentStem, segmentStart, segmentEnd);
+  }
+  
+  float arrowCoversFragment(
+    vec2 startToEnd,
+    vec2 startToEndProjection,
+    vec2 startToEndNormal,
+    float unitWidth,
+    float pixelsPerUnit
+  ) {
+    float x = sqrt(lengthSquared(startToEndProjection));
+    float y = sqrt(lengthSquared(startToEndNormal));
+    float rise = 0.5 * unitWidth * pixelsPerUnit * 2.618033988;
+    // float run = sqrt(lengthSquared(startToEnd));
+    float m = -rise * inversesqrt(lengthSquared(startToEnd));
+    float b = rise;
+    return lt(y, m * x + b);
+  }
+
+  void main() {
+    ${ShaderChunk.logdepthbuf_fragment}
+
+      float pixelsPerUnit = viewport.w / dimensions.y;
+      float pixelWidth = unitWidth * pixelsPerUnit;
+      float halfWidthSquared = 0.25 * pixelWidth * pixelWidth;
+      vec2 startToFrag = gl_FragCoord.xy - vStartFragment;
+      vec2 startToEnd = vEndFragment - vStartFragment;
+      float startToEndDotProduct = dot(startToEnd, startToFrag);
+      vec2 startToEndProjection = startToEndDotProduct / lengthSquared(startToEnd) * startToEnd;
+      vec2 startToEndNormal = startToFrag - startToEndProjection;
+      vec2 endToFrag = gl_FragCoord.xy - vEndFragment;
+      vec2 endToNext = vNextFragment - vEndFragment;
+      float endToNextDotProduct = dot(endToNext, endToFrag);
+      vec2 endToNextProjection = endToNextDotProduct / lengthSquared(endToNext) * endToNext;
+      vec2 endToNextNormal = endToFrag - endToNextProjection;
+      vec2 nextToFrag = gl_FragCoord.xy - vNextFragment;
+
+      // For regular segments, exclude the fragment if it is covered by the next segment.
+      if (
+        vBeforeArrow == 0.
+        && vArrow == 0.
+        && vNextFragment != vEndFragment
+        && segmentCoversFragment(
+          halfWidthSquared,
+          endToNext,
+          endToFrag,
+          nextToFrag,
+          endToNextDotProduct,
+          endToNextProjection,
+          endToNextNormal
+        ) == 1.
+      ) discard;
+
+      // For segments preceding an arrow, exclude the fragment if it is covered by the arrow.
+      if (
+        vBeforeArrow == 1.
+        && vArrow == 0.
+        && endToNextDotProduct > 0.
+      ) discard;
+
+      // For segments that aren't part of arrows, exclude the fragment if it is not covered by the segment.
+      if (
+        vArrow == 0.
+        && segmentCoversFragment(
+          halfWidthSquared,
+          startToEnd,
+          startToFrag,
+          endToFrag,
+          startToEndDotProduct,
+          startToEndProjection,
+          startToEndNormal
+        ) == 0.
+      ) discard;
+
+      // For segments that are part of arrows, exclude fragments that aren't in the direction of the arrow.
+      if (vArrow == 1. && startToEndDotProduct < 0.) discard;
+
+      // For segments that are part of arrows, exclude fragments that aren't covered by the arrow.
+      if (
+        vArrow == 1.
+        && arrowCoversFragment(
+          startToEnd,
+          startToEndProjection,
+          startToEndNormal,
+          unitWidth,
+          pixelsPerUnit
+        ) == 0.
+      ) discard;
+      
+      // Exclude fragments that are outside the draw range.
+      if (vProportion < drawRange[0] || drawRange[1] < vProportion) discard;
+
+      gl_FragColor = vec4(color, opacity);
+
+    ${ShaderChunk.fog_fragment}
+	}
+`;
+
+var _MeshLineGeometry_instances, _MeshLineGeometry_position, _MeshLineGeometry_endPosition, _MeshLineGeometry_nextPosition, _MeshLineGeometry_textureCoords, _MeshLineGeometry_proportion, _MeshLineGeometry_indices, _MeshLineGeometry_attributes, _MeshLineGeometry_previousPointCount, _MeshLineGeometry_pointCount, _MeshLineGeometry_addSegment, _MeshLineGeometry_makeNewBuffers;
+class MeshLineGeometry extends BufferGeometry {
+    constructor(arrow = false) {
+        super();
+        _MeshLineGeometry_instances.add(this);
+        this.arrow = arrow;
+        this.isMeshLineGeometry = true;
+        this.type = "MeshLineGeometry";
+        _MeshLineGeometry_position.set(this, new Float32Array());
+        _MeshLineGeometry_endPosition.set(this, new Float32Array());
+        _MeshLineGeometry_nextPosition.set(this, new Float32Array());
+        _MeshLineGeometry_textureCoords.set(this, new Float32Array());
+        _MeshLineGeometry_proportion.set(this, new Float32Array());
+        _MeshLineGeometry_indices.set(this, new Uint16Array());
+        _MeshLineGeometry_attributes.set(this, null);
+        _MeshLineGeometry_previousPointCount.set(this, 0);
+        _MeshLineGeometry_pointCount.set(this, 0);
+    }
+    setPoints(points, updateBounds = true) {
+        const arrowLength = 0.3;
+        if (this.arrow) {
+            // Find the index of the last point that is at least arrowLength away from the end.
+            let arrowIndex = 0;
+            for (let i = points.length - 2; i >= 0; i--) {
+                const point = points[i];
+                if (point.distanceTo(points[points.length - 1]) >= arrowLength) {
+                    arrowIndex = i;
+                    break;
+                }
+            }
+            // Find the point that is arrowLength away from the end.
+            const aVec = points[arrowIndex];
+            const bVec = points[points.length - 1];
+            const vVec = new Vector3().subVectors(points[arrowIndex + 1], aVec);
+            const d = arrowLength;
+            const a = vVec.dot(vVec);
+            const b = 2 * (aVec.dot(vVec) - bVec.dot(vVec));
+            const c = aVec.dot(aVec) - 2 * aVec.dot(bVec) + bVec.dot(bVec) - d * d;
+            const rootDiscriminant = Math.sqrt(b * b - 4 * a * c);
+            const t1 = (-b + rootDiscriminant) / (2 * a);
+            const t2 = (-b - rootDiscriminant) / (2 * a);
+            let t;
+            if (0 <= t1 && t1 <= 1) {
+                t = t1;
+            }
+            else if (0 <= t2 && t2 <= 1) {
+                t = t2;
+            }
+            else {
+                throw new Error("No valid solution");
+            }
+            points.splice(arrowIndex + 1, points.length - arrowIndex - 1, aVec.clone().add(vVec.clone().multiplyScalar(t)), points.at(-1));
+        }
+        this.points = points;
+        __classPrivateFieldSet(this, _MeshLineGeometry_pointCount, points.length, "f");
+        const pointCount = __classPrivateFieldGet(this, _MeshLineGeometry_pointCount, "f");
+        const sizeChanged = __classPrivateFieldGet(this, _MeshLineGeometry_previousPointCount, "f") !== pointCount;
+        if (!__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f") || sizeChanged) {
+            __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_makeNewBuffers).call(this, pointCount);
+        }
+        __classPrivateFieldSet(this, _MeshLineGeometry_previousPointCount, pointCount, "f");
+        let lengths = new Float32Array(this.points.length);
+        lengths[0] = 0;
+        for (let i = 0; i < this.points.length - 2; i++) {
+            const position = points[i];
+            const endPosition = points[i + 1];
+            const nextPosition = points[i + 2];
+            const previousLength = lengths[i];
+            if (position === undefined ||
+                endPosition === undefined ||
+                nextPosition === undefined ||
+                previousLength === undefined) {
+                throw new Error("point missing");
+            }
+            lengths[i + 1] =
+                previousLength +
+                    Math.pow((Math.pow((position.x - endPosition.x), 2) +
+                        Math.pow((position.y - endPosition.y), 2) +
+                        Math.pow((position.z - endPosition.z), 2)), 0.5);
+            __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_addSegment).call(this, i, position, endPosition, nextPosition);
+        }
+        const firstPoint = points.at(0);
+        const lastPoint = points.at(-1);
+        if (firstPoint === undefined || lastPoint === undefined) {
+            throw new Error("invalid endpoints");
+        }
+        let nextPosition;
+        if (new Vector3().subVectors(firstPoint, lastPoint).length() < 0.001) {
+            nextPosition = points.at(1);
+        }
+        else {
+            nextPosition = points.at(-1);
+        }
+        const position = points.at(-2);
+        const endPosition = points.at(-1);
+        const previousLength = lengths.at(-2);
+        if (position === undefined ||
+            endPosition === undefined ||
+            nextPosition === undefined ||
+            previousLength === undefined) {
+            throw new Error("point missing");
+        }
+        lengths[this.points.length - 1] =
+            previousLength +
+                Math.pow((Math.pow((position.x - endPosition.x), 2) +
+                    Math.pow((position.y - endPosition.y), 2) +
+                    Math.pow((position.z - endPosition.z), 2)), 0.5);
+        __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_addSegment).call(this, points.length - 2, position, endPosition, nextPosition);
+        if (this.arrow) {
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 3)] = 9; // 8 * 1 + 2 * 0 + 1;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 3) + 1] = 8; // 8 * 1 + 2 * 0 + 0;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 3) + 2] = 10; // 8 * 1 + 2 * 1 + 0;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 3) + 3] = 11; // 8 * 1 + 2 * 1 + 1;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2)] = 5; // 4 * 1 + 2 * 0 + 1;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2) + 1] = 4; // 4 * 1 + 2 * 0 + 0;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2) + 2] = 6; // 4 * 1 + 2 * 1 + 0;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2) + 3] = 7; // 4 * 1 + 2 * 1 + 1;
+        }
+        const totalLength = lengths.at(-1);
+        if (totalLength === undefined) {
+            throw new Error("Invalid length");
+        }
+        for (let i = 0; i < this.points.length - 1; i++) {
+            const startLength = lengths[i];
+            const endLength = lengths[i + 1];
+            if (startLength === undefined || endLength === undefined) {
+                throw new Error("Invalid length");
+            }
+            const startProportion = startLength / totalLength;
+            const endProportion = endLength / totalLength;
+            const offset = 4 * i;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset] = startProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 1] = startProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 2] = endProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 3] = endProportion;
+        }
+        if (!__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f"))
+            throw new Error("missing attributes");
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endPosition.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords.needsUpdate = sizeChanged;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index.needsUpdate = sizeChanged;
+        if (updateBounds) {
+            this.computeBoundingSphere();
+            this.computeBoundingBox();
+        }
+    }
+    setVertexData(array, offset, x, y, z) {
+        array[offset] = x;
+        array[offset + 1] = y;
+        array[offset + 2] = z;
+        array[offset + 3] = x;
+        array[offset + 4] = y;
+        array[offset + 5] = z;
+        array[offset + 6] = x;
+        array[offset + 7] = y;
+        array[offset + 8] = z;
+        array[offset + 9] = x;
+        array[offset + 10] = y;
+        array[offset + 11] = z;
+    }
+    setTextureCoords(array, offset) {
+        array[offset] = 1; // 8 * 0 + 4 * 0 + 2 * 0 + 1;
+        // array[offset + 1] = 0; // 8 * 0 + 4 * 0 + 2 * 0 + 0;
+        array[offset + 2] = 2; // 8 * 0 + 4 * 0 + 2 * 1 + 0;
+        array[offset + 3] = 3; // 8 * 0 + 4 * 0 + 2 * 1 + 1;
+    }
+    setIndices(array, offset, startIndex) {
+        array[offset] = startIndex;
+        array[offset + 1] = startIndex + 1;
+        array[offset + 2] = startIndex + 2;
+        array[offset + 3] = startIndex;
+        array[offset + 4] = startIndex + 2;
+        array[offset + 5] = startIndex + 3;
+    }
+    computeBoundingSphere() {
+        if (this.boundingSphere === null) {
+            this.boundingSphere = new Sphere();
+        }
+        const center = new Vector3();
+        for (const point of this.points) {
+            this.boundingSphere.center.add(point);
+        }
+        this.boundingSphere.center.divideScalar(this.points.length);
+        this.boundingSphere.radius = 0;
+        for (const point of this.points) {
+            this.boundingSphere.radius = Math.max(this.boundingSphere.radius, center.distanceTo(point));
+        }
+    }
+}
+_MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new WeakMap(), _MeshLineGeometry_nextPosition = new WeakMap(), _MeshLineGeometry_textureCoords = new WeakMap(), _MeshLineGeometry_proportion = new WeakMap(), _MeshLineGeometry_indices = new WeakMap(), _MeshLineGeometry_attributes = new WeakMap(), _MeshLineGeometry_previousPointCount = new WeakMap(), _MeshLineGeometry_pointCount = new WeakMap(), _MeshLineGeometry_instances = new WeakSet(), _MeshLineGeometry_addSegment = function _MeshLineGeometry_addSegment(index, start, end, next) {
+    let x, y, z;
+    const vertexOffset = 12 * index;
+    ({ x, y, z } = start);
+    this.setVertexData(__classPrivateFieldGet(this, _MeshLineGeometry_position, "f"), vertexOffset, x, y, z);
+    ({ x, y, z } = end);
+    this.setVertexData(__classPrivateFieldGet(this, _MeshLineGeometry_endPosition, "f"), vertexOffset, x, y, z);
+    ({ x, y, z } = next);
+    this.setVertexData(__classPrivateFieldGet(this, _MeshLineGeometry_nextPosition, "f"), vertexOffset, x, y, z);
+    const textureOffset = 4 * index;
+    this.setTextureCoords(__classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f"), textureOffset);
+    const indexOffset = 6 * index;
+    const nextIndex = 4 * index;
+    this.setIndices(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), indexOffset, nextIndex);
+}, _MeshLineGeometry_makeNewBuffers = function _MeshLineGeometry_makeNewBuffers(pointCount) {
+    // Remove the previous buffers from the GPU
+    this.dispose();
+    const rectCount = pointCount - 1;
+    __classPrivateFieldSet(this, _MeshLineGeometry_position, new Float32Array(12 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_endPosition, new Float32Array(12 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_nextPosition, new Float32Array(12 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_textureCoords, new Float32Array(4 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_proportion, new Float32Array(4 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_indices, new Uint16Array(6 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_attributes, {
+        position: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_position, "f"), 3),
+        endPosition: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_endPosition, "f"), 3),
+        nextPosition: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_nextPosition, "f"), 3),
+        textureCoords: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f"), 1),
+        proportion: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f"), 1),
+        index: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), 1),
+    }, "f");
+    this.setAttribute("position", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position);
+    this.setAttribute("endPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endPosition);
+    this.setAttribute("nextPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition);
+    this.setAttribute("textureCoords", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords);
+    this.setAttribute("proportion", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion);
+    this.setIndex(__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index);
+};
+
+const CameraDimensions = new Vector2();
+const setCameraDimensions = (camera) => {
+    const { left, right, top, bottom } = camera;
+    CameraDimensions.set(right - left, top - bottom);
+};
+const CanvasViewport = new Vector4();
+const setCanvasViewport = (viewport) => {
+    CanvasViewport.copy(viewport);
+    if (typeof window !== "undefined") {
+        CanvasViewport.multiplyScalar(window.devicePixelRatio);
+    }
+};
+class MeshLineMaterial extends ShaderMaterial {
+    constructor(parameters) {
+        super({
+            uniforms: Object.assign({}, UniformsLib.fog, {
+                color: { value: new Color() },
+                opacity: { value: 1 },
+                viewport: { value: CanvasViewport },
+                dimensions: { value: CameraDimensions },
+                unitWidth: { value: 1 / 10 },
+                drawRange: { value: new Vector2(0, 1) },
+            }),
+            vertexShader: MESHLINE_VERT,
+            fragmentShader: MESHLINE_FRAG,
+            transparent: true,
+        });
+        Object.defineProperties(this, {
+            opacity: {
+                enumerable: true,
+                get: () => {
+                    return this.uniforms.opacity.value;
+                },
+                set: (value) => {
+                    this.uniforms.opacity.value = value;
+                },
+            },
+            drawRange: {
+                enumerable: true,
+                get: () => {
+                    return this.uniforms.drawRange.value;
+                },
+                set: (value) => {
+                    this.uniforms.drawRange.value = value;
+                },
+            },
+        });
+        parameters.color = new Color()
+            .set(parameters.color)
+            .convertLinearToSRGB();
+        this.setValues(parameters);
+    }
+    get color() {
+        return this.uniforms.color.value;
+    }
+    set color(value) {
+        this.uniforms.color.value = value;
+    }
+    get width() {
+        return this.uniforms.unitWidth.value * 8 * 10;
+    }
+    set width(value) {
+        this.uniforms.unitWidth.value = value / 8 / 10;
+    }
+}
+
+function MeshLineRaycast(raycaster, intersects) {
+    const nextIntersectIndex = intersects.length;
+    const inverseMatrix = new Matrix4();
+    const ray = new Ray();
+    const interRay = new Vector3();
+    const geometry = this.geometry;
+    inverseMatrix.copy(this.matrixWorld).invert();
+    ray.copy(raycaster.ray).applyMatrix4(inverseMatrix);
+    const vStart = new Vector3();
+    const vEnd = new Vector3();
+    const interSegment = new Vector3();
+    const index = geometry.index;
+    const attributes = geometry.attributes;
+    if (index !== null) {
+        index.array;
+        const positions = attributes.position.array;
+        const endPositions = attributes.endPosition.array;
+        let minDistance = Infinity;
+        for (let i = 0; i < positions.length; i += 12) {
+            vStart.fromArray(positions, i);
+            vEnd.fromArray(endPositions, i);
+            const precision = raycaster.params.Line.threshold;
+            const precisionSq = precision * precision;
+            const distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment);
+            if (distSq > precisionSq)
+                continue;
+            // Move back to world space for distance calculation
+            interRay.applyMatrix4(this.matrixWorld);
+            interSegment.applyMatrix4(this.matrixWorld);
+            const distance = interSegment.distanceTo(interRay);
+            if (distance < raycaster.near || distance > raycaster.far)
+                continue;
+            if (distance < minDistance) {
+                minDistance = distance;
+                intersects[nextIntersectIndex] = {
+                    distance,
+                    // What do we want? intersection point on the ray or on the segment??
+                    // point: raycaster.ray.at( distance ),
+                    point: interSegment.clone(),
+                    index: i / 12,
+                    face: null,
+                    faceIndex: undefined,
+                    object: this,
+                };
+                break;
+            }
+        }
+    }
+}
+
+class MeshLine extends Mesh {
+    constructor(geometry, material) {
+        super(geometry, material);
+        this.raycast = MeshLineRaycast;
+    }
+}
+
+const getFillGeometry = (points) => {
+    const shape = new Shape$1();
+    shape.moveTo(points[0].x, points[0].y);
+    for (const point of points.slice(1)) {
+        shape.lineTo(point.x, point.y);
+    }
+    shape.closePath();
+    return new ShapeGeometry(shape);
+};
+/**
+ * An abstract class representing a generalized shape.
+ */
+class Shape extends Group {
+    constructor(points, config = {}) {
+        super();
+        config = Object.assign(Shape.defaultStyle(), config);
+        const fillGeometry = getFillGeometry(points);
+        const fillMaterial = new MeshBasicMaterial({
+            color: config.fillColor,
+            opacity: config.fillOpacity,
+            transparent: true,
+        });
+        this.fill = new Mesh(fillGeometry, fillMaterial);
+        this.add(this.fill);
+        const strokeGeometry = new MeshLineGeometry(config.arrow);
+        strokeGeometry.setPoints(points);
+        const strokeMaterial = new MeshLineMaterial({
+            color: config.strokeColor,
+            opacity: config.strokeOpacity,
+            width: config.strokeWidth,
+            transparent: true,
+        });
+        this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
+        this.add(this.stroke);
+        this.curveEndIndices = this.getCurveEndIndices();
+    }
+    static defaultStyle() {
+        return {
+            strokeColor: new Color(0x000000),
+            strokeOpacity: 1.0,
+            strokeWidth: 8,
+            fillColor: new Color(0xfffaf0),
+            fillOpacity: 0.0,
+        };
+    }
+    static defaultConfig() {
+        return {};
+    }
+    reshape(...args) {
+        throw new Error("Reshape not implemented.");
+    }
+    copyStroke(shape) {
+        this.stroke.geometry.dispose();
+        this.stroke.geometry = shape.stroke.geometry;
+    }
+    copyFill(shape) {
+        this.fill.geometry.dispose();
+        this.fill.geometry = shape.fill.geometry;
+    }
+    copyStrokeFill(shape) {
+        this.copyStroke(shape);
+        this.copyFill(shape);
+    }
+    get points() {
+        return this.stroke.geometry.points;
+    }
+    segment(index) {
+        return new Line3(this.points[index].clone(), this.points[index + 1].clone());
+    }
+    curve(curveIndex, worldTransform = true) {
+        const curveEndIndices = this.curveEndIndices[curveIndex];
+        const curvePoints = this.points.slice(curveEndIndices[0], curveEndIndices[1] + 1);
+        if (worldTransform) {
+            return curvePoints.map((p) => p.clone().applyMatrix4(this.matrixWorld));
+        }
+        else {
+            return curvePoints;
+        }
+    }
+    get numCurves() {
+        return this.curveEndIndices.length;
+    }
+    getCurveEndIndices() {
+        const points = this.stroke.geometry.points;
+        const indices = [];
+        for (let i = 0; i < points.length - 1; i++) {
+            indices.push([i, i + 1]);
+        }
+        return indices;
+    }
+    clear() {
+        this.remove(this.stroke);
+        this.remove(this.fill);
+        return this;
+    }
+    clone(recursive) {
+        if (recursive === true) {
+            throw Error("Recursive Shape.clone() isn't implemented.");
+        }
+        const cloneFunc = this.constructor;
+        const clone = new cloneFunc(...this.getCloneAttributes(), Object.assign(Object.assign({}, this.getStyle()), this.getClassConfig()));
+        Object3D.prototype.copy.call(clone, this, false);
+        return clone;
+    }
+    getClassConfig() {
+        return {};
+    }
+    getCloneAttributes() {
+        return [this.points];
+    }
+    getStyle() {
+        return {
+            fillColor: this.fill.material.color,
+            fillOpacity: this.fill.material.opacity,
+            strokeColor: this.stroke.material.color,
+            strokeOpacity: this.stroke.material.opacity,
+            strokeWidth: this.stroke.material.width,
+        };
+    }
+    setStyle(style) {
+        const { fillColor, fillOpacity } = style;
+        if (fillColor !== undefined) {
+            this.fill.material.color = fillColor;
+        }
+        if (fillOpacity !== undefined) {
+            this.fill.material.opacity = fillOpacity;
+        }
+        const { strokeColor, strokeOpacity, strokeWidth } = style;
+        if (strokeColor !== undefined) {
+            this.stroke.material.color = strokeColor;
+        }
+        if (strokeOpacity !== undefined) {
+            this.stroke.material.opacity = strokeOpacity;
+        }
+        if (strokeWidth !== undefined) {
+            this.stroke.material.width = strokeWidth;
+        }
+    }
+    getTransform() {
+        return {
+            position: this.position.clone(),
+            rotation: this.rotation.clone(),
+            scale: this.scale.clone(),
+        };
+    }
+    setTransform(transform) {
+        const { position, rotation, scale } = transform;
+        this.position.copy(position);
+        this.rotation.copy(rotation);
+        this.scale.copy(scale);
+    }
+    dispose() {
+        this.fill.geometry.dispose();
+        this.fill.material.dispose();
+        this.stroke.geometry.dispose();
+        this.stroke.material.dispose();
+        return this;
+    }
+    getDimensions() {
+        const box = new Box3();
+        box.setFromObject(this);
+        const width = box.max.x - box.min.x;
+        const height = box.max.y - box.min.y;
+        return new Vector2(width, height);
+    }
+    closestPointToPoint(point, target) {
+        if (target === undefined) {
+            target = new Vector3();
+        }
+        const segment = new Line3();
+        const closestPointOnSegment = new Vector3();
+        let minDistance = Infinity;
+        for (let i = 0; i < this.points.length - 1; i++) {
+            segment.set(this.points[i], this.points[i + 1]);
+            const distance = segment
+                .closestPointToPoint(point, true, closestPointOnSegment)
+                .distanceTo(point);
+            if (distance < minDistance) {
+                minDistance = distance;
+                target.copy(closestPointOnSegment);
+            }
+        }
+        return target;
+    }
+}
+/**
+ * A segment between two points.
+ *
+ * @example line.ts
+ */
+class Line extends Shape {
+    constructor(start, end, config = {}) {
+        config = Object.assign(Object.assign({}, Line.defaultConfig()), config);
+        super([start, end], config);
+        this.start = start;
+        this.end = end;
+        this.arrow = config.arrow;
+        this.curveEndIndices = [[0, 1]];
+    }
+    static defaultConfig() {
+        return Object.assign(Object.assign({}, super.defaultConfig()), { arrow: false });
+    }
+    static centeredLine(start, end, config = {}) {
+        const center = new Vector3().addVectors(start, end).divideScalar(2);
+        const line = new Line(new Vector3().subVectors(start, center), new Vector3().subVectors(end, center), config);
+        line.position.copy(center);
+        return line;
+    }
+    reshape(start, end, config = {}) {
+        this.start.copy(start);
+        this.end.copy(end);
+        this.copyStrokeFill(new Line(start, end, config));
+    }
+    getClassConfig() {
+        return {};
+    }
+    getAttributes() {
+        return {
+            start: this.start,
+            end: this.end,
+        };
+    }
+    toVector(global) {
+        this.updateWorldMatrix(true, false);
+        return global
+            ? new Vector3().subVectors(new Vector3().copy(this.end).applyMatrix4(this.matrixWorld), new Vector3().copy(this.start).applyMatrix4(this.matrixWorld))
+            : new Vector3().subVectors(this.end, this.start);
+    }
+    static fromAttributes(attributes) {
+        const { start, end } = attributes;
+        return new Line(start, end);
+    }
+}
+/**
+ * An arrow derived from a line.
+ *
+ * @example arrow.ts
+ */
+class Arrow extends Line {
+    constructor(start, end, config = {}) {
+        super(start, end, Object.assign(Object.assign(Object.assign({}, Arrow.defaultConfig()), config), { arrow: true }));
+        this.start = start;
+        this.end = end;
+    }
+    reshape(start, end, config = {}) {
+        this.start.copy(start);
+        this.end.copy(end);
+        this.copyStrokeFill(new Arrow(start, end, config));
+    }
+}
+/**
+ * A series of connected line segments.
+ *
+ * @example polyline.ts
+ */
+class Polyline extends Shape {
+    constructor(points, config = {}) {
+        super(points, Object.assign(Object.assign(Object.assign({}, Polyline.defaultConfig()), config), { fillOpacity: 0 }));
+        this.curveEndIndices = [[0, 1]];
+    }
+    reshape(points, config = {}) {
+        this.copyStrokeFill(new Polyline(points, config));
+    }
+    getClassConfig() {
+        return {};
+    }
+    getAttributes() {
+        return {
+            points: this.points,
+        };
+    }
+    static fromAttributes(attributes) {
+        const { points } = attributes;
+        return new Polyline(points);
+    }
+}
+/**
+ * A part of a circle's circumference.
+ *
+ * @example arc.ts
+ */
+class Arc extends Shape {
+    constructor(radius = 1, angle = Math.PI / 2, config = {}) {
+        config = Object.assign(Object.assign({}, Arc.defaultConfig()), config);
+        let points = [];
+        let negative = false;
+        if (angle < 0) {
+            negative = true;
+            angle *= -1;
+        }
+        if (angle > 0) {
+            for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
+                points.push(new Vector3(radius * Math.cos(i), radius * Math.sin(i) * (negative ? -1 : 1), 0));
+            }
+        }
+        else {
+            points.push(new Vector3(radius, 0, 0), new Vector3(radius, 0, 0));
+        }
+        if (config.closed) {
+            points = [
+                new Vector3(0, 0, 0),
+                ...points,
+                new Vector3(0, 0, 0),
+            ];
+        }
+        super(points, config);
+        this.radius = radius;
+        this.angle = angle;
+        this.closed = config.closed;
+        if (this.closed) {
+            this.curveEndIndices = [
+                [0, 1],
+                [1, points.length - 2],
+                [points.length - 2, points.length - 1],
+            ];
+        }
+        else {
+            this.curveEndIndices = [[0, points.length - 1]];
+        }
+    }
+    static defaultConfig() {
+        return Object.assign(Object.assign({}, super.defaultConfig()), { closed: false });
+    }
+    reshape(radius = 1, angle = Math.PI / 2, config = {}) {
+        this.radius = radius;
+        this.angle = angle;
+        this.copyStrokeFill(new Arc(radius, angle, config));
+    }
+    getCloneAttributes() {
+        return [this.radius, this.angle, this.closed];
+    }
+    getAttributes() {
+        return {
+            radius: this.radius,
+            angle: this.angle,
+            closed: this.closed,
+        };
+    }
+    static fromAttributes(attributes) {
+        const { radius, angle, closed } = attributes;
+        return new Arc(radius, angle, { closed });
+    }
+    get attributeData() {
+        return [
+            {
+                attribute: "radius",
+                type: "number",
+                default: 1,
+            },
+            {
+                attribute: "angle",
+                type: "angle",
+                default: 45,
+            },
+            {
+                attribute: "closed",
+                type: "boolean",
+                default: false,
+            },
+        ];
+    }
+    getDimensions() {
+        const worldDiameter = 2 * this.radius * this.scale.x;
+        return new Vector2(worldDiameter, worldDiameter);
+    }
+}
+/**
+ * A shape consisting of all points at a fixed distance from a given center.
+ *
+ * @example circle.ts
+ */
+class Circle extends Arc {
+    constructor(radius = 1, config = {}) {
+        super(radius, 2 * Math.PI, Object.assign(Object.assign({}, Circle.defaultConfig()), config));
+    }
+    reshape(radius, config = {}) {
+        this.radius = radius;
+        this.copyStrokeFill(new Circle(radius, config));
+    }
+    getCloneAttributes() {
+        return [this.radius];
+    }
+    getAttributes() {
+        return {
+            radius: this.radius,
+            angle: 2 * Math.PI,
+            closed: false,
+        };
+    }
+    static fromAttributes(attributes) {
+        const { radius } = attributes;
+        return new Circle(radius);
+    }
+    get attributeData() {
+        return [
+            {
+                attribute: "radius",
+                type: "number",
+                default: 1,
+            },
+        ];
+    }
+}
+/**
+ * A small circle representing a precise location in space.
+ *
+ * @example point.ts
+ */
+class Point extends Circle {
+    constructor(position = ORIGIN, config = {}) {
+        config = Object.assign(Object.assign({ fillColor: new Color("black"), fillOpacity: 1 }, Point.defaultConfig()), config);
+        super(config.radius, config);
+        this.position.set(position.x, position.y, 0);
+    }
+    static defaultConfig() {
+        return Object.assign(Object.assign({}, super.defaultConfig()), { radius: 0.08 });
+    }
+    getAttributes() {
+        return {
+            radius: this.radius,
+            angle: 2 * Math.PI,
+            closed: false,
+        };
+    }
+    static fromAttributes() {
+        return new Point(new Vector3());
+    }
+}
+/**
+ * A shape made up of line segments connected
+ * to form a (usually) closed shape.
+ *
+ * @example polygon.ts
+ */
+class Polygon extends Shape {
+    constructor(points, config = {}) {
+        super(points, Object.assign(Object.assign({}, Polygon.defaultConfig()), config));
+        this.curveEndIndices = [];
+        for (let i = 0; i < points.length - 1; i++) {
+            this.curveEndIndices.push([i, i + 1]);
+        }
+    }
+    getClassConfig() {
+        return {};
+    }
+    getAttributes() {
+        return { points: this.points };
+    }
+    static fromAttributes(attributes) {
+        const { points } = attributes;
+        return new Polygon(points);
+    }
+    get attributeData() {
+        return [];
+    }
+}
+/**
+ * A shape with four sides and four right angles.
+ *
+ * @example rectangle.ts
+ */
+class Rectangle extends Shape {
+    constructor(width = 4, height = 2, config = {}) {
+        super([
+            new Vector3(-width / 2, height / 2, 0),
+            new Vector3(width / 2, height / 2, 0),
+            new Vector3(width / 2, -height / 2, 0),
+            new Vector3(-width / 2, -height / 2, 0),
+            new Vector3(-width / 2, height / 2, 0),
+        ], Object.assign(Object.assign({}, Rectangle.defaultConfig()), config));
+        this.width = width;
+        this.height = height;
+    }
+    getCloneAttributes() {
+        return [this.width, this.height];
+    }
+    getAttributes() {
+        return {
+            width: this.width,
+            height: this.height,
+        };
+    }
+    static fromAttributes(attributes) {
+        const { width, height } = attributes;
+        return new Rectangle(width, height);
+    }
+    get attributeData() {
+        return [
+            {
+                attribute: "width",
+                type: "number",
+                default: 4,
+            },
+            {
+                attribute: "height",
+                type: "number",
+                default: 2,
+            },
+        ];
+    }
+    getCurveEndIndices() {
+        return [
+            [0, 1],
+            [1, 2],
+            [2, 3],
+            [3, 4],
+        ];
+    }
+}
+/**
+ * A shape with four sides of equal length and four right angles.
+ *
+ * @example square.ts
+ */
+class Square extends Rectangle {
+    constructor(sideLength = 2, config = {}) {
+        super(sideLength, sideLength, Object.assign(Object.assign({}, Square.defaultConfig()), config));
+        this.sideLength = sideLength;
+    }
+    reshape(sideLength, config = {}) {
+        this.sideLength = sideLength;
+        this.copyStrokeFill(new Square(sideLength, config));
+    }
+    getCloneAttributes() {
+        return [this.sideLength];
+    }
+    getAttributes() {
+        return {
+            width: this.sideLength,
+            height: this.sideLength,
+        };
+    }
+    static fromAttributes(attributes) {
+        const { width } = attributes;
+        return new Square(width);
+    }
+    get attributeData() {
+        return [
+            {
+                attribute: "sideLength",
+                type: "number",
+                default: 2,
+            },
+        ];
+    }
+}
+
+var geometry = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	Arc: Arc,
+	Arrow: Arrow,
+	Circle: Circle,
+	Line: Line,
+	Point: Point,
+	Polygon: Polygon,
+	Polyline: Polyline,
+	Rectangle: Rectangle,
+	Shape: Shape,
+	Square: Square
+});
+
+const BUFFER = 0.5;
+const ORIGIN = Object.freeze(new Vector3(0, 0, 0));
+const RIGHT = Object.freeze(new Vector3(1, 0, 0));
+const LEFT = Object.freeze(new Vector3(-1, 0, 0));
+const UP = Object.freeze(new Vector3(0, 1, 0));
+const DOWN = Object.freeze(new Vector3(0, -1, 0));
+const OUT = Object.freeze(new Vector3(0, 0, 1));
+const IN = Object.freeze(new Vector3(0, 0, -1));
+const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+const getFrameAttributes = (aspectRatio, height) => {
+    const coordinateHeight = PIXELS_TO_COORDS * height;
+    return {
+        aspectRatio,
+        height,
+        width: height * aspectRatio,
+        coordinateHeight,
+        coordinateWidth: coordinateHeight * aspectRatio,
+    };
+};
+const isWidthSetup = (config) => {
+    return ("aspectRatio" in config &&
+        "pixelWidth" in config &&
+        "coordinateWidth" in config);
+};
+const isHeightSetup = (config) => {
+    return ("aspectRatio" in config &&
+        "pixelHeight" in config &&
+        "coordinateHeight" in config);
+};
+const setupCanvas = (canvas, config = {
+    aspectRatio: 16 / 9,
+    pixelHeight: 720,
+    coordinateHeight: 8,
+    viewport: undefined,
+}) => {
+    config = Object.assign({
+        aspectRatio: 16 / 9,
+        pixelHeight: 720,
+        coordinateHeight: 8,
+        viewport: undefined,
+    }, config);
+    let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
+    if (isWidthSetup(config)) {
+        aspectRatio = config.aspectRatio;
+        pixelWidth = config.pixelWidth;
+        coordinateWidth = config.coordinateWidth;
+        pixelHeight = pixelWidth / aspectRatio;
+        coordinateHeight = coordinateWidth / aspectRatio;
+    }
+    else if (isHeightSetup(config)) {
+        aspectRatio = config.aspectRatio;
+        pixelHeight = config.pixelHeight;
+        coordinateHeight = config.coordinateHeight;
+        pixelWidth = pixelHeight * aspectRatio;
+        coordinateWidth = coordinateHeight * aspectRatio;
+    }
+    else {
+        throw new Error("Invalid config:", config);
+    }
+    const camera = new OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
+    camera.position.z = 6;
+    setCameraDimensions(camera);
+    const renderer = new WebGLRenderer({
+        canvas,
+        antialias: true,
+        preserveDrawingBuffer: true,
+    });
+    renderer.setClearColor(new Color(DEFAULT_BACKGROUND_HEX));
+    renderer.autoClear = false;
+    if (config.viewport) {
+        CanvasViewport.copy(config.viewport);
+    }
+    else {
+        renderer.setSize(pixelWidth, pixelHeight, false);
+        CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
+    }
+    if (typeof window !== "undefined") {
+        renderer.setPixelRatio(window.devicePixelRatio);
+        CanvasViewport.multiplyScalar(window.devicePixelRatio);
+    }
+    return [new Scene(), camera, renderer];
+};
+const furthestInDirection = (object, direction) => {
+    object.updateWorldMatrix(true, true);
+    let maxPoint = new Vector3();
+    let maxVal = -Infinity;
+    let worldPoint = new Vector3();
+    object.traverse((child) => {
+        if (child instanceof Mesh) {
+            const positionArray = child.geometry.attributes.position.array;
+            if (positionArray.length % 3 !== 0) {
+                throw new Error("Invalid position array length");
+            }
+            for (let i = 0; i < positionArray.length; i += 3) {
+                worldPoint
+                    .set(positionArray[i], positionArray[i + 1], positionArray[i + 2])
+                    .applyMatrix4(child.matrixWorld);
+                let dot = worldPoint.dot(direction);
+                if (dot > maxVal) {
+                    maxPoint.copy(worldPoint);
+                    maxVal = dot;
+                }
+            }
+            if (child.geometry.attributes.nextPosition !== undefined) {
+                const nextArray = child.geometry.attributes.nextPosition.array;
+                worldPoint
+                    .set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1))
+                    .applyMatrix4(child.matrixWorld);
+                let dot = worldPoint.dot(direction);
+                if (dot > maxVal) {
+                    maxPoint.copy(worldPoint);
+                    maxVal = dot;
+                }
+            }
+        }
+    });
+    return maxPoint;
+};
+const moveNextTo = (target, object, direction, distance = 0.5) => {
+    target.updateWorldMatrix(true, true);
+    object.updateWorldMatrix(true, true);
+    let targetCenter = new Vector3();
+    let objectCenter = new Vector3();
+    const targetBox = new Box3().expandByObject(target);
+    const objectBox = new Box3().expandByObject(object);
+    targetBox.getCenter(targetCenter);
+    objectBox.getCenter(objectCenter);
+    let objectWorldPosition = object.parent !== null
+        ? object.parent.localToWorld(object.position.clone())
+        : object.position.clone();
+    const objectPositionToCenter = objectCenter.clone().sub(objectWorldPosition);
+    let targetCenterToHorizontalEdge = 0;
+    let objectCenterToHorizontalEdge = 0;
+    if (direction.x > 0) {
+        targetCenterToHorizontalEdge = targetBox.max.x - targetCenter.x;
+        objectCenterToHorizontalEdge = objectBox.min.x - objectCenter.x;
+    }
+    else if (direction.x < 0) {
+        targetCenterToHorizontalEdge = targetBox.min.x - targetCenter.x;
+        objectCenterToHorizontalEdge = objectBox.max.x - objectCenter.x;
+    }
+    let targetCenterToVerticalEdge = 0;
+    let objectCenterToVerticalEdge = 0;
+    if (direction.y > 0) {
+        targetCenterToVerticalEdge = targetBox.max.y - targetCenter.y;
+        objectCenterToVerticalEdge = objectBox.min.y - objectCenter.y;
+    }
+    else if (direction.y < 0) {
+        targetCenterToVerticalEdge = targetBox.min.y - targetCenter.y;
+        objectCenterToVerticalEdge = objectBox.max.y - objectCenter.y;
+    }
+    const finalObjectPosition = new Vector3()
+        .copy(targetCenter)
+        .addScaledVector(direction, distance)
+        .sub(objectPositionToCenter);
+    finalObjectPosition.x += targetCenterToHorizontalEdge;
+    finalObjectPosition.x -= objectCenterToHorizontalEdge;
+    finalObjectPosition.y += targetCenterToVerticalEdge;
+    finalObjectPosition.y -= objectCenterToVerticalEdge;
+    if (object.parent !== null) {
+        object.position.copy(object.parent.worldToLocal(finalObjectPosition));
+    }
+    else {
+        object.position.copy(finalObjectPosition);
+    }
+};
+const moveToRightOf = (target, object, distance = 0.5) => {
+    moveNextTo(target, object, RIGHT, distance);
+};
+const moveToLeftOf = (target, object, distance = 0.5) => {
+    moveNextTo(target, object, LEFT, distance);
+};
+const moveAbove = (target, object, distance = 0.5) => {
+    moveNextTo(target, object, UP, distance);
+};
+const moveBelow = (target, object, distance = 0.5) => {
+    moveNextTo(target, object, DOWN, distance);
+};
+const getBoundingBoxCenter = (obj, target) => {
+    obj.updateWorldMatrix(true, true);
+    new Box3().expandByObject(obj).getCenter(target);
+    return target;
+};
+const getBoundingBoxHelper = (obj, color) => {
+    obj.updateWorldMatrix(true, true);
+    const box = new Box3().expandByObject(obj);
+    const helper = new Box3Helper(box, new Color(color));
+    return helper;
+};
+const transformBetweenSpaces = (from, to, point) => {
+    return to.worldToLocal(from.localToWorld(point));
+};
+/*
+ * Solves
+ * [ a b ]   [ xa ]   [ ba ]
+ * [ c d ] * [ xb ] = [ bb ]
+ * for x.
+ */
+const matrixSolve = (ma, mb, mc, md, ba, bb) => {
+    const determinant = ma * md - mb * mc;
+    if (determinant === 0) {
+        return null;
+    }
+    return [(md * ba - mb * bb) / determinant, (ma * bb - mc * ba) / determinant];
+};
+// https://blogs.sas.com/content/iml/2018/07/09/intersection-line-segments.html
+const getIntersection = (p1, p2, q1, q2) => {
+    const p2MinusP1 = new Vector3().subVectors(p2, p1);
+    const q1MinusQ2 = new Vector3().subVectors(q1, q2);
+    const q1MinusP1 = new Vector3().subVectors(q1, p1);
+    const solution = matrixSolve(p2MinusP1.x, q1MinusQ2.x, p2MinusP1.y, q1MinusQ2.y, q1MinusP1.x, q1MinusP1.y);
+    if (solution === null) {
+        // TODO: Handle parallel lines.
+        return null;
+    }
+    const [s, t] = solution;
+    if (s < 0 || 1 < s || t < 0 || 1 < t) {
+        return null;
+    }
+    return p1.multiplyScalar(1 - s).addScaledVector(p2, s);
+};
+const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
+    return (new Vector3()
+        .subVectors(shape.points.at(0), shape.points.at(-1))
+        .length() < adjacentThreshold);
+};
+const intersectionsBetween = (shape1, shape2) => {
+    var _a, _b, _c, _d;
+    let intersections = [];
+    shape1.updateMatrixWorld();
+    shape2.updateMatrixWorld();
+    for (let i = 0; i < shape1.points.length - 1; i++) {
+        const segment1 = new Line3((_a = shape1.points[i]) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape1.matrixWorld), (_b = shape1.points[i + 1]) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape1.matrixWorld));
+        for (let j = 0; j < shape2.points.length - 1; j++) {
+            const segment2 = new Line3((_c = shape2.points[j]) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape2.matrixWorld), (_d = shape2.points[j + 1]) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape2.matrixWorld));
+            const maybeIntersection = getIntersection(segment1.start, segment1.end, segment2.start, segment2.end);
+            if (maybeIntersection !== null) {
+                intersections.push(maybeIntersection);
+            }
+        }
+    }
+    return intersections;
+};
+class ShapeFromCurves {
+    constructor() {
+        this.adjacentThreshold = 0.0001;
+        this.segmentClosestToPoint = new Vector3();
+        this.pointToSegment = new Vector3();
+        this.style = {};
+    }
+    withStyle(style) {
+        this.style = style;
+        return this;
+    }
+    startAt(start) {
+        this.points = [start];
+        return this;
+    }
+    extendAlong(shape, direction, until) {
+        var _a, _b, _c, _d, _e;
+        const startPoint = (_a = this.points.at(-1)) === null || _a === void 0 ? void 0 : _a.clone();
+        if (startPoint === undefined) {
+            throw new Error("Cannot extend with no current points.");
+        }
+        // Find where the shape intersects the current endpoint.
+        let intersectSegment = null;
+        let intersectIndex = null;
+        shape.updateMatrixWorld();
+        for (let j = 0; j < shape.points.length - 1; j++) {
+            const segment = new Line3((_b = shape.points.at(j)) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape.matrixWorld), (_c = shape.points
+                .at(j + 1)) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape.matrixWorld));
+            segment.closestPointToPoint(startPoint, true, this.segmentClosestToPoint);
+            const distanceToSegment = this.pointToSegment
+                .subVectors(this.segmentClosestToPoint, startPoint)
+                .length();
+            if (distanceToSegment < this.adjacentThreshold) {
+                intersectSegment = segment;
+                intersectIndex = j;
+                break;
+            }
+        }
+        if (intersectSegment === null || intersectIndex === null) {
+            throw new Error(`No intersection between ${startPoint.toArray()} and ${shape}`);
+        }
+        const vectorFromPointToIndex = (point, index) => {
+            var _a;
+            let endPoint = (_a = shape.points
+                .at(index)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
+            if (endPoint === undefined) {
+                return new Vector3();
+            }
+            return new Vector3().subVectors(endPoint, point).normalize();
+        };
+        // Get potential directions to extend.
+        let towardStartVector;
+        let forwardInitialPointIndex = intersectIndex + 1;
+        let backwardInitialPointIndex = intersectIndex;
+        // debugger;
+        towardStartVector = new Vector3().subVectors(intersectSegment.start, this.segmentClosestToPoint);
+        if (towardStartVector.length() < this.adjacentThreshold) {
+            // The point intersects at the start of this segment, so try using the previous point instead.
+            let prevIndex = intersectIndex - 1;
+            if (prevIndex === -1 && shapeIsClosed(shape)) {
+                // The point intersects at the first point of a closed shape, so use the second to last point.
+                prevIndex = shape.points.length - 2;
+            }
+            if (prevIndex !== -1) {
+                towardStartVector = vectorFromPointToIndex(intersectSegment.start, prevIndex);
+                forwardInitialPointIndex = intersectIndex + 1;
+                backwardInitialPointIndex = prevIndex;
+            }
+            else {
+                // The vector is (effectively) zero.
+                towardStartVector.set(0, 0, 0);
+            }
+        }
+        towardStartVector.normalize();
+        // Ugh do this.
+        let towardEndVector;
+        const endToIntersection = new Vector3()
+            .subVectors(intersectSegment.end, this.segmentClosestToPoint)
+            .length();
+        if (endToIntersection < this.adjacentThreshold &&
+            intersectIndex + 2 < shape.points.length) {
+            let nextPoint = (_d = shape.points
+                .at(intersectIndex + 2)) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape.matrixWorld);
+            if (nextPoint === undefined) {
+                throw new Error("No next point");
+            }
+            towardEndVector = new Vector3()
+                .subVectors(nextPoint, intersectSegment.end)
+                .normalize();
+            // Handle closed curves (shape.points.at(0) === shape.points.at(-1))
+            if (towardEndVector.length() < this.adjacentThreshold) {
+                nextPoint = (_e = shape.points
+                    .at(intersectIndex + 3)) === null || _e === void 0 ? void 0 : _e.clone().applyMatrix4(shape.matrixWorld);
+                if (nextPoint === undefined) {
+                    throw new Error("No next point");
+                }
+            }
+            forwardInitialPointIndex = intersectIndex + 2;
+            backwardInitialPointIndex = intersectIndex;
+        }
+        else {
+            towardEndVector = new Vector3()
+                .subVectors(intersectSegment.end, this.segmentClosestToPoint)
+                .normalize();
+        }
+        const forward = direction.dot(towardEndVector) > direction.dot(towardStartVector);
+        this.extendCurve(shape, forward ? forwardInitialPointIndex : backwardInitialPointIndex, forward, until);
+        return this;
+    }
+    extendCurve(shape, initialPointIndex, forward, until) {
+        var _a, _b;
+        const advance = (i) => {
+            i += increment;
+            if (i === shape.points.length && shapeIsClosed(shape)) {
+                i = 1;
+            }
+            else if (i === -1 && shapeIsClosed(shape)) {
+                i = shape.points.length - 2;
+            }
+            return i;
+        };
+        // const initialPointIndex = forward ? segmentIndex + 1 : segmentIndex;
+        const increment = forward ? 1 : -1;
+        let i = initialPointIndex;
+        let count = 0;
+        while (0 <= i && i < shape.points.length) {
+            count += 1;
+            if (count === 500) {
+                console.log("rip");
+                break;
+            }
+            const newPoint = (_a = shape.points
+                .at(i)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
+            if (newPoint === undefined) {
+                throw new Error("Error extending curve.");
+            }
+            const newSegment = new Line3((_b = this.points.at(-1)) === null || _b === void 0 ? void 0 : _b.clone(), newPoint);
+            if (newSegment.distance() < this.adjacentThreshold) {
+                i += increment;
+                continue;
+            }
+            let pointsToCheck = this.points.slice(0, this.points.length - 1);
+            if (until !== undefined) {
+                pointsToCheck.push(until);
+            }
+            for (let point of pointsToCheck) {
+                newSegment.closestPointToPoint(point, true, this.segmentClosestToPoint);
+                const distanceToSegment = this.pointToSegment
+                    .subVectors(this.segmentClosestToPoint, point)
+                    .length();
+                if (distanceToSegment < this.adjacentThreshold) {
+                    this.points.push(point.clone());
+                    return;
+                }
+            }
+            this.points.push(newPoint);
+            i = advance(i);
+        }
+    }
+    finish() {
+        return new Polygon(this.points, this.style);
+    }
+}
+
+var utils = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	BUFFER: BUFFER,
+	DOWN: DOWN,
+	IN: IN,
+	LEFT: LEFT,
+	ORIGIN: ORIGIN,
+	OUT: OUT,
+	RIGHT: RIGHT,
+	ShapeFromCurves: ShapeFromCurves,
+	UP: UP,
+	clamp: clamp,
+	furthestInDirection: furthestInDirection,
+	getBoundingBoxCenter: getBoundingBoxCenter,
+	getBoundingBoxHelper: getBoundingBoxHelper,
+	getFrameAttributes: getFrameAttributes,
+	intersectionsBetween: intersectionsBetween,
+	moveAbove: moveAbove,
+	moveBelow: moveBelow,
+	moveNextTo: moveNextTo,
+	moveToLeftOf: moveToLeftOf,
+	moveToRightOf: moveToRightOf,
+	setupCanvas: setupCanvas,
+	transformBetweenSpaces: transformBetweenSpaces
+});
+
+let sigmoid = (x) => 1 / (1 + Math.exp(-x));
+let smooth = (t) => {
+    let error = sigmoid(-10 / 2);
+    return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
+};
+const modulate = (t, dt) => {
+    let tSeconds = t;
+    let modulatedDelta = smooth(tSeconds) - smooth(t - dt);
+    let modulatedTime = smooth(tSeconds);
+    return [modulatedTime, modulatedDelta];
+};
+class Animation {
+    constructor(func, { object = undefined, parent = undefined, before = undefined, after = undefined, } = {}) {
+        this.func = func;
+        this.scale = 1;
+        this.runTime = 1;
+        this.finished = false;
+        this.elapsedSinceStart = 0;
+        this.object = object;
+        this.parent = parent;
+        this.before = before;
+        this.after = after;
+    }
+    setUp() { }
+    tearDown() { }
+    update(worldTime) {
+        if (worldTime <= this.startTime || this.finished) {
+            return;
+        }
+        let deltaTime;
+        if (this.prevUpdateTime === undefined) {
+            if (this.object instanceof Function) {
+                this.object = this.object();
+            }
+            if (this.object !== undefined && this.object.parent === null) {
+                const parent = this.parent;
+                !parent.children.includes(this.object) && parent.add(this.object);
+            }
+            this.beforeFunc && this.beforeFunc();
+            this.setUp();
+            deltaTime = worldTime - this.startTime;
+        }
+        else if (worldTime > this.endTime) {
+            deltaTime = this.endTime - this.prevUpdateTime;
+        }
+        else {
+            deltaTime = worldTime - this.prevUpdateTime;
+        }
+        this.prevUpdateTime = worldTime;
+        this.elapsedSinceStart += deltaTime;
+        this.func(...modulate(this.elapsedSinceStart, deltaTime));
+        if (worldTime >= this.endTime) {
+            this.finished = true;
+            this.tearDown();
+            this.afterFunc && this.afterFunc();
+        }
+    }
+    addBefore(before) {
+        if (this.beforeFunc) {
+            const oldBeforeFunc = this.beforeFunc;
+            this.beforeFunc = () => {
+                before();
+                oldBeforeFunc();
+            };
+        }
+        else {
+            this.beforeFunc = before;
+        }
+    }
+    addAfter(after) {
+        if (this.afterFunc) {
+            const oldAfterFunc = this.afterFunc;
+            this.afterFunc = () => {
+                oldAfterFunc();
+                after();
+            };
+        }
+        else {
+            this.afterFunc = after;
+        }
+    }
+}
+class Shift extends Animation {
+    constructor(object, direction, config) {
+        super((_elapsedTime, deltaTime) => {
+            object.position.add(direction.clone().multiplyScalar(deltaTime));
+        }, Object.assign({ object }, config));
+    }
+}
+class MoveTo extends Animation {
+    constructor(target, obj, config) {
+        super(elapsedTime => {
+            obj
+                .position
+                .copy(this.start)
+                .addScaledVector(this.displacement, elapsedTime);
+        }, Object.assign({ obj }, config));
+        this.target = target;
+        this.obj = obj;
+    }
+    setUp() {
+        this.start = this.obj.position.clone();
+        const final = new Vector3();
+        const initial = new Vector3();
+        this.obj.parent.worldToLocal(getBoundingBoxCenter(this.target, final));
+        this.obj.parent.worldToLocal(getBoundingBoxCenter(this.obj, initial));
+        this.displacement = new Vector3().subVectors(final, initial);
+    }
+}
+class Rotate extends Animation {
+    constructor(object, angle, config) {
+        super((_elapsedTime, deltaTime) => {
+            object.rotation.z += angle * deltaTime;
+        }, Object.assign({ object }, config));
+    }
+}
+class Scale extends Animation {
+    constructor(object, factor, config) {
+        const initialScale = object.scale.x;
+        super((elapsedTime, deltaTime) => {
+            const scale = MathUtils.lerp(initialScale, factor, elapsedTime);
+            object.scale.set(scale, scale, scale);
+        }, Object.assign({ object }, config));
+    }
+}
+class Draw extends Animation {
+    constructor(object, config) {
+        super((elapsedTime) => {
+            object.stroke.material.uniforms.drawRange.value.y = elapsedTime;
+        }, Object.assign({ object }, config));
+    }
+}
+class Erase extends Animation {
+    constructor(object, config) {
+        super((elapsedTime) => {
+            object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
+        }, Object.assign({ object }, config));
+        this.object = object;
+        this.config = config;
+    }
+    tearDown() {
+        var _a, _b;
+        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
+            this.object.parent.remove(this.object);
+        }
+        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
+            this.object.stroke.material.uniforms.drawRange.value.y = 1;
+        }
+    }
+}
+class FadeIn extends Animation {
+    constructor(object, config) {
+        super((elapsedTime, _deltaTime) => {
+            this.object.traverse((child) => {
+                if (child instanceof Mesh) {
+                    child.material.opacity = MathUtils.lerp(0, this.initialOpacity.get(child), elapsedTime);
+                }
+            });
+        }, Object.assign({ object }, config));
+        this.initialOpacity = new Map();
+    }
+    setUp() {
+        this.object.traverse((child) => {
+            if (child instanceof Mesh) {
+                this.initialOpacity.set(child, child.material.opacity);
+            }
+        });
+    }
+}
+class FadeOut extends Animation {
+    constructor(objectOrFunc, config) {
+        super((elapsedTime, _deltaTime) => {
+            this.object.traverse((child) => {
+                if (child instanceof Mesh) {
+                    if (!this.initialOpacity.has(child)) {
+                        console.error("Unknown child");
+                    }
+                    child.material.opacity = MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
+                }
+            });
+        }, Object.assign({ object: objectOrFunc }, config));
+        this.config = config;
+        this.initialOpacity = new Map();
+    }
+    setUp() {
+        this.object.traverse((child) => {
+            if (child instanceof Mesh) {
+                this.initialOpacity.set(child, child.material.opacity);
+            }
+        });
+    }
+    tearDown() {
+        var _a, _b;
+        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
+            this.object.parent.remove(this.object);
+        }
+        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
+            this.object.traverse((child) => {
+                if (child instanceof Mesh) {
+                    if (!this.initialOpacity.has(child)) {
+                        console.error("Unknown child");
+                    }
+                    child.material.opacity = this.initialOpacity.get(child);
+                }
+            });
+        }
+    }
+}
+class Wait extends Animation {
+    constructor(config) {
+        super(() => { }, config);
+    }
+}
+
+var animation = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	Animation: Animation,
+	Draw: Draw,
+	Erase: Erase,
+	FadeIn: FadeIn,
+	FadeOut: FadeOut,
+	MoveTo: MoveTo,
+	Rotate: Rotate,
+	Scale: Scale,
+	Shift: Shift,
+	Wait: Wait
+});
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -98898,4 +98898,4 @@ Object3D.prototype.setVisible = function () {
     return this.setOpacity(1);
 };
 
-export { animation as Animation, constants as Constants, diagram as Diagram, geometry as Geometry, SceneController, THREE, text as Text, utils as Utils, setCameraDimensions, setCanvasViewport, setupCanvas };
+export { animation as Animation, constants as Constants, diagram as Diagram, geometry as Geometry, SVGLoader, SceneController, THREE, text as Text, utils as Utils, setCameraDimensions, setCanvasViewport, setupCanvas };

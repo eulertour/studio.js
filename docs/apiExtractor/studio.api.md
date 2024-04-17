@@ -4,6 +4,7 @@
 
 ```ts
 
+import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader';
 import * as THREE_2 from 'three';
 
 declare namespace Animation_2 {
@@ -662,6 +663,8 @@ export interface StudioScene<T extends THREE_2.Camera = THREE_2.OrthographicCame
     // (undocumented)
     scene: THREE_2.Scene;
 }
+
+export { SVGLoader }
 
 declare namespace Text_2 {
     export {

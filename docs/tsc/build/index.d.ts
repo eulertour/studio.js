@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader";
 import * as Utils from "./utils";
 declare module "three" {
     interface Object3D {
@@ -22,4 +23,4 @@ import type { StudioScene, AnimationRepresentation } from "./scene";
 import * as Diagram from "./diagram";
 import * as Constants from "./constants";
 import { setCameraDimensions, setCanvasViewport } from "./MeshLine/MeshLineMaterial";
-export { Geometry, Animation, Text, SceneController, setupCanvas, THREE, type StudioScene, type AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, };
+export { Geometry, Animation, Text, SceneController, setupCanvas, THREE, SVGLoader, type StudioScene, type AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, };

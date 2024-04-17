@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader";
 import * as Utils from "./utils";
 
 declare module "three" {
@@ -101,6 +102,7 @@ export {
   SceneController,
   setupCanvas,
   THREE,
+  SVGLoader,
   type StudioScene,
   type AnimationRepresentation,
   Utils,
@@ -109,4 +111,3 @@ export {
   setCameraDimensions,
   setCanvasViewport,
 };
-

@@ -1,5 +1,6 @@
 /// <reference types="three" />
 import * as THREE from "three";
+import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader";
 declare namespace Geometry {
     class MeshLineGeometry extends THREE.BufferGeometry {
         #private;
@@ -692,4 +693,4 @@ declare class MeshLineMaterial extends THREE.ShaderMaterial {
     get width(): number;
     set width(value: number);
 }
-export { Geometry, Animation, Text, SceneController, setupCanvas, THREE, StudioScene, AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport };
+export { Geometry, Animation, Text, SceneController, setupCanvas, THREE, SVGLoader, StudioScene, AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport };
