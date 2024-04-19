@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader";
+import { SVGLoader } from "./SVGLoader.js";
+// import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import * as Utils from "./utils";
 
 declare module "three" {

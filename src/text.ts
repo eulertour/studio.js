@@ -1,6 +1,6 @@
 import * as THREE from "three";
-// import { SVGLoader } from "./SVGLoader.js";
-import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
+import { SVGLoader } from "./SVGLoader.js";
+// import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import type { Style, Transform } from "./geometry.types";
 import tex2svg from "./mathjax";
 

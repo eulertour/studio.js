@@ -4,7 +4,7 @@
 
 ```ts
 
-import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader';
+import { SVGLoader } from './SVGLoader.js';
 import * as THREE_2 from 'three';
 
 declare namespace Animation_2 {

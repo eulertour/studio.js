@@ -1,6 +1,6 @@
 /// <reference types="three" />
 import * as THREE from "three";
-import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader";
+import { SVGLoader } from "./SVGLoader.js";
 declare namespace Geometry {
     class MeshLineGeometry extends THREE.BufferGeometry {
         #private;
