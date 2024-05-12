@@ -3,3 +3,4 @@ docs/temp
 build/tsdoc-metadata.json
 examples/build
 examples/dist
+Session.vim
