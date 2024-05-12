@@ -17,10 +17,11 @@ declare module "three" {
 import * as Geometry from "./geometry";
 import * as Animation from "./animation";
 import * as Text from "./text";
-import { SceneController } from "./scene";
 import { setupCanvas } from "./utils";
-import type { StudioScene, AnimationRepresentation } from "./scene";
+import { SceneController, type StudioScene, type AnimationRepresentation } from "./scene";
 import * as Diagram from "./diagram";
 import * as Constants from "./constants";
 import { setCameraDimensions, setCanvasViewport } from "./MeshLine/MeshLineMaterial";
-export { Geometry, Animation, Text, SceneController, setupCanvas, THREE, SVGLoader, type StudioScene, type AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, };
+import * as Graphing from "./graphing";
+import Frame from "./frame.js";
+export { Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, type StudioScene, type AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };

@@ -67,15 +67,6 @@ const setupCanvas = (
     viewport: undefined,
   },
 ): [THREE.Scene, THREE.Camera, THREE.WebGLRenderer] => {
-  config = Object.assign(
-    {
-      aspectRatio: 16 / 9,
-      pixelHeight: 720,
-      coordinateHeight: 8,
-      viewport: undefined,
-    },
-    config,
-  );
   let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
   if (isWidthSetup(config)) {
     aspectRatio = config.aspectRatio;

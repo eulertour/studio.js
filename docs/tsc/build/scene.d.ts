@@ -33,6 +33,7 @@ export declare class SceneController {
     userScene: StudioScene;
     three: typeof THREE;
     viewport: THREE.Vector4;
+    aspectRatio: number;
     constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: (WidthSetupConfig | HeightSetupConfig) & {
         viewport?: THREE.Vector4;
     });

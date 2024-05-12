@@ -2807,6 +2807,29 @@
           ]
         },
         {
+          "kind": "Variable",
+          "canonicalReference": "@eulertour/studio!Frame:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "_default: "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    horizontal: {\n        nhd: {\n            aspectRatio: number;\n            coordinateHeight: number;\n            pixelHeight: number;\n            frameRate: number;\n        };\n        hd: {\n            aspectRatio: number;\n            coordinateHeight: number;\n            pixelHeight: number;\n            frameRate: number;\n        };\n        fhd: {\n            aspectRatio: number;\n            coordinateHeight: number;\n            pixelHeight: number;\n            frameRate: number;\n        };\n    };\n    vertical: {\n        nhd: {\n            aspectRatio: number;\n            coordinateWidth: number;\n            pixelWidth: number;\n            frameRate: number;\n        };\n        hd: {\n            aspectRatio: number;\n            coordinateWidth: number;\n            pixelWidth: number;\n            frameRate: number;\n        };\n        fhd: {\n            aspectRatio: number;\n            coordinateWidth: number;\n            pixelWidth: number;\n            frameRate: number;\n        };\n    };\n}"
+            }
+          ],
+          "fileUrlPath": "build/frame.d.ts",
+          "isReadonly": true,
+          "releaseTag": "Public",
+          "name": "Frame",
+          "variableTypeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          }
+        },
+        {
           "kind": "Namespace",
           "canonicalReference": "@eulertour/studio!Geometry:namespace",
           "docComment": "",
@@ -6942,6 +6965,191 @@
           ]
         },
         {
+          "kind": "Namespace",
+          "canonicalReference": "@eulertour/studio!Graphing:namespace",
+          "docComment": "",
+          "excerptTokens": [],
+          "fileUrlPath": "build/index.d.ts",
+          "releaseTag": "None",
+          "name": "Graphing",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Class",
+              "canonicalReference": "@eulertour/studio!Graphing.Curve:class",
+              "docComment": "/**\n * A curve described by an equation.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "export declare class Curve extends "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Polyline",
+                  "canonicalReference": "@eulertour/studio!Geometry.Polyline:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": " "
+                }
+              ],
+              "fileUrlPath": "build/graphing.d.ts",
+              "releaseTag": "Public",
+              "isAbstract": false,
+              "name": "Curve",
+              "preserveMemberOrder": false,
+              "members": [
+                {
+                  "kind": "Constructor",
+                  "canonicalReference": "@eulertour/studio!Graphing.Curve:constructor(1)",
+                  "docComment": "/**\n * Constructs a new instance of the `Curve` class\n */\n",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "constructor(equation: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "() => void"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", config?: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Style",
+                      "canonicalReference": "@eulertour/studio!~Style:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ");"
+                    }
+                  ],
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "equation",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": false
+                    },
+                    {
+                      "parameterName": "config",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 3,
+                        "endIndex": 4
+                      },
+                      "isOptional": true
+                    }
+                  ]
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Graphing.Curve.defaultConfig:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static defaultConfig(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{}"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": true,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "defaultConfig"
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Graphing.Curve#equation:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "equation: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "() => void"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "equation",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Graphing.Curve#getClassConfig:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "getClassConfig(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{}"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "getClassConfig"
+                }
+              ],
+              "extendsTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "implementsTokenRanges": []
+            }
+          ]
+        },
+        {
           "kind": "Class",
           "canonicalReference": "@eulertour/studio!SceneController:class",
           "docComment": "",
@@ -7085,6 +7293,36 @@
               "isOptional": false,
               "releaseTag": "Public",
               "name": "animationIndex",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false,
+              "isAbstract": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "@eulertour/studio!SceneController#aspectRatio:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "aspectRatio: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "aspectRatio",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2

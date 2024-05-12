@@ -186,6 +186,17 @@ export { Constants }
 // @public (undocumented)
 const COORDS_TO_PIXELS: number;
 
+// @public
+class Curve extends Polyline {
+    constructor(equation: () => void, config?: Style);
+    // (undocumented)
+    static defaultConfig(): {};
+    // (undocumented)
+    equation: () => void;
+    // (undocumented)
+    getClassConfig(): {};
+}
+
 // @public (undocumented)
 const DEFAULT_BACKGROUND_HEX = 16775920;
 
@@ -242,6 +253,50 @@ class FadeOut extends Animation_3 {
 }
 
 // @public (undocumented)
+export const Frame: {
+    horizontal: {
+        nhd: {
+            aspectRatio: number;
+            coordinateHeight: number;
+            pixelHeight: number;
+            frameRate: number;
+        };
+        hd: {
+            aspectRatio: number;
+            coordinateHeight: number;
+            pixelHeight: number;
+            frameRate: number;
+        };
+        fhd: {
+            aspectRatio: number;
+            coordinateHeight: number;
+            pixelHeight: number;
+            frameRate: number;
+        };
+    };
+    vertical: {
+        nhd: {
+            aspectRatio: number;
+            coordinateWidth: number;
+            pixelWidth: number;
+            frameRate: number;
+        };
+        hd: {
+            aspectRatio: number;
+            coordinateWidth: number;
+            pixelWidth: number;
+            frameRate: number;
+        };
+        fhd: {
+            aspectRatio: number;
+            coordinateWidth: number;
+            pixelWidth: number;
+            frameRate: number;
+        };
+    };
+};
+
+// @public (undocumented)
 const furthestInDirection: (object: any, direction: any) => THREE_2.Vector3;
 
 declare namespace Geometry {
@@ -274,6 +329,13 @@ const getFrameAttributes: (aspectRatio: number, height: number) => {
     coordinateHeight: number;
     coordinateWidth: number;
 };
+
+declare namespace Graphing {
+    export {
+        Curve
+    }
+}
+export { Graphing }
 
 // @public (undocumented)
 type HeightSetupConfig = {
@@ -468,6 +530,8 @@ export class SceneController {
     });
     // (undocumented)
     animationIndex: number;
+    // (undocumented)
+    aspectRatio: number;
     // (undocumented)
     get camera(): THREE_2.OrthographicCamera;
     // (undocumented)

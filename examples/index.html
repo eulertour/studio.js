@@ -4,24 +4,25 @@
             {
                 "imports": {
                     "@eulertour/studio": "./build/bundle.js",
-                    "basic": "./dist/basic.js"
+                    "basic": "./dist/basic.js",
+                    "pythagorean": "./dist/oldProjects/pythagorean.js"
                 }
             }
         </script>
         <script type="module">
-            import Example from "basic";
+            import Example from "pythagorean";
             import { SceneController, THREE } from "@eulertour/studio";
 
             const canvas = document.getElementById("canvas");
             const sceneController = new SceneController(Example, canvas, {
               aspectRatio: 16 / 9,
-              pixelHeight: 400,
+              pixelHeight: 720,
               coordinateHeight: 8,
             });
             sceneController.play();
         </script>
     </head>
     <body>
-        <canvas id="canvas" style="height: 300px"></canvas>
+        <canvas id="canvas" style="height: 720px"></canvas>
     </body>
 </html>

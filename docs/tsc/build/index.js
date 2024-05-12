@@ -32,7 +32,7 @@ THREE.Object3D.prototype.setOpacity = function (opacity) {
     return this;
 };
 THREE.Object3D.prototype.setInvisible = function () {
-    return THREE.Object3D.prototype.setOpacity(0);
+    return this.setOpacity(0);
 };
 THREE.Object3D.prototype.setVisible = function () {
     return this.setOpacity(1);
@@ -40,10 +40,12 @@ THREE.Object3D.prototype.setVisible = function () {
 import * as Geometry from "./geometry";
 import * as Animation from "./animation";
 import * as Text from "./text";
-import { SceneController } from "./scene";
 import { setupCanvas } from "./utils";
+import { SceneController, } from "./scene";
 import * as Diagram from "./diagram";
 import * as Constants from "./constants";
 import { setCameraDimensions, setCanvasViewport, } from "./MeshLine/MeshLineMaterial";
-export { Geometry, Animation, Text, SceneController, setupCanvas, THREE, SVGLoader, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, };
+import * as Graphing from "./graphing";
+import Frame from "./frame.js";
+export { Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };
 //# sourceMappingURL=index.js.map

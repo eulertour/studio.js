@@ -18,6 +18,7 @@ export class SceneController {
         this.finishedAnimationCount = 0;
         this.three = THREE;
         this.viewport = config.viewport;
+        this.aspectRatio = config.aspectRatio;
         this.userScene = new UserScene(...setupCanvas(canvasRef, config));
     }
     get scene() {

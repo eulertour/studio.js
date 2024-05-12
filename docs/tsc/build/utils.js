@@ -39,12 +39,6 @@ const setupCanvas = (canvas, config = {
     coordinateHeight: 8,
     viewport: undefined,
 }) => {
-    config = Object.assign({
-        aspectRatio: 16 / 9,
-        pixelHeight: 720,
-        coordinateHeight: 8,
-        viewport: undefined,
-    }, config);
     let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
     if (isWidthSetup(config)) {
         aspectRatio = config.aspectRatio;

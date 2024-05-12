@@ -32822,7 +32822,7 @@ class CanvasTexture extends Texture {
  *
  **/
 
-class Curve {
+let Curve$1 = class Curve {
 
 	constructor() {
 
@@ -33199,9 +33199,9 @@ class Curve {
 
 	}
 
-}
+};
 
-class EllipseCurve extends Curve {
+class EllipseCurve extends Curve$1 {
 
 	constructor( aX = 0, aY = 0, xRadius = 1, yRadius = 1, aStartAngle = 0, aEndAngle = Math.PI * 2, aClockwise = false, aRotation = 0 ) {
 
@@ -33449,7 +33449,7 @@ const px = /*@__PURE__*/ new CubicPoly();
 const py = /*@__PURE__*/ new CubicPoly();
 const pz = /*@__PURE__*/ new CubicPoly();
 
-class CatmullRomCurve3 extends Curve {
+class CatmullRomCurve3 extends Curve$1 {
 
 	constructor( points = [], closed = false, curveType = 'centripetal', tension = 0.5 ) {
 
@@ -33696,7 +33696,7 @@ function CubicBezier( t, p0, p1, p2, p3 ) {
 
 }
 
-class CubicBezierCurve extends Curve {
+class CubicBezierCurve extends Curve$1 {
 
 	constructor( v0 = new Vector2(), v1 = new Vector2(), v2 = new Vector2(), v3 = new Vector2() ) {
 
@@ -33769,7 +33769,7 @@ class CubicBezierCurve extends Curve {
 
 }
 
-class CubicBezierCurve3 extends Curve {
+class CubicBezierCurve3 extends Curve$1 {
 
 	constructor( v0 = new Vector3(), v1 = new Vector3(), v2 = new Vector3(), v3 = new Vector3() ) {
 
@@ -33843,7 +33843,7 @@ class CubicBezierCurve3 extends Curve {
 
 }
 
-class LineCurve extends Curve {
+class LineCurve extends Curve$1 {
 
 	constructor( v1 = new Vector2(), v2 = new Vector2() ) {
 
@@ -33931,7 +33931,7 @@ class LineCurve extends Curve {
 
 }
 
-class LineCurve3 extends Curve {
+class LineCurve3 extends Curve$1 {
 
 	constructor( v1 = new Vector3(), v2 = new Vector3() ) {
 
@@ -34015,7 +34015,7 @@ class LineCurve3 extends Curve {
 
 }
 
-class QuadraticBezierCurve extends Curve {
+class QuadraticBezierCurve extends Curve$1 {
 
 	constructor( v0 = new Vector2(), v1 = new Vector2(), v2 = new Vector2() ) {
 
@@ -34084,7 +34084,7 @@ class QuadraticBezierCurve extends Curve {
 
 }
 
-class QuadraticBezierCurve3 extends Curve {
+class QuadraticBezierCurve3 extends Curve$1 {
 
 	constructor( v0 = new Vector3(), v1 = new Vector3(), v2 = new Vector3() ) {
 
@@ -34154,7 +34154,7 @@ class QuadraticBezierCurve3 extends Curve {
 
 }
 
-class SplineCurve extends Curve {
+class SplineCurve extends Curve$1 {
 
 	constructor( points = [] ) {
 
@@ -34265,7 +34265,7 @@ var Curves = /*#__PURE__*/Object.freeze({
  *  curves, but retains the api of a curve
  **************************************************************/
 
-class CurvePath extends Curve {
+class CurvePath extends Curve$1 {
 
 	constructor() {
 
@@ -51556,7 +51556,7 @@ var THREE = /*#__PURE__*/Object.freeze({
 	CullFaceFront: CullFaceFront,
 	CullFaceFrontBack: CullFaceFrontBack,
 	CullFaceNone: CullFaceNone,
-	Curve: Curve,
+	Curve: Curve$1,
 	CurvePath: CurvePath,
 	CustomBlending: CustomBlending,
 	CustomToneMapping: CustomToneMapping,
@@ -56269,12 +56269,6 @@ const setupCanvas = (canvas, config = {
     coordinateHeight: 8,
     viewport: undefined,
 }) => {
-    config = Object.assign({
-        aspectRatio: 16 / 9,
-        pixelHeight: 720,
-        coordinateHeight: 8,
-        viewport: undefined,
-    }, config);
     let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
     if (isWidthSetup(config)) {
         aspectRatio = config.aspectRatio;
@@ -98665,6 +98659,7 @@ class SceneController {
         this.finishedAnimationCount = 0;
         this.three = THREE;
         this.viewport = config.viewport;
+        this.aspectRatio = config.aspectRatio;
         this.userScene = new UserScene(...setupCanvas(canvasRef, config));
     }
     get scene() {
@@ -98862,6 +98857,71 @@ var diagram = /*#__PURE__*/Object.freeze({
 	Indicator: Indicator
 });
 
+/**
+ * A curve described by an equation.
+ */
+class Curve extends Polyline {
+    constructor(equation, config = {}) {
+        config = Object.assign(Object.assign({}, Polyline.defaultConfig()), config);
+        super([new Vector3(-1, -1, 0), new Vector3(1, 1, 0)], config);
+        this.equation = equation;
+    }
+    static defaultConfig() {
+        return Object.assign({}, super.defaultConfig());
+    }
+    getClassConfig() {
+        return {};
+    }
+}
+
+var graphing = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	Curve: Curve
+});
+
+var frame = {
+    horizontal: {
+        nhd: {
+            aspectRatio: 16 / 9,
+            coordinateHeight: 8,
+            pixelHeight: 360,
+            frameRate: 30,
+        },
+        hd: {
+            aspectRatio: 16 / 9,
+            coordinateHeight: 8,
+            pixelHeight: 720,
+            frameRate: 30,
+        },
+        fhd: {
+            aspectRatio: 16 / 9,
+            coordinateHeight: 8,
+            pixelHeight: 1080,
+            frameRate: 60,
+        },
+    },
+    vertical: {
+        nhd: {
+            aspectRatio: 9 / 16,
+            coordinateWidth: 8,
+            pixelWidth: 360,
+            frameRate: 30,
+        },
+        hd: {
+            aspectRatio: 9 / 16,
+            coordinateWidth: 8,
+            pixelWidth: 720,
+            frameRate: 30,
+        },
+        fhd: {
+            aspectRatio: 9 / 16,
+            coordinateWidth: 8,
+            pixelWidth: 1080,
+            frameRate: 60,
+        },
+    },
+};
+
 Object3D.prototype.setScale = function (factor) {
     this.scale.x = factor;
     this.scale.y = factor;
@@ -98892,10 +98952,10 @@ Object3D.prototype.setOpacity = function (opacity) {
     return this;
 };
 Object3D.prototype.setInvisible = function () {
-    return Object3D.prototype.setOpacity(0);
+    return this.setOpacity(0);
 };
 Object3D.prototype.setVisible = function () {
     return this.setOpacity(1);
 };
 
-export { animation as Animation, constants as Constants, diagram as Diagram, geometry as Geometry, SVGLoader, SceneController, THREE, text as Text, utils as Utils, setCameraDimensions, setCanvasViewport, setupCanvas };
+export { animation as Animation, constants as Constants, diagram as Diagram, frame as Frame, geometry as Geometry, graphing as Graphing, SVGLoader, SceneController, THREE, text as Text, utils as Utils, setCameraDimensions, setCanvasViewport, setupCanvas };

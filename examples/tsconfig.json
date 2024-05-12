@@ -11,6 +11,6 @@
       "@eulertour/studio": ["./build/bundle.js"],
     }
   },
-  "include": ["*.ts"],
+  "include": ["**/*.ts"],
   "exclude": ["dist"]
 }

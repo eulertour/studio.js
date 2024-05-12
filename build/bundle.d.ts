@@ -543,6 +543,7 @@ declare class SceneController {
     userScene: StudioScene;
     three: typeof THREE;
     viewport: THREE.Vector4;
+    aspectRatio: number;
     constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: (WidthSetupConfig | HeightSetupConfig) & {
         viewport?: THREE.Vector4;
     });
@@ -693,4 +694,325 @@ declare class MeshLineMaterial extends THREE.ShaderMaterial {
     get width(): number;
     set width(value: number);
 }
-export { Geometry, Animation, Text, SceneController, setupCanvas, THREE, SVGLoader, StudioScene, AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport };
+declare namespace Graphing {
+    class MeshLineGeometry extends THREE.BufferGeometry {
+        #private;
+        arrow: boolean;
+        readonly isMeshLineGeometry = true;
+        readonly type = "MeshLineGeometry";
+        points: THREE.Vector3[];
+        constructor(arrow?: boolean);
+        setPoints(points: Array<THREE.Vector3>, updateBounds?: boolean): void;
+        setVertexData(array: WritableArrayLike<number>, offset: number, x: number, y: number, z: number): void;
+        setTextureCoords(array: WritableArrayLike<number>, offset: number): void;
+        setIndices(array: WritableArrayLike<number>, offset: number, startIndex: number): void;
+        computeBoundingSphere(): void;
+    }
+    interface WritableArrayLike<T> {
+        readonly length: number;
+        [n: number]: T;
+    }
+    const CameraDimensions: THREE.Vector2;
+    const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
+    const CanvasViewport: THREE.Vector4;
+    const setCanvasViewport: (viewport: THREE.Vector4) => void;
+    class MeshLineMaterial extends THREE.ShaderMaterial {
+        constructor(parameters: THREE.ShaderMaterialParameters & {
+            color: THREE.ColorRepresentation;
+            opacity: number;
+            width: number;
+        });
+        get color(): any;
+        set color(value: any);
+        get width(): number;
+        set width(value: number);
+    }
+    class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
+        constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
+    }
+    type Transform = {
+        position: THREE.Vector3;
+        rotation: THREE.Euler;
+        scale: THREE.Vector3;
+    };
+    type Style = {
+        strokeColor?: THREE.Color;
+        strokeWidth?: number;
+        strokeOpacity?: number;
+        fillColor?: THREE.Color;
+        fillOpacity?: number;
+    };
+    type LineAttributes = {
+        start: THREE.Vector3;
+        end: THREE.Vector3;
+    };
+    type ArcAttributes = {
+        radius: number;
+        angle: number;
+        closed: boolean;
+    };
+    type RectangleAttributes = {
+        width: number;
+        height: number;
+    };
+    type PolygonAttributes = {
+        points: Array<THREE.Vector3>;
+    };
+    type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
+    type Stroke = MeshLine;
+    /**
+     * An abstract class representing a generalized shape.
+     */
+    abstract class Shape extends THREE.Group {
+        fill: Fill;
+        stroke: Stroke;
+        curveEndIndices: Array<Array<number>>;
+        arrow: boolean;
+        constructor(points: Array<THREE.Vector3>, config?: Style & {
+            arrow?: boolean;
+        });
+        static defaultStyle(): {
+            strokeColor: THREE.Color;
+            strokeOpacity: number;
+            strokeWidth: number;
+            fillColor: THREE.Color;
+            fillOpacity: number;
+        };
+        static defaultConfig(): {};
+        reshape(...args: any[]): void;
+        copyStroke(shape: Shape): void;
+        copyFill(shape: Shape): void;
+        copyStrokeFill(shape: Shape): void;
+        get points(): Array<THREE.Vector3>;
+        segment(index: number): THREE.Line3;
+        curve(curveIndex: number, worldTransform?: boolean): THREE.Vector3[];
+        get numCurves(): number;
+        getCurveEndIndices(): any[];
+        clear(): this;
+        clone(recursive?: boolean): this;
+        getClassConfig(): {};
+        abstract getAttributes(): object;
+        getCloneAttributes(): Array<unknown>;
+        getStyle(): Style;
+        setStyle(style: Style): void;
+        getTransform(): Transform;
+        setTransform(transform: Transform): void;
+        dispose(): this;
+        getDimensions(): THREE.Vector2;
+        closestPointToPoint(point: THREE.Vector3, target?: THREE.Vector3): THREE.Vector3;
+    }
+    /**
+     * A segment between two points.
+     *
+     * @example line.ts
+     */
+    class Line extends Shape {
+        start: THREE.Vector3;
+        end: THREE.Vector3;
+        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
+            arrow?: boolean;
+        });
+        static defaultConfig(): {
+            arrow: boolean;
+        };
+        static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
+        reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
+            arrow?: boolean;
+        }): void;
+        getClassConfig(): {};
+        getAttributes(): LineAttributes;
+        toVector(global: boolean): THREE.Vector3;
+        static fromAttributes(attributes: LineAttributes): Line;
+    }
+    /**
+     * An arrow derived from a line.
+     *
+     * @example arrow.ts
+     */
+    class Arrow extends Line {
+        start: THREE.Vector3;
+        end: THREE.Vector3;
+        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style);
+        reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
+    }
+    /**
+     * A series of connected line segments.
+     *
+     * @example polyline.ts
+     */
+    class Polyline extends Shape {
+        constructor(points: Array<THREE.Vector3>, config?: Style);
+        reshape(points: Array<THREE.Vector3>, config?: Style): void;
+        getClassConfig(): {};
+        getAttributes(): PolygonAttributes;
+        static fromAttributes(attributes: PolygonAttributes): Polyline;
+    }
+    /**
+     * A part of a circle's circumference.
+     *
+     * @example arc.ts
+     */
+    class Arc extends Shape {
+        radius: number;
+        angle: number;
+        closed: boolean;
+        constructor(radius?: number, angle?: number, config?: Style & {
+            closed?: boolean;
+        });
+        static defaultConfig(): {
+            closed: boolean;
+        };
+        reshape(radius?: number, angle?: number, config?: Style & {
+            closed?: boolean;
+        }): void;
+        getCloneAttributes(): (number | boolean)[];
+        getAttributes(): ArcAttributes;
+        static fromAttributes(attributes: ArcAttributes): Arc;
+        get attributeData(): ({
+            attribute: string;
+            type: string;
+            default: number;
+        } | {
+            attribute: string;
+            type: string;
+            default: boolean;
+        })[];
+        getDimensions(): THREE.Vector2;
+    }
+    /**
+     * A shape consisting of all points at a fixed distance from a given center.
+     *
+     * @example circle.ts
+     */
+    class Circle extends Arc {
+        constructor(radius?: number, config?: Style);
+        reshape(radius: number, config?: {}): void;
+        getCloneAttributes(): number[];
+        getAttributes(): ArcAttributes;
+        static fromAttributes(attributes: ArcAttributes): Circle;
+        get attributeData(): {
+            attribute: string;
+            type: string;
+            default: number;
+        }[];
+    }
+    /**
+     * A small circle representing a precise location in space.
+     *
+     * @example point.ts
+     */
+    class Point extends Circle {
+        constructor(position?: THREE.Vector2 | THREE.Vector3, config?: Style & {
+            radius?: number;
+        });
+        static defaultConfig(): {
+            radius: number;
+            closed: boolean;
+        };
+        getAttributes(): ArcAttributes;
+        static fromAttributes(): Point;
+    }
+    /**
+     * A shape made up of line segments connected
+     * to form a (usually) closed shape.
+     *
+     * @example polygon.ts
+     */
+    class Polygon extends Shape {
+        constructor(points: Array<THREE.Vector3>, config?: Style);
+        getClassConfig(): {};
+        getAttributes(): PolygonAttributes;
+        static fromAttributes(attributes: PolygonAttributes): Polygon;
+        get attributeData(): any[];
+    }
+    /**
+     * A shape with four sides and four right angles.
+     *
+     * @example rectangle.ts
+     */
+    class Rectangle extends Shape {
+        width: number;
+        height: number;
+        constructor(width?: number, height?: number, config?: Style);
+        getCloneAttributes(): number[];
+        getAttributes(): RectangleAttributes;
+        static fromAttributes(attributes: RectangleAttributes): Rectangle;
+        get attributeData(): {
+            attribute: string;
+            type: string;
+            default: number;
+        }[];
+        getCurveEndIndices(): Array<Array<number>>;
+    }
+    /**
+     * A shape with four sides of equal length and four right angles.
+     *
+     * @example square.ts
+     */
+    class Square extends Rectangle {
+        sideLength: number;
+        constructor(sideLength?: number, config?: Style);
+        reshape(sideLength: number, config?: {}): void;
+        getCloneAttributes(): number[];
+        getAttributes(): RectangleAttributes;
+        static fromAttributes(attributes: RectangleAttributes): Square;
+        get attributeData(): {
+            attribute: string;
+            type: string;
+            default: number;
+        }[];
+    }
+    /**
+     * A curve described by an equation.
+     */
+    class Curve extends Polyline {
+        equation: () => void;
+        constructor(equation: () => void, config?: Style);
+        static defaultConfig(): {};
+        getClassConfig(): {};
+    }
+}
+declare const _default: {
+    horizontal: {
+        nhd: {
+            aspectRatio: number;
+            coordinateHeight: number;
+            pixelHeight: number;
+            frameRate: number;
+        };
+        hd: {
+            aspectRatio: number;
+            coordinateHeight: number;
+            pixelHeight: number;
+            frameRate: number;
+        };
+        fhd: {
+            aspectRatio: number;
+            coordinateHeight: number;
+            pixelHeight: number;
+            frameRate: number;
+        };
+    };
+    vertical: {
+        nhd: {
+            aspectRatio: number;
+            coordinateWidth: number;
+            pixelWidth: number;
+            frameRate: number;
+        };
+        hd: {
+            aspectRatio: number;
+            coordinateWidth: number;
+            pixelWidth: number;
+            frameRate: number;
+        };
+        fhd: {
+            aspectRatio: number;
+            coordinateWidth: number;
+            pixelWidth: number;
+            frameRate: number;
+        };
+    };
+};
+declare const Frame: typeof _default;
+export { Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, StudioScene, AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame };

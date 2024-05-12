@@ -53,6 +53,7 @@ export class SceneController {
   userScene: StudioScene;
   three = THREE;
   viewport: THREE.Vector4;
+  aspectRatio: number;
 
   constructor(
     public UserScene: Class<StudioScene>,
@@ -62,6 +63,7 @@ export class SceneController {
     },
   ) {
     this.viewport = config.viewport;
+    this.aspectRatio = config.aspectRatio;
     this.userScene = new UserScene(...setupCanvas(canvasRef, config));
   }
 

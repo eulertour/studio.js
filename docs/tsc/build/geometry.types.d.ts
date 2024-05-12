@@ -26,4 +26,4 @@ type RectangleAttributes = {
 type PolygonAttributes = {
     points: Array<THREE.Vector3>;
 };
-export type { Transform, Style, PolygonAttributes, LineAttributes, ArcAttributes, RectangleAttributes };
+export type { Transform, Style, PolygonAttributes, LineAttributes, ArcAttributes, RectangleAttributes, };
