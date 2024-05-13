@@ -22,10 +22,14 @@
     "dev": "nodemon -w src -e js,ts --exec 'npm run serve'",
     "build-examples": "([ -d examples/build ] && ln -sfh $(pwd)/build/ examples/build); (cd examples/ && tsc)",
     "serve-examples": "serve -S examples",
-    "deploy-staging": "npm run deploy-build-staging && npm run deploy-source-staging && npm run deploy-examples-staging",
-    "deploy-build-staging": "gsutil -m rsync -r build/ gs://euler-studio-staging.appspot.com/studio.js/build",
-    "deploy-source-staging": "gsutil -m rsync -r src/ gs://euler-studio-staging.appspot.com/studio.js/src",
-    "deploy-examples-staging": "gsutil -m rsync -r examples/ gs://euler-studio-staging.appspot.com/studio.js/examples"
+    "deploy-staging": "npm run deploy-staging-build && npm run deploy-staging-source && npm run deploy-staging-examples",
+    "deploy-staging-build": "gsutil -m rsync -r build/ gs://euler-studio-staging.appspot.com/studio.js/build",
+    "deploy-staging-source": "gsutil -m rsync -r src/ gs://euler-studio-staging.appspot.com/studio.js/src",
+    "deploy-staging-examples": "gsutil -m rsync -r examples/ gs://euler-studio-staging.appspot.com/studio.js/examples",
+    "deploy-prod": "npm run deploy-prod-build && npm run deploy-prod-source && npm run deploy-prod-examples",
+    "deploy-prod-build": "gsutil -m rsync -r build/ gs://euler-studio.appspot.com/studio.js/build",
+    "deploy-prod-source": "gsutil -m rsync -r src/ gs://euler-studio.appspot.com/studio.js/src",
+    "deploy-prod-examples": "gsutil -m rsync -r examples/ gs://euler-studio.appspot.com/studio.js/examples"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.0",
