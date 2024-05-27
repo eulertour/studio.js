@@ -17,15 +17,39 @@ declare module "three" {
     moveBelow(target: THREE.Object3D, distance?): void;
     setOpacity(opacity: number): THREE.Object3D;
     setInvisible(): THREE.Object3D;
-    setVisible(): THREE.Object3D;
+    setVisible(config?): THREE.Object3D;
+    setUpright(): THREE.Object3D;
+    shiftPosition(offset: THREE.Vector3): THREE.Object3D;
+    pointAlongCurve(t: number): THREE.Vector3;
+  }
+
+  export interface Vector3 {
+    rotate90(): THREE.Vector3;
+    rotate180(): THREE.Vector3;
+    rotate270(): THREE.Vector3;
   }
 }
+
+THREE.Vector3.prototype.rotate90 = function (): THREE.Vector3 {
+  return Utils.rotate90(this);
+};
+
+THREE.Vector3.prototype.rotate180 = function (): THREE.Vector3 {
+  return Utils.rotate180(this);
+};
+
+THREE.Vector3.prototype.rotate270 = function (): THREE.Vector3 {
+  return Utils.rotate270(this);
+};
 
 THREE.Object3D.prototype.setScale = function (factor): THREE.Object3D {
   this.scale.x = factor;
   this.scale.y = factor;
-  this.scale.z = factor;
   return this;
+};
+
+THREE.Object3D.prototype.pointAlongCurve = function (t: number) {
+  return Utils.pointAlongCurve(this, t);
 };
 
 THREE.Object3D.prototype.moveNextTo = function (
@@ -33,54 +57,105 @@ THREE.Object3D.prototype.moveNextTo = function (
   direction: THREE.Vector3,
   distance?,
 ) {
-  Utils.moveNextTo(target, this, direction, distance);
+  return Utils.moveNextTo(target, this, direction, distance);
 };
 
 THREE.Object3D.prototype.moveToRightOf = function (
   target: THREE.Object3D,
   distance?,
 ) {
-  Utils.moveToRightOf(target, this, distance);
+  return Utils.moveToRightOf(target, this, distance);
 };
 
 THREE.Object3D.prototype.moveToLeftOf = function (
   target: THREE.Object3D,
   distance?,
 ) {
-  Utils.moveToLeftOf(target, this, distance);
+  return Utils.moveToLeftOf(target, this, distance);
 };
 
 THREE.Object3D.prototype.moveAbove = function (
   target: THREE.Object3D,
   distance?,
 ) {
-  Utils.moveAbove(target, this, distance);
+  return Utils.moveAbove(target, this, distance);
 };
 
 THREE.Object3D.prototype.moveBelow = function (
   target: THREE.Object3D,
   distance?,
 ) {
-  Utils.moveBelow(target, this, distance);
+  return Utils.moveBelow(target, this, distance);
 };
 
 THREE.Object3D.prototype.setOpacity = function (
   opacity: number,
+  config?,
 ): THREE.Object3D {
-  this.traverse((child) => {
-    if (child instanceof THREE.Mesh) {
-      child.material.opacity = opacity;
-    }
-  });
+  let family = true;
+  if (config && config.family === false) {
+    family = false;
+  }
+
+  if (family) {
+    this.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.material.opacity = opacity;
+      }
+    });
+  } else {
+    [this.stroke, this.fill].forEach((mesh) => {
+      if (!mesh) return;
+      mesh.material.opacity = opacity;
+    });
+  }
   return this;
 };
 
-THREE.Object3D.prototype.setInvisible = function (): THREE.Object3D {
-  return this.setOpacity(0);
+THREE.Object3D.prototype.setInvisible = function (config?): THREE.Object3D {
+  let family = true;
+  if (config && config.family === false) {
+    family = false;
+  }
+
+  return this.setOpacity(0, { family });
 };
 
-THREE.Object3D.prototype.setVisible = function (): THREE.Object3D {
-  return this.setOpacity(1);
+THREE.Object3D.prototype.setVisible = function (config?): THREE.Object3D {
+  let family = true;
+  if (config && config.family === false) {
+    family = false;
+  }
+  return this.setOpacity(1, { family });
+};
+
+THREE.Object3D.prototype.setUpright = function (): THREE.Object3D {
+  const worldQuaternion = new THREE.Quaternion();
+  this.getWorldQuaternion(worldQuaternion);
+
+  const inverseQuaternion = worldQuaternion.clone().invert();
+  this.quaternion.copy(inverseQuaternion);
+  return this;
+};
+
+THREE.Object3D.prototype.shiftPosition = function (
+  offset: THREE.Vector3,
+): THREE.Object3D {
+  this.position.add(offset);
+
+  const thisSpaceDirection = Utils.convertWorldDirectionToObjectSpace(
+    offset,
+    this,
+  );
+  thisSpaceDirection.multiplyScalar(
+    offset.length() / thisSpaceDirection.length(),
+  );
+  thisSpaceDirection.negate();
+
+  this.children.forEach((child: THREE.Object3D) =>
+    child.position.add(thisSpaceDirection),
+  );
+  return this;
 };
 
 import * as Geometry from "./geometry";

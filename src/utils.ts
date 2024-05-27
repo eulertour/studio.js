@@ -1,10 +1,12 @@
 import * as THREE from "three";
 import { DEFAULT_BACKGROUND_HEX, PIXELS_TO_COORDS } from "./constants";
 import * as Geometry from "./geometry";
+import * as Text from "./text";
 import { Style } from "./geometry.types";
 // import { Camera } from "build/three-types";
 import { setCameraDimensions } from "./MeshLine/MeshLineMaterial";
 import { CanvasViewport } from "./MeshLine/MeshLineMaterial";
+import { MeshLine } from "./MeshLine";
 
 const BUFFER = 0.5;
 const ORIGIN = Object.freeze(new THREE.Vector3(0, 0, 0));
@@ -115,112 +117,266 @@ const setupCanvas = (
   return [new THREE.Scene(), camera, renderer];
 };
 
-const furthestInDirection = (object, direction) => {
+const convertWorldDirectionToObjectSpace = (
+  worldDirection: THREE.Vector3,
+  object: THREE.Object3D,
+): THREE.Vector3 => {
+  const worldQuaternion = new THREE.Quaternion();
+  object.getWorldQuaternion(worldQuaternion);
+
+  const inverseQuaternion = worldQuaternion.clone().invert();
+
+  const localDirection = worldDirection
+    .clone()
+    .applyQuaternion(inverseQuaternion);
+  localDirection.normalize();
+
+  return localDirection;
+};
+
+const transformBetweenSpaces = (
+  from: THREE.Object3D,
+  to: THREE.Object3D,
+  point: THREE.Vector3,
+) => {
+  return to.worldToLocal(from.localToWorld(point));
+};
+
+const furthestInDirection = (
+  object,
+  direction,
+  exclude: THREE.Object3D | Array<THREE.Object3D> = [],
+) => {
+  let excludeArray: Array<THREE.Object3D>;
+  if (!Array.isArray(exclude)) {
+    excludeArray = [exclude];
+  } else {
+    excludeArray = exclude;
+  }
+
   object.updateWorldMatrix(true, true);
-  let maxPoint = new THREE.Vector3();
-  let maxVal = -Infinity;
-  let worldPoint = new THREE.Vector3();
-  object.traverse((child) => {
-    if (child instanceof THREE.Mesh) {
-      const positionArray = child.geometry.attributes.position.array;
-      if (positionArray.length % 3 !== 0) {
-        throw new Error("Invalid position array length");
+
+  // const unitDirection = convertWorldDirectionToObjectSpace(direction, object);
+  const unitDirection = direction.clone().normalize();
+
+  let maxDot = -Infinity;
+  let maxDotPoint = unitDirection.clone().negate().setLength(Infinity);
+  object.traverse((obj) => {
+    let exclusionCheckObj = obj;
+    while (exclusionCheckObj) {
+      if (excludeArray.includes(exclusionCheckObj)) {
+        return;
+      } else if (exclusionCheckObj === object) {
+        break;
       }
-      for (let i = 0; i < positionArray.length; i += 3) {
-        worldPoint
-          .set(positionArray[i], positionArray[i + 1], positionArray[i + 2])
-          .applyMatrix4(child.matrixWorld);
-        let dot = worldPoint.dot(direction);
-        if (dot > maxVal) {
-          maxPoint.copy(worldPoint);
-          maxVal = dot;
+      exclusionCheckObj = exclusionCheckObj.parent;
+    }
+
+    if (obj instanceof MeshLine) {
+      for (const point of obj.points) {
+        const clonedPoint = point.clone();
+        transformBetweenSpaces(obj, object, clonedPoint);
+        const dotProduct = clonedPoint.dot(unitDirection);
+        if (dotProduct > maxDot) {
+          maxDot = dotProduct;
+          maxDotPoint.copy(clonedPoint);
         }
       }
-      if (child.geometry.attributes.nextPosition !== undefined) {
-        const nextArray = child.geometry.attributes.nextPosition.array;
-        worldPoint
-          .set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1))
-          .applyMatrix4(child.matrixWorld);
-        let dot = worldPoint.dot(direction);
-        if (dot > maxVal) {
-          maxPoint.copy(worldPoint);
-          maxVal = dot;
+    } else if (
+      obj instanceof THREE.Mesh &&
+      obj.parent?.parent?.parent instanceof Text.Text
+    ) {
+      const pointsArray = obj.geometry.attributes.position.array;
+      const pointContainer = new THREE.Vector3();
+      for (let i = 0; i < pointsArray.length; i += 3) {
+        pointContainer.set(
+          pointsArray[i],
+          pointsArray[i + 1],
+          pointsArray[i + 2],
+        );
+        transformBetweenSpaces(obj, object, pointContainer);
+        const dotProduct = pointContainer.dot(unitDirection);
+        if (dotProduct > maxDot) {
+          maxDot = dotProduct;
+          maxDotPoint.copy(pointContainer);
         }
       }
     }
   });
-  return maxPoint;
+
+  return maxDotPoint;
 };
 
-const moveNextTo = (target, object, direction, distance = 0.5) => {
+const moveNextTo = (
+  target: THREE.Object3D,
+  object: THREE.Object3D,
+  direction: THREE.Vector3,
+  buffer = 0.2,
+) => {
   target.updateWorldMatrix(true, true);
   object.updateWorldMatrix(true, true);
 
-  let targetCenter = new THREE.Vector3();
-  let objectCenter = new THREE.Vector3();
-  const targetBox = new THREE.Box3().expandByObject(target);
-  const objectBox = new THREE.Box3().expandByObject(object);
+  const targetSpaceDirectionInitial = new THREE.Vector3().applyMatrix4(
+    new THREE.Matrix4().copy(target.matrixWorld).invert(),
+  );
+  const targetSpaceDirectionFinal = direction
+    .clone()
+    .applyMatrix4(new THREE.Matrix4().copy(target.matrixWorld).invert());
+  const targetSpaceDirection = new THREE.Vector3().subVectors(
+    targetSpaceDirectionFinal,
+    targetSpaceDirectionInitial,
+  );
 
-  targetBox.getCenter(targetCenter);
-  objectBox.getCenter(objectCenter);
+  // Target space
+  let targetSpaceStartPosition;
+  let targetSpaceOffsetInitial;
+  let targetSpaceOffsetFinal;
+  if (!(target instanceof Geometry.Line)) {
+    const targetSpaceFurthestInDirection = furthestInDirection(
+      target,
+      targetSpaceDirection,
+      object,
+    );
 
-  let objectWorldPosition =
-    object.parent !== null
-      ? object.parent.localToWorld(object.position.clone())
-      : object.position.clone();
-  const objectPositionToCenter = objectCenter.clone().sub(objectWorldPosition);
-
-  let targetCenterToHorizontalEdge = 0;
-  let objectCenterToHorizontalEdge = 0;
-  if (direction.x > 0) {
-    targetCenterToHorizontalEdge = targetBox.max.x - targetCenter.x;
-    objectCenterToHorizontalEdge = objectBox.min.x - objectCenter.x;
-  } else if (direction.x < 0) {
-    targetCenterToHorizontalEdge = targetBox.min.x - targetCenter.x;
-    objectCenterToHorizontalEdge = objectBox.max.x - objectCenter.x;
-  }
-
-  let targetCenterToVerticalEdge = 0;
-  let objectCenterToVerticalEdge = 0;
-  if (direction.y > 0) {
-    targetCenterToVerticalEdge = targetBox.max.y - targetCenter.y;
-    objectCenterToVerticalEdge = objectBox.min.y - objectCenter.y;
-  } else if (direction.y < 0) {
-    targetCenterToVerticalEdge = targetBox.min.y - targetCenter.y;
-    objectCenterToVerticalEdge = objectBox.max.y - objectCenter.y;
-  }
-
-  const finalObjectPosition = new THREE.Vector3()
-    .copy(targetCenter)
-    .addScaledVector(direction, distance)
-    .sub(objectPositionToCenter);
-  finalObjectPosition.x += targetCenterToHorizontalEdge;
-  finalObjectPosition.x -= objectCenterToHorizontalEdge;
-  finalObjectPosition.y += targetCenterToVerticalEdge;
-  finalObjectPosition.y -= objectCenterToVerticalEdge;
-
-  if (object.parent !== null) {
-    object.position.copy(object.parent.worldToLocal(finalObjectPosition));
+    targetSpaceStartPosition = new THREE.Vector3();
+    targetSpaceOffsetInitial = new THREE.Vector3();
+    const targetSpaceOffsetFinalLength = targetSpaceDirection
+      .clone()
+      .normalize()
+      .dot(targetSpaceFurthestInDirection);
+    targetSpaceOffsetFinal = targetSpaceDirection
+      .clone()
+      .setLength(Math.max(targetSpaceOffsetFinalLength, 0));
   } else {
-    object.position.copy(finalObjectPosition);
+    const vector = target.getVector().normalize();
+    const normal = vector.clone().applyAxisAngle(OUT, Math.PI / 2);
+    const vectorDot = targetSpaceDirection.dot(vector);
+    const normalDot = targetSpaceDirection.dot(normal);
+    const againstVectorDot = targetSpaceDirection.dot(vector.clone().negate());
+    const againstNormalDot = targetSpaceDirection.dot(normal.clone().negate());
+    const dotProducts = [
+      vectorDot,
+      normalDot,
+      againstVectorDot,
+      againstNormalDot,
+    ];
+    const maxDot = Math.max(...dotProducts);
+    if (maxDot === vectorDot) {
+      targetSpaceStartPosition = target.end.clone();
+    } else if (maxDot === againstVectorDot) {
+      targetSpaceStartPosition = target.start.clone();
+    } else if ([normalDot, againstNormalDot].includes(maxDot)) {
+      targetSpaceStartPosition = new THREE.Vector3()
+        .addVectors(target.start, target.end)
+        .divideScalar(2);
+    }
+    targetSpaceOffsetInitial = new THREE.Vector3();
+    targetSpaceOffsetFinal = new THREE.Vector3();
   }
+
+  // Object space
+  const objectSpaceDirectionInitial = new THREE.Vector3().applyMatrix4(
+    new THREE.Matrix4().copy(object.matrixWorld).invert(),
+  );
+  const objectSpaceDirectionFinal = direction
+    .clone()
+    .applyMatrix4(new THREE.Matrix4().copy(object.matrixWorld).invert());
+  const objectSpaceDirection = new THREE.Vector3()
+    .subVectors(objectSpaceDirectionFinal, objectSpaceDirectionInitial)
+    .negate();
+  const objectSpaceFurthestInDirection = furthestInDirection(
+    object,
+    objectSpaceDirection,
+    target,
+  );
+
+  let objectSpaceOffsetInitial = new THREE.Vector3();
+  const objectSpaceOffsetFinalLength = objectSpaceDirection
+    .clone()
+    .normalize()
+    .dot(objectSpaceFurthestInDirection);
+  const objectSpaceOffsetFinal = objectSpaceDirection
+    .clone()
+    .negate()
+    .setLength(Math.max(objectSpaceOffsetFinalLength, 0));
+
+  // World space
+  const worldSpaceStartPosition = targetSpaceStartPosition.applyMatrix4(
+    target.matrixWorld,
+  );
+  const worldSpaceTargetOffsetInitial = targetSpaceOffsetInitial.applyMatrix4(
+    target.matrixWorld,
+  );
+  const worldSpaceTargetOffsetFinal = targetSpaceOffsetFinal.applyMatrix4(
+    target.matrixWorld,
+  );
+  const worldSpaceTargetOffset = new THREE.Vector3().subVectors(
+    worldSpaceTargetOffsetFinal,
+    worldSpaceTargetOffsetInitial,
+  );
+
+  const worldSpaceObjectOffsetInitial = objectSpaceOffsetInitial.applyMatrix4(
+    object.matrixWorld,
+  );
+  const worldSpaceObjectOffsetFinal = objectSpaceOffsetFinal.applyMatrix4(
+    object.matrixWorld,
+  );
+  const worldSpaceObjectOffset = new THREE.Vector3().subVectors(
+    worldSpaceObjectOffsetFinal,
+    worldSpaceObjectOffsetInitial,
+  );
+
+  const worldSpaceOffset = direction
+    .clone()
+    .setLength(
+      0 +
+        worldSpaceTargetOffset.length() +
+        buffer +
+        worldSpaceObjectOffset.length(),
+    );
+  const worldSpaceOffsetInitial = new THREE.Vector3();
+  const worldSpaceOffsetFinal = worldSpaceOffset.clone();
+
+  // Object parent space
+  const objectParentSpaceStartPosition = worldSpaceStartPosition
+    .applyMatrix4(object.matrixWorld.clone().invert())
+    .applyMatrix4(object.matrix);
+  const objectParentSpaceOffsetInitial = worldSpaceOffsetInitial
+    .applyMatrix4(object.matrixWorld.clone().invert())
+    .applyMatrix4(object.matrix);
+  const objectParentSpaceOffsetFinal = worldSpaceOffsetFinal
+    .applyMatrix4(object.matrixWorld.clone().invert())
+    .applyMatrix4(object.matrix);
+  const objectParentSpaceOffset = new THREE.Vector3().subVectors(
+    objectParentSpaceOffsetFinal,
+    objectParentSpaceOffsetInitial,
+  );
+
+  object.position
+    .copy(objectParentSpaceStartPosition)
+    .add(objectParentSpaceOffset);
+  return object;
 };
 
-const moveToRightOf = (target, object, distance = 0.5) => {
-  moveNextTo(target, object, RIGHT, distance);
+const moveToRightOf = (target, object, distance = 0.2) => {
+  return moveNextTo(target, object, RIGHT, distance);
 };
 
-const moveToLeftOf = (target, object, distance = 0.5) => {
-  moveNextTo(target, object, LEFT, distance);
+const moveToLeftOf = (target, object, distance = 0.2) => {
+  return moveNextTo(target, object, LEFT, distance);
 };
 
-const moveAbove = (target, object, distance = 0.5) => {
-  moveNextTo(target, object, UP, distance);
+const moveAbove = (target, object, distance = 0.2) => {
+  return moveNextTo(target, object, UP, distance);
 };
 
-const moveBelow = (target, object, distance = 0.5) => {
-  moveNextTo(target, object, DOWN, distance);
+const moveBelow = (target, object, distance = 0.2) => {
+  return moveNextTo(target, object, DOWN, distance);
 };
+
+const rotate90 = (v: THREE.Vector3) => v.applyAxisAngle(OUT, Math.PI / 2);
+const rotate180 = (v: THREE.Vector3) => v.applyAxisAngle(OUT, Math.PI);
+const rotate270 = (v: THREE.Vector3) => v.applyAxisAngle(OUT, -Math.PI / 2);
 
 const getBoundingBoxCenter = (obj: THREE.Object3D, target: THREE.Vector3) => {
   obj.updateWorldMatrix(true, true);
@@ -235,12 +391,47 @@ const getBoundingBoxHelper = (obj: THREE.Object3D, color: string) => {
   return helper;
 };
 
-const transformBetweenSpaces = (
-  from: THREE.Object3D,
-  to: THREE.Object3D,
-  point: THREE.Vector3,
-) => {
-  return to.worldToLocal(from.localToWorld(point));
+const pointAlongCurve = (shape: Geometry.Shape, t: number) => {
+  if (t < 0 || t > 1) {
+    throw new Error(`Invalid parameter ${t}`);
+  }
+
+  const totalLength = strokeLength(shape);
+  const targetLength = totalLength * t;
+
+  let currentLength = 0;
+  for (let i = 0; i < shape.points.length - 1; i++) {
+    const segmentLength = getSegmentLength(
+      shape.points[i],
+      shape.points[i + 1],
+    );
+    if (currentLength + segmentLength >= targetLength) {
+      const segmentPercent = (targetLength - currentLength) / segmentLength;
+      return new THREE.Vector3().lerpVectors(
+        shape.points[i],
+        shape.points[i + 1],
+        segmentPercent,
+      );
+    }
+    currentLength += segmentLength;
+  }
+
+  return shape.points[shape.points.length - 1];
+};
+
+const strokeLength = (shape: Geometry.Shape) => {
+  let length = 0;
+  for (let i = 0; i < shape.points.length - 1; i++) {
+    length += getSegmentLength(shape.points[i], shape.points[i + 1]);
+  }
+  return length;
+};
+
+const getSegmentLength = (u: THREE.Vector3, v: THREE.Vector3) => {
+  const dx = u.x - v.x;
+  const dy = u.y - v.y;
+  const dz = u.z - v.z;
+  return Math.sqrt(dx * dx + dy * dy + dz * dz);
 };
 
 /*
@@ -554,10 +745,15 @@ export {
   moveAbove,
   moveBelow,
   moveNextTo,
+  rotate90,
+  rotate180,
+  rotate270,
   getBoundingBoxCenter,
   getBoundingBoxHelper,
   transformBetweenSpaces,
+  convertWorldDirectionToObjectSpace,
   intersectionsBetween,
+  pointAlongCurve,
   ShapeFromCurves,
   BUFFER,
   RIGHT,

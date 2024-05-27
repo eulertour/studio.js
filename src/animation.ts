@@ -1,3 +1,4 @@
+import { MeshLine } from "./MeshLine";
 import { clamp, getBoundingBoxCenter } from "./utils";
 import * as THREE from "three";
 
@@ -31,19 +32,20 @@ class Animation {
   public elapsedSinceStart = 0;
 
   constructor(
-    public func: (elapsedTime: number, deltaTime: number) => void, {
+    public func: (elapsedTime: number, deltaTime: number) => void,
+    {
       object = undefined,
       parent = undefined,
       before = undefined,
       after = undefined,
-    } = {}
+    } = {},
   ) {
     this.object = object;
     this.parent = parent;
     this.before = before;
     this.after = after;
   }
-  
+
   setUp() {}
 
   tearDown() {}
@@ -108,32 +110,35 @@ class Animation {
 }
 
 class Shift extends Animation {
-  constructor(object, direction, config?) {
+  constructor(object, offset, config?) {
     super(
       (_elapsedTime, deltaTime) => {
-        object.position.add(direction.clone().multiplyScalar(deltaTime));
+        object.position.add(offset.clone().multiplyScalar(deltaTime));
       },
-      { object, ...config }
+      { object, ...config },
     );
-  } 
+  }
 }
 
 class MoveTo extends Animation {
   public start;
   public displacement;
 
-  constructor(public target: THREE.Object3D, public obj: THREE.Object3D, config?) {
+  constructor(
+    public target: THREE.Object3D,
+    public obj: THREE.Object3D,
+    config?,
+  ) {
     super(
-      elapsedTime => {
-        obj
-          .position
+      (elapsedTime) => {
+        obj.position
           .copy(this.start)
           .addScaledVector(this.displacement, elapsedTime);
       },
-      { obj, ...config }
-    )
+      { obj, ...config },
+    );
   }
-  
+
   setUp() {
     this.start = this.obj.position.clone();
 
@@ -151,7 +156,7 @@ class Rotate extends Animation {
       (_elapsedTime, deltaTime) => {
         object.rotation.z += angle * deltaTime;
       },
-      { object, ...config }
+      { object, ...config },
     );
   }
 }
@@ -164,32 +169,39 @@ class Scale extends Animation {
         const scale = THREE.MathUtils.lerp(initialScale, factor, elapsedTime);
         object.scale.set(scale, scale, scale);
       },
-      { object, ...config }
+      { object, ...config },
     );
   }
-} 
+}
 
 class Draw extends Animation {
   constructor(object, config?) {
     super(
       (elapsedTime) => {
-        object.stroke.material.uniforms.drawRange.value.y = elapsedTime;
+        this.object.traverse((child) => {
+          if (child.stroke) {
+            child.stroke.material.uniforms.drawRange.value.y = elapsedTime;
+          }
+        });
       },
-      { object, ...config }
+      { object, ...config },
     );
   }
 }
 
 class Erase extends Animation {
-  constructor(public object, public config?) {
+  constructor(
+    public object,
+    public config?,
+  ) {
     super(
       (elapsedTime) => {
         object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
       },
-      { object, ...config }
+      { object, ...config },
     );
   }
-  
+
   tearDown() {
     if (this.config?.remove) {
       this.object.parent.remove(this.object);
@@ -204,22 +216,38 @@ class FadeIn extends Animation {
   public initialOpacity = new Map();
 
   constructor(object, config?) {
+    let family = true;
+    if (config && config.family === false) {
+      family = false;
+    }
+
     super(
       (elapsedTime, _deltaTime) => {
-        this.object.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            child.material.opacity = THREE.MathUtils.lerp(
+        if (family) {
+          this.object.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              child.material.opacity = THREE.MathUtils.lerp(
+                0,
+                config?.preserveOpacity ? this.initialOpacity.get(child) : 1,
+                elapsedTime,
+              );
+            }
+          });
+        } else {
+          [this.object.stroke, this.object.fill].forEach((mesh) => {
+            if (!mesh) return;
+            mesh.material.opacity = THREE.MathUtils.lerp(
               0,
-              this.initialOpacity.get(child),
-              elapsedTime
+              config?.preserveOpacity ? this.initialOpacity.get(mesh) : 1,
+              elapsedTime,
             );
-          }
-        });
+          });
+        }
       },
-      { object, ...config }
+      { object, ...config },
     );
   }
-  
+
   setUp() {
     this.object.traverse((child: THREE.Object3D) => {
       if (child instanceof THREE.Mesh) {
@@ -232,26 +260,45 @@ class FadeIn extends Animation {
 class FadeOut extends Animation {
   initialOpacity = new Map();
 
-  constructor(objectOrFunc, public config?) {
+  constructor(
+    objectOrFunc,
+    public config?,
+  ) {
+    let family = true;
+    if (config && config.family === false) {
+      family = false;
+    }
+
     super(
       (elapsedTime, _deltaTime) => {
-        this.object.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            if (!this.initialOpacity.has(child)) {
-              console.error("Unknown child");
+        if (family) {
+          this.object.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              if (!this.initialOpacity.has(child)) {
+                console.error("Unknown child");
+              }
+              child.material.opacity = THREE.MathUtils.lerp(
+                this.initialOpacity.get(child),
+                0,
+                elapsedTime,
+              );
             }
-            child.material.opacity = THREE.MathUtils.lerp(
-              this.initialOpacity.get(child),
+          });
+        } else {
+          [this.object.stroke, this.object.fill].forEach((mesh) => {
+            if (!mesh) return;
+            mesh.material.opacity = THREE.MathUtils.lerp(
+              this.initialOpacity.get(mesh),
               0,
-              elapsedTime
+              elapsedTime,
             );
-          }
-        });
+          });
+        }
       },
-      { object: objectOrFunc, ...config }
+      { object: objectOrFunc, ...config },
     );
   }
-  
+
   setUp() {
     this.object.traverse((child: THREE.Object3D) => {
       if (child instanceof THREE.Mesh) {

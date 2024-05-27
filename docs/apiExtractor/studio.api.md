@@ -184,6 +184,9 @@ declare namespace Constants {
 export { Constants }
 
 // @public (undocumented)
+const convertWorldDirectionToObjectSpace: (worldDirection: THREE_2.Vector3, object: THREE_2.Object3D) => THREE_2.Vector3;
+
+// @public (undocumented)
 const COORDS_TO_PIXELS: number;
 
 // @public
@@ -297,7 +300,7 @@ export const Frame: {
 };
 
 // @public (undocumented)
-const furthestInDirection: (object: any, direction: any) => THREE_2.Vector3;
+const furthestInDirection: (object: any, direction: any, exclude?: THREE_2.Object3D | Array<THREE_2.Object3D>) => any;
 
 declare namespace Geometry {
     export {
@@ -393,23 +396,23 @@ class Line extends Shape {
     // (undocumented)
     getClassConfig(): {};
     // (undocumented)
+    getVector(global?: boolean): THREE_2.Vector3;
+    // (undocumented)
     reshape(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style & {
         arrow?: boolean;
     }): void;
     // (undocumented)
     start: THREE_2.Vector3;
-    // (undocumented)
-    toVector(global: boolean): THREE_2.Vector3;
 }
 
 // @public (undocumented)
-const moveAbove: (target: any, object: any, distance?: number) => void;
+const moveAbove: (target: any, object: any, distance?: number) => THREE_2.Object3D<THREE_2.Event>;
 
 // @public (undocumented)
-const moveBelow: (target: any, object: any, distance?: number) => void;
+const moveBelow: (target: any, object: any, distance?: number) => THREE_2.Object3D<THREE_2.Event>;
 
 // @public (undocumented)
-const moveNextTo: (target: any, object: any, direction: any, distance?: number) => void;
+const moveNextTo: (target: THREE_2.Object3D, object: THREE_2.Object3D, direction: THREE_2.Vector3, buffer?: number) => THREE_2.Object3D<THREE_2.Event>;
 
 // @public (undocumented)
 class MoveTo extends Animation_3 {
@@ -427,10 +430,10 @@ class MoveTo extends Animation_3 {
 }
 
 // @public (undocumented)
-const moveToLeftOf: (target: any, object: any, distance?: number) => void;
+const moveToLeftOf: (target: any, object: any, distance?: number) => THREE_2.Object3D<THREE_2.Event>;
 
 // @public (undocumented)
-const moveToRightOf: (target: any, object: any, distance?: number) => void;
+const moveToRightOf: (target: any, object: any, distance?: number) => THREE_2.Object3D<THREE_2.Event>;
 
 // @public (undocumented)
 const ORIGIN: Readonly<THREE_2.Vector3>;
@@ -456,6 +459,9 @@ class Point extends Circle {
     // (undocumented)
     getAttributes(): ArcAttributes;
 }
+
+// @public (undocumented)
+const pointAlongCurve: (shape: Geometry.Shape, t: number) => THREE_2.Vector3;
 
 // @public
 class Polygon extends Shape {
@@ -517,6 +523,15 @@ const RIGHT: Readonly<THREE_2.Vector3>;
 class Rotate extends Animation_3 {
     constructor(object: any, angle: any, config?: any);
 }
+
+// @public (undocumented)
+const rotate180: (v: THREE_2.Vector3) => THREE_2.Vector3;
+
+// @public (undocumented)
+const rotate270: (v: THREE_2.Vector3) => THREE_2.Vector3;
+
+// @public (undocumented)
+const rotate90: (v: THREE_2.Vector3) => THREE_2.Vector3;
 
 // @public (undocumented)
 class Scale extends Animation_3 {
@@ -690,7 +705,7 @@ class ShapeFromCurves {
 
 // @public (undocumented)
 class Shift extends Animation_3 {
-    constructor(object: any, direction: any, config?: any);
+    constructor(object: any, offset: any, config?: any);
 }
 
 // @public
@@ -806,10 +821,15 @@ declare namespace Utils {
         moveAbove,
         moveBelow,
         moveNextTo,
+        rotate90,
+        rotate180,
+        rotate270,
         getBoundingBoxCenter,
         getBoundingBoxHelper,
         transformBetweenSpaces,
+        convertWorldDirectionToObjectSpace,
         intersectionsBetween,
+        pointAlongCurve,
         ShapeFromCurves,
         BUFFER,
         RIGHT,

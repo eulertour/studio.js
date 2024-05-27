@@ -1992,7 +1992,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": ", direction: "
+                      "text": ", offset: "
                     },
                     {
                       "kind": "Content",
@@ -2024,7 +2024,7 @@
                       "isOptional": false
                     },
                     {
-                      "parameterName": "direction",
+                      "parameterName": "offset",
                       "parameterTypeTokenRange": {
                         "startIndex": 3,
                         "endIndex": 4
@@ -4210,6 +4210,55 @@
                 },
                 {
                   "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Line#getVector:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "getVector(global?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "boolean"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "): "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Vector3",
+                      "canonicalReference": "@types/three!Vector3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "global",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "getVector"
+                },
+                {
+                  "kind": "Method",
                   "canonicalReference": "@eulertour/studio!Geometry.Line#reshape:member(1)",
                   "docComment": "",
                   "excerptTokens": [
@@ -4325,55 +4374,6 @@
                   "isStatic": false,
                   "isProtected": false,
                   "isAbstract": false
-                },
-                {
-                  "kind": "Method",
-                  "canonicalReference": "@eulertour/studio!Geometry.Line#toVector:member(1)",
-                  "docComment": "",
-                  "excerptTokens": [
-                    {
-                      "kind": "Content",
-                      "text": "toVector(global: "
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "boolean"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "): "
-                    },
-                    {
-                      "kind": "Reference",
-                      "text": "THREE.Vector3",
-                      "canonicalReference": "@types/three!Vector3:class"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": ";"
-                    }
-                  ],
-                  "isStatic": false,
-                  "returnTypeTokenRange": {
-                    "startIndex": 3,
-                    "endIndex": 4
-                  },
-                  "releaseTag": "Public",
-                  "isProtected": false,
-                  "overloadIndex": 1,
-                  "parameters": [
-                    {
-                      "parameterName": "global",
-                      "parameterTypeTokenRange": {
-                        "startIndex": 1,
-                        "endIndex": 2
-                      },
-                      "isOptional": false
-                    }
-                  ],
-                  "isOptional": false,
-                  "isAbstract": false,
-                  "name": "toVector"
                 }
               ],
               "extendsTokenRange": {
@@ -9195,6 +9195,66 @@
               "name": "clamp"
             },
             {
+              "kind": "Function",
+              "canonicalReference": "@eulertour/studio!Utils.convertWorldDirectionToObjectSpace:function(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "convertWorldDirectionToObjectSpace: (worldDirection: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", object: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Object3D",
+                  "canonicalReference": "@types/three!Object3D:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ") => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
+                }
+              ],
+              "fileUrlPath": "build/utils.d.ts",
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "worldDirection",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "object",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                }
+              ],
+              "name": "convertWorldDirectionToObjectSpace"
+            },
+            {
               "kind": "Variable",
               "canonicalReference": "@eulertour/studio!Utils.DOWN:var",
               "docComment": "",
@@ -9254,18 +9314,48 @@
                 },
                 {
                   "kind": "Content",
-                  "text": ") => "
+                  "text": ", exclude?: "
                 },
                 {
                   "kind": "Reference",
-                  "text": "THREE.Vector3",
-                  "canonicalReference": "@types/three!Vector3:class"
+                  "text": "THREE.Object3D",
+                  "canonicalReference": "@types/three!Object3D:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": " | "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Array",
+                  "canonicalReference": "!Array:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Object3D",
+                  "canonicalReference": "@types/three!Object3D:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ") => "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any"
                 }
               ],
               "fileUrlPath": "build/utils.d.ts",
               "returnTypeTokenRange": {
-                "startIndex": 5,
-                "endIndex": 6
+                "startIndex": 12,
+                "endIndex": 13
               },
               "releaseTag": "Public",
               "overloadIndex": 1,
@@ -9285,6 +9375,14 @@
                     "endIndex": 4
                   },
                   "isOptional": false
+                },
+                {
+                  "parameterName": "exclude",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 5,
+                    "endIndex": 11
+                  },
+                  "isOptional": true
                 }
               ],
               "name": "furthestInDirection"
@@ -9672,14 +9770,28 @@
                   "text": ") => "
                 },
                 {
+                  "kind": "Reference",
+                  "text": "THREE.Object3D",
+                  "canonicalReference": "@types/three!Object3D:class"
+                },
+                {
                   "kind": "Content",
-                  "text": "void"
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Event",
+                  "canonicalReference": "@types/three!Event:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
                 }
               ],
               "fileUrlPath": "build/utils.d.ts",
               "returnTypeTokenRange": {
                 "startIndex": 7,
-                "endIndex": 8
+                "endIndex": 11
               },
               "releaseTag": "Public",
               "overloadIndex": 1,
@@ -9745,14 +9857,28 @@
                   "text": ") => "
                 },
                 {
+                  "kind": "Reference",
+                  "text": "THREE.Object3D",
+                  "canonicalReference": "@types/three!Object3D:class"
+                },
+                {
                   "kind": "Content",
-                  "text": "void"
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Event",
+                  "canonicalReference": "@types/three!Event:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
                 }
               ],
               "fileUrlPath": "build/utils.d.ts",
               "returnTypeTokenRange": {
                 "startIndex": 7,
-                "endIndex": 8
+                "endIndex": 11
               },
               "releaseTag": "Public",
               "overloadIndex": 1,
@@ -9794,28 +9920,31 @@
                   "text": "moveNextTo: (target: "
                 },
                 {
-                  "kind": "Content",
-                  "text": "any"
+                  "kind": "Reference",
+                  "text": "THREE.Object3D",
+                  "canonicalReference": "@types/three!Object3D:class"
                 },
                 {
                   "kind": "Content",
                   "text": ", object: "
                 },
                 {
-                  "kind": "Content",
-                  "text": "any"
+                  "kind": "Reference",
+                  "text": "THREE.Object3D",
+                  "canonicalReference": "@types/three!Object3D:class"
                 },
                 {
                   "kind": "Content",
                   "text": ", direction: "
                 },
                 {
-                  "kind": "Content",
-                  "text": "any"
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
                 },
                 {
                   "kind": "Content",
-                  "text": ", distance?: "
+                  "text": ", buffer?: "
                 },
                 {
                   "kind": "Content",
@@ -9826,14 +9955,28 @@
                   "text": ") => "
                 },
                 {
+                  "kind": "Reference",
+                  "text": "THREE.Object3D",
+                  "canonicalReference": "@types/three!Object3D:class"
+                },
+                {
                   "kind": "Content",
-                  "text": "void"
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Event",
+                  "canonicalReference": "@types/three!Event:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
                 }
               ],
               "fileUrlPath": "build/utils.d.ts",
               "returnTypeTokenRange": {
                 "startIndex": 9,
-                "endIndex": 10
+                "endIndex": 13
               },
               "releaseTag": "Public",
               "overloadIndex": 1,
@@ -9863,7 +10006,7 @@
                   "isOptional": false
                 },
                 {
-                  "parameterName": "distance",
+                  "parameterName": "buffer",
                   "parameterTypeTokenRange": {
                     "startIndex": 7,
                     "endIndex": 8
@@ -9907,14 +10050,28 @@
                   "text": ") => "
                 },
                 {
+                  "kind": "Reference",
+                  "text": "THREE.Object3D",
+                  "canonicalReference": "@types/three!Object3D:class"
+                },
+                {
                   "kind": "Content",
-                  "text": "void"
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Event",
+                  "canonicalReference": "@types/three!Event:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
                 }
               ],
               "fileUrlPath": "build/utils.d.ts",
               "returnTypeTokenRange": {
                 "startIndex": 7,
-                "endIndex": 8
+                "endIndex": 11
               },
               "releaseTag": "Public",
               "overloadIndex": 1,
@@ -9980,14 +10137,28 @@
                   "text": ") => "
                 },
                 {
+                  "kind": "Reference",
+                  "text": "THREE.Object3D",
+                  "canonicalReference": "@types/three!Object3D:class"
+                },
+                {
                   "kind": "Content",
-                  "text": "void"
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Event",
+                  "canonicalReference": "@types/three!Event:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
                 }
               ],
               "fileUrlPath": "build/utils.d.ts",
               "returnTypeTokenRange": {
                 "startIndex": 7,
-                "endIndex": 8
+                "endIndex": 11
               },
               "releaseTag": "Public",
               "overloadIndex": 1,
@@ -10094,6 +10265,65 @@
               }
             },
             {
+              "kind": "Function",
+              "canonicalReference": "@eulertour/studio!Utils.pointAlongCurve:function(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "pointAlongCurve: (shape: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Geometry.Shape",
+                  "canonicalReference": "@eulertour/studio!Geometry.Shape:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", t: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ") => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
+                }
+              ],
+              "fileUrlPath": "build/utils.d.ts",
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "shape",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "t",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                }
+              ],
+              "name": "pointAlongCurve"
+            },
+            {
               "kind": "Variable",
               "canonicalReference": "@eulertour/studio!Utils.RIGHT:var",
               "docComment": "",
@@ -10129,6 +10359,135 @@
                 "startIndex": 1,
                 "endIndex": 5
               }
+            },
+            {
+              "kind": "Function",
+              "canonicalReference": "@eulertour/studio!Utils.rotate180:function(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "rotate180: (v: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ") => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
+                }
+              ],
+              "fileUrlPath": "build/utils.d.ts",
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "v",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "name": "rotate180"
+            },
+            {
+              "kind": "Function",
+              "canonicalReference": "@eulertour/studio!Utils.rotate270:function(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "rotate270: (v: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ") => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
+                }
+              ],
+              "fileUrlPath": "build/utils.d.ts",
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "v",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "name": "rotate270"
+            },
+            {
+              "kind": "Function",
+              "canonicalReference": "@eulertour/studio!Utils.rotate90:function(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "rotate90: (v: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ") => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
+                }
+              ],
+              "fileUrlPath": "build/utils.d.ts",
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "v",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ],
+              "name": "rotate90"
             },
             {
               "kind": "Function",

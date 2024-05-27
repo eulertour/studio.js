@@ -303,7 +303,7 @@ class Line extends Shape {
     };
   }
 
-  toVector(global: boolean) {
+  getVector(global = false) {
     this.updateWorldMatrix(true, false);
     return global
       ? new THREE.Vector3().subVectors(

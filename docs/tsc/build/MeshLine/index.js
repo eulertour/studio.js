@@ -7,6 +7,9 @@ class MeshLine extends THREE.Mesh {
         super(geometry, material);
         this.raycast = MeshLineRaycast;
     }
+    get points() {
+        return this.geometry.points;
+    }
 }
 export { MeshLine, MeshLineGeometry, MeshLineMaterial };
 //# sourceMappingURL=index.js.map

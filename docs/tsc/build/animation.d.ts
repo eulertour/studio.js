@@ -28,7 +28,7 @@ declare class Animation {
     addAfter(after: any): void;
 }
 declare class Shift extends Animation {
-    constructor(object: any, direction: any, config?: any);
+    constructor(object: any, offset: any, config?: any);
 }
 declare class MoveTo extends Animation {
     target: THREE.Object3D;

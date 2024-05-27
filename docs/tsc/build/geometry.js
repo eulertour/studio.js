@@ -224,7 +224,7 @@ class Line extends Shape {
             end: this.end,
         };
     }
-    toVector(global) {
+    getVector(global = false) {
         this.updateWorldMatrix(true, false);
         return global
             ? new THREE.Vector3().subVectors(new THREE.Vector3().copy(this.end).applyMatrix4(this.matrixWorld), new THREE.Vector3().copy(this.start).applyMatrix4(this.matrixWorld))

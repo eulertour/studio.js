@@ -64,7 +64,7 @@ declare class Line extends Shape {
     }): void;
     getClassConfig(): {};
     getAttributes(): LineAttributes;
-    toVector(global: boolean): THREE.Vector3;
+    getVector(global?: boolean): THREE.Vector3;
     static fromAttributes(attributes: LineAttributes): Line;
 }
 /**

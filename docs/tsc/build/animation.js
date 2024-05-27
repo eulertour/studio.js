@@ -83,17 +83,16 @@ class Animation {
     }
 }
 class Shift extends Animation {
-    constructor(object, direction, config) {
+    constructor(object, offset, config) {
         super((_elapsedTime, deltaTime) => {
-            object.position.add(direction.clone().multiplyScalar(deltaTime));
+            object.position.add(offset.clone().multiplyScalar(deltaTime));
         }, Object.assign({ object }, config));
     }
 }
 class MoveTo extends Animation {
     constructor(target, obj, config) {
-        super(elapsedTime => {
-            obj
-                .position
+        super((elapsedTime) => {
+            obj.position
                 .copy(this.start)
                 .addScaledVector(this.displacement, elapsedTime);
         }, Object.assign({ obj }, config));
@@ -128,7 +127,11 @@ class Scale extends Animation {
 class Draw extends Animation {
     constructor(object, config) {
         super((elapsedTime) => {
-            object.stroke.material.uniforms.drawRange.value.y = elapsedTime;
+            this.object.traverse((child) => {
+                if (child.stroke) {
+                    child.stroke.material.uniforms.drawRange.value.y = elapsedTime;
+                }
+            });
         }, Object.assign({ object }, config));
     }
 }
@@ -152,12 +155,25 @@ class Erase extends Animation {
 }
 class FadeIn extends Animation {
     constructor(object, config) {
+        let family = true;
+        if (config && config.family === false) {
+            family = false;
+        }
         super((elapsedTime, _deltaTime) => {
-            this.object.traverse((child) => {
-                if (child instanceof THREE.Mesh) {
-                    child.material.opacity = THREE.MathUtils.lerp(0, this.initialOpacity.get(child), elapsedTime);
-                }
-            });
+            if (family) {
+                this.object.traverse((child) => {
+                    if (child instanceof THREE.Mesh) {
+                        child.material.opacity = THREE.MathUtils.lerp(0, (config === null || config === void 0 ? void 0 : config.preserveOpacity) ? this.initialOpacity.get(child) : 1, elapsedTime);
+                    }
+                });
+            }
+            else {
+                [this.object.stroke, this.object.fill].forEach((mesh) => {
+                    if (!mesh)
+                        return;
+                    mesh.material.opacity = THREE.MathUtils.lerp(0, (config === null || config === void 0 ? void 0 : config.preserveOpacity) ? this.initialOpacity.get(mesh) : 1, elapsedTime);
+                });
+            }
         }, Object.assign({ object }, config));
         this.initialOpacity = new Map();
     }
@@ -171,15 +187,28 @@ class FadeIn extends Animation {
 }
 class FadeOut extends Animation {
     constructor(objectOrFunc, config) {
+        let family = true;
+        if (config && config.family === false) {
+            family = false;
+        }
         super((elapsedTime, _deltaTime) => {
-            this.object.traverse((child) => {
-                if (child instanceof THREE.Mesh) {
-                    if (!this.initialOpacity.has(child)) {
-                        console.error("Unknown child");
+            if (family) {
+                this.object.traverse((child) => {
+                    if (child instanceof THREE.Mesh) {
+                        if (!this.initialOpacity.has(child)) {
+                            console.error("Unknown child");
+                        }
+                        child.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
                     }
-                    child.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
-                }
-            });
+                });
+            }
+            else {
+                [this.object.stroke, this.object.fill].forEach((mesh) => {
+                    if (!mesh)
+                        return;
+                    mesh.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), 0, elapsedTime);
+                });
+            }
         }, Object.assign({ object: objectOrFunc }, config));
         this.config = config;
         this.initialOpacity = new Map();

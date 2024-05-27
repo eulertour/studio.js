@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "target": "es2022",
+    "lib": ["es2017", "es7", "es6", "dom"],
+    "declaration": true,
+    "outDir": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "NodeNext",
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tsc"
+  ]
+}

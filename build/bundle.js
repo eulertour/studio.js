@@ -55671,6 +55671,9 @@ class MeshLine extends Mesh {
         super(geometry, material);
         this.raycast = MeshLineRaycast;
     }
+    get points() {
+        return this.geometry.points;
+    }
 }
 
 const getFillGeometry = (points) => {
@@ -55895,7 +55898,7 @@ class Line extends Shape {
             end: this.end,
         };
     }
-    toVector(global) {
+    getVector(global = false) {
         this.updateWorldMatrix(true, false);
         return global
             ? new Vector3().subVectors(new Vector3().copy(this.end).applyMatrix4(this.matrixWorld), new Vector3().copy(this.start).applyMatrix4(this.matrixWorld))
@@ -56232,661 +56235,6 @@ var geometry = /*#__PURE__*/Object.freeze({
 	Rectangle: Rectangle,
 	Shape: Shape,
 	Square: Square
-});
-
-const BUFFER = 0.5;
-const ORIGIN = Object.freeze(new Vector3(0, 0, 0));
-const RIGHT = Object.freeze(new Vector3(1, 0, 0));
-const LEFT = Object.freeze(new Vector3(-1, 0, 0));
-const UP = Object.freeze(new Vector3(0, 1, 0));
-const DOWN = Object.freeze(new Vector3(0, -1, 0));
-const OUT = Object.freeze(new Vector3(0, 0, 1));
-const IN = Object.freeze(new Vector3(0, 0, -1));
-const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-const getFrameAttributes = (aspectRatio, height) => {
-    const coordinateHeight = PIXELS_TO_COORDS * height;
-    return {
-        aspectRatio,
-        height,
-        width: height * aspectRatio,
-        coordinateHeight,
-        coordinateWidth: coordinateHeight * aspectRatio,
-    };
-};
-const isWidthSetup = (config) => {
-    return ("aspectRatio" in config &&
-        "pixelWidth" in config &&
-        "coordinateWidth" in config);
-};
-const isHeightSetup = (config) => {
-    return ("aspectRatio" in config &&
-        "pixelHeight" in config &&
-        "coordinateHeight" in config);
-};
-const setupCanvas = (canvas, config = {
-    aspectRatio: 16 / 9,
-    pixelHeight: 720,
-    coordinateHeight: 8,
-    viewport: undefined,
-}) => {
-    let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
-    if (isWidthSetup(config)) {
-        aspectRatio = config.aspectRatio;
-        pixelWidth = config.pixelWidth;
-        coordinateWidth = config.coordinateWidth;
-        pixelHeight = pixelWidth / aspectRatio;
-        coordinateHeight = coordinateWidth / aspectRatio;
-    }
-    else if (isHeightSetup(config)) {
-        aspectRatio = config.aspectRatio;
-        pixelHeight = config.pixelHeight;
-        coordinateHeight = config.coordinateHeight;
-        pixelWidth = pixelHeight * aspectRatio;
-        coordinateWidth = coordinateHeight * aspectRatio;
-    }
-    else {
-        throw new Error("Invalid config:", config);
-    }
-    const camera = new OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
-    camera.position.z = 6;
-    setCameraDimensions(camera);
-    const renderer = new WebGLRenderer({
-        canvas,
-        antialias: true,
-        preserveDrawingBuffer: true,
-    });
-    renderer.setClearColor(new Color(DEFAULT_BACKGROUND_HEX));
-    renderer.autoClear = false;
-    if (config.viewport) {
-        CanvasViewport.copy(config.viewport);
-    }
-    else {
-        renderer.setSize(pixelWidth, pixelHeight, false);
-        CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
-    }
-    if (typeof window !== "undefined") {
-        renderer.setPixelRatio(window.devicePixelRatio);
-        CanvasViewport.multiplyScalar(window.devicePixelRatio);
-    }
-    return [new Scene(), camera, renderer];
-};
-const furthestInDirection = (object, direction) => {
-    object.updateWorldMatrix(true, true);
-    let maxPoint = new Vector3();
-    let maxVal = -Infinity;
-    let worldPoint = new Vector3();
-    object.traverse((child) => {
-        if (child instanceof Mesh) {
-            const positionArray = child.geometry.attributes.position.array;
-            if (positionArray.length % 3 !== 0) {
-                throw new Error("Invalid position array length");
-            }
-            for (let i = 0; i < positionArray.length; i += 3) {
-                worldPoint
-                    .set(positionArray[i], positionArray[i + 1], positionArray[i + 2])
-                    .applyMatrix4(child.matrixWorld);
-                let dot = worldPoint.dot(direction);
-                if (dot > maxVal) {
-                    maxPoint.copy(worldPoint);
-                    maxVal = dot;
-                }
-            }
-            if (child.geometry.attributes.nextPosition !== undefined) {
-                const nextArray = child.geometry.attributes.nextPosition.array;
-                worldPoint
-                    .set(nextArray.at(-3), nextArray.at(-2), nextArray.at(-1))
-                    .applyMatrix4(child.matrixWorld);
-                let dot = worldPoint.dot(direction);
-                if (dot > maxVal) {
-                    maxPoint.copy(worldPoint);
-                    maxVal = dot;
-                }
-            }
-        }
-    });
-    return maxPoint;
-};
-const moveNextTo = (target, object, direction, distance = 0.5) => {
-    target.updateWorldMatrix(true, true);
-    object.updateWorldMatrix(true, true);
-    let targetCenter = new Vector3();
-    let objectCenter = new Vector3();
-    const targetBox = new Box3().expandByObject(target);
-    const objectBox = new Box3().expandByObject(object);
-    targetBox.getCenter(targetCenter);
-    objectBox.getCenter(objectCenter);
-    let objectWorldPosition = object.parent !== null
-        ? object.parent.localToWorld(object.position.clone())
-        : object.position.clone();
-    const objectPositionToCenter = objectCenter.clone().sub(objectWorldPosition);
-    let targetCenterToHorizontalEdge = 0;
-    let objectCenterToHorizontalEdge = 0;
-    if (direction.x > 0) {
-        targetCenterToHorizontalEdge = targetBox.max.x - targetCenter.x;
-        objectCenterToHorizontalEdge = objectBox.min.x - objectCenter.x;
-    }
-    else if (direction.x < 0) {
-        targetCenterToHorizontalEdge = targetBox.min.x - targetCenter.x;
-        objectCenterToHorizontalEdge = objectBox.max.x - objectCenter.x;
-    }
-    let targetCenterToVerticalEdge = 0;
-    let objectCenterToVerticalEdge = 0;
-    if (direction.y > 0) {
-        targetCenterToVerticalEdge = targetBox.max.y - targetCenter.y;
-        objectCenterToVerticalEdge = objectBox.min.y - objectCenter.y;
-    }
-    else if (direction.y < 0) {
-        targetCenterToVerticalEdge = targetBox.min.y - targetCenter.y;
-        objectCenterToVerticalEdge = objectBox.max.y - objectCenter.y;
-    }
-    const finalObjectPosition = new Vector3()
-        .copy(targetCenter)
-        .addScaledVector(direction, distance)
-        .sub(objectPositionToCenter);
-    finalObjectPosition.x += targetCenterToHorizontalEdge;
-    finalObjectPosition.x -= objectCenterToHorizontalEdge;
-    finalObjectPosition.y += targetCenterToVerticalEdge;
-    finalObjectPosition.y -= objectCenterToVerticalEdge;
-    if (object.parent !== null) {
-        object.position.copy(object.parent.worldToLocal(finalObjectPosition));
-    }
-    else {
-        object.position.copy(finalObjectPosition);
-    }
-};
-const moveToRightOf = (target, object, distance = 0.5) => {
-    moveNextTo(target, object, RIGHT, distance);
-};
-const moveToLeftOf = (target, object, distance = 0.5) => {
-    moveNextTo(target, object, LEFT, distance);
-};
-const moveAbove = (target, object, distance = 0.5) => {
-    moveNextTo(target, object, UP, distance);
-};
-const moveBelow = (target, object, distance = 0.5) => {
-    moveNextTo(target, object, DOWN, distance);
-};
-const getBoundingBoxCenter = (obj, target) => {
-    obj.updateWorldMatrix(true, true);
-    new Box3().expandByObject(obj).getCenter(target);
-    return target;
-};
-const getBoundingBoxHelper = (obj, color) => {
-    obj.updateWorldMatrix(true, true);
-    const box = new Box3().expandByObject(obj);
-    const helper = new Box3Helper(box, new Color(color));
-    return helper;
-};
-const transformBetweenSpaces = (from, to, point) => {
-    return to.worldToLocal(from.localToWorld(point));
-};
-/*
- * Solves
- * [ a b ]   [ xa ]   [ ba ]
- * [ c d ] * [ xb ] = [ bb ]
- * for x.
- */
-const matrixSolve = (ma, mb, mc, md, ba, bb) => {
-    const determinant = ma * md - mb * mc;
-    if (determinant === 0) {
-        return null;
-    }
-    return [(md * ba - mb * bb) / determinant, (ma * bb - mc * ba) / determinant];
-};
-// https://blogs.sas.com/content/iml/2018/07/09/intersection-line-segments.html
-const getIntersection = (p1, p2, q1, q2) => {
-    const p2MinusP1 = new Vector3().subVectors(p2, p1);
-    const q1MinusQ2 = new Vector3().subVectors(q1, q2);
-    const q1MinusP1 = new Vector3().subVectors(q1, p1);
-    const solution = matrixSolve(p2MinusP1.x, q1MinusQ2.x, p2MinusP1.y, q1MinusQ2.y, q1MinusP1.x, q1MinusP1.y);
-    if (solution === null) {
-        // TODO: Handle parallel lines.
-        return null;
-    }
-    const [s, t] = solution;
-    if (s < 0 || 1 < s || t < 0 || 1 < t) {
-        return null;
-    }
-    return p1.multiplyScalar(1 - s).addScaledVector(p2, s);
-};
-const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
-    return (new Vector3()
-        .subVectors(shape.points.at(0), shape.points.at(-1))
-        .length() < adjacentThreshold);
-};
-const intersectionsBetween = (shape1, shape2) => {
-    var _a, _b, _c, _d;
-    let intersections = [];
-    shape1.updateMatrixWorld();
-    shape2.updateMatrixWorld();
-    for (let i = 0; i < shape1.points.length - 1; i++) {
-        const segment1 = new Line3((_a = shape1.points[i]) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape1.matrixWorld), (_b = shape1.points[i + 1]) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape1.matrixWorld));
-        for (let j = 0; j < shape2.points.length - 1; j++) {
-            const segment2 = new Line3((_c = shape2.points[j]) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape2.matrixWorld), (_d = shape2.points[j + 1]) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape2.matrixWorld));
-            const maybeIntersection = getIntersection(segment1.start, segment1.end, segment2.start, segment2.end);
-            if (maybeIntersection !== null) {
-                intersections.push(maybeIntersection);
-            }
-        }
-    }
-    return intersections;
-};
-class ShapeFromCurves {
-    constructor() {
-        this.adjacentThreshold = 0.0001;
-        this.segmentClosestToPoint = new Vector3();
-        this.pointToSegment = new Vector3();
-        this.style = {};
-    }
-    withStyle(style) {
-        this.style = style;
-        return this;
-    }
-    startAt(start) {
-        this.points = [start];
-        return this;
-    }
-    extendAlong(shape, direction, until) {
-        var _a, _b, _c, _d, _e;
-        const startPoint = (_a = this.points.at(-1)) === null || _a === void 0 ? void 0 : _a.clone();
-        if (startPoint === undefined) {
-            throw new Error("Cannot extend with no current points.");
-        }
-        // Find where the shape intersects the current endpoint.
-        let intersectSegment = null;
-        let intersectIndex = null;
-        shape.updateMatrixWorld();
-        for (let j = 0; j < shape.points.length - 1; j++) {
-            const segment = new Line3((_b = shape.points.at(j)) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape.matrixWorld), (_c = shape.points
-                .at(j + 1)) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape.matrixWorld));
-            segment.closestPointToPoint(startPoint, true, this.segmentClosestToPoint);
-            const distanceToSegment = this.pointToSegment
-                .subVectors(this.segmentClosestToPoint, startPoint)
-                .length();
-            if (distanceToSegment < this.adjacentThreshold) {
-                intersectSegment = segment;
-                intersectIndex = j;
-                break;
-            }
-        }
-        if (intersectSegment === null || intersectIndex === null) {
-            throw new Error(`No intersection between ${startPoint.toArray()} and ${shape}`);
-        }
-        const vectorFromPointToIndex = (point, index) => {
-            var _a;
-            let endPoint = (_a = shape.points
-                .at(index)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
-            if (endPoint === undefined) {
-                return new Vector3();
-            }
-            return new Vector3().subVectors(endPoint, point).normalize();
-        };
-        // Get potential directions to extend.
-        let towardStartVector;
-        let forwardInitialPointIndex = intersectIndex + 1;
-        let backwardInitialPointIndex = intersectIndex;
-        // debugger;
-        towardStartVector = new Vector3().subVectors(intersectSegment.start, this.segmentClosestToPoint);
-        if (towardStartVector.length() < this.adjacentThreshold) {
-            // The point intersects at the start of this segment, so try using the previous point instead.
-            let prevIndex = intersectIndex - 1;
-            if (prevIndex === -1 && shapeIsClosed(shape)) {
-                // The point intersects at the first point of a closed shape, so use the second to last point.
-                prevIndex = shape.points.length - 2;
-            }
-            if (prevIndex !== -1) {
-                towardStartVector = vectorFromPointToIndex(intersectSegment.start, prevIndex);
-                forwardInitialPointIndex = intersectIndex + 1;
-                backwardInitialPointIndex = prevIndex;
-            }
-            else {
-                // The vector is (effectively) zero.
-                towardStartVector.set(0, 0, 0);
-            }
-        }
-        towardStartVector.normalize();
-        // Ugh do this.
-        let towardEndVector;
-        const endToIntersection = new Vector3()
-            .subVectors(intersectSegment.end, this.segmentClosestToPoint)
-            .length();
-        if (endToIntersection < this.adjacentThreshold &&
-            intersectIndex + 2 < shape.points.length) {
-            let nextPoint = (_d = shape.points
-                .at(intersectIndex + 2)) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape.matrixWorld);
-            if (nextPoint === undefined) {
-                throw new Error("No next point");
-            }
-            towardEndVector = new Vector3()
-                .subVectors(nextPoint, intersectSegment.end)
-                .normalize();
-            // Handle closed curves (shape.points.at(0) === shape.points.at(-1))
-            if (towardEndVector.length() < this.adjacentThreshold) {
-                nextPoint = (_e = shape.points
-                    .at(intersectIndex + 3)) === null || _e === void 0 ? void 0 : _e.clone().applyMatrix4(shape.matrixWorld);
-                if (nextPoint === undefined) {
-                    throw new Error("No next point");
-                }
-            }
-            forwardInitialPointIndex = intersectIndex + 2;
-            backwardInitialPointIndex = intersectIndex;
-        }
-        else {
-            towardEndVector = new Vector3()
-                .subVectors(intersectSegment.end, this.segmentClosestToPoint)
-                .normalize();
-        }
-        const forward = direction.dot(towardEndVector) > direction.dot(towardStartVector);
-        this.extendCurve(shape, forward ? forwardInitialPointIndex : backwardInitialPointIndex, forward, until);
-        return this;
-    }
-    extendCurve(shape, initialPointIndex, forward, until) {
-        var _a, _b;
-        const advance = (i) => {
-            i += increment;
-            if (i === shape.points.length && shapeIsClosed(shape)) {
-                i = 1;
-            }
-            else if (i === -1 && shapeIsClosed(shape)) {
-                i = shape.points.length - 2;
-            }
-            return i;
-        };
-        // const initialPointIndex = forward ? segmentIndex + 1 : segmentIndex;
-        const increment = forward ? 1 : -1;
-        let i = initialPointIndex;
-        let count = 0;
-        while (0 <= i && i < shape.points.length) {
-            count += 1;
-            if (count === 500) {
-                console.log("rip");
-                break;
-            }
-            const newPoint = (_a = shape.points
-                .at(i)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
-            if (newPoint === undefined) {
-                throw new Error("Error extending curve.");
-            }
-            const newSegment = new Line3((_b = this.points.at(-1)) === null || _b === void 0 ? void 0 : _b.clone(), newPoint);
-            if (newSegment.distance() < this.adjacentThreshold) {
-                i += increment;
-                continue;
-            }
-            let pointsToCheck = this.points.slice(0, this.points.length - 1);
-            if (until !== undefined) {
-                pointsToCheck.push(until);
-            }
-            for (let point of pointsToCheck) {
-                newSegment.closestPointToPoint(point, true, this.segmentClosestToPoint);
-                const distanceToSegment = this.pointToSegment
-                    .subVectors(this.segmentClosestToPoint, point)
-                    .length();
-                if (distanceToSegment < this.adjacentThreshold) {
-                    this.points.push(point.clone());
-                    return;
-                }
-            }
-            this.points.push(newPoint);
-            i = advance(i);
-        }
-    }
-    finish() {
-        return new Polygon(this.points, this.style);
-    }
-}
-
-var utils = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	BUFFER: BUFFER,
-	DOWN: DOWN,
-	IN: IN,
-	LEFT: LEFT,
-	ORIGIN: ORIGIN,
-	OUT: OUT,
-	RIGHT: RIGHT,
-	ShapeFromCurves: ShapeFromCurves,
-	UP: UP,
-	clamp: clamp,
-	furthestInDirection: furthestInDirection,
-	getBoundingBoxCenter: getBoundingBoxCenter,
-	getBoundingBoxHelper: getBoundingBoxHelper,
-	getFrameAttributes: getFrameAttributes,
-	intersectionsBetween: intersectionsBetween,
-	moveAbove: moveAbove,
-	moveBelow: moveBelow,
-	moveNextTo: moveNextTo,
-	moveToLeftOf: moveToLeftOf,
-	moveToRightOf: moveToRightOf,
-	setupCanvas: setupCanvas,
-	transformBetweenSpaces: transformBetweenSpaces
-});
-
-let sigmoid = (x) => 1 / (1 + Math.exp(-x));
-let smooth = (t) => {
-    let error = sigmoid(-10 / 2);
-    return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
-};
-const modulate = (t, dt) => {
-    let tSeconds = t;
-    let modulatedDelta = smooth(tSeconds) - smooth(t - dt);
-    let modulatedTime = smooth(tSeconds);
-    return [modulatedTime, modulatedDelta];
-};
-class Animation {
-    constructor(func, { object = undefined, parent = undefined, before = undefined, after = undefined, } = {}) {
-        this.func = func;
-        this.scale = 1;
-        this.runTime = 1;
-        this.finished = false;
-        this.elapsedSinceStart = 0;
-        this.object = object;
-        this.parent = parent;
-        this.before = before;
-        this.after = after;
-    }
-    setUp() { }
-    tearDown() { }
-    update(worldTime) {
-        if (worldTime <= this.startTime || this.finished) {
-            return;
-        }
-        let deltaTime;
-        if (this.prevUpdateTime === undefined) {
-            if (this.object instanceof Function) {
-                this.object = this.object();
-            }
-            if (this.object !== undefined && this.object.parent === null) {
-                const parent = this.parent;
-                !parent.children.includes(this.object) && parent.add(this.object);
-            }
-            this.beforeFunc && this.beforeFunc();
-            this.setUp();
-            deltaTime = worldTime - this.startTime;
-        }
-        else if (worldTime > this.endTime) {
-            deltaTime = this.endTime - this.prevUpdateTime;
-        }
-        else {
-            deltaTime = worldTime - this.prevUpdateTime;
-        }
-        this.prevUpdateTime = worldTime;
-        this.elapsedSinceStart += deltaTime;
-        this.func(...modulate(this.elapsedSinceStart, deltaTime));
-        if (worldTime >= this.endTime) {
-            this.finished = true;
-            this.tearDown();
-            this.afterFunc && this.afterFunc();
-        }
-    }
-    addBefore(before) {
-        if (this.beforeFunc) {
-            const oldBeforeFunc = this.beforeFunc;
-            this.beforeFunc = () => {
-                before();
-                oldBeforeFunc();
-            };
-        }
-        else {
-            this.beforeFunc = before;
-        }
-    }
-    addAfter(after) {
-        if (this.afterFunc) {
-            const oldAfterFunc = this.afterFunc;
-            this.afterFunc = () => {
-                oldAfterFunc();
-                after();
-            };
-        }
-        else {
-            this.afterFunc = after;
-        }
-    }
-}
-class Shift extends Animation {
-    constructor(object, direction, config) {
-        super((_elapsedTime, deltaTime) => {
-            object.position.add(direction.clone().multiplyScalar(deltaTime));
-        }, Object.assign({ object }, config));
-    }
-}
-class MoveTo extends Animation {
-    constructor(target, obj, config) {
-        super(elapsedTime => {
-            obj
-                .position
-                .copy(this.start)
-                .addScaledVector(this.displacement, elapsedTime);
-        }, Object.assign({ obj }, config));
-        this.target = target;
-        this.obj = obj;
-    }
-    setUp() {
-        this.start = this.obj.position.clone();
-        const final = new Vector3();
-        const initial = new Vector3();
-        this.obj.parent.worldToLocal(getBoundingBoxCenter(this.target, final));
-        this.obj.parent.worldToLocal(getBoundingBoxCenter(this.obj, initial));
-        this.displacement = new Vector3().subVectors(final, initial);
-    }
-}
-class Rotate extends Animation {
-    constructor(object, angle, config) {
-        super((_elapsedTime, deltaTime) => {
-            object.rotation.z += angle * deltaTime;
-        }, Object.assign({ object }, config));
-    }
-}
-class Scale extends Animation {
-    constructor(object, factor, config) {
-        const initialScale = object.scale.x;
-        super((elapsedTime, deltaTime) => {
-            const scale = MathUtils.lerp(initialScale, factor, elapsedTime);
-            object.scale.set(scale, scale, scale);
-        }, Object.assign({ object }, config));
-    }
-}
-class Draw extends Animation {
-    constructor(object, config) {
-        super((elapsedTime) => {
-            object.stroke.material.uniforms.drawRange.value.y = elapsedTime;
-        }, Object.assign({ object }, config));
-    }
-}
-class Erase extends Animation {
-    constructor(object, config) {
-        super((elapsedTime) => {
-            object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
-        }, Object.assign({ object }, config));
-        this.object = object;
-        this.config = config;
-    }
-    tearDown() {
-        var _a, _b;
-        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
-            this.object.parent.remove(this.object);
-        }
-        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
-            this.object.stroke.material.uniforms.drawRange.value.y = 1;
-        }
-    }
-}
-class FadeIn extends Animation {
-    constructor(object, config) {
-        super((elapsedTime, _deltaTime) => {
-            this.object.traverse((child) => {
-                if (child instanceof Mesh) {
-                    child.material.opacity = MathUtils.lerp(0, this.initialOpacity.get(child), elapsedTime);
-                }
-            });
-        }, Object.assign({ object }, config));
-        this.initialOpacity = new Map();
-    }
-    setUp() {
-        this.object.traverse((child) => {
-            if (child instanceof Mesh) {
-                this.initialOpacity.set(child, child.material.opacity);
-            }
-        });
-    }
-}
-class FadeOut extends Animation {
-    constructor(objectOrFunc, config) {
-        super((elapsedTime, _deltaTime) => {
-            this.object.traverse((child) => {
-                if (child instanceof Mesh) {
-                    if (!this.initialOpacity.has(child)) {
-                        console.error("Unknown child");
-                    }
-                    child.material.opacity = MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
-                }
-            });
-        }, Object.assign({ object: objectOrFunc }, config));
-        this.config = config;
-        this.initialOpacity = new Map();
-    }
-    setUp() {
-        this.object.traverse((child) => {
-            if (child instanceof Mesh) {
-                this.initialOpacity.set(child, child.material.opacity);
-            }
-        });
-    }
-    tearDown() {
-        var _a, _b;
-        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
-            this.object.parent.remove(this.object);
-        }
-        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
-            this.object.traverse((child) => {
-                if (child instanceof Mesh) {
-                    if (!this.initialOpacity.has(child)) {
-                        console.error("Unknown child");
-                    }
-                    child.material.opacity = this.initialOpacity.get(child);
-                }
-            });
-        }
-    }
-}
-class Wait extends Animation {
-    constructor(config) {
-        super(() => { }, config);
-    }
-}
-
-var animation = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	Animation: Animation,
-	Draw: Draw,
-	Erase: Erase,
-	FadeIn: FadeIn,
-	FadeOut: FadeOut,
-	MoveTo: MoveTo,
-	Rotate: Rotate,
-	Scale: Scale,
-	Shift: Shift,
-	Wait: Wait
 });
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -98507,7 +97855,7 @@ class Text extends Group {
         }
         const parseData = new SVGLoader().parse(svgString);
         const group = new Group();
-        group.scale.set(0.001, -0.001, 0.001);
+        group.scale.set(0.0008, -0.0008, 0.0008);
         let groupColorsIndex = 0;
         let groupColoring;
         if (config.groupColoring !== undefined) {
@@ -98641,6 +97989,809 @@ class Text extends Group {
 var text = /*#__PURE__*/Object.freeze({
 	__proto__: null,
 	Text: Text
+});
+
+const BUFFER = 0.5;
+const ORIGIN = Object.freeze(new Vector3(0, 0, 0));
+const RIGHT = Object.freeze(new Vector3(1, 0, 0));
+const LEFT = Object.freeze(new Vector3(-1, 0, 0));
+const UP = Object.freeze(new Vector3(0, 1, 0));
+const DOWN = Object.freeze(new Vector3(0, -1, 0));
+const OUT = Object.freeze(new Vector3(0, 0, 1));
+const IN = Object.freeze(new Vector3(0, 0, -1));
+const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+const getFrameAttributes = (aspectRatio, height) => {
+    const coordinateHeight = PIXELS_TO_COORDS * height;
+    return {
+        aspectRatio,
+        height,
+        width: height * aspectRatio,
+        coordinateHeight,
+        coordinateWidth: coordinateHeight * aspectRatio,
+    };
+};
+const isWidthSetup = (config) => {
+    return ("aspectRatio" in config &&
+        "pixelWidth" in config &&
+        "coordinateWidth" in config);
+};
+const isHeightSetup = (config) => {
+    return ("aspectRatio" in config &&
+        "pixelHeight" in config &&
+        "coordinateHeight" in config);
+};
+const setupCanvas = (canvas, config = {
+    aspectRatio: 16 / 9,
+    pixelHeight: 720,
+    coordinateHeight: 8,
+    viewport: undefined,
+}) => {
+    let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
+    if (isWidthSetup(config)) {
+        aspectRatio = config.aspectRatio;
+        pixelWidth = config.pixelWidth;
+        coordinateWidth = config.coordinateWidth;
+        pixelHeight = pixelWidth / aspectRatio;
+        coordinateHeight = coordinateWidth / aspectRatio;
+    }
+    else if (isHeightSetup(config)) {
+        aspectRatio = config.aspectRatio;
+        pixelHeight = config.pixelHeight;
+        coordinateHeight = config.coordinateHeight;
+        pixelWidth = pixelHeight * aspectRatio;
+        coordinateWidth = coordinateHeight * aspectRatio;
+    }
+    else {
+        throw new Error("Invalid config:", config);
+    }
+    const camera = new OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
+    camera.position.z = 6;
+    setCameraDimensions(camera);
+    const renderer = new WebGLRenderer({
+        canvas,
+        antialias: true,
+        preserveDrawingBuffer: true,
+    });
+    renderer.setClearColor(new Color(DEFAULT_BACKGROUND_HEX));
+    renderer.autoClear = false;
+    if (config.viewport) {
+        CanvasViewport.copy(config.viewport);
+    }
+    else {
+        renderer.setSize(pixelWidth, pixelHeight, false);
+        CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
+    }
+    if (typeof window !== "undefined") {
+        renderer.setPixelRatio(window.devicePixelRatio);
+        CanvasViewport.multiplyScalar(window.devicePixelRatio);
+    }
+    return [new Scene(), camera, renderer];
+};
+const convertWorldDirectionToObjectSpace = (worldDirection, object) => {
+    const worldQuaternion = new Quaternion();
+    object.getWorldQuaternion(worldQuaternion);
+    const inverseQuaternion = worldQuaternion.clone().invert();
+    const localDirection = worldDirection
+        .clone()
+        .applyQuaternion(inverseQuaternion);
+    localDirection.normalize();
+    return localDirection;
+};
+const transformBetweenSpaces = (from, to, point) => {
+    return to.worldToLocal(from.localToWorld(point));
+};
+const furthestInDirection = (object, direction, exclude = []) => {
+    let excludeArray;
+    if (!Array.isArray(exclude)) {
+        excludeArray = [exclude];
+    }
+    else {
+        excludeArray = exclude;
+    }
+    object.updateWorldMatrix(true, true);
+    // const unitDirection = convertWorldDirectionToObjectSpace(direction, object);
+    const unitDirection = direction.clone().normalize();
+    let maxDot = -Infinity;
+    let maxDotPoint = unitDirection.clone().negate().setLength(Infinity);
+    object.traverse((obj) => {
+        var _a, _b;
+        let exclusionCheckObj = obj;
+        while (exclusionCheckObj) {
+            if (excludeArray.includes(exclusionCheckObj)) {
+                return;
+            }
+            else if (exclusionCheckObj === object) {
+                break;
+            }
+            exclusionCheckObj = exclusionCheckObj.parent;
+        }
+        if (obj instanceof MeshLine) {
+            for (const point of obj.points) {
+                const clonedPoint = point.clone();
+                transformBetweenSpaces(obj, object, clonedPoint);
+                const dotProduct = clonedPoint.dot(unitDirection);
+                if (dotProduct > maxDot) {
+                    maxDot = dotProduct;
+                    maxDotPoint.copy(clonedPoint);
+                }
+            }
+        }
+        else if (obj instanceof Mesh &&
+            ((_b = (_a = obj.parent) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.parent) instanceof Text) {
+            const pointsArray = obj.geometry.attributes.position.array;
+            const pointContainer = new Vector3();
+            for (let i = 0; i < pointsArray.length; i += 3) {
+                pointContainer.set(pointsArray[i], pointsArray[i + 1], pointsArray[i + 2]);
+                transformBetweenSpaces(obj, object, pointContainer);
+                const dotProduct = pointContainer.dot(unitDirection);
+                if (dotProduct > maxDot) {
+                    maxDot = dotProduct;
+                    maxDotPoint.copy(pointContainer);
+                }
+            }
+        }
+    });
+    return maxDotPoint;
+};
+const moveNextTo = (target, object, direction, buffer = 0.2) => {
+    target.updateWorldMatrix(true, true);
+    object.updateWorldMatrix(true, true);
+    const targetSpaceDirectionInitial = new Vector3().applyMatrix4(new Matrix4().copy(target.matrixWorld).invert());
+    const targetSpaceDirectionFinal = direction
+        .clone()
+        .applyMatrix4(new Matrix4().copy(target.matrixWorld).invert());
+    const targetSpaceDirection = new Vector3().subVectors(targetSpaceDirectionFinal, targetSpaceDirectionInitial);
+    // Target space
+    let targetSpaceStartPosition;
+    let targetSpaceOffsetInitial;
+    let targetSpaceOffsetFinal;
+    if (!(target instanceof Line)) {
+        const targetSpaceFurthestInDirection = furthestInDirection(target, targetSpaceDirection, object);
+        targetSpaceStartPosition = new Vector3();
+        targetSpaceOffsetInitial = new Vector3();
+        const targetSpaceOffsetFinalLength = targetSpaceDirection
+            .clone()
+            .normalize()
+            .dot(targetSpaceFurthestInDirection);
+        targetSpaceOffsetFinal = targetSpaceDirection
+            .clone()
+            .setLength(Math.max(targetSpaceOffsetFinalLength, 0));
+    }
+    else {
+        const vector = target.getVector().normalize();
+        const normal = vector.clone().applyAxisAngle(OUT, Math.PI / 2);
+        const vectorDot = targetSpaceDirection.dot(vector);
+        const normalDot = targetSpaceDirection.dot(normal);
+        const againstVectorDot = targetSpaceDirection.dot(vector.clone().negate());
+        const againstNormalDot = targetSpaceDirection.dot(normal.clone().negate());
+        const dotProducts = [
+            vectorDot,
+            normalDot,
+            againstVectorDot,
+            againstNormalDot,
+        ];
+        const maxDot = Math.max(...dotProducts);
+        if (maxDot === vectorDot) {
+            targetSpaceStartPosition = target.end.clone();
+        }
+        else if (maxDot === againstVectorDot) {
+            targetSpaceStartPosition = target.start.clone();
+        }
+        else if ([normalDot, againstNormalDot].includes(maxDot)) {
+            targetSpaceStartPosition = new Vector3()
+                .addVectors(target.start, target.end)
+                .divideScalar(2);
+        }
+        targetSpaceOffsetInitial = new Vector3();
+        targetSpaceOffsetFinal = new Vector3();
+    }
+    // Object space
+    const objectSpaceDirectionInitial = new Vector3().applyMatrix4(new Matrix4().copy(object.matrixWorld).invert());
+    const objectSpaceDirectionFinal = direction
+        .clone()
+        .applyMatrix4(new Matrix4().copy(object.matrixWorld).invert());
+    const objectSpaceDirection = new Vector3()
+        .subVectors(objectSpaceDirectionFinal, objectSpaceDirectionInitial)
+        .negate();
+    const objectSpaceFurthestInDirection = furthestInDirection(object, objectSpaceDirection, target);
+    let objectSpaceOffsetInitial = new Vector3();
+    const objectSpaceOffsetFinalLength = objectSpaceDirection
+        .clone()
+        .normalize()
+        .dot(objectSpaceFurthestInDirection);
+    const objectSpaceOffsetFinal = objectSpaceDirection
+        .clone()
+        .negate()
+        .setLength(Math.max(objectSpaceOffsetFinalLength, 0));
+    // World space
+    const worldSpaceStartPosition = targetSpaceStartPosition.applyMatrix4(target.matrixWorld);
+    const worldSpaceTargetOffsetInitial = targetSpaceOffsetInitial.applyMatrix4(target.matrixWorld);
+    const worldSpaceTargetOffsetFinal = targetSpaceOffsetFinal.applyMatrix4(target.matrixWorld);
+    const worldSpaceTargetOffset = new Vector3().subVectors(worldSpaceTargetOffsetFinal, worldSpaceTargetOffsetInitial);
+    const worldSpaceObjectOffsetInitial = objectSpaceOffsetInitial.applyMatrix4(object.matrixWorld);
+    const worldSpaceObjectOffsetFinal = objectSpaceOffsetFinal.applyMatrix4(object.matrixWorld);
+    const worldSpaceObjectOffset = new Vector3().subVectors(worldSpaceObjectOffsetFinal, worldSpaceObjectOffsetInitial);
+    const worldSpaceOffset = direction
+        .clone()
+        .setLength(0 +
+        worldSpaceTargetOffset.length() +
+        buffer +
+        worldSpaceObjectOffset.length());
+    const worldSpaceOffsetInitial = new Vector3();
+    const worldSpaceOffsetFinal = worldSpaceOffset.clone();
+    // Object parent space
+    const objectParentSpaceStartPosition = worldSpaceStartPosition
+        .applyMatrix4(object.matrixWorld.clone().invert())
+        .applyMatrix4(object.matrix);
+    const objectParentSpaceOffsetInitial = worldSpaceOffsetInitial
+        .applyMatrix4(object.matrixWorld.clone().invert())
+        .applyMatrix4(object.matrix);
+    const objectParentSpaceOffsetFinal = worldSpaceOffsetFinal
+        .applyMatrix4(object.matrixWorld.clone().invert())
+        .applyMatrix4(object.matrix);
+    const objectParentSpaceOffset = new Vector3().subVectors(objectParentSpaceOffsetFinal, objectParentSpaceOffsetInitial);
+    object.position
+        .copy(objectParentSpaceStartPosition)
+        .add(objectParentSpaceOffset);
+    return object;
+};
+const moveToRightOf = (target, object, distance = 0.2) => {
+    return moveNextTo(target, object, RIGHT, distance);
+};
+const moveToLeftOf = (target, object, distance = 0.2) => {
+    return moveNextTo(target, object, LEFT, distance);
+};
+const moveAbove = (target, object, distance = 0.2) => {
+    return moveNextTo(target, object, UP, distance);
+};
+const moveBelow = (target, object, distance = 0.2) => {
+    return moveNextTo(target, object, DOWN, distance);
+};
+const rotate90 = (v) => v.applyAxisAngle(OUT, Math.PI / 2);
+const rotate180 = (v) => v.applyAxisAngle(OUT, Math.PI);
+const rotate270 = (v) => v.applyAxisAngle(OUT, -Math.PI / 2);
+const getBoundingBoxCenter = (obj, target) => {
+    obj.updateWorldMatrix(true, true);
+    new Box3().expandByObject(obj).getCenter(target);
+    return target;
+};
+const getBoundingBoxHelper = (obj, color) => {
+    obj.updateWorldMatrix(true, true);
+    const box = new Box3().expandByObject(obj);
+    const helper = new Box3Helper(box, new Color(color));
+    return helper;
+};
+const pointAlongCurve = (shape, t) => {
+    if (t < 0 || t > 1) {
+        throw new Error(`Invalid parameter ${t}`);
+    }
+    const totalLength = strokeLength(shape);
+    const targetLength = totalLength * t;
+    let currentLength = 0;
+    for (let i = 0; i < shape.points.length - 1; i++) {
+        const segmentLength = getSegmentLength(shape.points[i], shape.points[i + 1]);
+        if (currentLength + segmentLength >= targetLength) {
+            const segmentPercent = (targetLength - currentLength) / segmentLength;
+            return new Vector3().lerpVectors(shape.points[i], shape.points[i + 1], segmentPercent);
+        }
+        currentLength += segmentLength;
+    }
+    return shape.points[shape.points.length - 1];
+};
+const strokeLength = (shape) => {
+    let length = 0;
+    for (let i = 0; i < shape.points.length - 1; i++) {
+        length += getSegmentLength(shape.points[i], shape.points[i + 1]);
+    }
+    return length;
+};
+const getSegmentLength = (u, v) => {
+    const dx = u.x - v.x;
+    const dy = u.y - v.y;
+    const dz = u.z - v.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+};
+/*
+ * Solves
+ * [ a b ]   [ xa ]   [ ba ]
+ * [ c d ] * [ xb ] = [ bb ]
+ * for x.
+ */
+const matrixSolve = (ma, mb, mc, md, ba, bb) => {
+    const determinant = ma * md - mb * mc;
+    if (determinant === 0) {
+        return null;
+    }
+    return [(md * ba - mb * bb) / determinant, (ma * bb - mc * ba) / determinant];
+};
+// https://blogs.sas.com/content/iml/2018/07/09/intersection-line-segments.html
+const getIntersection = (p1, p2, q1, q2) => {
+    const p2MinusP1 = new Vector3().subVectors(p2, p1);
+    const q1MinusQ2 = new Vector3().subVectors(q1, q2);
+    const q1MinusP1 = new Vector3().subVectors(q1, p1);
+    const solution = matrixSolve(p2MinusP1.x, q1MinusQ2.x, p2MinusP1.y, q1MinusQ2.y, q1MinusP1.x, q1MinusP1.y);
+    if (solution === null) {
+        // TODO: Handle parallel lines.
+        return null;
+    }
+    const [s, t] = solution;
+    if (s < 0 || 1 < s || t < 0 || 1 < t) {
+        return null;
+    }
+    return p1.multiplyScalar(1 - s).addScaledVector(p2, s);
+};
+const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
+    return (new Vector3()
+        .subVectors(shape.points.at(0), shape.points.at(-1))
+        .length() < adjacentThreshold);
+};
+const intersectionsBetween = (shape1, shape2) => {
+    var _a, _b, _c, _d;
+    let intersections = [];
+    shape1.updateMatrixWorld();
+    shape2.updateMatrixWorld();
+    for (let i = 0; i < shape1.points.length - 1; i++) {
+        const segment1 = new Line3((_a = shape1.points[i]) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape1.matrixWorld), (_b = shape1.points[i + 1]) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape1.matrixWorld));
+        for (let j = 0; j < shape2.points.length - 1; j++) {
+            const segment2 = new Line3((_c = shape2.points[j]) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape2.matrixWorld), (_d = shape2.points[j + 1]) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape2.matrixWorld));
+            const maybeIntersection = getIntersection(segment1.start, segment1.end, segment2.start, segment2.end);
+            if (maybeIntersection !== null) {
+                intersections.push(maybeIntersection);
+            }
+        }
+    }
+    return intersections;
+};
+class ShapeFromCurves {
+    constructor() {
+        this.adjacentThreshold = 0.0001;
+        this.segmentClosestToPoint = new Vector3();
+        this.pointToSegment = new Vector3();
+        this.style = {};
+    }
+    withStyle(style) {
+        this.style = style;
+        return this;
+    }
+    startAt(start) {
+        this.points = [start];
+        return this;
+    }
+    extendAlong(shape, direction, until) {
+        var _a, _b, _c, _d, _e;
+        const startPoint = (_a = this.points.at(-1)) === null || _a === void 0 ? void 0 : _a.clone();
+        if (startPoint === undefined) {
+            throw new Error("Cannot extend with no current points.");
+        }
+        // Find where the shape intersects the current endpoint.
+        let intersectSegment = null;
+        let intersectIndex = null;
+        shape.updateMatrixWorld();
+        for (let j = 0; j < shape.points.length - 1; j++) {
+            const segment = new Line3((_b = shape.points.at(j)) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape.matrixWorld), (_c = shape.points
+                .at(j + 1)) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape.matrixWorld));
+            segment.closestPointToPoint(startPoint, true, this.segmentClosestToPoint);
+            const distanceToSegment = this.pointToSegment
+                .subVectors(this.segmentClosestToPoint, startPoint)
+                .length();
+            if (distanceToSegment < this.adjacentThreshold) {
+                intersectSegment = segment;
+                intersectIndex = j;
+                break;
+            }
+        }
+        if (intersectSegment === null || intersectIndex === null) {
+            throw new Error(`No intersection between ${startPoint.toArray()} and ${shape}`);
+        }
+        const vectorFromPointToIndex = (point, index) => {
+            var _a;
+            let endPoint = (_a = shape.points
+                .at(index)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
+            if (endPoint === undefined) {
+                return new Vector3();
+            }
+            return new Vector3().subVectors(endPoint, point).normalize();
+        };
+        // Get potential directions to extend.
+        let towardStartVector;
+        let forwardInitialPointIndex = intersectIndex + 1;
+        let backwardInitialPointIndex = intersectIndex;
+        // debugger;
+        towardStartVector = new Vector3().subVectors(intersectSegment.start, this.segmentClosestToPoint);
+        if (towardStartVector.length() < this.adjacentThreshold) {
+            // The point intersects at the start of this segment, so try using the previous point instead.
+            let prevIndex = intersectIndex - 1;
+            if (prevIndex === -1 && shapeIsClosed(shape)) {
+                // The point intersects at the first point of a closed shape, so use the second to last point.
+                prevIndex = shape.points.length - 2;
+            }
+            if (prevIndex !== -1) {
+                towardStartVector = vectorFromPointToIndex(intersectSegment.start, prevIndex);
+                forwardInitialPointIndex = intersectIndex + 1;
+                backwardInitialPointIndex = prevIndex;
+            }
+            else {
+                // The vector is (effectively) zero.
+                towardStartVector.set(0, 0, 0);
+            }
+        }
+        towardStartVector.normalize();
+        // Ugh do this.
+        let towardEndVector;
+        const endToIntersection = new Vector3()
+            .subVectors(intersectSegment.end, this.segmentClosestToPoint)
+            .length();
+        if (endToIntersection < this.adjacentThreshold &&
+            intersectIndex + 2 < shape.points.length) {
+            let nextPoint = (_d = shape.points
+                .at(intersectIndex + 2)) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape.matrixWorld);
+            if (nextPoint === undefined) {
+                throw new Error("No next point");
+            }
+            towardEndVector = new Vector3()
+                .subVectors(nextPoint, intersectSegment.end)
+                .normalize();
+            // Handle closed curves (shape.points.at(0) === shape.points.at(-1))
+            if (towardEndVector.length() < this.adjacentThreshold) {
+                nextPoint = (_e = shape.points
+                    .at(intersectIndex + 3)) === null || _e === void 0 ? void 0 : _e.clone().applyMatrix4(shape.matrixWorld);
+                if (nextPoint === undefined) {
+                    throw new Error("No next point");
+                }
+            }
+            forwardInitialPointIndex = intersectIndex + 2;
+            backwardInitialPointIndex = intersectIndex;
+        }
+        else {
+            towardEndVector = new Vector3()
+                .subVectors(intersectSegment.end, this.segmentClosestToPoint)
+                .normalize();
+        }
+        const forward = direction.dot(towardEndVector) > direction.dot(towardStartVector);
+        this.extendCurve(shape, forward ? forwardInitialPointIndex : backwardInitialPointIndex, forward, until);
+        return this;
+    }
+    extendCurve(shape, initialPointIndex, forward, until) {
+        var _a, _b;
+        const advance = (i) => {
+            i += increment;
+            if (i === shape.points.length && shapeIsClosed(shape)) {
+                i = 1;
+            }
+            else if (i === -1 && shapeIsClosed(shape)) {
+                i = shape.points.length - 2;
+            }
+            return i;
+        };
+        // const initialPointIndex = forward ? segmentIndex + 1 : segmentIndex;
+        const increment = forward ? 1 : -1;
+        let i = initialPointIndex;
+        let count = 0;
+        while (0 <= i && i < shape.points.length) {
+            count += 1;
+            if (count === 500) {
+                console.log("rip");
+                break;
+            }
+            const newPoint = (_a = shape.points
+                .at(i)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
+            if (newPoint === undefined) {
+                throw new Error("Error extending curve.");
+            }
+            const newSegment = new Line3((_b = this.points.at(-1)) === null || _b === void 0 ? void 0 : _b.clone(), newPoint);
+            if (newSegment.distance() < this.adjacentThreshold) {
+                i += increment;
+                continue;
+            }
+            let pointsToCheck = this.points.slice(0, this.points.length - 1);
+            if (until !== undefined) {
+                pointsToCheck.push(until);
+            }
+            for (let point of pointsToCheck) {
+                newSegment.closestPointToPoint(point, true, this.segmentClosestToPoint);
+                const distanceToSegment = this.pointToSegment
+                    .subVectors(this.segmentClosestToPoint, point)
+                    .length();
+                if (distanceToSegment < this.adjacentThreshold) {
+                    this.points.push(point.clone());
+                    return;
+                }
+            }
+            this.points.push(newPoint);
+            i = advance(i);
+        }
+    }
+    finish() {
+        return new Polygon(this.points, this.style);
+    }
+}
+
+var utils = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	BUFFER: BUFFER,
+	DOWN: DOWN,
+	IN: IN,
+	LEFT: LEFT,
+	ORIGIN: ORIGIN,
+	OUT: OUT,
+	RIGHT: RIGHT,
+	ShapeFromCurves: ShapeFromCurves,
+	UP: UP,
+	clamp: clamp,
+	convertWorldDirectionToObjectSpace: convertWorldDirectionToObjectSpace,
+	furthestInDirection: furthestInDirection,
+	getBoundingBoxCenter: getBoundingBoxCenter,
+	getBoundingBoxHelper: getBoundingBoxHelper,
+	getFrameAttributes: getFrameAttributes,
+	intersectionsBetween: intersectionsBetween,
+	moveAbove: moveAbove,
+	moveBelow: moveBelow,
+	moveNextTo: moveNextTo,
+	moveToLeftOf: moveToLeftOf,
+	moveToRightOf: moveToRightOf,
+	pointAlongCurve: pointAlongCurve,
+	rotate180: rotate180,
+	rotate270: rotate270,
+	rotate90: rotate90,
+	setupCanvas: setupCanvas,
+	transformBetweenSpaces: transformBetweenSpaces
+});
+
+let sigmoid = (x) => 1 / (1 + Math.exp(-x));
+let smooth = (t) => {
+    let error = sigmoid(-10 / 2);
+    return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
+};
+const modulate = (t, dt) => {
+    let tSeconds = t;
+    let modulatedDelta = smooth(tSeconds) - smooth(t - dt);
+    let modulatedTime = smooth(tSeconds);
+    return [modulatedTime, modulatedDelta];
+};
+class Animation {
+    constructor(func, { object = undefined, parent = undefined, before = undefined, after = undefined, } = {}) {
+        this.func = func;
+        this.scale = 1;
+        this.runTime = 1;
+        this.finished = false;
+        this.elapsedSinceStart = 0;
+        this.object = object;
+        this.parent = parent;
+        this.before = before;
+        this.after = after;
+    }
+    setUp() { }
+    tearDown() { }
+    update(worldTime) {
+        if (worldTime <= this.startTime || this.finished) {
+            return;
+        }
+        let deltaTime;
+        if (this.prevUpdateTime === undefined) {
+            if (this.object instanceof Function) {
+                this.object = this.object();
+            }
+            if (this.object !== undefined && this.object.parent === null) {
+                const parent = this.parent;
+                !parent.children.includes(this.object) && parent.add(this.object);
+            }
+            this.beforeFunc && this.beforeFunc();
+            this.setUp();
+            deltaTime = worldTime - this.startTime;
+        }
+        else if (worldTime > this.endTime) {
+            deltaTime = this.endTime - this.prevUpdateTime;
+        }
+        else {
+            deltaTime = worldTime - this.prevUpdateTime;
+        }
+        this.prevUpdateTime = worldTime;
+        this.elapsedSinceStart += deltaTime;
+        this.func(...modulate(this.elapsedSinceStart, deltaTime));
+        if (worldTime >= this.endTime) {
+            this.finished = true;
+            this.tearDown();
+            this.afterFunc && this.afterFunc();
+        }
+    }
+    addBefore(before) {
+        if (this.beforeFunc) {
+            const oldBeforeFunc = this.beforeFunc;
+            this.beforeFunc = () => {
+                before();
+                oldBeforeFunc();
+            };
+        }
+        else {
+            this.beforeFunc = before;
+        }
+    }
+    addAfter(after) {
+        if (this.afterFunc) {
+            const oldAfterFunc = this.afterFunc;
+            this.afterFunc = () => {
+                oldAfterFunc();
+                after();
+            };
+        }
+        else {
+            this.afterFunc = after;
+        }
+    }
+}
+class Shift extends Animation {
+    constructor(object, offset, config) {
+        super((_elapsedTime, deltaTime) => {
+            object.position.add(offset.clone().multiplyScalar(deltaTime));
+        }, Object.assign({ object }, config));
+    }
+}
+class MoveTo extends Animation {
+    constructor(target, obj, config) {
+        super((elapsedTime) => {
+            obj.position
+                .copy(this.start)
+                .addScaledVector(this.displacement, elapsedTime);
+        }, Object.assign({ obj }, config));
+        this.target = target;
+        this.obj = obj;
+    }
+    setUp() {
+        this.start = this.obj.position.clone();
+        const final = new Vector3();
+        const initial = new Vector3();
+        this.obj.parent.worldToLocal(getBoundingBoxCenter(this.target, final));
+        this.obj.parent.worldToLocal(getBoundingBoxCenter(this.obj, initial));
+        this.displacement = new Vector3().subVectors(final, initial);
+    }
+}
+class Rotate extends Animation {
+    constructor(object, angle, config) {
+        super((_elapsedTime, deltaTime) => {
+            object.rotation.z += angle * deltaTime;
+        }, Object.assign({ object }, config));
+    }
+}
+class Scale extends Animation {
+    constructor(object, factor, config) {
+        const initialScale = object.scale.x;
+        super((elapsedTime, deltaTime) => {
+            const scale = MathUtils.lerp(initialScale, factor, elapsedTime);
+            object.scale.set(scale, scale, scale);
+        }, Object.assign({ object }, config));
+    }
+}
+class Draw extends Animation {
+    constructor(object, config) {
+        super((elapsedTime) => {
+            this.object.traverse((child) => {
+                if (child.stroke) {
+                    child.stroke.material.uniforms.drawRange.value.y = elapsedTime;
+                }
+            });
+        }, Object.assign({ object }, config));
+    }
+}
+class Erase extends Animation {
+    constructor(object, config) {
+        super((elapsedTime) => {
+            object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
+        }, Object.assign({ object }, config));
+        this.object = object;
+        this.config = config;
+    }
+    tearDown() {
+        var _a, _b;
+        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
+            this.object.parent.remove(this.object);
+        }
+        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
+            this.object.stroke.material.uniforms.drawRange.value.y = 1;
+        }
+    }
+}
+class FadeIn extends Animation {
+    constructor(object, config) {
+        let family = true;
+        if (config && config.family === false) {
+            family = false;
+        }
+        super((elapsedTime, _deltaTime) => {
+            if (family) {
+                this.object.traverse((child) => {
+                    if (child instanceof Mesh) {
+                        child.material.opacity = MathUtils.lerp(0, (config === null || config === void 0 ? void 0 : config.preserveOpacity) ? this.initialOpacity.get(child) : 1, elapsedTime);
+                    }
+                });
+            }
+            else {
+                [this.object.stroke, this.object.fill].forEach((mesh) => {
+                    if (!mesh)
+                        return;
+                    mesh.material.opacity = MathUtils.lerp(0, (config === null || config === void 0 ? void 0 : config.preserveOpacity) ? this.initialOpacity.get(mesh) : 1, elapsedTime);
+                });
+            }
+        }, Object.assign({ object }, config));
+        this.initialOpacity = new Map();
+    }
+    setUp() {
+        this.object.traverse((child) => {
+            if (child instanceof Mesh) {
+                this.initialOpacity.set(child, child.material.opacity);
+            }
+        });
+    }
+}
+class FadeOut extends Animation {
+    constructor(objectOrFunc, config) {
+        let family = true;
+        if (config && config.family === false) {
+            family = false;
+        }
+        super((elapsedTime, _deltaTime) => {
+            if (family) {
+                this.object.traverse((child) => {
+                    if (child instanceof Mesh) {
+                        if (!this.initialOpacity.has(child)) {
+                            console.error("Unknown child");
+                        }
+                        child.material.opacity = MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
+                    }
+                });
+            }
+            else {
+                [this.object.stroke, this.object.fill].forEach((mesh) => {
+                    if (!mesh)
+                        return;
+                    mesh.material.opacity = MathUtils.lerp(this.initialOpacity.get(mesh), 0, elapsedTime);
+                });
+            }
+        }, Object.assign({ object: objectOrFunc }, config));
+        this.config = config;
+        this.initialOpacity = new Map();
+    }
+    setUp() {
+        this.object.traverse((child) => {
+            if (child instanceof Mesh) {
+                this.initialOpacity.set(child, child.material.opacity);
+            }
+        });
+    }
+    tearDown() {
+        var _a, _b;
+        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
+            this.object.parent.remove(this.object);
+        }
+        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
+            this.object.traverse((child) => {
+                if (child instanceof Mesh) {
+                    if (!this.initialOpacity.has(child)) {
+                        console.error("Unknown child");
+                    }
+                    child.material.opacity = this.initialOpacity.get(child);
+                }
+            });
+        }
+    }
+}
+class Wait extends Animation {
+    constructor(config) {
+        super(() => { }, config);
+    }
+}
+
+var animation = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	Animation: Animation,
+	Draw: Draw,
+	Erase: Erase,
+	FadeIn: FadeIn,
+	FadeOut: FadeOut,
+	MoveTo: MoveTo,
+	Rotate: Rotate,
+	Scale: Scale,
+	Shift: Shift,
+	Wait: Wait
 });
 
 class SceneController {
@@ -98922,40 +99073,87 @@ var frame = {
     },
 };
 
+Vector3.prototype.rotate90 = function () {
+    return rotate90(this);
+};
+Vector3.prototype.rotate180 = function () {
+    return rotate180(this);
+};
+Vector3.prototype.rotate270 = function () {
+    return rotate270(this);
+};
 Object3D.prototype.setScale = function (factor) {
     this.scale.x = factor;
     this.scale.y = factor;
-    this.scale.z = factor;
     return this;
+};
+Object3D.prototype.pointAlongCurve = function (t) {
+    return pointAlongCurve(this, t);
 };
 Object3D.prototype.moveNextTo = function (target, direction, distance) {
-    moveNextTo(target, this, direction, distance);
+    return moveNextTo(target, this, direction, distance);
 };
 Object3D.prototype.moveToRightOf = function (target, distance) {
-    moveToRightOf(target, this, distance);
+    return moveToRightOf(target, this, distance);
 };
 Object3D.prototype.moveToLeftOf = function (target, distance) {
-    moveToLeftOf(target, this, distance);
+    return moveToLeftOf(target, this, distance);
 };
 Object3D.prototype.moveAbove = function (target, distance) {
-    moveAbove(target, this, distance);
+    return moveAbove(target, this, distance);
 };
 Object3D.prototype.moveBelow = function (target, distance) {
-    moveBelow(target, this, distance);
+    return moveBelow(target, this, distance);
 };
-Object3D.prototype.setOpacity = function (opacity) {
-    this.traverse((child) => {
-        if (child instanceof Mesh) {
-            child.material.opacity = opacity;
-        }
-    });
+Object3D.prototype.setOpacity = function (opacity, config) {
+    let family = true;
+    if (config && config.family === false) {
+        family = false;
+    }
+    if (family) {
+        this.traverse((child) => {
+            if (child instanceof Mesh) {
+                child.material.opacity = opacity;
+            }
+        });
+    }
+    else {
+        [this.stroke, this.fill].forEach((mesh) => {
+            if (!mesh)
+                return;
+            mesh.material.opacity = opacity;
+        });
+    }
     return this;
 };
-Object3D.prototype.setInvisible = function () {
-    return this.setOpacity(0);
+Object3D.prototype.setInvisible = function (config) {
+    let family = true;
+    if (config && config.family === false) {
+        family = false;
+    }
+    return this.setOpacity(0, { family });
 };
-Object3D.prototype.setVisible = function () {
-    return this.setOpacity(1);
+Object3D.prototype.setVisible = function (config) {
+    let family = true;
+    if (config && config.family === false) {
+        family = false;
+    }
+    return this.setOpacity(1, { family });
+};
+Object3D.prototype.setUpright = function () {
+    const worldQuaternion = new Quaternion();
+    this.getWorldQuaternion(worldQuaternion);
+    const inverseQuaternion = worldQuaternion.clone().invert();
+    this.quaternion.copy(inverseQuaternion);
+    return this;
+};
+Object3D.prototype.shiftPosition = function (offset) {
+    this.position.add(offset);
+    const thisSpaceDirection = convertWorldDirectionToObjectSpace(offset, this);
+    thisSpaceDirection.multiplyScalar(offset.length() / thisSpaceDirection.length());
+    thisSpaceDirection.negate();
+    this.children.forEach((child) => child.position.add(thisSpaceDirection));
+    return this;
 };
 
 export { animation as Animation, constants as Constants, diagram as Diagram, frame as Frame, geometry as Geometry, graphing as Graphing, SVGLoader, SceneController, THREE, text as Text, utils as Utils, setCameraDimensions, setCanvasViewport, setupCanvas };

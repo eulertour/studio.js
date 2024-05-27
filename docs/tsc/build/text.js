@@ -21,7 +21,7 @@ class Text extends THREE.Group {
         }
         const parseData = new SVGLoader().parse(svgString);
         const group = new THREE.Group();
-        group.scale.set(0.001, -0.001, 0.001);
+        group.scale.set(0.0008, -0.0008, 0.0008);
         let groupColorsIndex = 0;
         let groupColoring;
         if (config.groupColoring !== undefined) {

@@ -2,40 +2,87 @@ import * as THREE from "three";
 import { SVGLoader } from "./SVGLoader.js";
 // import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import * as Utils from "./utils";
+THREE.Vector3.prototype.rotate90 = function () {
+    return Utils.rotate90(this);
+};
+THREE.Vector3.prototype.rotate180 = function () {
+    return Utils.rotate180(this);
+};
+THREE.Vector3.prototype.rotate270 = function () {
+    return Utils.rotate270(this);
+};
 THREE.Object3D.prototype.setScale = function (factor) {
     this.scale.x = factor;
     this.scale.y = factor;
-    this.scale.z = factor;
     return this;
+};
+THREE.Object3D.prototype.pointAlongCurve = function (t) {
+    return Utils.pointAlongCurve(this, t);
 };
 THREE.Object3D.prototype.moveNextTo = function (target, direction, distance) {
-    Utils.moveNextTo(target, this, direction, distance);
+    return Utils.moveNextTo(target, this, direction, distance);
 };
 THREE.Object3D.prototype.moveToRightOf = function (target, distance) {
-    Utils.moveToRightOf(target, this, distance);
+    return Utils.moveToRightOf(target, this, distance);
 };
 THREE.Object3D.prototype.moveToLeftOf = function (target, distance) {
-    Utils.moveToLeftOf(target, this, distance);
+    return Utils.moveToLeftOf(target, this, distance);
 };
 THREE.Object3D.prototype.moveAbove = function (target, distance) {
-    Utils.moveAbove(target, this, distance);
+    return Utils.moveAbove(target, this, distance);
 };
 THREE.Object3D.prototype.moveBelow = function (target, distance) {
-    Utils.moveBelow(target, this, distance);
+    return Utils.moveBelow(target, this, distance);
 };
-THREE.Object3D.prototype.setOpacity = function (opacity) {
-    this.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-            child.material.opacity = opacity;
-        }
-    });
+THREE.Object3D.prototype.setOpacity = function (opacity, config) {
+    let family = true;
+    if (config && config.family === false) {
+        family = false;
+    }
+    if (family) {
+        this.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                child.material.opacity = opacity;
+            }
+        });
+    }
+    else {
+        [this.stroke, this.fill].forEach((mesh) => {
+            if (!mesh)
+                return;
+            mesh.material.opacity = opacity;
+        });
+    }
     return this;
 };
-THREE.Object3D.prototype.setInvisible = function () {
-    return this.setOpacity(0);
+THREE.Object3D.prototype.setInvisible = function (config) {
+    let family = true;
+    if (config && config.family === false) {
+        family = false;
+    }
+    return this.setOpacity(0, { family });
 };
-THREE.Object3D.prototype.setVisible = function () {
-    return this.setOpacity(1);
+THREE.Object3D.prototype.setVisible = function (config) {
+    let family = true;
+    if (config && config.family === false) {
+        family = false;
+    }
+    return this.setOpacity(1, { family });
+};
+THREE.Object3D.prototype.setUpright = function () {
+    const worldQuaternion = new THREE.Quaternion();
+    this.getWorldQuaternion(worldQuaternion);
+    const inverseQuaternion = worldQuaternion.clone().invert();
+    this.quaternion.copy(inverseQuaternion);
+    return this;
+};
+THREE.Object3D.prototype.shiftPosition = function (offset) {
+    this.position.add(offset);
+    const thisSpaceDirection = Utils.convertWorldDirectionToObjectSpace(offset, this);
+    thisSpaceDirection.multiplyScalar(offset.length() / thisSpaceDirection.length());
+    thisSpaceDirection.negate();
+    this.children.forEach((child) => child.position.add(thisSpaceDirection));
+    return this;
 };
 import * as Geometry from "./geometry";
 import * as Animation from "./animation";

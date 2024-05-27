@@ -36,6 +36,7 @@ declare namespace Geometry {
     }
     class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
         constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
+        get points(): THREE.Vector3[];
     }
     type Transform = {
         position: THREE.Vector3;
@@ -128,7 +129,7 @@ declare namespace Geometry {
         }): void;
         getClassConfig(): {};
         getAttributes(): LineAttributes;
-        toVector(global: boolean): THREE.Vector3;
+        getVector(global?: boolean): THREE.Vector3;
         static fromAttributes(attributes: LineAttributes): Line;
     }
     /**
@@ -332,15 +333,20 @@ declare namespace Utils {
         THREE.Camera,
         THREE.WebGLRenderer
     ];
-    const furthestInDirection: (object: any, direction: any) => THREE.Vector3;
-    const moveNextTo: (target: any, object: any, direction: any, distance?: number) => void;
-    const moveToRightOf: (target: any, object: any, distance?: number) => void;
-    const moveToLeftOf: (target: any, object: any, distance?: number) => void;
-    const moveAbove: (target: any, object: any, distance?: number) => void;
-    const moveBelow: (target: any, object: any, distance?: number) => void;
+    const convertWorldDirectionToObjectSpace: (worldDirection: THREE.Vector3, object: THREE.Object3D) => THREE.Vector3;
+    const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;
+    const furthestInDirection: (object: any, direction: any, exclude?: THREE.Object3D | Array<THREE.Object3D>) => any;
+    const moveNextTo: (target: THREE.Object3D, object: THREE.Object3D, direction: THREE.Vector3, buffer?: number) => THREE.Object3D<THREE.Event>;
+    const moveToRightOf: (target: any, object: any, distance?: number) => THREE.Object3D<THREE.Event>;
+    const moveToLeftOf: (target: any, object: any, distance?: number) => THREE.Object3D<THREE.Event>;
+    const moveAbove: (target: any, object: any, distance?: number) => THREE.Object3D<THREE.Event>;
+    const moveBelow: (target: any, object: any, distance?: number) => THREE.Object3D<THREE.Event>;
+    const rotate90: (v: THREE.Vector3) => THREE.Vector3;
+    const rotate180: (v: THREE.Vector3) => THREE.Vector3;
+    const rotate270: (v: THREE.Vector3) => THREE.Vector3;
     const getBoundingBoxCenter: (obj: THREE.Object3D, target: THREE.Vector3) => THREE.Vector3;
     const getBoundingBoxHelper: (obj: THREE.Object3D, color: string) => THREE.Box3Helper;
-    const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;
+    const pointAlongCurve: (shape: Geometry.Shape, t: number) => THREE.Vector3;
     const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
     class ShapeFromCurves {
         adjacentThreshold: number;
@@ -365,7 +371,15 @@ declare module "three" {
         moveBelow(target: THREE.Object3D, distance?: any): void;
         setOpacity(opacity: number): THREE.Object3D;
         setInvisible(): THREE.Object3D;
-        setVisible(): THREE.Object3D;
+        setVisible(config?: any): THREE.Object3D;
+        setUpright(): THREE.Object3D;
+        shiftPosition(offset: THREE.Vector3): THREE.Object3D;
+        pointAlongCurve(t: number): THREE.Vector3;
+    }
+    interface Vector3 {
+        rotate90(): THREE.Vector3;
+        rotate180(): THREE.Vector3;
+        rotate270(): THREE.Vector3;
     }
 }
 declare namespace Animation {
@@ -398,7 +412,7 @@ declare namespace Animation {
         addAfter(after: any): void;
     }
     class Shift extends Animation {
-        constructor(object: any, direction: any, config?: any);
+        constructor(object: any, offset: any, config?: any);
     }
     class MoveTo extends Animation {
         target: THREE.Object3D;
@@ -586,7 +600,7 @@ declare namespace Diagram {
         addAfter(after: any): void;
     }
     class Shift extends Animation {
-        constructor(object: any, direction: any, config?: any);
+        constructor(object: any, offset: any, config?: any);
     }
     class MoveTo extends Animation {
         target: THREE.Object3D;
@@ -729,6 +743,7 @@ declare namespace Graphing {
     }
     class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
         constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
+        get points(): THREE.Vector3[];
     }
     type Transform = {
         position: THREE.Vector3;
@@ -821,7 +836,7 @@ declare namespace Graphing {
         }): void;
         getClassConfig(): {};
         getAttributes(): LineAttributes;
-        toVector(global: boolean): THREE.Vector3;
+        getVector(global?: boolean): THREE.Vector3;
         static fromAttributes(attributes: LineAttributes): Line;
     }
     /**

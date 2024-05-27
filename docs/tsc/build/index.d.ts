@@ -11,7 +11,15 @@ declare module "three" {
         moveBelow(target: THREE.Object3D, distance?: any): void;
         setOpacity(opacity: number): THREE.Object3D;
         setInvisible(): THREE.Object3D;
-        setVisible(): THREE.Object3D;
+        setVisible(config?: any): THREE.Object3D;
+        setUpright(): THREE.Object3D;
+        shiftPosition(offset: THREE.Vector3): THREE.Object3D;
+        pointAlongCurve(t: number): THREE.Vector3;
+    }
+    interface Vector3 {
+        rotate90(): THREE.Vector3;
+        rotate180(): THREE.Vector3;
+        rotate270(): THREE.Vector3;
     }
 }
 import * as Geometry from "./geometry";
