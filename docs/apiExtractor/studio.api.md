@@ -25,11 +25,14 @@ export { Animation_2 as Animation }
 
 // @public (undocumented)
 class Animation_3 {
-    constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, }?: {
+    constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, family, reveal, hide, }?: {
         object?: any;
         parent?: any;
         before?: any;
         after?: any;
+        family?: any;
+        reveal?: any;
+        hide?: any;
     });
     // (undocumented)
     addAfter(after: any): void;
@@ -48,15 +51,21 @@ class Animation_3 {
     // (undocumented)
     endTime: number;
     // (undocumented)
+    family: any;
+    // (undocumented)
     finished: boolean;
     // (undocumented)
     func: (elapsedTime: number, deltaTime: number) => void;
+    // (undocumented)
+    hide: any;
     // (undocumented)
     object: any;
     // (undocumented)
     parent: any;
     // (undocumented)
     prevUpdateTime: number;
+    // (undocumented)
+    reveal: any;
     // (undocumented)
     runTime: number;
     // (undocumented)

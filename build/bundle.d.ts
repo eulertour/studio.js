@@ -375,6 +375,20 @@ declare module "three" {
         setUpright(): THREE.Object3D;
         shiftPosition(offset: THREE.Vector3): THREE.Object3D;
         pointAlongCurve(t: number): THREE.Vector3;
+        addComponent(name: string, child: THREE.Object3D): THREE.Object3D;
+        removeComponent(name: string): THREE.Object3D;
+        hideComponent(name: string): THREE.Object3D;
+        revealComponent(name: string): THREE.Object3D;
+        hideComponents(): THREE.Object3D;
+        revealComponents(): THREE.Object3D;
+        hide(): THREE.Object3D;
+        reveal(): THREE.Object3D;
+        revealDescendants(): THREE.Object3D;
+        hideDescendants(): THREE.Object3D;
+        revealAncestors(): THREE.Object3D;
+        hideAncestors(): THREE.Object3D;
+        traverseComponents(f: () => void): void;
+        traverseAncestorComponents(f: () => void): void;
     }
     interface Vector3 {
         rotate90(): THREE.Vector3;
@@ -395,15 +409,23 @@ declare namespace Animation {
         object: any;
         before: any;
         after: any;
+        family: any;
+        reveal: any;
+        hide: any;
         scale: number;
         runTime: number;
         finished: boolean;
         elapsedSinceStart: number;
-        constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after }?: {
+        // family: whether or not the animation will affect the entire family
+        // add: whether or not affected shapes will be added to their parents
+        constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, family, reveal, hide }?: {
             object?: any;
             parent?: any;
             before?: any;
             after?: any;
+            family?: any;
+            reveal?: any;
+            hide?: any;
         });
         setUp(): void;
         tearDown(): void;
@@ -583,15 +605,23 @@ declare namespace Diagram {
         object: any;
         before: any;
         after: any;
+        family: any;
+        reveal: any;
+        hide: any;
         scale: number;
         runTime: number;
         finished: boolean;
         elapsedSinceStart: number;
-        constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after }?: {
+        // family: whether or not the animation will affect the entire family
+        // add: whether or not affected shapes will be added to their parents
+        constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, family, reveal, hide }?: {
             object?: any;
             parent?: any;
             before?: any;
             after?: any;
+            family?: any;
+            reveal?: any;
+            hide?: any;
         });
         setUp(): void;
         tearDown(): void;

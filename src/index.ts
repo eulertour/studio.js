@@ -21,6 +21,20 @@ declare module "three" {
     setUpright(): THREE.Object3D;
     shiftPosition(offset: THREE.Vector3): THREE.Object3D;
     pointAlongCurve(t: number): THREE.Vector3;
+    addComponent(name: string, child: THREE.Object3D): THREE.Object3D;
+    removeComponent(name: string): THREE.Object3D;
+    hideComponent(name: string): THREE.Object3D;
+    revealComponent(name: string): THREE.Object3D;
+    hideComponents(): THREE.Object3D;
+    revealComponents(): THREE.Object3D;
+    hide(): THREE.Object3D;
+    reveal(): THREE.Object3D;
+    revealDescendants(): THREE.Object3D;
+    hideDescendants(): THREE.Object3D;
+    revealAncestors(): THREE.Object3D;
+    hideAncestors(): THREE.Object3D;
+    traverseComponents(f: () => void): void;
+    traverseAncestorComponents(f: () => void): void;
   }
 
   export interface Vector3 {
@@ -86,6 +100,118 @@ THREE.Object3D.prototype.moveBelow = function (
   distance?,
 ) {
   return Utils.moveBelow(target, this, distance);
+};
+
+THREE.Object3D.prototype.addComponent = function (
+  name: string,
+  child: THREE.Object3D & { parentComponent: THREE.Object3D | undefined },
+) {
+  if ((this.components && this.components.includes(name)) || this[name]) {
+    throw new Error(
+      `Failed to add component ${name}: Component or attribute already exists`,
+    );
+  }
+  if (!this.components) {
+    this.components = [];
+  }
+  this.components.push(name);
+  child.parentComponent = this;
+  this[name] = child;
+  this.add(child);
+  return this;
+};
+
+THREE.Object3D.prototype.removeComponent = function (name: string) {
+  if (!this.components || !this.components.includes(name) || !this[name]) {
+    throw new Error(`Failed to remove component ${name}: No such component`);
+  }
+  this.components = this.components.filter(
+    (componentName) => componentName !== name,
+  );
+  this[name].parentComponent = null;
+  this.remove(this[name]);
+  return this;
+};
+
+THREE.Object3D.prototype.reveal = function () {
+  if (!this.parentComponent) {
+    throw new Error("Attempt to reveal a component with no parent");
+  }
+  this.parentComponent.add(this);
+  return this;
+};
+
+THREE.Object3D.prototype.hide = function () {
+  if (!this.parentComponent) {
+    throw new Error("Attempt to hide a component with no parent");
+  }
+  this.parentComponent.remove(this);
+  return this;
+};
+
+THREE.Object3D.prototype.revealDescendants = function () {
+  this.traverseComponents((obj) => obj.parentComponent && obj.reveal());
+  return this;
+};
+
+THREE.Object3D.prototype.hideDescendants = function () {
+  this.traverseComponents((obj) => obj.parentComponent && obj.hide());
+  return this;
+};
+
+THREE.Object3D.prototype.revealAncestors = function () {
+  this.traverseAncestorComponents((obj) => obj.parentComponent && obj.reveal());
+  return this;
+};
+
+THREE.Object3D.prototype.hideAncestors = function () {
+  this.traverseAncestorComponents((obj) => obj.parentComponent && obj.hide());
+  return this;
+};
+
+THREE.Object3D.prototype.revealComponents = function () {
+  if (!this.components) return;
+  this.components.forEach((name) => this.add(this[name]));
+  return this;
+};
+
+THREE.Object3D.prototype.hideComponents = function () {
+  if (!this.components) return;
+  this.components.forEach((name) => this.remove(this[name]));
+  return this;
+};
+
+THREE.Object3D.prototype.revealComponent = function (name: string) {
+  if (!this.components || !this.components.includes(name)) {
+    throw new Error(`Failed to reveal component ${name}: No such component`);
+  }
+  this.components[name].reveal();
+  return this;
+};
+
+THREE.Object3D.prototype.hideComponent = function (name: string) {
+  if (!this.components || !this.components.includes(name)) {
+    throw new Error(`Failed to hide component ${name}: No such component`);
+  }
+  this.components[name].hide();
+  return this;
+};
+
+THREE.Object3D.prototype.traverseComponents = function (
+  f: (o: THREE.Object3D) => void,
+) {
+  f(this);
+  const components = this.components
+    ? this.components.map((name) => this[name])
+    : [];
+  [...components].forEach((obj) => obj && obj.traverseComponents(f));
+};
+
+THREE.Object3D.prototype.traverseAncestorComponents = function (
+  f: (o: THREE.Object3D) => void,
+) {
+  f(this);
+  this.parentComponent && this.parentComponent.traverseAncestorComponents(f);
 };
 
 THREE.Object3D.prototype.setOpacity = function (
@@ -175,6 +301,7 @@ import {
 } from "./MeshLine/MeshLineMaterial";
 import * as Graphing from "./graphing";
 import Frame from "./frame.js";
+import { Object3D } from "three/src/Three.js";
 
 export {
   Geometry,

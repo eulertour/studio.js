@@ -11,15 +11,21 @@ declare class Animation {
     object: any;
     before: any;
     after: any;
+    family: any;
+    reveal: any;
+    hide: any;
     scale: number;
     runTime: number;
     finished: boolean;
     elapsedSinceStart: number;
-    constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, }?: {
+    constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, family, reveal, hide, }?: {
         object?: any;
         parent?: any;
         before?: any;
         after?: any;
+        family?: any;
+        reveal?: any;
+        hide?: any;
     });
     setUp(): void;
     tearDown(): void;

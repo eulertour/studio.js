@@ -15,6 +15,20 @@ declare module "three" {
         setUpright(): THREE.Object3D;
         shiftPosition(offset: THREE.Vector3): THREE.Object3D;
         pointAlongCurve(t: number): THREE.Vector3;
+        addComponent(name: string, child: THREE.Object3D): THREE.Object3D;
+        removeComponent(name: string): THREE.Object3D;
+        hideComponent(name: string): THREE.Object3D;
+        revealComponent(name: string): THREE.Object3D;
+        hideComponents(): THREE.Object3D;
+        revealComponents(): THREE.Object3D;
+        hide(): THREE.Object3D;
+        reveal(): THREE.Object3D;
+        revealDescendants(): THREE.Object3D;
+        hideDescendants(): THREE.Object3D;
+        revealAncestors(): THREE.Object3D;
+        hideAncestors(): THREE.Object3D;
+        traverseComponents(f: () => void): void;
+        traverseAncestorComponents(f: () => void): void;
     }
     interface Vector3 {
         rotate90(): THREE.Vector3;

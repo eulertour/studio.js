@@ -26,11 +26,16 @@ class Animation {
   public object;
   public before;
   public after;
+  public family;
+  public reveal;
+  public hide;
   public scale = 1;
   public runTime = 1;
   public finished = false;
   public elapsedSinceStart = 0;
 
+  // family: whether or not the animation will affect the entire family
+  // add: whether or not affected shapes will be added to their parents
   constructor(
     public func: (elapsedTime: number, deltaTime: number) => void,
     {
@@ -38,17 +43,33 @@ class Animation {
       parent = undefined,
       before = undefined,
       after = undefined,
+      family = undefined,
+      reveal = undefined,
+      hide = undefined,
     } = {},
   ) {
     this.object = object;
     this.parent = parent;
     this.before = before;
     this.after = after;
+    this.family = family;
+    this.reveal = reveal;
+    this.hide = hide;
   }
 
-  setUp() {}
+  setUp() {
+    if (this.reveal && this.object.parentComponent) {
+      this.object.traverseAncestorComponents(
+        (obj) => obj.parentComponent && obj.reveal(),
+      );
+    }
+  }
 
-  tearDown() {}
+  tearDown() {
+    if (this.hide && this.object.parentComponent) {
+      this.object.hide();
+    }
+  }
 
   update(worldTime) {
     if (worldTime <= this.startTime || this.finished) {
@@ -115,7 +136,11 @@ class Shift extends Animation {
       (_elapsedTime, deltaTime) => {
         object.position.add(offset.clone().multiplyScalar(deltaTime));
       },
-      { object, ...config },
+      {
+        object,
+        reveal: true,
+        ...config,
+      },
     );
   }
 }
@@ -135,11 +160,12 @@ class MoveTo extends Animation {
           .copy(this.start)
           .addScaledVector(this.displacement, elapsedTime);
       },
-      { obj, ...config },
+      { obj, reveal: true, ...config },
     );
   }
 
   setUp() {
+    super.setUp();
     this.start = this.obj.position.clone();
 
     const final = new THREE.Vector3();
@@ -156,7 +182,7 @@ class Rotate extends Animation {
       (_elapsedTime, deltaTime) => {
         object.rotation.z += angle * deltaTime;
       },
-      { object, ...config },
+      { object, reveal: true, ...config },
     );
   }
 }
@@ -169,7 +195,7 @@ class Scale extends Animation {
         const scale = THREE.MathUtils.lerp(initialScale, factor, elapsedTime);
         object.scale.set(scale, scale, scale);
       },
-      { object, ...config },
+      { object, reveal: true, ...config },
     );
   }
 }
@@ -184,7 +210,7 @@ class Draw extends Animation {
           }
         });
       },
-      { object, ...config },
+      { object, reveal: true, ...config },
     );
   }
 }
@@ -198,7 +224,7 @@ class Erase extends Animation {
       (elapsedTime) => {
         object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
       },
-      { object, ...config },
+      { object, hide: true, ...config },
     );
   }
 
@@ -209,6 +235,7 @@ class Erase extends Animation {
     if (this.config?.restore) {
       this.object.stroke.material.uniforms.drawRange.value.y = 1;
     }
+    super.tearDown();
   }
 }
 
@@ -244,11 +271,12 @@ class FadeIn extends Animation {
           });
         }
       },
-      { object, ...config },
+      { object, reveal: true, ...config },
     );
   }
 
   setUp() {
+    super.setUp();
     this.object.traverse((child: THREE.Object3D) => {
       if (child instanceof THREE.Mesh) {
         this.initialOpacity.set(child, child.material.opacity);
@@ -295,11 +323,12 @@ class FadeOut extends Animation {
           });
         }
       },
-      { object: objectOrFunc, ...config },
+      { object: objectOrFunc, hide: true, ...config },
     );
   }
 
   setUp() {
+    super.setUp();
     this.object.traverse((child: THREE.Object3D) => {
       if (child instanceof THREE.Mesh) {
         this.initialOpacity.set(child, child.material.opacity);
@@ -321,6 +350,7 @@ class FadeOut extends Animation {
         }
       });
     }
+    super.tearDown();
   }
 }
 

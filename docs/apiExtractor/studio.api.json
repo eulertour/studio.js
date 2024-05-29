@@ -213,11 +213,11 @@
                     },
                     {
                       "kind": "Content",
-                      "text": ", { object, parent, before, after, }?: "
+                      "text": ", { object, parent, before, after, family, reveal, hide, }?: "
                     },
                     {
                       "kind": "Content",
-                      "text": "{\n        object?: any;\n        parent?: any;\n        before?: any;\n        after?: any;\n    }"
+                      "text": "{\n        object?: any;\n        parent?: any;\n        before?: any;\n        after?: any;\n        family?: any;\n        reveal?: any;\n        hide?: any;\n    }"
                     },
                     {
                       "kind": "Content",
@@ -237,7 +237,7 @@
                       "isOptional": false
                     },
                     {
-                      "parameterName": "{ object, parent, before, after, }",
+                      "parameterName": "{ object, parent, before, after, family, reveal, hide, }",
                       "parameterTypeTokenRange": {
                         "startIndex": 3,
                         "endIndex": 4
@@ -524,6 +524,36 @@
                 },
                 {
                   "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Animation#family:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "family: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "any"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "family",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
                   "canonicalReference": "@eulertour/studio!Animation_2.Animation#finished:member",
                   "docComment": "",
                   "excerptTokens": [
@@ -574,6 +604,36 @@
                   "isOptional": false,
                   "releaseTag": "Public",
                   "name": "func",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Animation#hide:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "hide: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "any"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "hide",
                   "propertyTypeTokenRange": {
                     "startIndex": 1,
                     "endIndex": 2
@@ -664,6 +724,36 @@
                   "isOptional": false,
                   "releaseTag": "Public",
                   "name": "prevUpdateTime",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Animation#reveal:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "reveal: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "any"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "reveal",
                   "propertyTypeTokenRange": {
                     "startIndex": 1,
                     "endIndex": 2

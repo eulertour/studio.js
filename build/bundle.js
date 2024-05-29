@@ -98549,7 +98549,9 @@ const modulate = (t, dt) => {
     return [modulatedTime, modulatedDelta];
 };
 class Animation {
-    constructor(func, { object = undefined, parent = undefined, before = undefined, after = undefined, } = {}) {
+    // family: whether or not the animation will affect the entire family
+    // add: whether or not affected shapes will be added to their parents
+    constructor(func, { object = undefined, parent = undefined, before = undefined, after = undefined, family = undefined, reveal = undefined, hide = undefined, } = {}) {
         this.func = func;
         this.scale = 1;
         this.runTime = 1;
@@ -98559,9 +98561,20 @@ class Animation {
         this.parent = parent;
         this.before = before;
         this.after = after;
+        this.family = family;
+        this.reveal = reveal;
+        this.hide = hide;
     }
-    setUp() { }
-    tearDown() { }
+    setUp() {
+        if (this.reveal && this.object.parentComponent) {
+            this.object.traverseAncestorComponents((obj) => obj.parentComponent && obj.reveal());
+        }
+    }
+    tearDown() {
+        if (this.hide && this.object.parentComponent) {
+            this.object.hide();
+        }
+    }
     update(worldTime) {
         if (worldTime <= this.startTime || this.finished) {
             return;
@@ -98623,7 +98636,7 @@ class Shift extends Animation {
     constructor(object, offset, config) {
         super((_elapsedTime, deltaTime) => {
             object.position.add(offset.clone().multiplyScalar(deltaTime));
-        }, Object.assign({ object }, config));
+        }, Object.assign({ object, reveal: true }, config));
     }
 }
 class MoveTo extends Animation {
@@ -98632,11 +98645,12 @@ class MoveTo extends Animation {
             obj.position
                 .copy(this.start)
                 .addScaledVector(this.displacement, elapsedTime);
-        }, Object.assign({ obj }, config));
+        }, Object.assign({ obj, reveal: true }, config));
         this.target = target;
         this.obj = obj;
     }
     setUp() {
+        super.setUp();
         this.start = this.obj.position.clone();
         const final = new Vector3();
         const initial = new Vector3();
@@ -98649,7 +98663,7 @@ class Rotate extends Animation {
     constructor(object, angle, config) {
         super((_elapsedTime, deltaTime) => {
             object.rotation.z += angle * deltaTime;
-        }, Object.assign({ object }, config));
+        }, Object.assign({ object, reveal: true }, config));
     }
 }
 class Scale extends Animation {
@@ -98658,7 +98672,7 @@ class Scale extends Animation {
         super((elapsedTime, deltaTime) => {
             const scale = MathUtils.lerp(initialScale, factor, elapsedTime);
             object.scale.set(scale, scale, scale);
-        }, Object.assign({ object }, config));
+        }, Object.assign({ object, reveal: true }, config));
     }
 }
 class Draw extends Animation {
@@ -98669,14 +98683,14 @@ class Draw extends Animation {
                     child.stroke.material.uniforms.drawRange.value.y = elapsedTime;
                 }
             });
-        }, Object.assign({ object }, config));
+        }, Object.assign({ object, reveal: true }, config));
     }
 }
 class Erase extends Animation {
     constructor(object, config) {
         super((elapsedTime) => {
             object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
-        }, Object.assign({ object }, config));
+        }, Object.assign({ object, hide: true }, config));
         this.object = object;
         this.config = config;
     }
@@ -98688,6 +98702,7 @@ class Erase extends Animation {
         if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
             this.object.stroke.material.uniforms.drawRange.value.y = 1;
         }
+        super.tearDown();
     }
 }
 class FadeIn extends Animation {
@@ -98711,10 +98726,11 @@ class FadeIn extends Animation {
                     mesh.material.opacity = MathUtils.lerp(0, (config === null || config === void 0 ? void 0 : config.preserveOpacity) ? this.initialOpacity.get(mesh) : 1, elapsedTime);
                 });
             }
-        }, Object.assign({ object }, config));
+        }, Object.assign({ object, reveal: true }, config));
         this.initialOpacity = new Map();
     }
     setUp() {
+        super.setUp();
         this.object.traverse((child) => {
             if (child instanceof Mesh) {
                 this.initialOpacity.set(child, child.material.opacity);
@@ -98746,11 +98762,12 @@ class FadeOut extends Animation {
                     mesh.material.opacity = MathUtils.lerp(this.initialOpacity.get(mesh), 0, elapsedTime);
                 });
             }
-        }, Object.assign({ object: objectOrFunc }, config));
+        }, Object.assign({ object: objectOrFunc, hide: true }, config));
         this.config = config;
         this.initialOpacity = new Map();
     }
     setUp() {
+        super.setUp();
         this.object.traverse((child) => {
             if (child instanceof Mesh) {
                 this.initialOpacity.set(child, child.material.opacity);
@@ -98772,6 +98789,7 @@ class FadeOut extends Animation {
                 }
             });
         }
+        super.tearDown();
     }
 }
 class Wait extends Animation {
@@ -99104,6 +99122,95 @@ Object3D.prototype.moveAbove = function (target, distance) {
 };
 Object3D.prototype.moveBelow = function (target, distance) {
     return moveBelow(target, this, distance);
+};
+Object3D.prototype.addComponent = function (name, child) {
+    if ((this.components && this.components.includes(name)) || this[name]) {
+        throw new Error(`Failed to add component ${name}: Component or attribute already exists`);
+    }
+    if (!this.components) {
+        this.components = [];
+    }
+    this.components.push(name);
+    child.parentComponent = this;
+    this[name] = child;
+    this.add(child);
+    return this;
+};
+Object3D.prototype.removeComponent = function (name) {
+    if (!this.components || !this.components.includes(name) || !this[name]) {
+        throw new Error(`Failed to remove component ${name}: No such component`);
+    }
+    this.components = this.components.filter((componentName) => componentName !== name);
+    this[name].parentComponent = null;
+    this.remove(this[name]);
+    return this;
+};
+Object3D.prototype.reveal = function () {
+    if (!this.parentComponent) {
+        throw new Error("Attempt to reveal a component with no parent");
+    }
+    this.parentComponent.add(this);
+    return this;
+};
+Object3D.prototype.hide = function () {
+    if (!this.parentComponent) {
+        throw new Error("Attempt to hide a component with no parent");
+    }
+    this.parentComponent.remove(this);
+    return this;
+};
+Object3D.prototype.revealDescendants = function () {
+    this.traverseComponents((obj) => obj.parentComponent && obj.reveal());
+    return this;
+};
+Object3D.prototype.hideDescendants = function () {
+    this.traverseComponents((obj) => obj.parentComponent && obj.hide());
+    return this;
+};
+Object3D.prototype.revealAncestors = function () {
+    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.reveal());
+    return this;
+};
+Object3D.prototype.hideAncestors = function () {
+    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.hide());
+    return this;
+};
+Object3D.prototype.revealComponents = function () {
+    if (!this.components)
+        return;
+    this.components.forEach((name) => this.add(this[name]));
+    return this;
+};
+Object3D.prototype.hideComponents = function () {
+    if (!this.components)
+        return;
+    this.components.forEach((name) => this.remove(this[name]));
+    return this;
+};
+Object3D.prototype.revealComponent = function (name) {
+    if (!this.components || !this.components.includes(name)) {
+        throw new Error(`Failed to reveal component ${name}: No such component`);
+    }
+    this.components[name].reveal();
+    return this;
+};
+Object3D.prototype.hideComponent = function (name) {
+    if (!this.components || !this.components.includes(name)) {
+        throw new Error(`Failed to hide component ${name}: No such component`);
+    }
+    this.components[name].hide();
+    return this;
+};
+Object3D.prototype.traverseComponents = function (f) {
+    f(this);
+    const components = this.components
+        ? this.components.map((name) => this[name])
+        : [];
+    [...components].forEach((obj) => obj && obj.traverseComponents(f));
+};
+Object3D.prototype.traverseAncestorComponents = function (f) {
+    f(this);
+    this.parentComponent && this.parentComponent.traverseAncestorComponents(f);
 };
 Object3D.prototype.setOpacity = function (opacity, config) {
     let family = true;
