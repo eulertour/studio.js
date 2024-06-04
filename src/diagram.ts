@@ -16,7 +16,7 @@ class Indicator extends THREE.Group {
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
-    config: IndicatorConfig & Style = {}
+    config: IndicatorConfig & Style = {},
   ) {
     const { tickLength = 0.4 } = config;
 
@@ -42,9 +42,7 @@ class Indicator extends THREE.Group {
       config,
     );
 
-    const center = new THREE.Vector3()
-      .addVectors(start, end)
-      .divideScalar(2);
+    const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
     for (const mesh of [this.stem, this.startTick, this.endTick]) {
       mesh.position.sub(center);
       this.add(mesh);
@@ -62,12 +60,12 @@ class Indicator extends THREE.Group {
         const halfTime = elapsedTime / 2;
         this.stem.stroke.material.uniforms.drawRange.value.set(
           0.5 - halfTime,
-          0.5 + halfTime
+          0.5 + halfTime,
         );
         this.startTick.position.set(0, 0, 0).addScaledVector(vec, halfTime);
         this.endTick.position.set(0, 0, 0).addScaledVector(vec, -halfTime);
       },
-      { object: this, ...config }
+      { object: this, ...config },
     );
   }
 }
@@ -75,7 +73,7 @@ class Indicator extends THREE.Group {
 class Congruent extends THREE.Group {
   constructor(
     public ticks: number,
-    config: Style & { tickLength?: number; spacing?: number } = {}
+    config: Style & { tickLength?: number; spacing?: number } = {},
   ) {
     config = Object.assign({ tickLength: 0.25, spacing: 0.3 }, config);
     super();
@@ -85,7 +83,7 @@ class Congruent extends THREE.Group {
       const tick = new Geometry.Line(
         new THREE.Vector3(pos, -config.tickLength / 2, 0),
         new THREE.Vector3(pos, config.tickLength / 2, 0),
-        config
+        config,
       );
       this.add(tick);
     }

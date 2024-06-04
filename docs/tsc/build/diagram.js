@@ -17,9 +17,7 @@ class Indicator extends THREE.Group {
         const negativeTickVector = tickVector.clone().multiplyScalar(-1);
         this.startTick = Geometry.Line.centeredLine(new THREE.Vector3().addVectors(start, tickVector), new THREE.Vector3().addVectors(start, negativeTickVector), config);
         this.endTick = Geometry.Line.centeredLine(new THREE.Vector3().addVectors(end, tickVector), new THREE.Vector3().addVectors(end, negativeTickVector), config);
-        const center = new THREE.Vector3()
-            .addVectors(start, end)
-            .divideScalar(2);
+        const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
         for (const mesh of [this.stem, this.startTick, this.endTick]) {
             mesh.position.sub(center);
             this.add(mesh);

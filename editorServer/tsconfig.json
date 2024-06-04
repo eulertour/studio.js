@@ -4,11 +4,12 @@
     "target": "es2022",
     "lib": ["es2017", "es7", "es6", "dom"],
     "declaration": true,
-    "outDir": ".",
+    "outDir": "build",
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "NodeNext",
   },
+  "include": ["src"],
   "exclude": [
     "node_modules",
     "dist",

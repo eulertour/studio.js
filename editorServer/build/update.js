@@ -2,10 +2,10 @@ import WebSocket from "ws";
 import axios from "axios";
 const isReady = async () => {
     try {
-        await axios.get("http://localhost:8081");
+        await axios.get("http://localhost:8082");
     }
     catch (error) {
-        return false;
+        return error.code !== "ECONNREFUSED";
     }
     return true;
 };
@@ -22,4 +22,4 @@ while (!ready) {
 const ws = new WebSocket("ws://localhost:8082");
 ws.on("error", console.error);
 ws.on("open", () => ws.send("update"));
-ws.on("message", (data) => ws.close());
+ws.on("message", () => ws.close());

@@ -1,17 +1,19 @@
 {
-  "name": "typeserver",
+  "name": "editorServer",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "serve": "node build",
+    "update": "node build/update.js"
   },
   "author": "",
   "license": "ISC",
   "types": "./index.d.ts",
   "dependencies": {
-    "axios": "^1.7.2",
-    "ws": "^8.17.0"
+    "firebase-admin": "^12.1.1",
+    "firebase-tools": "^13.10.2"
   }
 }

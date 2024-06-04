@@ -98977,9 +98977,7 @@ class Indicator extends Group {
         const negativeTickVector = tickVector.clone().multiplyScalar(-1);
         this.startTick = Line.centeredLine(new Vector3().addVectors(start, tickVector), new Vector3().addVectors(start, negativeTickVector), config);
         this.endTick = Line.centeredLine(new Vector3().addVectors(end, tickVector), new Vector3().addVectors(end, negativeTickVector), config);
-        const center = new Vector3()
-            .addVectors(start, end)
-            .divideScalar(2);
+        const center = new Vector3().addVectors(start, end).divideScalar(2);
         for (const mesh of [this.stem, this.startTick, this.endTick]) {
             mesh.position.sub(center);
             this.add(mesh);
