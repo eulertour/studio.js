@@ -55609,10 +55609,10 @@ class MeshLineMaterial extends ShaderMaterial {
         this.uniforms.color.value = value;
     }
     get width() {
-        return this.uniforms.unitWidth.value * 8 * 10;
+        return this.uniforms.unitWidth.value * 4 * 10;
     }
     set width(value) {
-        this.uniforms.unitWidth.value = value / 8 / 10;
+        this.uniforms.unitWidth.value = value / 4 / 10;
     }
 }
 
@@ -55716,7 +55716,7 @@ class Shape extends Group {
         return {
             strokeColor: new Color(0x000000),
             strokeOpacity: 1.0,
-            strokeWidth: 8,
+            strokeWidth: 4,
             fillColor: new Color(0xfffaf0),
             fillOpacity: 0.0,
         };

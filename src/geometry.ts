@@ -67,7 +67,7 @@ abstract class Shape extends THREE.Group {
     return {
       strokeColor: new THREE.Color(0x000000),
       strokeOpacity: 1.0,
-      strokeWidth: 8,
+      strokeWidth: 4,
       fillColor: new THREE.Color(0xfffaf0),
       fillOpacity: 0.0,
     };

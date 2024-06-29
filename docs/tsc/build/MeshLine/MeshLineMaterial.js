@@ -59,10 +59,10 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
         this.uniforms.color.value = value;
     }
     get width() {
-        return this.uniforms.unitWidth.value * 8 * 10;
+        return this.uniforms.unitWidth.value * 4 * 10;
     }
     set width(value) {
-        this.uniforms.unitWidth.value = value / 8 / 10;
+        this.uniforms.unitWidth.value = value / 4 / 10;
     }
 }
 //# sourceMappingURL=MeshLineMaterial.js.map
