@@ -119,14 +119,14 @@ export class SceneController {
         this.userScene.renderer.setAnimationLoop((initialTime) => {
             let lastTime = initialTime;
             this.userScene.renderer.setAnimationLoop((time) => {
-                const standardTickLength = (time - lastTime) / 1000;
-                const endTimeTickLength = this.endTime - this.elapsedTime;
-                if (standardTickLength < endTimeTickLength) {
-                    this.tick(standardTickLength);
+                const elapsedSinceLastFrame = (time - lastTime) / 1000;
+                const lastFrameToEndInterval = this.endTime - this.elapsedTime;
+                if (elapsedSinceLastFrame < lastFrameToEndInterval) {
+                    this.tick(elapsedSinceLastFrame);
                     lastTime = time;
                 }
                 else {
-                    this.tick(endTimeTickLength);
+                    this.tick(lastFrameToEndInterval);
                     this.pause();
                 }
             });
