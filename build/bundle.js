@@ -55124,7 +55124,7 @@ const MESHLINE_VERT = /*glsl*/ `
   varying float vFlag;
   varying float vArrow;
   varying float vBeforeArrow;
-  
+
   float eq(float x, float y) {
     return 1.0 - abs(sign(x - y));
   }
@@ -55135,7 +55135,7 @@ const MESHLINE_VERT = /*glsl*/ `
     return viewportFragment;
   }
 
-  void main()	{
+  void main() {
     vProportion = proportion;
 
     mat4 modelViewProjection = projectionMatrix * modelViewMatrix;
@@ -55166,8 +55166,8 @@ const MESHLINE_VERT = /*glsl*/ `
     segmentNormal *= (2. * bottomTop - 1.);
 
     vec2 fragmentOffset
-      = 0.5 * unitWidth * segmentVec
-      + 0.5 * unitWidth * segmentNormal
+      = 0.75 * unitWidth * segmentVec
+      + 0.75 * unitWidth * segmentNormal
         * (eq(vArrow, 0.) + eq(vArrow, 1.) * 2.618033988);
 
     gl_Position = start * eq(startEnd, 0.) + end * eq(startEnd, 1.);
@@ -55177,8 +55177,7 @@ const MESHLINE_VERT = /*glsl*/ `
     ${ShaderChunk.fog_vertex &&
     /*glsl*/ `vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );`}
     ${ShaderChunk.fog_vertex}
-	}
-`;
+  }`;
 const MESHLINE_FRAG = /*glsl*/ `
   ${ShaderChunk.fog_pars_fragment}
   ${ShaderChunk.logdepthbuf_pars_fragment}
