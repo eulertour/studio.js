@@ -116,8 +116,8 @@ THREE.Object3D.prototype.addComponent = function (
   }
   this.components.push(name);
   child.parentComponent = this;
-  this[name] = child;
   this.add(child);
+  this[name] = child;
   return this;
 };
 
@@ -125,11 +125,13 @@ THREE.Object3D.prototype.removeComponent = function (name: string) {
   if (!this.components || !this.components.includes(name) || !this[name]) {
     throw new Error(`Failed to remove component ${name}: No such component`);
   }
+  const child = this[name];
   this.components = this.components.filter(
-    (componentName) => componentName !== name,
+    (componentName: string) => componentName !== name,
   );
-  this[name].parentComponent = null;
-  this.remove(this[name]);
+  child.parentComponent = undefined;
+  this.remove(child);
+  this[name] = undefined;
   return this;
 };
 
