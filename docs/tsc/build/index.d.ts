@@ -3,6 +3,8 @@ import { SVGLoader } from "./SVGLoader.js";
 import * as Utils from "./utils";
 declare module "three" {
     interface Object3D {
+        vstack(buffer?: number): THREE.Object3D;
+        vspace(distanceBetween?: number): THREE.Object3D;
         setScale(factor: number): THREE.Object3D;
         moveNextTo(target: THREE.Object3D, direction: THREE.Vector3, distance?: any): void;
         moveToRightOf(target: THREE.Object3D, distance?: any): void;

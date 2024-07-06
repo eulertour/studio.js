@@ -334,6 +334,15 @@ declare namespace Utils {
         THREE.WebGLRenderer
     ];
     const convertWorldDirectionToObjectSpace: (worldDirection: THREE.Vector3, object: THREE.Object3D) => THREE.Vector3;
+    /*
+    * Vertically stacks the children of a group.
+    * buffer specifies the length of empty space between each child.
+    */
+    const vstack: (group: THREE.Group, buffer?: number) => THREE.Group;
+    /*
+    * Like vstack, but puts an equal distance between the positions of each child.
+    */
+    const vspace: (group: THREE.Group, distanceBetween?: number) => THREE.Group;
     const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;
     const furthestInDirection: (object: any, direction: any, exclude?: THREE.Object3D | Array<THREE.Object3D>) => any;
     const moveNextTo: (target: THREE.Object3D, object: THREE.Object3D, direction: THREE.Vector3, buffer?: number) => THREE.Object3D<THREE.Event>;
@@ -363,6 +372,8 @@ declare namespace Utils {
 }
 declare module "three" {
     interface Object3D {
+        vstack(buffer?: number): THREE.Object3D;
+        vspace(distanceBetween?: number): THREE.Object3D;
         setScale(factor: number): THREE.Object3D;
         moveNextTo(target: THREE.Object3D, direction: THREE.Vector3, distance?: any): void;
         moveToRightOf(target: THREE.Object3D, distance?: any): void;

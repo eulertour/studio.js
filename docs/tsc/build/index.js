@@ -11,6 +11,12 @@ THREE.Vector3.prototype.rotate180 = function () {
 THREE.Vector3.prototype.rotate270 = function () {
     return Utils.rotate270(this);
 };
+THREE.Object3D.prototype.vstack = function (buffer = 0.2) {
+    return Utils.vstack(this, buffer);
+};
+THREE.Object3D.prototype.vspace = function (distanceBetween) {
+    return Utils.vspace(this, distanceBetween);
+};
 THREE.Object3D.prototype.setScale = function (factor) {
     this.scale.x = factor;
     this.scale.y = factor;
@@ -169,10 +175,6 @@ THREE.Object3D.prototype.setUpright = function () {
 };
 THREE.Object3D.prototype.shiftPosition = function (offset) {
     this.position.add(offset);
-    const thisSpaceDirection = Utils.convertWorldDirectionToObjectSpace(offset, this);
-    thisSpaceDirection.multiplyScalar(offset.length() / thisSpaceDirection.length());
-    thisSpaceDirection.negate();
-    this.children.forEach((child) => child.position.add(thisSpaceDirection));
     return this;
 };
 import * as Geometry from "./geometry";

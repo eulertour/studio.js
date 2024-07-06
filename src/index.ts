@@ -5,6 +5,8 @@ import * as Utils from "./utils";
 
 declare module "three" {
   export interface Object3D {
+    vstack(buffer?: number): THREE.Object3D;
+    vspace(distanceBetween?: number): THREE.Object3D;
     setScale(factor: number): THREE.Object3D;
     moveNextTo(
       target: THREE.Object3D,
@@ -54,6 +56,16 @@ THREE.Vector3.prototype.rotate180 = function (): THREE.Vector3 {
 
 THREE.Vector3.prototype.rotate270 = function (): THREE.Vector3 {
   return Utils.rotate270(this);
+};
+
+THREE.Object3D.prototype.vstack = function (buffer = 0.2): THREE.Object3D {
+  return Utils.vstack(this, buffer);
+};
+
+THREE.Object3D.prototype.vspace = function (
+  distanceBetween?: number,
+): THREE.Object3D {
+  return Utils.vspace(this, distanceBetween);
 };
 
 THREE.Object3D.prototype.setScale = function (factor): THREE.Object3D {
@@ -270,19 +282,6 @@ THREE.Object3D.prototype.shiftPosition = function (
   offset: THREE.Vector3,
 ): THREE.Object3D {
   this.position.add(offset);
-
-  const thisSpaceDirection = Utils.convertWorldDirectionToObjectSpace(
-    offset,
-    this,
-  );
-  thisSpaceDirection.multiplyScalar(
-    offset.length() / thisSpaceDirection.length(),
-  );
-  thisSpaceDirection.negate();
-
-  this.children.forEach((child: THREE.Object3D) =>
-    child.position.add(thisSpaceDirection),
-  );
   return this;
 };
 

@@ -31,6 +31,8 @@ declare const setupCanvas: (canvas: HTMLCanvasElement, config?: (WidthSetupConfi
     viewport?: THREE.Vector4;
 }) => [THREE.Scene, THREE.Camera, THREE.WebGLRenderer];
 declare const convertWorldDirectionToObjectSpace: (worldDirection: THREE.Vector3, object: THREE.Object3D) => THREE.Vector3;
+declare const vstack: (group: THREE.Group, buffer?: number) => THREE.Group;
+declare const vspace: (group: THREE.Group, distanceBetween?: number) => THREE.Group;
 declare const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;
 declare const furthestInDirection: (object: any, direction: any, exclude?: THREE.Object3D | Array<THREE.Object3D>) => any;
 declare const moveNextTo: (target: THREE.Object3D, object: THREE.Object3D, direction: THREE.Vector3, buffer?: number) => THREE.Object3D<THREE.Event>;
@@ -57,4 +59,4 @@ declare class ShapeFromCurves {
     extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until?: THREE.Vector3 | undefined): void;
     finish(): Geometry.Polygon;
 }
-export { getFrameAttributes, setupCanvas, clamp, furthestInDirection, moveToRightOf, moveToLeftOf, moveAbove, moveBelow, moveNextTo, rotate90, rotate180, rotate270, getBoundingBoxCenter, getBoundingBoxHelper, transformBetweenSpaces, convertWorldDirectionToObjectSpace, intersectionsBetween, pointAlongCurve, ShapeFromCurves, BUFFER, RIGHT, LEFT, UP, DOWN, OUT, IN, ORIGIN, };
+export { getFrameAttributes, setupCanvas, clamp, vstack, vspace, furthestInDirection, moveToRightOf, moveToLeftOf, moveAbove, moveBelow, moveNextTo, rotate90, rotate180, rotate270, getBoundingBoxCenter, getBoundingBoxHelper, transformBetweenSpaces, convertWorldDirectionToObjectSpace, intersectionsBetween, pointAlongCurve, ShapeFromCurves, BUFFER, RIGHT, LEFT, UP, DOWN, OUT, IN, ORIGIN, };

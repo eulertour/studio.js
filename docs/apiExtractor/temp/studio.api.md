@@ -824,6 +824,8 @@ declare namespace Utils {
         getFrameAttributes,
         setupCanvas,
         clamp,
+        vstack,
+        vspace,
         furthestInDirection,
         moveToRightOf,
         moveToLeftOf,
@@ -851,6 +853,12 @@ declare namespace Utils {
     }
 }
 export { Utils }
+
+// @public (undocumented)
+const vspace: (group: THREE_2.Group, distanceBetween?: number) => THREE_2.Group;
+
+// @public (undocumented)
+const vstack: (group: THREE_2.Group, buffer?: number) => THREE_2.Group;
 
 // @public (undocumented)
 class Wait extends Animation_3 {

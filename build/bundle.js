@@ -98075,6 +98075,56 @@ const convertWorldDirectionToObjectSpace = (worldDirection, object) => {
     localDirection.normalize();
     return localDirection;
 };
+/*
+ * Vertically stacks the children of a group.
+ * buffer specifies the length of empty space between each child.
+ */
+const vstack = (group, buffer = 0.2) => {
+    if (group.children.length < 2)
+        return group;
+    const center = group.children[0].position.clone();
+    for (let i = 1; i < group.children.length; i++) {
+        group.children[i].position
+            .copy(group.children[i - 1].position)
+            .addScaledVector(DOWN, buffer);
+        center.add(group.children[i].position);
+    }
+    center.divideScalar(group.children.length);
+    group.children.forEach((child) => child.position.sub(center));
+};
+/*
+ * Like vstack, but puts an equal distance between the positions of each child.
+ */
+const vspace = (group, distanceBetween) => {
+    if (group.children.length < 2)
+        return group;
+    const defaultBuffer = 0.2;
+    let defaultSpacing = -Infinity;
+    for (let i = 1; i < group.children.length; i++) {
+        const previous = group.children[i - 1];
+        const previousLowest = furthestInDirection(previous, DOWN);
+        const distanceToBottom = new Vector3()
+            .subVectors(previousLowest, previous.position)
+            .dot(DOWN);
+        const current = group.children[i];
+        const currentTop = furthestInDirection(current, UP);
+        const distanceToTop = new Vector3()
+            .subVectors(currentTop, current.position)
+            .dot(UP);
+        defaultSpacing = Math.max(defaultSpacing, distanceToBottom + distanceToTop + defaultBuffer);
+    }
+    const center = group.children[0].position.clone();
+    for (let i = 1; i < group.children.length; i++) {
+        const previous = group.children[i - 1];
+        const current = group.children[i];
+        current.position
+            .copy(previous.position)
+            .addScaledVector(DOWN, distanceBetween !== null && distanceBetween !== void 0 ? distanceBetween : defaultSpacing);
+        center.add(group.children[i].position);
+    }
+    center.divideScalar(group.children.length);
+    group.children.forEach((child) => child.position.sub(center));
+};
 const transformBetweenSpaces = (from, to, point) => {
     return to.worldToLocal(from.localToWorld(point));
 };
@@ -98532,7 +98582,9 @@ var utils = /*#__PURE__*/Object.freeze({
 	rotate270: rotate270,
 	rotate90: rotate90,
 	setupCanvas: setupCanvas,
-	transformBetweenSpaces: transformBetweenSpaces
+	transformBetweenSpaces: transformBetweenSpaces,
+	vspace: vspace,
+	vstack: vstack
 });
 
 let sigmoid = (x) => 1 / (1 + Math.exp(-x));
@@ -99096,6 +99148,12 @@ Vector3.prototype.rotate180 = function () {
 Vector3.prototype.rotate270 = function () {
     return rotate270(this);
 };
+Object3D.prototype.vstack = function (buffer = 0.2) {
+    return vstack(this, buffer);
+};
+Object3D.prototype.vspace = function (distanceBetween) {
+    return vspace(this, distanceBetween);
+};
 Object3D.prototype.setScale = function (factor) {
     this.scale.x = factor;
     this.scale.y = factor;
@@ -99254,10 +99312,6 @@ Object3D.prototype.setUpright = function () {
 };
 Object3D.prototype.shiftPosition = function (offset) {
     this.position.add(offset);
-    const thisSpaceDirection = convertWorldDirectionToObjectSpace(offset, this);
-    thisSpaceDirection.multiplyScalar(offset.length() / thisSpaceDirection.length());
-    thisSpaceDirection.negate();
-    this.children.forEach((child) => child.position.add(thisSpaceDirection));
     return this;
 };
 

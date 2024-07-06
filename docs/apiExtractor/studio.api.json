@@ -11311,6 +11311,124 @@
               }
             },
             {
+              "kind": "Function",
+              "canonicalReference": "@eulertour/studio!Utils.vspace:function(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "vspace: (group: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Group",
+                  "canonicalReference": "@types/three!Group:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", distanceBetween?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ") => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Group",
+                  "canonicalReference": "@types/three!Group:class"
+                }
+              ],
+              "fileUrlPath": "build/utils.d.ts",
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "group",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "distanceBetween",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": true
+                }
+              ],
+              "name": "vspace"
+            },
+            {
+              "kind": "Function",
+              "canonicalReference": "@eulertour/studio!Utils.vstack:function(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "vstack: (group: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Group",
+                  "canonicalReference": "@types/three!Group:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", buffer?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ") => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Group",
+                  "canonicalReference": "@types/three!Group:class"
+                }
+              ],
+              "fileUrlPath": "build/utils.d.ts",
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "group",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "buffer",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": true
+                }
+              ],
+              "name": "vstack"
+            },
+            {
               "kind": "TypeAlias",
               "canonicalReference": "@eulertour/studio!Utils.WidthSetupConfig:type",
               "docComment": "",
