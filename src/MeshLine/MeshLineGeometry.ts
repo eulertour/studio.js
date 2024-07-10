@@ -60,7 +60,8 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
       } else if (0 <= t2 && t2 <= 1) {
         t = t2;
       } else {
-        throw new Error("No valid solution");
+        console.error(points);
+        throw new Error("Error creating arrow from points: No valid solution");
       }
       points.splice(
         arrowIndex + 1,

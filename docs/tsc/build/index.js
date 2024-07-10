@@ -66,17 +66,30 @@ THREE.Object3D.prototype.removeComponent = function (name) {
 };
 THREE.Object3D.prototype.reveal = function () {
     if (!this.parentComponent) {
-        throw new Error("Attempt to reveal a component with no parent");
+        throw new Error("Attempt to reveal a component with no parent component");
     }
     this.parentComponent.add(this);
     return this;
 };
 THREE.Object3D.prototype.hide = function () {
     if (!this.parentComponent) {
-        throw new Error("Attempt to hide a component with no parent");
+        throw new Error("Attempt to hide a component with no parent component");
     }
     this.parentComponent.remove(this);
     return this;
+};
+THREE.Object3D.prototype.isComponent = function () {
+    return this.parentComponent !== undefined;
+};
+THREE.Object3D.prototype.isRevealed = function () {
+    var _a;
+    if (!this.isComponent()) {
+        throw new Error("Attempt to check revealed status of a non-component");
+    }
+    return (_a = this.parentComponent.children.includes(this)) !== null && _a !== void 0 ? _a : false;
+};
+THREE.Object3D.prototype.isHidden = function () {
+    return !this.isRevealed();
 };
 THREE.Object3D.prototype.revealDescendants = function () {
     this.traverseComponents((obj) => obj.parentComponent && obj.reveal());
@@ -104,20 +117,6 @@ THREE.Object3D.prototype.hideComponents = function () {
     if (!this.components)
         return;
     this.components.forEach((name) => this.remove(this[name]));
-    return this;
-};
-THREE.Object3D.prototype.revealComponent = function (name) {
-    if (!this.components || !this.components.includes(name)) {
-        throw new Error(`Failed to reveal component ${name}: No such component`);
-    }
-    this.components[name].reveal();
-    return this;
-};
-THREE.Object3D.prototype.hideComponent = function (name) {
-    if (!this.components || !this.components.includes(name)) {
-        throw new Error(`Failed to hide component ${name}: No such component`);
-    }
-    this.components[name].hide();
     return this;
 };
 THREE.Object3D.prototype.traverseComponents = function (f) {

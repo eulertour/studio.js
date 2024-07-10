@@ -388,12 +388,13 @@ declare module "three" {
         pointAlongCurve(t: number): THREE.Vector3;
         addComponent(name: string, child: THREE.Object3D): THREE.Object3D;
         removeComponent(name: string): THREE.Object3D;
-        hideComponent(name: string): THREE.Object3D;
-        revealComponent(name: string): THREE.Object3D;
         hideComponents(): THREE.Object3D;
         revealComponents(): THREE.Object3D;
         hide(): THREE.Object3D;
         reveal(): THREE.Object3D;
+        isHidden(): boolean;
+        isRevealed(): boolean;
+        isComponent(): boolean;
         revealDescendants(): THREE.Object3D;
         hideDescendants(): THREE.Object3D;
         revealAncestors(): THREE.Object3D;

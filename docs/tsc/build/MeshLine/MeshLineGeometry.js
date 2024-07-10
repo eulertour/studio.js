@@ -60,7 +60,8 @@ class MeshLineGeometry extends THREE.BufferGeometry {
                 t = t2;
             }
             else {
-                throw new Error("No valid solution");
+                console.error(points);
+                throw new Error("Error creating arrow from points: No valid solution");
             }
             points.splice(arrowIndex + 1, points.length - arrowIndex - 1, aVec.clone().add(vVec.clone().multiplyScalar(t)), points.at(-1));
         }

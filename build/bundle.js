@@ -55365,7 +55365,8 @@ class MeshLineGeometry extends BufferGeometry {
                 t = t2;
             }
             else {
-                throw new Error("No valid solution");
+                console.error(points);
+                throw new Error("Error creating arrow from points: No valid solution");
             }
             points.splice(arrowIndex + 1, points.length - arrowIndex - 1, aVec.clone().add(vVec.clone().multiplyScalar(t)), points.at(-1));
         }
@@ -99203,17 +99204,30 @@ Object3D.prototype.removeComponent = function (name) {
 };
 Object3D.prototype.reveal = function () {
     if (!this.parentComponent) {
-        throw new Error("Attempt to reveal a component with no parent");
+        throw new Error("Attempt to reveal a component with no parent component");
     }
     this.parentComponent.add(this);
     return this;
 };
 Object3D.prototype.hide = function () {
     if (!this.parentComponent) {
-        throw new Error("Attempt to hide a component with no parent");
+        throw new Error("Attempt to hide a component with no parent component");
     }
     this.parentComponent.remove(this);
     return this;
+};
+Object3D.prototype.isComponent = function () {
+    return this.parentComponent !== undefined;
+};
+Object3D.prototype.isRevealed = function () {
+    var _a;
+    if (!this.isComponent()) {
+        throw new Error("Attempt to check revealed status of a non-component");
+    }
+    return (_a = this.parentComponent.children.includes(this)) !== null && _a !== void 0 ? _a : false;
+};
+Object3D.prototype.isHidden = function () {
+    return !this.isRevealed();
 };
 Object3D.prototype.revealDescendants = function () {
     this.traverseComponents((obj) => obj.parentComponent && obj.reveal());
@@ -99241,20 +99255,6 @@ Object3D.prototype.hideComponents = function () {
     if (!this.components)
         return;
     this.components.forEach((name) => this.remove(this[name]));
-    return this;
-};
-Object3D.prototype.revealComponent = function (name) {
-    if (!this.components || !this.components.includes(name)) {
-        throw new Error(`Failed to reveal component ${name}: No such component`);
-    }
-    this.components[name].reveal();
-    return this;
-};
-Object3D.prototype.hideComponent = function (name) {
-    if (!this.components || !this.components.includes(name)) {
-        throw new Error(`Failed to hide component ${name}: No such component`);
-    }
-    this.components[name].hide();
     return this;
 };
 Object3D.prototype.traverseComponents = function (f) {

@@ -25,12 +25,13 @@ declare module "three" {
     pointAlongCurve(t: number): THREE.Vector3;
     addComponent(name: string, child: THREE.Object3D): THREE.Object3D;
     removeComponent(name: string): THREE.Object3D;
-    hideComponent(name: string): THREE.Object3D;
-    revealComponent(name: string): THREE.Object3D;
     hideComponents(): THREE.Object3D;
     revealComponents(): THREE.Object3D;
     hide(): THREE.Object3D;
     reveal(): THREE.Object3D;
+    isHidden(): boolean;
+    isRevealed(): boolean;
+    isComponent(): boolean;
     revealDescendants(): THREE.Object3D;
     hideDescendants(): THREE.Object3D;
     revealAncestors(): THREE.Object3D;
@@ -149,7 +150,7 @@ THREE.Object3D.prototype.removeComponent = function (name: string) {
 
 THREE.Object3D.prototype.reveal = function () {
   if (!this.parentComponent) {
-    throw new Error("Attempt to reveal a component with no parent");
+    throw new Error("Attempt to reveal a component with no parent component");
   }
   this.parentComponent.add(this);
   return this;
@@ -157,10 +158,25 @@ THREE.Object3D.prototype.reveal = function () {
 
 THREE.Object3D.prototype.hide = function () {
   if (!this.parentComponent) {
-    throw new Error("Attempt to hide a component with no parent");
+    throw new Error("Attempt to hide a component with no parent component");
   }
   this.parentComponent.remove(this);
   return this;
+};
+
+THREE.Object3D.prototype.isComponent = function () {
+  return this.parentComponent !== undefined;
+};
+
+THREE.Object3D.prototype.isRevealed = function () {
+  if (!this.isComponent()) {
+    throw new Error("Attempt to check revealed status of a non-component");
+  }
+  return this.parentComponent.children.includes(this) ?? false;
+};
+
+THREE.Object3D.prototype.isHidden = function () {
+  return !this.isRevealed();
 };
 
 THREE.Object3D.prototype.revealDescendants = function () {
@@ -192,22 +208,6 @@ THREE.Object3D.prototype.revealComponents = function () {
 THREE.Object3D.prototype.hideComponents = function () {
   if (!this.components) return;
   this.components.forEach((name) => this.remove(this[name]));
-  return this;
-};
-
-THREE.Object3D.prototype.revealComponent = function (name: string) {
-  if (!this.components || !this.components.includes(name)) {
-    throw new Error(`Failed to reveal component ${name}: No such component`);
-  }
-  this.components[name].reveal();
-  return this;
-};
-
-THREE.Object3D.prototype.hideComponent = function (name: string) {
-  if (!this.components || !this.components.includes(name)) {
-    throw new Error(`Failed to hide component ${name}: No such component`);
-  }
-  this.components[name].hide();
   return this;
 };
 

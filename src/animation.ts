@@ -15,6 +15,20 @@ const modulate = (t, dt): [number, number] => {
   return [modulatedTime, modulatedDelta];
 };
 
+interface IAnimation {
+  constructor(
+    func: (elapsedTime: number, deltaTime: number) => void,
+    config?: any,
+  ): Animation;
+}
+
+interface INoConfigAnimation {
+  constructor(
+    func: (elapsedTime: number, deltaTime: number) => void,
+    config?: any,
+  ): Animation;
+}
+
 class Animation {
   public scene;
   public startTime: number;
