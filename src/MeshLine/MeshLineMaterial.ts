@@ -74,10 +74,10 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
   }
 
   get width() {
-    return this.uniforms.unitWidth.value * 30;
+    return this.uniforms.unitWidth.value * 32.5;
   }
 
   set width(value) {
-    this.uniforms.unitWidth.value = value / 30;
+    this.uniforms.unitWidth.value = value / 32.5;
   }
 }
