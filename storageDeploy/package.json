@@ -5,10 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "deploy-emulator": "FIREBASE_STORAGE_EMULATOR_HOST=127.0.0.1:9199 node build",
-    "deploy-staging": "node build --staging",
-    "deploy-production": "node build --production",
+    "deploy-emulator": "FIREBASE_STORAGE_EMULATOR_HOST=127.0.0.1:9199 tsm src/index.ts",
+    "deploy-staging": "tsm src/index.ts --staging",
+    "deploy-production": "tsm src/index.ts --production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -17,5 +16,8 @@
   "dependencies": {
     "firebase-admin": "^12.1.1",
     "firebase-tools": "^13.10.2"
+  },
+  "devDependencies": {
+    "tsm": "^2.3.0"
   }
 }
