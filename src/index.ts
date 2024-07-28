@@ -119,32 +119,28 @@ THREE.Object3D.prototype.addComponent = function (
   name: string,
   child: THREE.Object3D & { parentComponent: THREE.Object3D | undefined },
 ) {
-  if ((this.components && this.components.includes(name)) || this[name]) {
+  if (this.components && this.components.has(name)) {
     throw new Error(
       `Failed to add component ${name}: Component or attribute already exists`,
     );
   }
   if (!this.components) {
-    this.components = [];
+    this.components = new Map();
   }
-  this.components.push(name);
+  this.components.set(name, child);
   child.parentComponent = this;
   this.add(child);
-  this[name] = child;
   return this;
 };
 
 THREE.Object3D.prototype.removeComponent = function (name: string) {
-  if (!this.components || !this.components.includes(name) || !this[name]) {
+  if (!this.components || !this.components.has(name)) {
     throw new Error(`Failed to remove component ${name}: No such component`);
   }
-  const child = this[name];
-  this.components = this.components.filter(
-    (componentName: string) => componentName !== name,
-  );
+  const child = this.components.get(name);
+  this.components.delete(name);
   child.parentComponent = undefined;
   this.remove(child);
-  this[name] = undefined;
   return this;
 };
 
@@ -201,13 +197,13 @@ THREE.Object3D.prototype.hideAncestors = function () {
 
 THREE.Object3D.prototype.revealComponents = function () {
   if (!this.components) return;
-  this.components.forEach((name) => this.add(this[name]));
+  this.components.values.forEach((child) => this.add(child));
   return this;
 };
 
 THREE.Object3D.prototype.hideComponents = function () {
   if (!this.components) return;
-  this.components.forEach((name) => this.remove(this[name]));
+  this.components.values.forEach((child) => this.remove(child));
   return this;
 };
 
@@ -215,10 +211,9 @@ THREE.Object3D.prototype.traverseComponents = function (
   f: (o: THREE.Object3D) => void,
 ) {
   f(this);
-  const components = this.components
-    ? this.components.map((name) => this[name])
-    : [];
-  [...components].forEach((obj) => obj && obj.traverseComponents(f));
+  this.components.values.forEach(
+    (child) => child && child.traverseComponents(f),
+  );
 };
 
 THREE.Object3D.prototype.traverseAncestorComponents = function (
@@ -226,6 +221,28 @@ THREE.Object3D.prototype.traverseAncestorComponents = function (
 ) {
   f(this);
   this.parentComponent && this.parentComponent.traverseAncestorComponents(f);
+};
+
+const component = (
+  _: undefined,
+  context: ClassFieldDecoratorContext<Object3D, Object3D> & {
+    name: string;
+    private: boolean;
+    static: boolean;
+  },
+): ((this: Object3D, value: Object3D) => Object3D) | void => {
+  return function (this: Object3D, defaultValue: Object3D) {
+    Object.defineProperty(this, context.name, {
+      get: () => {
+        return this.components.get(context.name);
+      },
+      set: (value) => {
+        if (value === undefined) return;
+        this.addComponent(context.name, value);
+      },
+    });
+    return defaultValue;
+  };
 };
 
 THREE.Object3D.prototype.setOpacity = function (
@@ -305,6 +322,7 @@ import Frame from "./frame.js";
 import { Object3D } from "three/src/Three.js";
 
 export {
+  component,
   Geometry,
   Animation,
   Text,

@@ -11,8 +11,8 @@
   "declarationMap": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm run buildSource && npm run buildApi",
-    "buildSource": "rollup --config rollup.config.ts --configPlugin typescript",
+    "build": "npm run build:source && npm run buildApi",
+    "build:source": "rollup --config rollup.config.ts --configPlugin typescript",
     "buildApi": "npm run transpileJs && npm run extractApi && npm run parseJson",
     "transpileJs": "cd docs/tsc && tsc",
     "extractApi": "api-extractor run --config docs/apiExtractor/api-extractor.json --local --verbose",
@@ -20,9 +20,9 @@
     "genTypes": "rollup --config rollup.three-types.config.ts --configPlugin typescript",
     "serve": "cross-env PORT=8081 serve . --cors",
     "dev": "nodemon -w src -e js,ts --exec 'npm run build'",
-    "dev:source": "nodemon -w src -e js,ts --exec 'npm run buildSource'",
+    "dev:source": "nodemon -w src -e js,ts --exec 'npm run build:source'",
     "serve:examples": "serve -S examples",
-    "build:examples": "([ -d examples/build ] && ln -sfh $(pwd)/build/ examples/build); tsc -p ./examples",
+    "build:examples": "([ ! -d examples/build ] && ln -sfh $(pwd)/build/ examples/build); tsc -p ./examples",
     "dev:examples": "nodemon -w examples/src -e js,ts --exec 'npm run build:examples'",
     "storage-dev": "nodemon -w src -e js,ts --exec 'npm run build && npm run storage-deploy-emulator'",
     "storage-deploy-emulator": "npm --prefix storageDeploy run deploy-emulator"
