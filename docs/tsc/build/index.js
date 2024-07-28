@@ -50,6 +50,10 @@ THREE.Object3D.prototype.addComponent = function (name, child) {
     this.components.set(name, child);
     child.parentComponent = this;
     this.add(child);
+    Object.defineProperty(this, name, {
+        get: () => this.components.get(name),
+        configurable: true,
+    });
     return this;
 };
 THREE.Object3D.prototype.removeComponent = function (name) {
@@ -60,6 +64,7 @@ THREE.Object3D.prototype.removeComponent = function (name) {
     this.components.delete(name);
     child.parentComponent = undefined;
     this.remove(child);
+    Object.defineProperty(this, name, { value: undefined });
     return this;
 };
 THREE.Object3D.prototype.reveal = function () {
@@ -128,14 +133,13 @@ THREE.Object3D.prototype.traverseAncestorComponents = function (f) {
 const component = (_, context) => {
     return function (defaultValue) {
         Object.defineProperty(this, context.name, {
-            get: () => {
-                return this.components.get(context.name);
-            },
             set: (value) => {
                 if (value === undefined)
                     return;
                 this.addComponent(context.name, value);
             },
+            get: () => this.components.get(context.name),
+            configurable: true,
         });
         return defaultValue;
     };

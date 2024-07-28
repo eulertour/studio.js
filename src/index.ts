@@ -130,6 +130,10 @@ THREE.Object3D.prototype.addComponent = function (
   this.components.set(name, child);
   child.parentComponent = this;
   this.add(child);
+  Object.defineProperty(this, name, {
+    get: () => this.components.get(name),
+    configurable: true,
+  });
   return this;
 };
 
@@ -141,6 +145,7 @@ THREE.Object3D.prototype.removeComponent = function (name: string) {
   this.components.delete(name);
   child.parentComponent = undefined;
   this.remove(child);
+  Object.defineProperty(this, name, { value: undefined });
   return this;
 };
 
@@ -236,13 +241,12 @@ const component = (
     defaultValue: Object3D,
   ) {
     Object.defineProperty(this, context.name, {
-      get: () => {
-        return this.components.get(context.name);
-      },
       set: (value) => {
         if (value === undefined) return;
         this.addComponent(context.name, value);
       },
+      get: () => this.components.get(context.name),
+      configurable: true,
     });
     return defaultValue;
   };

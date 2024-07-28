@@ -5,14 +5,12 @@
                 "imports": {
                     "@eulertour/studio": "./build/bundle.js",
                     "basic": "./dist/basic.js",
-                    "line": "./dist/line.js",
-                    "componentDecorator": "./dist/componentDecorator.js",
                     "pythagorean": "./dist/oldProjects/pythagorean.js"
                 }
             }
         </script>
         <script type="module">
-            import Example from "componentDecorator";
+            import Example from "basic";
             import { SceneController } from "@eulertour/studio";
 
             const canvas = document.getElementById("canvas");
