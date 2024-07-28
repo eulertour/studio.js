@@ -4,6 +4,7 @@
 
 ```ts
 
+import { Object3D } from 'three/src/Three.js';
 import { SVGLoader } from './SVGLoader.js';
 import * as THREE_2 from 'three';
 
@@ -169,6 +170,13 @@ class Circle extends Arc {
 
 // @public (undocumented)
 const clamp: (num: any, min: any, max: any) => number;
+
+// @public (undocumented)
+export const component: (_: undefined, context: ClassFieldDecoratorContext<Object3D, Object3D> & {
+    name: string;
+    private: boolean;
+    static: boolean;
+}) => void | ((this: Object3D, value: Object3D) => Object3D);
 
 // @public (undocumented)
 class Congruent extends THREE_2.Group {

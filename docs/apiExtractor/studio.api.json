@@ -2281,6 +2281,113 @@
           }
         },
         {
+          "kind": "Function",
+          "canonicalReference": "@eulertour/studio!component:function(1)",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "component: (_: "
+            },
+            {
+              "kind": "Content",
+              "text": "undefined"
+            },
+            {
+              "kind": "Content",
+              "text": ", context: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ClassFieldDecoratorContext",
+              "canonicalReference": "!ClassFieldDecoratorContext:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "Object3D",
+              "canonicalReference": "@types/three!Object3D:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "Object3D",
+              "canonicalReference": "@types/three!Object3D:class"
+            },
+            {
+              "kind": "Content",
+              "text": "> & {\n    name: string;\n    private: boolean;\n    static: boolean;\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ") => "
+            },
+            {
+              "kind": "Content",
+              "text": "void | ((this: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Object3D",
+              "canonicalReference": "@types/three!Object3D:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", value: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Object3D",
+              "canonicalReference": "@types/three!Object3D:class"
+            },
+            {
+              "kind": "Content",
+              "text": ") => "
+            },
+            {
+              "kind": "Reference",
+              "text": "Object3D",
+              "canonicalReference": "@types/three!Object3D:class"
+            },
+            {
+              "kind": "Content",
+              "text": ")"
+            }
+          ],
+          "fileUrlPath": "build/index.d.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 10,
+            "endIndex": 17
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "_",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "context",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 9
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "component"
+        },
+        {
           "kind": "Namespace",
           "canonicalReference": "@eulertour/studio!Constants:namespace",
           "docComment": "",

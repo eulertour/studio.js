@@ -125,6 +125,21 @@ THREE.Object3D.prototype.traverseAncestorComponents = function (f) {
     f(this);
     this.parentComponent && this.parentComponent.traverseAncestorComponents(f);
 };
+const component = (_, context) => {
+    return function (defaultValue) {
+        Object.defineProperty(this, context.name, {
+            get: () => {
+                return this.components.get(context.name);
+            },
+            set: (value) => {
+                if (value === undefined)
+                    return;
+                this.addComponent(context.name, value);
+            },
+        });
+        return defaultValue;
+    };
+};
 THREE.Object3D.prototype.setOpacity = function (opacity, config) {
     let family = true;
     if (config && config.family === false) {
@@ -181,5 +196,5 @@ import * as Constants from "./constants";
 import { setCameraDimensions, setCanvasViewport, } from "./MeshLine/MeshLineMaterial";
 import * as Graphing from "./graphing";
 import Frame from "./frame.js";
-export { Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };
+export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };
 //# sourceMappingURL=index.js.map

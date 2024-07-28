@@ -99263,6 +99263,21 @@ Object3D.prototype.traverseAncestorComponents = function (f) {
     f(this);
     this.parentComponent && this.parentComponent.traverseAncestorComponents(f);
 };
+const component = (_, context) => {
+    return function (defaultValue) {
+        Object.defineProperty(this, context.name, {
+            get: () => {
+                return this.components.get(context.name);
+            },
+            set: (value) => {
+                if (value === undefined)
+                    return;
+                this.addComponent(context.name, value);
+            },
+        });
+        return defaultValue;
+    };
+};
 Object3D.prototype.setOpacity = function (opacity, config) {
     let family = true;
     if (config && config.family === false) {
@@ -99310,4 +99325,4 @@ Object3D.prototype.shiftPosition = function (offset) {
     return this;
 };
 
-export { animation as Animation, constants as Constants, diagram as Diagram, frame as Frame, geometry as Geometry, graphing as Graphing, SVGLoader, SceneController, THREE, text as Text, utils as Utils, setCameraDimensions, setCanvasViewport, setupCanvas };
+export { animation as Animation, constants as Constants, diagram as Diagram, frame as Frame, geometry as Geometry, graphing as Graphing, SVGLoader, SceneController, THREE, text as Text, utils as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };

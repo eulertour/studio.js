@@ -39,6 +39,11 @@ declare module "three" {
         rotate270(): THREE.Vector3;
     }
 }
+declare const component: (_: undefined, context: ClassFieldDecoratorContext<Object3D, Object3D> & {
+    name: string;
+    private: boolean;
+    static: boolean;
+}) => void | ((this: Object3D, value: Object3D) => Object3D);
 import * as Geometry from "./geometry";
 import * as Animation from "./animation";
 import * as Text from "./text";
@@ -49,4 +54,5 @@ import * as Constants from "./constants";
 import { setCameraDimensions, setCanvasViewport } from "./MeshLine/MeshLineMaterial";
 import * as Graphing from "./graphing";
 import Frame from "./frame.js";
-export { Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, type StudioScene, type AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };
+import { Object3D } from "three/src/Three.js";
+export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, type StudioScene, type AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };

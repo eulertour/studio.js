@@ -231,7 +231,10 @@ const component = (
     static: boolean;
   },
 ): ((this: Object3D, value: Object3D) => Object3D) | void => {
-  return function (this: Object3D, defaultValue: Object3D) {
+  return function (
+    this: Object3D & { components: Map<string, Object3D> },
+    defaultValue: Object3D,
+  ) {
     Object.defineProperty(this, context.name, {
       get: () => {
         return this.components.get(context.name);

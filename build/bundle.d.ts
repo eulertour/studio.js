@@ -1,6 +1,7 @@
 /// <reference types="three" />
 import * as THREE from "three";
 import { SVGLoader } from "./SVGLoader.js";
+import { Object3D } from "three/src/Three.js";
 declare namespace Geometry {
     class MeshLineGeometry extends THREE.BufferGeometry {
         #private;
@@ -408,6 +409,11 @@ declare module "three" {
         rotate270(): THREE.Vector3;
     }
 }
+declare const component: (_: undefined, context: ClassFieldDecoratorContext<Object3D, Object3D> & {
+    name: string;
+    private: boolean;
+    static: boolean;
+}) => void | ((this: Object3D, value: Object3D) => Object3D);
 declare namespace Animation {
     class Animation {
         func: (elapsedTime: number, deltaTime: number) => void;
@@ -1072,4 +1078,4 @@ declare const _default: {
     };
 };
 declare const Frame: typeof _default;
-export { Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, StudioScene, AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame };
+export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, StudioScene, AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame };
