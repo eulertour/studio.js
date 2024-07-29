@@ -1036,44 +1036,44 @@ declare namespace Graphing {
     }
 }
 declare const _default: {
-    horizontal: {
-        nhd: {
-            aspectRatio: number;
-            coordinateHeight: number;
-            pixelHeight: number;
-            frameRate: number;
+    readonly horizontal: {
+        readonly nhd: {
+            readonly aspectRatio: number;
+            readonly coordinateHeight: 8;
+            readonly pixelHeight: 360;
+            readonly frameRate: 30;
         };
-        hd: {
-            aspectRatio: number;
-            coordinateHeight: number;
-            pixelHeight: number;
-            frameRate: number;
+        readonly hd: {
+            readonly aspectRatio: number;
+            readonly coordinateHeight: 8;
+            readonly pixelHeight: 720;
+            readonly frameRate: 30;
         };
-        fhd: {
-            aspectRatio: number;
-            coordinateHeight: number;
-            pixelHeight: number;
-            frameRate: number;
+        readonly fhd: {
+            readonly aspectRatio: number;
+            readonly coordinateHeight: 8;
+            readonly pixelHeight: 1080;
+            readonly frameRate: 60;
         };
     };
-    vertical: {
-        nhd: {
-            aspectRatio: number;
-            coordinateWidth: number;
-            pixelWidth: number;
-            frameRate: number;
+    readonly vertical: {
+        readonly nhd: {
+            readonly aspectRatio: number;
+            readonly coordinateWidth: 8;
+            readonly pixelWidth: 360;
+            readonly frameRate: 30;
         };
-        hd: {
-            aspectRatio: number;
-            coordinateWidth: number;
-            pixelWidth: number;
-            frameRate: number;
+        readonly hd: {
+            readonly aspectRatio: number;
+            readonly coordinateWidth: 8;
+            readonly pixelWidth: 720;
+            readonly frameRate: 30;
         };
-        fhd: {
-            aspectRatio: number;
-            coordinateWidth: number;
-            pixelWidth: number;
-            frameRate: number;
+        readonly fhd: {
+            readonly aspectRatio: number;
+            readonly coordinateWidth: 8;
+            readonly pixelWidth: 1080;
+            readonly frameRate: 60;
         };
     };
 };

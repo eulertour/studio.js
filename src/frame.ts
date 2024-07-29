@@ -39,4 +39,4 @@ export default {
       frameRate: 60,
     },
   },
-};
+} as const;
