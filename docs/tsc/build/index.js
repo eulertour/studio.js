@@ -111,20 +111,21 @@ THREE.Object3D.prototype.hideAncestors = function () {
     return this;
 };
 THREE.Object3D.prototype.revealComponents = function () {
-    if (!this.components)
-        return;
-    this.components.values.forEach((child) => this.add(child));
+    this.components &&
+        this.components.values().forEach((child) => this.add(child));
     return this;
 };
 THREE.Object3D.prototype.hideComponents = function () {
-    if (!this.components)
-        return;
-    this.components.values.forEach((child) => this.remove(child));
+    this.components &&
+        this.components.values().forEach((child) => this.remove(child));
     return this;
 };
 THREE.Object3D.prototype.traverseComponents = function (f) {
     f(this);
-    this.components.values.forEach((child) => child && child.traverseComponents(f));
+    this.components &&
+        this.components
+            .values()
+            .forEach((child) => child && child.traverseComponents(f));
 };
 THREE.Object3D.prototype.traverseAncestorComponents = function (f) {
     f(this);

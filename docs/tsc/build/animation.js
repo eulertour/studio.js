@@ -30,7 +30,7 @@ class Animation {
     }
     setUp() {
         if (this.reveal && this.object.parentComponent) {
-            this.object.traverseAncestorComponents((obj) => obj.parentComponent && obj.reveal());
+            this.object.revealAncestors();
         }
     }
     tearDown() {
