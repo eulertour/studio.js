@@ -3,7 +3,7 @@
   "description": "three.js code to use in Euler Studio",
   "author": "eulertour",
   "license": "ISC",
-  "version": "1.0.32",
+  "version": "1.0.33",
   "type": "module",
   "main": "./build/bundle.js",
   "typings": "./build/bundle.d.ts",
