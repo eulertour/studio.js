@@ -1,4 +1,4 @@
-import { Geometry } from "@eulertour/studio";
+import { Geometry, THREE } from "@eulertour/studio";
 
 export default class Example {
   constructor(

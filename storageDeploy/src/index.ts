@@ -34,7 +34,11 @@ const config: AppOptions =
         storageBucket: "euler-studio.appspot.com",
       };
 
-const ignoreRegexes = [/.*node_modules.*/, /.*examples\/dist.*/];
+const ignoreRegexes = [
+  /.*node_modules.*/,
+  /.*examples\/dist.*/,
+  /.*examples\/build.*/,
+];
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const app = initializeApp(config);
 const bucket = getStorage(app).bucket();
@@ -47,6 +51,12 @@ await uploadDirectory(
 
 await uploadDirectory(
   join(currentDirectory, "../../src"),
+  bucket,
+  ignoreRegexes,
+);
+
+await uploadDirectory(
+  join(currentDirectory, "../../examples"),
   bucket,
   ignoreRegexes,
 );
@@ -66,11 +76,13 @@ async function uploadDirectory(
   });
 
   for (const file of files) {
-    if (ignoreRegexes.some((pattern) => file.name.match(pattern))) continue;
+    const fullPath = join(file.path, file.name);
+
     if (file.isDirectory()) continue;
+    if (ignoreRegexes.some((pattern) => fullPath.match(pattern))) continue;
+    console.log(fullPath);
 
     const destination = join("studio.js", basename(directory), file.name);
-
-    await bucket.upload(join(file.path, file.name), { destination });
+    await bucket.upload(fullPath, { destination });
   }
 }
