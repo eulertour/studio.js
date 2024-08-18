@@ -80,7 +80,6 @@ async function uploadDirectory(
 
     if (file.isDirectory()) continue;
     if (ignoreRegexes.some((pattern) => fullPath.match(pattern))) continue;
-    console.log(fullPath);
 
     const destination = join("studio.js", basename(directory), file.name);
     await bucket.upload(fullPath, { destination });
