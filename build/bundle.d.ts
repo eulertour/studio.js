@@ -1,7 +1,6 @@
 /// <reference types="three" />
 import * as THREE from "three";
 import { SVGLoader } from "./SVGLoader.js";
-import { Object3D } from "three/src/Three.js";
 declare namespace Geometry {
     class MeshLineGeometry extends THREE.BufferGeometry {
         #private;
@@ -385,9 +384,11 @@ declare module "three" {
         setInvisible(): THREE.Object3D;
         setVisible(config?: any): THREE.Object3D;
         setUpright(): THREE.Object3D;
-        shiftPosition(offset: THREE.Vector3): THREE.Object3D;
+        recenter(center: THREE.Vector3): THREE.Object3D;
+        reorient(zRotation: number): void;
         pointAlongCurve(t: number): THREE.Vector3;
         addComponent(name: string, child: THREE.Object3D): THREE.Object3D;
+        updateComponent(name: string, child: THREE.Object3D): void;
         removeComponent(name: string): THREE.Object3D;
         hideComponents(): THREE.Object3D;
         revealComponents(): THREE.Object3D;
@@ -400,6 +401,8 @@ declare module "three" {
         hideDescendants(): THREE.Object3D;
         revealAncestors(): THREE.Object3D;
         hideAncestors(): THREE.Object3D;
+        revealLineage(): THREE.Object3D;
+        hideLineage(): THREE.Object3D;
         traverseComponents(f: () => void): void;
         traverseAncestorComponents(f: () => void): void;
     }
@@ -407,13 +410,13 @@ declare module "three" {
         rotate90(): THREE.Vector3;
         rotate180(): THREE.Vector3;
         rotate270(): THREE.Vector3;
+        transformBetweenSpaces(from: THREE.Object3D, to: THREE.Object3D): THREE.Vector3;
     }
 }
-declare const component: (_: undefined, context: ClassFieldDecoratorContext<Object3D, Object3D> & {
-    name: string;
-    private: boolean;
-    static: boolean;
-}) => void | ((this: Object3D, value: Object3D) => Object3D);
+type ComponentParent = THREE.Object3D & {
+    components?: Map<string, THREE.Object3D>;
+};
+declare function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 declare namespace Animation {
     class Animation {
         func: (elapsedTime: number, deltaTime: number) => void;
@@ -465,7 +468,7 @@ declare namespace Animation {
     class Rotate extends Animation {
         constructor(object: any, angle: any, config?: any);
     }
-    class Scale extends Animation {
+    class SetScale extends Animation {
         constructor(object: any, factor: any, config?: any);
     }
     class Draw extends Animation {
@@ -661,7 +664,7 @@ declare namespace Diagram {
     class Rotate extends Animation {
         constructor(object: any, angle: any, config?: any);
     }
-    class Scale extends Animation {
+    class SetScale extends Animation {
         constructor(object: any, factor: any, config?: any);
     }
     class Draw extends Animation {

@@ -13,7 +13,7 @@ const MODE = process.argv.join(" ").includes("--production")
 
 let ready = false;
 
-while (!ready) {
+while (MODE === "emulator" && !ready) {
   const response = await fetch("http://localhost:9199").catch(() => null);
   ready = response?.status == 501;
 
@@ -70,6 +70,7 @@ async function uploadDirectory(
   bucket: Bucket,
   ignoreRegexes: RegExp[],
 ) {
+  console.log("Uploading ", directory);
   const files = await readdir(directory, {
     recursive: true,
     withFileTypes: true,

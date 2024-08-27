@@ -3,20 +3,24 @@ import { Animation } from "./animation";
 import { setupCanvas, } from "./utils";
 import { setCanvasViewport, setCameraDimensions, } from "./MeshLine/MeshLineMaterial";
 export class SceneController {
+    UserScene;
+    animationIndex = 0;
+    deltaTime = 0;
+    elapsedTime = 0;
+    firstFrame = true;
+    paused = true;
+    fps = 60;
+    timePrecision = 1e5;
+    startTime = 0;
+    endTime = Infinity;
+    loopAnimations = [];
+    finishedAnimationCount = 0;
+    userScene;
+    three = THREE;
+    viewport;
+    aspectRatio;
     constructor(UserScene, canvasRef, config) {
         this.UserScene = UserScene;
-        this.animationIndex = 0;
-        this.deltaTime = 0;
-        this.elapsedTime = 0;
-        this.firstFrame = true;
-        this.paused = true;
-        this.fps = 60;
-        this.timePrecision = 1e5;
-        this.startTime = 0;
-        this.endTime = Infinity;
-        this.loopAnimations = [];
-        this.finishedAnimationCount = 0;
-        this.three = THREE;
         this.viewport = config.viewport;
         this.aspectRatio = config.aspectRatio;
         this.userScene = new UserScene(...setupCanvas(canvasRef, config));
@@ -102,7 +106,6 @@ export class SceneController {
             this.loopAnimations.forEach((animation) => animation.update(roundedTime));
         }
         catch (err) {
-            this.userScene.renderer.setAnimationLoop(null);
             throw new Error(`Error executing user animation: ${err.toString()}`);
         }
         const newFinishedAnimationCount = this.loopAnimations.reduce((acc, cur) => acc + (cur.finished ? 1 : 0), 0);

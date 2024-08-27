@@ -1948,12 +1948,12 @@
             },
             {
               "kind": "Class",
-              "canonicalReference": "@eulertour/studio!Animation_2.Scale:class",
+              "canonicalReference": "@eulertour/studio!Animation_2.SetScale:class",
               "docComment": "",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class Scale extends "
+                  "text": "declare class SetScale extends "
                 },
                 {
                   "kind": "Reference",
@@ -1968,13 +1968,13 @@
               "fileUrlPath": "build/animation.d.ts",
               "releaseTag": "Public",
               "isAbstract": false,
-              "name": "Scale",
+              "name": "SetScale",
               "preserveMemberOrder": false,
               "members": [
                 {
                   "kind": "Constructor",
-                  "canonicalReference": "@eulertour/studio!Animation_2.Scale:constructor(1)",
-                  "docComment": "/**\n * Constructs a new instance of the `Scale` class\n */\n",
+                  "canonicalReference": "@eulertour/studio!Animation_2.SetScale:constructor(1)",
+                  "docComment": "/**\n * Constructs a new instance of the `SetScale` class\n */\n",
                   "excerptTokens": [
                     {
                       "kind": "Content",
@@ -2287,20 +2287,12 @@
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "component: (_: "
-            },
-            {
-              "kind": "Content",
-              "text": "undefined"
-            },
-            {
-              "kind": "Content",
-              "text": ", context: "
+              "text": "declare function component(_: "
             },
             {
               "kind": "Reference",
-              "text": "ClassFieldDecoratorContext",
-              "canonicalReference": "!ClassFieldDecoratorContext:interface"
+              "text": "ClassAccessorDecoratorTarget",
+              "canonicalReference": "!ClassAccessorDecoratorTarget:interface"
             },
             {
               "kind": "Content",
@@ -2308,8 +2300,8 @@
             },
             {
               "kind": "Reference",
-              "text": "Object3D",
-              "canonicalReference": "@types/three!Object3D:class"
+              "text": "ComponentParent",
+              "canonicalReference": "@eulertour/studio!~ComponentParent:type"
             },
             {
               "kind": "Content",
@@ -2317,53 +2309,75 @@
             },
             {
               "kind": "Reference",
-              "text": "Object3D",
+              "text": "THREE.Object3D",
               "canonicalReference": "@types/three!Object3D:class"
             },
             {
               "kind": "Content",
-              "text": "> & {\n    name: string;\n    private: boolean;\n    static: boolean;\n}"
+              "text": ">"
             },
             {
               "kind": "Content",
-              "text": ") => "
-            },
-            {
-              "kind": "Content",
-              "text": "void | ((this: "
+              "text": ", context: "
             },
             {
               "kind": "Reference",
-              "text": "Object3D",
-              "canonicalReference": "@types/three!Object3D:class"
+              "text": "ClassAccessorDecoratorContext",
+              "canonicalReference": "!ClassAccessorDecoratorContext:interface"
             },
             {
               "kind": "Content",
-              "text": ", value: "
+              "text": "<"
             },
             {
               "kind": "Reference",
-              "text": "Object3D",
-              "canonicalReference": "@types/three!Object3D:class"
+              "text": "ComponentParent",
+              "canonicalReference": "@eulertour/studio!~ComponentParent:type"
             },
             {
               "kind": "Content",
-              "text": ") => "
+              "text": ", "
             },
             {
               "kind": "Reference",
-              "text": "Object3D",
+              "text": "THREE.Object3D",
               "canonicalReference": "@types/three!Object3D:class"
             },
             {
               "kind": "Content",
-              "text": ")"
+              "text": ">"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "ClassAccessorDecoratorResult",
+              "canonicalReference": "!ClassAccessorDecoratorResult:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "ComponentParent",
+              "canonicalReference": "@eulertour/studio!~ComponentParent:type"
+            },
+            {
+              "kind": "Content",
+              "text": ", any>"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
             }
           ],
           "fileUrlPath": "build/index.d.ts",
           "returnTypeTokenRange": {
-            "startIndex": 10,
-            "endIndex": 17
+            "startIndex": 15,
+            "endIndex": 19
           },
           "releaseTag": "Public",
           "overloadIndex": 1,
@@ -2372,15 +2386,15 @@
               "parameterName": "_",
               "parameterTypeTokenRange": {
                 "startIndex": 1,
-                "endIndex": 2
+                "endIndex": 7
               },
               "isOptional": false
             },
             {
               "parameterName": "context",
               "parameterTypeTokenRange": {
-                "startIndex": 3,
-                "endIndex": 9
+                "startIndex": 8,
+                "endIndex": 14
               },
               "isOptional": false
             }

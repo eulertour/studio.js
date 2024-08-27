@@ -15,6 +15,10 @@ const getFillGeometry = (points) => {
  * An abstract class representing a generalized shape.
  */
 class Shape extends THREE.Group {
+    fill;
+    stroke;
+    curveEndIndices;
+    arrow;
     constructor(points, config = {}) {
         super();
         config = Object.assign(Shape.defaultStyle(), config);
@@ -102,7 +106,10 @@ class Shape extends THREE.Group {
             throw Error("Recursive Shape.clone() isn't implemented.");
         }
         const cloneFunc = this.constructor;
-        const clone = new cloneFunc(...this.getCloneAttributes(), Object.assign(Object.assign({}, this.getStyle()), this.getClassConfig()));
+        const clone = new cloneFunc(...this.getCloneAttributes(), {
+            ...this.getStyle(),
+            ...this.getClassConfig(),
+        });
         THREE.Object3D.prototype.copy.call(clone, this, false);
         return clone;
     }
@@ -193,8 +200,10 @@ class Shape extends THREE.Group {
  * @example line.ts
  */
 class Line extends Shape {
+    start;
+    end;
     constructor(start, end, config = {}) {
-        config = Object.assign(Object.assign({}, Line.defaultConfig()), config);
+        config = { ...Line.defaultConfig(), ...config };
         super([start, end], config);
         this.start = start;
         this.end = end;
@@ -202,7 +211,7 @@ class Line extends Shape {
         this.curveEndIndices = [[0, 1]];
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { arrow: false });
+        return { ...super.defaultConfig(), arrow: false };
     }
     static centeredLine(start, end, config = {}) {
         const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
@@ -241,8 +250,10 @@ class Line extends Shape {
  * @example arrow.ts
  */
 class Arrow extends Line {
+    start;
+    end;
     constructor(start, end, config = {}) {
-        super(start, end, Object.assign(Object.assign(Object.assign({}, Arrow.defaultConfig()), config), { arrow: true }));
+        super(start, end, { ...Arrow.defaultConfig(), ...config, arrow: true });
         this.start = start;
         this.end = end;
     }
@@ -259,7 +270,7 @@ class Arrow extends Line {
  */
 class Polyline extends Shape {
     constructor(points, config = {}) {
-        super(points, Object.assign(Object.assign(Object.assign({}, Polyline.defaultConfig()), config), { fillOpacity: 0 }));
+        super(points, { ...Polyline.defaultConfig(), ...config, fillOpacity: 0 });
         this.curveEndIndices = [[0, 1]];
     }
     reshape(points, config = {}) {
@@ -284,8 +295,11 @@ class Polyline extends Shape {
  * @example arc.ts
  */
 class Arc extends Shape {
+    radius;
+    angle;
+    closed;
     constructor(radius = 1, angle = Math.PI / 2, config = {}) {
-        config = Object.assign(Object.assign({}, Arc.defaultConfig()), config);
+        config = { ...Arc.defaultConfig(), ...config };
         let points = [];
         let negative = false;
         if (angle < 0) {
@@ -323,7 +337,7 @@ class Arc extends Shape {
         }
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { closed: false });
+        return { ...super.defaultConfig(), closed: false };
     }
     reshape(radius = 1, angle = Math.PI / 2, config = {}) {
         this.radius = radius;
@@ -375,7 +389,7 @@ class Arc extends Shape {
  */
 class Circle extends Arc {
     constructor(radius = 1, config = {}) {
-        super(radius, 2 * Math.PI, Object.assign(Object.assign({}, Circle.defaultConfig()), config));
+        super(radius, 2 * Math.PI, { ...Circle.defaultConfig(), ...config });
     }
     reshape(radius, config = {}) {
         this.radius = radius;
@@ -412,12 +426,17 @@ class Circle extends Arc {
  */
 class Point extends Circle {
     constructor(position = ORIGIN, config = {}) {
-        config = Object.assign(Object.assign({ fillColor: new THREE.Color("black"), fillOpacity: 1 }, Point.defaultConfig()), config);
+        config = {
+            fillColor: new THREE.Color("black"),
+            fillOpacity: 1,
+            ...Point.defaultConfig(),
+            ...config,
+        };
         super(config.radius, config);
         this.position.set(position.x, position.y, 0);
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { radius: 0.08 });
+        return { ...super.defaultConfig(), radius: 0.08 };
     }
     getAttributes() {
         return {
@@ -438,7 +457,7 @@ class Point extends Circle {
  */
 class Polygon extends Shape {
     constructor(points, config = {}) {
-        super(points, Object.assign(Object.assign({}, Polygon.defaultConfig()), config));
+        super(points, { ...Polygon.defaultConfig(), ...config });
         this.curveEndIndices = [];
         for (let i = 0; i < points.length - 1; i++) {
             this.curveEndIndices.push([i, i + 1]);
@@ -464,6 +483,8 @@ class Polygon extends Shape {
  * @example rectangle.ts
  */
 class Rectangle extends Shape {
+    width;
+    height;
     constructor(width = 4, height = 2, config = {}) {
         super([
             new THREE.Vector3(-width / 2, height / 2, 0),
@@ -471,7 +492,7 @@ class Rectangle extends Shape {
             new THREE.Vector3(width / 2, -height / 2, 0),
             new THREE.Vector3(-width / 2, -height / 2, 0),
             new THREE.Vector3(-width / 2, height / 2, 0),
-        ], Object.assign(Object.assign({}, Rectangle.defaultConfig()), config));
+        ], { ...Rectangle.defaultConfig(), ...config });
         this.width = width;
         this.height = height;
     }
@@ -517,8 +538,9 @@ class Rectangle extends Shape {
  * @example square.ts
  */
 class Square extends Rectangle {
+    sideLength;
     constructor(sideLength = 2, config = {}) {
-        super(sideLength, sideLength, Object.assign(Object.assign({}, Square.defaultConfig()), config));
+        super(sideLength, sideLength, { ...Square.defaultConfig(), ...config });
         this.sideLength = sideLength;
     }
     reshape(sideLength, config = {}) {

@@ -11,6 +11,9 @@ THREE.Vector3.prototype.rotate180 = function () {
 THREE.Vector3.prototype.rotate270 = function () {
     return Utils.rotate270(this);
 };
+THREE.Vector3.prototype.transformBetweenSpaces = function (from, to) {
+    return Utils.transformBetweenSpaces(from, to, this);
+};
 THREE.Object3D.prototype.vstack = function (buffer = 0.2) {
     return Utils.vstack(this, buffer);
 };
@@ -52,9 +55,13 @@ THREE.Object3D.prototype.addComponent = function (name, child) {
     this.add(child);
     Object.defineProperty(this, name, {
         get: () => this.components.get(name),
+        set: (value) => this.setComponent(name, value),
         configurable: true,
     });
     return this;
+};
+THREE.Object3D.prototype.updateComponent = function (name, child) {
+    throw new Error("Not implemented");
 };
 THREE.Object3D.prototype.removeComponent = function (name) {
     if (!this.components || !this.components.has(name)) {
@@ -85,11 +92,10 @@ THREE.Object3D.prototype.isComponent = function () {
     return this.parentComponent !== undefined;
 };
 THREE.Object3D.prototype.isRevealed = function () {
-    var _a;
     if (!this.isComponent()) {
         throw new Error("Attempt to check revealed status of a non-component");
     }
-    return (_a = this.parentComponent.children.includes(this)) !== null && _a !== void 0 ? _a : false;
+    return this.parentComponent.children.includes(this) ?? false;
 };
 THREE.Object3D.prototype.isHidden = function () {
     return !this.isRevealed();
@@ -111,40 +117,47 @@ THREE.Object3D.prototype.hideAncestors = function () {
     return this;
 };
 THREE.Object3D.prototype.revealComponents = function () {
-    this.components &&
-        this.components.values().forEach((child) => this.add(child));
+    this.components && this.components.forEach((child) => this.add(child));
     return this;
 };
 THREE.Object3D.prototype.hideComponents = function () {
-    this.components &&
-        this.components.values().forEach((child) => this.remove(child));
+    this.components && this.components.forEach((child) => this.remove(child));
     return this;
 };
 THREE.Object3D.prototype.traverseComponents = function (f) {
     f(this);
     this.components &&
-        this.components
-            .values()
-            .forEach((child) => child && child.traverseComponents(f));
+        this.components.forEach((child) => child && child.traverseComponents(f));
 };
 THREE.Object3D.prototype.traverseAncestorComponents = function (f) {
     f(this);
     this.parentComponent && this.parentComponent.traverseAncestorComponents(f);
 };
-const component = (_, context) => {
-    return function (defaultValue) {
-        Object.defineProperty(this, context.name, {
-            set: (value) => {
-                if (value === undefined)
-                    return;
-                this.addComponent(context.name, value);
-            },
-            get: () => this.components.get(context.name),
-            configurable: true,
-        });
-        return defaultValue;
-    };
+THREE.Object3D.prototype.revealLineage = function () {
+    this.revealAncestors();
+    this.revealDescendants();
+    return this;
 };
+THREE.Object3D.prototype.hideLineage = function () {
+    this.hideAncestors();
+    this.hideDescendants();
+    return this;
+};
+function component(_, context) {
+    const propertyName = String(context.name);
+    return {
+        set(value) {
+            if (value === undefined)
+                return;
+            this.addComponent(propertyName, value);
+        },
+        get() {
+            if (this.components === undefined)
+                return undefined;
+            return this.components.get(propertyName);
+        },
+    };
+}
 THREE.Object3D.prototype.setOpacity = function (opacity, config) {
     let family = true;
     if (config && config.family === false) {
@@ -187,10 +200,15 @@ THREE.Object3D.prototype.setUpright = function () {
     this.quaternion.copy(inverseQuaternion);
     return this;
 };
-THREE.Object3D.prototype.shiftPosition = function (offset) {
+THREE.Object3D.prototype.recenter = function (globalPosition) {
+    const localPosition = globalPosition.clone();
+    this.worldToLocal(localPosition);
+    const offset = new THREE.Vector3().subVectors(localPosition, this.position);
     this.position.add(offset);
+    this.children.forEach((child) => child.position.sub(offset));
     return this;
 };
+THREE.Object3D.prototype.reorient = function () { };
 import * as Geometry from "./geometry";
 import * as Animation from "./animation";
 import * as Text from "./text";

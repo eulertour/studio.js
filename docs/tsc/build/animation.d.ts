@@ -47,7 +47,7 @@ declare class MoveTo extends Animation {
 declare class Rotate extends Animation {
     constructor(object: any, angle: any, config?: any);
 }
-declare class Scale extends Animation {
+declare class SetScale extends Animation {
     constructor(object: any, factor: any, config?: any);
 }
 declare class Draw extends Animation {
@@ -74,4 +74,4 @@ declare class FadeOut extends Animation {
 declare class Wait extends Animation {
     constructor(config?: any);
 }
-export { Animation, Shift, MoveTo, Rotate, Scale, Draw, Erase, FadeIn, FadeOut, Wait, };
+export { Animation, Shift, MoveTo, Rotate, SetScale, Draw, Erase, FadeIn, FadeOut, Wait, };

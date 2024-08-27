@@ -4,7 +4,6 @@
 
 ```ts
 
-import { Object3D } from 'three/src/Three.js';
 import { SVGLoader } from './SVGLoader.js';
 import * as THREE_2 from 'three';
 
@@ -14,7 +13,7 @@ declare namespace Animation_2 {
         Shift,
         MoveTo,
         Rotate,
-        Scale,
+        SetScale,
         Draw,
         Erase,
         FadeIn,
@@ -171,12 +170,10 @@ class Circle extends Arc {
 // @public (undocumented)
 const clamp: (num: any, min: any, max: any) => number;
 
+// Warning: (ae-forgotten-export) The symbol "ComponentParent" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
-export const component: (_: undefined, context: ClassFieldDecoratorContext<Object3D, Object3D> & {
-    name: string;
-    private: boolean;
-    static: boolean;
-}) => void | ((this: Object3D, value: Object3D) => Object3D);
+export function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE_2.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE_2.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 
 // @public (undocumented)
 class Congruent extends THREE_2.Group {
@@ -551,11 +548,6 @@ const rotate270: (v: THREE_2.Vector3) => THREE_2.Vector3;
 const rotate90: (v: THREE_2.Vector3) => THREE_2.Vector3;
 
 // @public (undocumented)
-class Scale extends Animation_3 {
-    constructor(object: any, factor: any, config?: any);
-}
-
-// @public (undocumented)
 export class SceneController {
     constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: (WidthSetupConfig | HeightSetupConfig) & {
         viewport?: THREE_2.Vector4;
@@ -617,6 +609,11 @@ export const setCameraDimensions: (camera: THREE_2.OrthographicCamera) => void;
 
 // @public (undocumented)
 export const setCanvasViewport: (viewport: THREE_2.Vector4) => void;
+
+// @public (undocumented)
+class SetScale extends Animation_3 {
+    constructor(object: any, factor: any, config?: any);
+}
 
 // @public (undocumented)
 export const setupCanvas: (canvas: HTMLCanvasElement, config?: (WidthSetupConfig | HeightSetupConfig) & {

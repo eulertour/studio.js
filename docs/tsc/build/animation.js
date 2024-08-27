@@ -12,14 +12,28 @@ const modulate = (t, dt) => {
     return [modulatedTime, modulatedDelta];
 };
 class Animation {
+    func;
+    scene;
+    startTime;
+    endTime;
+    prevUpdateTime;
+    beforeFunc;
+    afterFunc;
+    parent;
+    object;
+    before;
+    after;
+    family;
+    reveal;
+    hide;
+    scale = 1;
+    runTime = 1;
+    finished = false;
+    elapsedSinceStart = 0;
     // family: whether or not the animation will affect the entire family
     // add: whether or not affected shapes will be added to their parents
     constructor(func, { object = undefined, parent = undefined, before = undefined, after = undefined, family = undefined, reveal = undefined, hide = undefined, } = {}) {
         this.func = func;
-        this.scale = 1;
-        this.runTime = 1;
-        this.finished = false;
-        this.elapsedSinceStart = 0;
         this.object = object;
         this.parent = parent;
         this.before = before;
@@ -99,16 +113,24 @@ class Shift extends Animation {
     constructor(object, offset, config) {
         super((_elapsedTime, deltaTime) => {
             object.position.add(offset.clone().multiplyScalar(deltaTime));
-        }, Object.assign({ object, reveal: true }, config));
+        }, {
+            object,
+            reveal: true,
+            ...config,
+        });
     }
 }
 class MoveTo extends Animation {
+    target;
+    obj;
+    start;
+    displacement;
     constructor(target, obj, config) {
         super((elapsedTime) => {
             obj.position
                 .copy(this.start)
                 .addScaledVector(this.displacement, elapsedTime);
-        }, Object.assign({ obj, reveal: true }, config));
+        }, { obj, reveal: true, ...config });
         this.target = target;
         this.obj = obj;
     }
@@ -126,16 +148,16 @@ class Rotate extends Animation {
     constructor(object, angle, config) {
         super((_elapsedTime, deltaTime) => {
             object.rotation.z += angle * deltaTime;
-        }, Object.assign({ object, reveal: true }, config));
+        }, { object, reveal: true, ...config });
     }
 }
-class Scale extends Animation {
+class SetScale extends Animation {
     constructor(object, factor, config) {
         const initialScale = object.scale.x;
         super((elapsedTime, deltaTime) => {
             const scale = THREE.MathUtils.lerp(initialScale, factor, elapsedTime);
             object.scale.set(scale, scale, scale);
-        }, Object.assign({ object, reveal: true }, config));
+        }, { object, reveal: true, ...config });
     }
 }
 class Draw extends Animation {
@@ -146,29 +168,31 @@ class Draw extends Animation {
                     child.stroke.material.uniforms.drawRange.value.y = elapsedTime;
                 }
             });
-        }, Object.assign({ object, reveal: true }, config));
+        }, { object, reveal: true, ...config });
     }
 }
 class Erase extends Animation {
+    object;
+    config;
     constructor(object, config) {
         super((elapsedTime) => {
             object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
-        }, Object.assign({ object, hide: true }, config));
+        }, { object, hide: true, ...config });
         this.object = object;
         this.config = config;
     }
     tearDown() {
-        var _a, _b;
-        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
+        if (this.config?.remove) {
             this.object.parent.remove(this.object);
         }
-        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
+        if (this.config?.restore) {
             this.object.stroke.material.uniforms.drawRange.value.y = 1;
         }
         super.tearDown();
     }
 }
 class FadeIn extends Animation {
+    initialOpacity = new Map();
     constructor(object, config) {
         let family = true;
         if (config && config.family === false) {
@@ -178,7 +202,7 @@ class FadeIn extends Animation {
             if (family) {
                 this.object.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
-                        child.material.opacity = THREE.MathUtils.lerp(0, (config === null || config === void 0 ? void 0 : config.preserveOpacity) ? this.initialOpacity.get(child) : 1, elapsedTime);
+                        child.material.opacity = THREE.MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(child) : 1, elapsedTime);
                     }
                 });
             }
@@ -186,11 +210,10 @@ class FadeIn extends Animation {
                 [this.object.stroke, this.object.fill].forEach((mesh) => {
                     if (!mesh)
                         return;
-                    mesh.material.opacity = THREE.MathUtils.lerp(0, (config === null || config === void 0 ? void 0 : config.preserveOpacity) ? this.initialOpacity.get(mesh) : 1, elapsedTime);
+                    mesh.material.opacity = THREE.MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(mesh) : 1, elapsedTime);
                 });
             }
-        }, Object.assign({ object, reveal: true }, config));
-        this.initialOpacity = new Map();
+        }, { object, reveal: true, ...config });
     }
     setUp() {
         super.setUp();
@@ -202,6 +225,8 @@ class FadeIn extends Animation {
     }
 }
 class FadeOut extends Animation {
+    config;
+    initialOpacity = new Map();
     constructor(objectOrFunc, config) {
         let family = true;
         if (config && config.family === false) {
@@ -225,9 +250,8 @@ class FadeOut extends Animation {
                     mesh.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), 0, elapsedTime);
                 });
             }
-        }, Object.assign({ object: objectOrFunc, hide: true }, config));
+        }, { object: objectOrFunc, hide: true, ...config });
         this.config = config;
-        this.initialOpacity = new Map();
     }
     setUp() {
         super.setUp();
@@ -238,11 +262,10 @@ class FadeOut extends Animation {
         });
     }
     tearDown() {
-        var _a, _b;
-        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
+        if (this.config?.remove) {
             this.object.parent.remove(this.object);
         }
-        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
+        if (this.config?.restore) {
             this.object.traverse((child) => {
                 if (child instanceof THREE.Mesh) {
                     if (!this.initialOpacity.has(child)) {
@@ -260,5 +283,5 @@ class Wait extends Animation {
         super(() => { }, config);
     }
 }
-export { Animation, Shift, MoveTo, Rotate, Scale, Draw, Erase, FadeIn, FadeOut, Wait, };
+export { Animation, Shift, MoveTo, Rotate, SetScale, Draw, Erase, FadeIn, FadeOut, Wait, };
 //# sourceMappingURL=animation.js.map

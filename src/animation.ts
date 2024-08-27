@@ -199,7 +199,7 @@ class Rotate extends Animation {
   }
 }
 
-class Scale extends Animation {
+class SetScale extends Animation {
   constructor(object, factor, config?) {
     const initialScale = object.scale.x;
     super(
@@ -377,7 +377,7 @@ export {
   Shift,
   MoveTo,
   Rotate,
-  Scale,
+  SetScale,
   Draw,
   Erase,
   FadeIn,

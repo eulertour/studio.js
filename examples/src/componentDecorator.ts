@@ -1,16 +1,15 @@
 import {
   THREE,
-  component,
   Geometry,
   StudioScene,
   Text,
+  component,
 } from "@eulertour/studio";
 
 class LabeledSquare extends Geometry.Square {
   labelScale = 0.65;
 
-  @component
-  label: Text.Text;
+  @component accessor label: Text.Text;
 
   constructor(sideLength: number) {
     super(sideLength);

@@ -153,7 +153,6 @@ export class SceneController {
         Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
       this.loopAnimations.forEach((animation) => animation.update(roundedTime));
     } catch (err: any) {
-      this.userScene.renderer.setAnimationLoop(null);
       throw new Error(`Error executing user animation: ${err.toString()}`);
     }
 

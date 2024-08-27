@@ -3,6 +3,11 @@ import { Animation } from "./animation";
 import * as Geometry from "./geometry";
 import { OUT } from "./utils";
 class Indicator extends THREE.Group {
+    start;
+    end;
+    startTick;
+    endTick;
+    stem;
     constructor(start, end, config = {}) {
         const { tickLength = 0.4 } = config;
         super();
@@ -34,10 +39,11 @@ class Indicator extends THREE.Group {
             this.stem.stroke.material.uniforms.drawRange.value.set(0.5 - halfTime, 0.5 + halfTime);
             this.startTick.position.set(0, 0, 0).addScaledVector(vec, halfTime);
             this.endTick.position.set(0, 0, 0).addScaledVector(vec, -halfTime);
-        }, Object.assign({ object: this }, config));
+        }, { object: this, ...config });
     }
 }
 class Congruent extends THREE.Group {
+    ticks;
     constructor(ticks, config = {}) {
         config = Object.assign({ tickLength: 0.25, spacing: 0.3 }, config);
         super();
