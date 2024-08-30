@@ -200,26 +200,46 @@ THREE.Object3D.prototype.isRevealed = function () {
 };
 
 THREE.Object3D.prototype.isHidden = function () {
+  if (!this.isComponent()) {
+    throw new Error("Attempt to check revealed status of a non-component");
+  }
   return !this.isRevealed();
 };
 
-THREE.Object3D.prototype.revealDescendants = function () {
-  this.traverseComponents((obj) => obj.parentComponent && obj.reveal());
+THREE.Object3D.prototype.revealDescendants = function ({
+  includeSelf = false,
+} = {}) {
+  this.traverseComponents((obj) => obj.parentComponent && obj.reveal(), {
+    includeSelf,
+  });
   return this;
 };
 
-THREE.Object3D.prototype.hideDescendants = function () {
-  this.traverseComponents((obj) => obj.parentComponent && obj.hide());
+THREE.Object3D.prototype.hideDescendants = function ({
+  includeSelf = false,
+} = {}) {
+  this.traverseComponents((obj) => obj.parentComponent && obj.hide(), {
+    includeSelf,
+  });
   return this;
 };
 
-THREE.Object3D.prototype.revealAncestors = function () {
-  this.traverseAncestorComponents((obj) => obj.parentComponent && obj.reveal());
+THREE.Object3D.prototype.revealAncestors = function ({
+  includeSelf = false,
+} = {}) {
+  this.traverseAncestorComponents(
+    (obj) => obj.parentComponent && obj.reveal(),
+    { includeSelf },
+  );
   return this;
 };
 
-THREE.Object3D.prototype.hideAncestors = function () {
-  this.traverseAncestorComponents((obj) => obj.parentComponent && obj.hide());
+THREE.Object3D.prototype.hideAncestors = function ({
+  includeSelf = false,
+} = {}) {
+  this.traverseAncestorComponents((obj) => obj.parentComponent && obj.hide(), {
+    includeSelf,
+  });
   return this;
 };
 
@@ -235,28 +255,35 @@ THREE.Object3D.prototype.hideComponents = function () {
 
 THREE.Object3D.prototype.traverseComponents = function (
   f: (o: THREE.Object3D) => void,
+  config?: { includeSelf: boolean },
 ) {
-  f(this);
-  this.components &&
-    this.components.forEach((child) => child && child.traverseComponents(f));
+  if (config?.includeSelf) f(this);
+  if (!this.components) return;
+  this.components.forEach((child) => {
+    f(child);
+    child.traverseComponents(f);
+  });
 };
 
 THREE.Object3D.prototype.traverseAncestorComponents = function (
   f: (o: THREE.Object3D) => void,
+  config?: { includeSelf: boolean },
 ) {
-  f(this);
-  this.parentComponent && this.parentComponent.traverseAncestorComponents(f);
+  if (config?.includeSelf) f(this);
+  if (!this.parentComponent) return;
+  f(this.parentComponent);
+  this.parentComponent.traverseAncestorComponents(f);
 };
 
 THREE.Object3D.prototype.revealLineage = function () {
-  this.revealAncestors();
-  this.revealDescendants();
+  this.revealAncestors({ includeSelf: true });
+  this.revealDescendants({ includeSelf: true });
   return this;
 };
 
 THREE.Object3D.prototype.hideLineage = function () {
-  this.hideAncestors();
-  this.hideDescendants();
+  this.hideAncestors({ includeSelf: true });
+  this.hideDescendants({ includeSelf: true });
   return this;
 };
 

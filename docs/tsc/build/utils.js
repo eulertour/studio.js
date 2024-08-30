@@ -136,7 +136,7 @@ const vspace = (group, distanceBetween) => {
         const current = group.children[i];
         current.position
             .copy(previous.position)
-            .addScaledVector(DOWN, distanceBetween ?? defaultSpacing);
+            .addScaledVector(DOWN, distanceBetween !== null && distanceBetween !== void 0 ? distanceBetween : defaultSpacing);
         center.add(group.children[i].position);
     }
     center.divideScalar(group.children.length);
@@ -159,6 +159,7 @@ const furthestInDirection = (object, direction, exclude = []) => {
     let maxDot = -Infinity;
     let maxDotPoint = unitDirection.clone().negate().setLength(Infinity);
     object.traverse((obj) => {
+        var _a, _b;
         let exclusionCheckObj = obj;
         while (exclusionCheckObj) {
             if (excludeArray.includes(exclusionCheckObj)) {
@@ -181,7 +182,7 @@ const furthestInDirection = (object, direction, exclude = []) => {
             }
         }
         else if (obj instanceof THREE.Mesh &&
-            obj.parent?.parent?.parent instanceof Text.Text) {
+            ((_b = (_a = obj.parent) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.parent) instanceof Text.Text) {
             const pointsArray = obj.geometry.attributes.position.array;
             const pointContainer = new THREE.Vector3();
             for (let i = 0; i < pointsArray.length; i += 3) {
@@ -390,13 +391,14 @@ const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
         .length() < adjacentThreshold);
 };
 const intersectionsBetween = (shape1, shape2) => {
+    var _a, _b, _c, _d;
     let intersections = [];
     shape1.updateMatrixWorld();
     shape2.updateMatrixWorld();
     for (let i = 0; i < shape1.points.length - 1; i++) {
-        const segment1 = new THREE.Line3(shape1.points[i]?.clone().applyMatrix4(shape1.matrixWorld), shape1.points[i + 1]?.clone().applyMatrix4(shape1.matrixWorld));
+        const segment1 = new THREE.Line3((_a = shape1.points[i]) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape1.matrixWorld), (_b = shape1.points[i + 1]) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape1.matrixWorld));
         for (let j = 0; j < shape2.points.length - 1; j++) {
-            const segment2 = new THREE.Line3(shape2.points[j]?.clone().applyMatrix4(shape2.matrixWorld), shape2.points[j + 1]?.clone().applyMatrix4(shape2.matrixWorld));
+            const segment2 = new THREE.Line3((_c = shape2.points[j]) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape2.matrixWorld), (_d = shape2.points[j + 1]) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape2.matrixWorld));
             const maybeIntersection = getIntersection(segment1.start, segment1.end, segment2.start, segment2.end);
             if (maybeIntersection !== null) {
                 intersections.push(maybeIntersection);
@@ -406,11 +408,12 @@ const intersectionsBetween = (shape1, shape2) => {
     return intersections;
 };
 class ShapeFromCurves {
-    adjacentThreshold = 0.0001;
-    segmentClosestToPoint = new THREE.Vector3();
-    pointToSegment = new THREE.Vector3();
-    points;
-    style = {};
+    constructor() {
+        this.adjacentThreshold = 0.0001;
+        this.segmentClosestToPoint = new THREE.Vector3();
+        this.pointToSegment = new THREE.Vector3();
+        this.style = {};
+    }
     withStyle(style) {
         this.style = style;
         return this;
@@ -420,7 +423,8 @@ class ShapeFromCurves {
         return this;
     }
     extendAlong(shape, direction, until) {
-        const startPoint = this.points.at(-1)?.clone();
+        var _a, _b, _c, _d, _e;
+        const startPoint = (_a = this.points.at(-1)) === null || _a === void 0 ? void 0 : _a.clone();
         if (startPoint === undefined) {
             throw new Error("Cannot extend with no current points.");
         }
@@ -429,10 +433,8 @@ class ShapeFromCurves {
         let intersectIndex = null;
         shape.updateMatrixWorld();
         for (let j = 0; j < shape.points.length - 1; j++) {
-            const segment = new THREE.Line3(shape.points.at(j)?.clone().applyMatrix4(shape.matrixWorld), shape.points
-                .at(j + 1)
-                ?.clone()
-                .applyMatrix4(shape.matrixWorld));
+            const segment = new THREE.Line3((_b = shape.points.at(j)) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape.matrixWorld), (_c = shape.points
+                .at(j + 1)) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape.matrixWorld));
             segment.closestPointToPoint(startPoint, true, this.segmentClosestToPoint);
             const distanceToSegment = this.pointToSegment
                 .subVectors(this.segmentClosestToPoint, startPoint)
@@ -447,10 +449,9 @@ class ShapeFromCurves {
             throw new Error(`No intersection between ${startPoint.toArray()} and ${shape}`);
         }
         const vectorFromPointToIndex = (point, index) => {
-            let endPoint = shape.points
-                .at(index)
-                ?.clone()
-                .applyMatrix4(shape.matrixWorld);
+            var _a;
+            let endPoint = (_a = shape.points
+                .at(index)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
             if (endPoint === undefined) {
                 return new THREE.Vector3();
             }
@@ -487,10 +488,8 @@ class ShapeFromCurves {
             .length();
         if (endToIntersection < this.adjacentThreshold &&
             intersectIndex + 2 < shape.points.length) {
-            let nextPoint = shape.points
-                .at(intersectIndex + 2)
-                ?.clone()
-                .applyMatrix4(shape.matrixWorld);
+            let nextPoint = (_d = shape.points
+                .at(intersectIndex + 2)) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape.matrixWorld);
             if (nextPoint === undefined) {
                 throw new Error("No next point");
             }
@@ -499,10 +498,8 @@ class ShapeFromCurves {
                 .normalize();
             // Handle closed curves (shape.points.at(0) === shape.points.at(-1))
             if (towardEndVector.length() < this.adjacentThreshold) {
-                nextPoint = shape.points
-                    .at(intersectIndex + 3)
-                    ?.clone()
-                    .applyMatrix4(shape.matrixWorld);
+                nextPoint = (_e = shape.points
+                    .at(intersectIndex + 3)) === null || _e === void 0 ? void 0 : _e.clone().applyMatrix4(shape.matrixWorld);
                 if (nextPoint === undefined) {
                     throw new Error("No next point");
                 }
@@ -520,6 +517,7 @@ class ShapeFromCurves {
         return this;
     }
     extendCurve(shape, initialPointIndex, forward, until) {
+        var _a, _b;
         const advance = (i) => {
             i += increment;
             if (i === shape.points.length && shapeIsClosed(shape)) {
@@ -540,14 +538,12 @@ class ShapeFromCurves {
                 console.log("rip");
                 break;
             }
-            const newPoint = shape.points
-                .at(i)
-                ?.clone()
-                .applyMatrix4(shape.matrixWorld);
+            const newPoint = (_a = shape.points
+                .at(i)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
             if (newPoint === undefined) {
                 throw new Error("Error extending curve.");
             }
-            const newSegment = new THREE.Line3(this.points.at(-1)?.clone(), newPoint);
+            const newSegment = new THREE.Line3((_b = this.points.at(-1)) === null || _b === void 0 ? void 0 : _b.clone(), newPoint);
             if (newSegment.distance() < this.adjacentThreshold) {
                 i += increment;
                 continue;

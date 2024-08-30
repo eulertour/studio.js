@@ -55063,6 +55063,41 @@ var constants = /*#__PURE__*/Object.freeze({
 	PIXELS_TO_COORDS: PIXELS_TO_COORDS
 });
 
+/******************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise, SuppressedError, Symbol */
+
+
+function __classPrivateFieldGet(receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+}
+
+function __classPrivateFieldSet(receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+}
+
+typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    var e = new Error(message);
+    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+};
+
 const MESHLINE_VERT = /*glsl*/ `
 ${ShaderChunk.logdepthbuf_pars_vertex}
 ${ShaderChunk.fog_pars_vertex}
@@ -55281,23 +55316,23 @@ void main() {
   ${ShaderChunk.fog_fragment}
 }`;
 
+var _MeshLineGeometry_instances, _MeshLineGeometry_position, _MeshLineGeometry_endPosition, _MeshLineGeometry_nextPosition, _MeshLineGeometry_textureCoords, _MeshLineGeometry_proportion, _MeshLineGeometry_indices, _MeshLineGeometry_attributes, _MeshLineGeometry_previousPointCount, _MeshLineGeometry_pointCount, _MeshLineGeometry_addSegment, _MeshLineGeometry_makeNewBuffers;
 class MeshLineGeometry extends BufferGeometry {
-    arrow;
-    isMeshLineGeometry = true;
-    type = "MeshLineGeometry";
-    #position = new Float32Array();
-    #endPosition = new Float32Array();
-    #nextPosition = new Float32Array();
-    #textureCoords = new Float32Array();
-    #proportion = new Float32Array();
-    #indices = new Uint16Array();
-    #attributes = null;
-    points;
-    #previousPointCount = 0;
-    #pointCount = 0;
     constructor(arrow = false) {
         super();
+        _MeshLineGeometry_instances.add(this);
         this.arrow = arrow;
+        this.isMeshLineGeometry = true;
+        this.type = "MeshLineGeometry";
+        _MeshLineGeometry_position.set(this, new Float32Array());
+        _MeshLineGeometry_endPosition.set(this, new Float32Array());
+        _MeshLineGeometry_nextPosition.set(this, new Float32Array());
+        _MeshLineGeometry_textureCoords.set(this, new Float32Array());
+        _MeshLineGeometry_proportion.set(this, new Float32Array());
+        _MeshLineGeometry_indices.set(this, new Uint16Array());
+        _MeshLineGeometry_attributes.set(this, null);
+        _MeshLineGeometry_previousPointCount.set(this, 0);
+        _MeshLineGeometry_pointCount.set(this, 0);
     }
     setPoints(points, updateBounds = true) {
         const arrowLength = 0.3;
@@ -55336,13 +55371,13 @@ class MeshLineGeometry extends BufferGeometry {
             points.splice(arrowIndex + 1, points.length - arrowIndex - 1, aVec.clone().add(vVec.clone().multiplyScalar(t)), points.at(-1));
         }
         this.points = points;
-        this.#pointCount = points.length;
-        const pointCount = this.#pointCount;
-        const sizeChanged = this.#previousPointCount !== pointCount;
-        if (!this.#attributes || sizeChanged) {
-            this.#makeNewBuffers(pointCount);
+        __classPrivateFieldSet(this, _MeshLineGeometry_pointCount, points.length, "f");
+        const pointCount = __classPrivateFieldGet(this, _MeshLineGeometry_pointCount, "f");
+        const sizeChanged = __classPrivateFieldGet(this, _MeshLineGeometry_previousPointCount, "f") !== pointCount;
+        if (!__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f") || sizeChanged) {
+            __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_makeNewBuffers).call(this, pointCount);
         }
-        this.#previousPointCount = pointCount;
+        __classPrivateFieldSet(this, _MeshLineGeometry_previousPointCount, pointCount, "f");
         let lengths = new Float32Array(this.points.length);
         lengths[0] = 0;
         for (let i = 0; i < this.points.length - 2; i++) {
@@ -55358,11 +55393,10 @@ class MeshLineGeometry extends BufferGeometry {
             }
             lengths[i + 1] =
                 previousLength +
-                    ((position.x - endPosition.x) ** 2 +
-                        (position.y - endPosition.y) ** 2 +
-                        (position.z - endPosition.z) ** 2) **
-                        0.5;
-            this.#addSegment(i, position, endPosition, nextPosition);
+                    Math.pow((Math.pow((position.x - endPosition.x), 2) +
+                        Math.pow((position.y - endPosition.y), 2) +
+                        Math.pow((position.z - endPosition.z), 2)), 0.5);
+            __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_addSegment).call(this, i, position, endPosition, nextPosition);
         }
         const firstPoint = points.at(0);
         const lastPoint = points.at(-1);
@@ -55387,20 +55421,19 @@ class MeshLineGeometry extends BufferGeometry {
         }
         lengths[this.points.length - 1] =
             previousLength +
-                ((position.x - endPosition.x) ** 2 +
-                    (position.y - endPosition.y) ** 2 +
-                    (position.z - endPosition.z) ** 2) **
-                    0.5;
-        this.#addSegment(points.length - 2, position, endPosition, nextPosition);
+                Math.pow((Math.pow((position.x - endPosition.x), 2) +
+                    Math.pow((position.y - endPosition.y), 2) +
+                    Math.pow((position.z - endPosition.z), 2)), 0.5);
+        __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_addSegment).call(this, points.length - 2, position, endPosition, nextPosition);
         if (this.arrow) {
-            this.#textureCoords[4 * (points.length - 3)] = 9; // 8 * 1 + 2 * 0 + 1;
-            this.#textureCoords[4 * (points.length - 3) + 1] = 8; // 8 * 1 + 2 * 0 + 0;
-            this.#textureCoords[4 * (points.length - 3) + 2] = 10; // 8 * 1 + 2 * 1 + 0;
-            this.#textureCoords[4 * (points.length - 3) + 3] = 11; // 8 * 1 + 2 * 1 + 1;
-            this.#textureCoords[4 * (points.length - 2)] = 5; // 4 * 1 + 2 * 0 + 1;
-            this.#textureCoords[4 * (points.length - 2) + 1] = 4; // 4 * 1 + 2 * 0 + 0;
-            this.#textureCoords[4 * (points.length - 2) + 2] = 6; // 4 * 1 + 2 * 1 + 0;
-            this.#textureCoords[4 * (points.length - 2) + 3] = 7; // 4 * 1 + 2 * 1 + 1;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 3)] = 9; // 8 * 1 + 2 * 0 + 1;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 3) + 1] = 8; // 8 * 1 + 2 * 0 + 0;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 3) + 2] = 10; // 8 * 1 + 2 * 1 + 0;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 3) + 3] = 11; // 8 * 1 + 2 * 1 + 1;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2)] = 5; // 4 * 1 + 2 * 0 + 1;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2) + 1] = 4; // 4 * 1 + 2 * 0 + 0;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2) + 2] = 6; // 4 * 1 + 2 * 1 + 0;
+            __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2) + 3] = 7; // 4 * 1 + 2 * 1 + 1;
         }
         const totalLength = lengths.at(-1);
         if (totalLength === undefined) {
@@ -55415,63 +55448,23 @@ class MeshLineGeometry extends BufferGeometry {
             const startProportion = startLength / totalLength;
             const endProportion = endLength / totalLength;
             const offset = 4 * i;
-            this.#proportion[offset] = startProportion;
-            this.#proportion[offset + 1] = startProportion;
-            this.#proportion[offset + 2] = endProportion;
-            this.#proportion[offset + 3] = endProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset] = startProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 1] = startProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 2] = endProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 3] = endProportion;
         }
-        if (!this.#attributes)
+        if (!__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f"))
             throw new Error("missing attributes");
-        this.#attributes.position.needsUpdate = true;
-        this.#attributes.endPosition.needsUpdate = true;
-        this.#attributes.nextPosition.needsUpdate = true;
-        this.#attributes.textureCoords.needsUpdate = sizeChanged;
-        this.#attributes.proportion.needsUpdate = true;
-        this.#attributes.index.needsUpdate = sizeChanged;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endPosition.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords.needsUpdate = sizeChanged;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index.needsUpdate = sizeChanged;
         if (updateBounds) {
             this.computeBoundingSphere();
             this.computeBoundingBox();
         }
-    }
-    #addSegment(index, start, end, next) {
-        let x, y, z;
-        const vertexOffset = 12 * index;
-        ({ x, y, z } = start);
-        this.setVertexData(this.#position, vertexOffset, x, y, z);
-        ({ x, y, z } = end);
-        this.setVertexData(this.#endPosition, vertexOffset, x, y, z);
-        ({ x, y, z } = next);
-        this.setVertexData(this.#nextPosition, vertexOffset, x, y, z);
-        const textureOffset = 4 * index;
-        this.setTextureCoords(this.#textureCoords, textureOffset);
-        const indexOffset = 6 * index;
-        const nextIndex = 4 * index;
-        this.setIndices(this.#indices, indexOffset, nextIndex);
-    }
-    #makeNewBuffers(pointCount) {
-        // Remove the previous buffers from the GPU
-        this.dispose();
-        const rectCount = pointCount - 1;
-        this.#position = new Float32Array(12 * rectCount);
-        this.#endPosition = new Float32Array(12 * rectCount);
-        this.#nextPosition = new Float32Array(12 * rectCount);
-        this.#textureCoords = new Float32Array(4 * rectCount);
-        this.#proportion = new Float32Array(4 * rectCount);
-        this.#indices = new Uint16Array(6 * rectCount);
-        this.#attributes = {
-            position: new BufferAttribute(this.#position, 3),
-            endPosition: new BufferAttribute(this.#endPosition, 3),
-            nextPosition: new BufferAttribute(this.#nextPosition, 3),
-            textureCoords: new BufferAttribute(this.#textureCoords, 1),
-            proportion: new BufferAttribute(this.#proportion, 1),
-            index: new BufferAttribute(this.#indices, 1),
-        };
-        this.setAttribute("position", this.#attributes.position);
-        this.setAttribute("endPosition", this.#attributes.endPosition);
-        this.setAttribute("nextPosition", this.#attributes.nextPosition);
-        this.setAttribute("textureCoords", this.#attributes.textureCoords);
-        this.setAttribute("proportion", this.#attributes.proportion);
-        this.setIndex(this.#attributes.index);
     }
     setVertexData(array, offset, x, y, z) {
         array[offset] = x;
@@ -55516,6 +55509,45 @@ class MeshLineGeometry extends BufferGeometry {
         }
     }
 }
+_MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new WeakMap(), _MeshLineGeometry_nextPosition = new WeakMap(), _MeshLineGeometry_textureCoords = new WeakMap(), _MeshLineGeometry_proportion = new WeakMap(), _MeshLineGeometry_indices = new WeakMap(), _MeshLineGeometry_attributes = new WeakMap(), _MeshLineGeometry_previousPointCount = new WeakMap(), _MeshLineGeometry_pointCount = new WeakMap(), _MeshLineGeometry_instances = new WeakSet(), _MeshLineGeometry_addSegment = function _MeshLineGeometry_addSegment(index, start, end, next) {
+    let x, y, z;
+    const vertexOffset = 12 * index;
+    ({ x, y, z } = start);
+    this.setVertexData(__classPrivateFieldGet(this, _MeshLineGeometry_position, "f"), vertexOffset, x, y, z);
+    ({ x, y, z } = end);
+    this.setVertexData(__classPrivateFieldGet(this, _MeshLineGeometry_endPosition, "f"), vertexOffset, x, y, z);
+    ({ x, y, z } = next);
+    this.setVertexData(__classPrivateFieldGet(this, _MeshLineGeometry_nextPosition, "f"), vertexOffset, x, y, z);
+    const textureOffset = 4 * index;
+    this.setTextureCoords(__classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f"), textureOffset);
+    const indexOffset = 6 * index;
+    const nextIndex = 4 * index;
+    this.setIndices(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), indexOffset, nextIndex);
+}, _MeshLineGeometry_makeNewBuffers = function _MeshLineGeometry_makeNewBuffers(pointCount) {
+    // Remove the previous buffers from the GPU
+    this.dispose();
+    const rectCount = pointCount - 1;
+    __classPrivateFieldSet(this, _MeshLineGeometry_position, new Float32Array(12 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_endPosition, new Float32Array(12 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_nextPosition, new Float32Array(12 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_textureCoords, new Float32Array(4 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_proportion, new Float32Array(4 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_indices, new Uint16Array(6 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_attributes, {
+        position: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_position, "f"), 3),
+        endPosition: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_endPosition, "f"), 3),
+        nextPosition: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_nextPosition, "f"), 3),
+        textureCoords: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f"), 1),
+        proportion: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f"), 1),
+        index: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), 1),
+    }, "f");
+    this.setAttribute("position", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position);
+    this.setAttribute("endPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endPosition);
+    this.setAttribute("nextPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition);
+    this.setAttribute("textureCoords", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords);
+    this.setAttribute("proportion", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion);
+    this.setIndex(__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index);
+};
 
 const CameraDimensions = new Vector2();
 const setCameraDimensions = (camera) => {
@@ -55656,10 +55688,6 @@ const getFillGeometry = (points) => {
  * An abstract class representing a generalized shape.
  */
 class Shape extends Group {
-    fill;
-    stroke;
-    curveEndIndices;
-    arrow;
     constructor(points, config = {}) {
         super();
         config = Object.assign(Shape.defaultStyle(), config);
@@ -55747,10 +55775,7 @@ class Shape extends Group {
             throw Error("Recursive Shape.clone() isn't implemented.");
         }
         const cloneFunc = this.constructor;
-        const clone = new cloneFunc(...this.getCloneAttributes(), {
-            ...this.getStyle(),
-            ...this.getClassConfig(),
-        });
+        const clone = new cloneFunc(...this.getCloneAttributes(), Object.assign(Object.assign({}, this.getStyle()), this.getClassConfig()));
         Object3D.prototype.copy.call(clone, this, false);
         return clone;
     }
@@ -55841,10 +55866,8 @@ class Shape extends Group {
  * @example line.ts
  */
 class Line extends Shape {
-    start;
-    end;
     constructor(start, end, config = {}) {
-        config = { ...Line.defaultConfig(), ...config };
+        config = Object.assign(Object.assign({}, Line.defaultConfig()), config);
         super([start, end], config);
         this.start = start;
         this.end = end;
@@ -55852,7 +55875,7 @@ class Line extends Shape {
         this.curveEndIndices = [[0, 1]];
     }
     static defaultConfig() {
-        return { ...super.defaultConfig(), arrow: false };
+        return Object.assign(Object.assign({}, super.defaultConfig()), { arrow: false });
     }
     static centeredLine(start, end, config = {}) {
         const center = new Vector3().addVectors(start, end).divideScalar(2);
@@ -55891,10 +55914,8 @@ class Line extends Shape {
  * @example arrow.ts
  */
 class Arrow extends Line {
-    start;
-    end;
     constructor(start, end, config = {}) {
-        super(start, end, { ...Arrow.defaultConfig(), ...config, arrow: true });
+        super(start, end, Object.assign(Object.assign(Object.assign({}, Arrow.defaultConfig()), config), { arrow: true }));
         this.start = start;
         this.end = end;
     }
@@ -55911,7 +55932,7 @@ class Arrow extends Line {
  */
 class Polyline extends Shape {
     constructor(points, config = {}) {
-        super(points, { ...Polyline.defaultConfig(), ...config, fillOpacity: 0 });
+        super(points, Object.assign(Object.assign(Object.assign({}, Polyline.defaultConfig()), config), { fillOpacity: 0 }));
         this.curveEndIndices = [[0, 1]];
     }
     reshape(points, config = {}) {
@@ -55936,11 +55957,8 @@ class Polyline extends Shape {
  * @example arc.ts
  */
 class Arc extends Shape {
-    radius;
-    angle;
-    closed;
     constructor(radius = 1, angle = Math.PI / 2, config = {}) {
-        config = { ...Arc.defaultConfig(), ...config };
+        config = Object.assign(Object.assign({}, Arc.defaultConfig()), config);
         let points = [];
         let negative = false;
         if (angle < 0) {
@@ -55978,7 +55996,7 @@ class Arc extends Shape {
         }
     }
     static defaultConfig() {
-        return { ...super.defaultConfig(), closed: false };
+        return Object.assign(Object.assign({}, super.defaultConfig()), { closed: false });
     }
     reshape(radius = 1, angle = Math.PI / 2, config = {}) {
         this.radius = radius;
@@ -56030,7 +56048,7 @@ class Arc extends Shape {
  */
 class Circle extends Arc {
     constructor(radius = 1, config = {}) {
-        super(radius, 2 * Math.PI, { ...Circle.defaultConfig(), ...config });
+        super(radius, 2 * Math.PI, Object.assign(Object.assign({}, Circle.defaultConfig()), config));
     }
     reshape(radius, config = {}) {
         this.radius = radius;
@@ -56067,17 +56085,12 @@ class Circle extends Arc {
  */
 class Point extends Circle {
     constructor(position = ORIGIN, config = {}) {
-        config = {
-            fillColor: new Color("black"),
-            fillOpacity: 1,
-            ...Point.defaultConfig(),
-            ...config,
-        };
+        config = Object.assign(Object.assign({ fillColor: new Color("black"), fillOpacity: 1 }, Point.defaultConfig()), config);
         super(config.radius, config);
         this.position.set(position.x, position.y, 0);
     }
     static defaultConfig() {
-        return { ...super.defaultConfig(), radius: 0.08 };
+        return Object.assign(Object.assign({}, super.defaultConfig()), { radius: 0.08 });
     }
     getAttributes() {
         return {
@@ -56098,7 +56111,7 @@ class Point extends Circle {
  */
 class Polygon extends Shape {
     constructor(points, config = {}) {
-        super(points, { ...Polygon.defaultConfig(), ...config });
+        super(points, Object.assign(Object.assign({}, Polygon.defaultConfig()), config));
         this.curveEndIndices = [];
         for (let i = 0; i < points.length - 1; i++) {
             this.curveEndIndices.push([i, i + 1]);
@@ -56124,8 +56137,6 @@ class Polygon extends Shape {
  * @example rectangle.ts
  */
 class Rectangle extends Shape {
-    width;
-    height;
     constructor(width = 4, height = 2, config = {}) {
         super([
             new Vector3(-width / 2, height / 2, 0),
@@ -56133,7 +56144,7 @@ class Rectangle extends Shape {
             new Vector3(width / 2, -height / 2, 0),
             new Vector3(-width / 2, -height / 2, 0),
             new Vector3(-width / 2, height / 2, 0),
-        ], { ...Rectangle.defaultConfig(), ...config });
+        ], Object.assign(Object.assign({}, Rectangle.defaultConfig()), config));
         this.width = width;
         this.height = height;
     }
@@ -56179,9 +56190,8 @@ class Rectangle extends Shape {
  * @example square.ts
  */
 class Square extends Rectangle {
-    sideLength;
     constructor(sideLength = 2, config = {}) {
-        super(sideLength, sideLength, { ...Square.defaultConfig(), ...config });
+        super(sideLength, sideLength, Object.assign(Object.assign({}, Square.defaultConfig()), config));
         this.sideLength = sideLength;
     }
     reshape(sideLength, config = {}) {
@@ -97825,7 +97835,6 @@ const tex2svg = (tex) => {
 };
 
 class Text extends Group {
-    text;
     constructor(text, config = {}) {
         super();
         this.text = text;
@@ -98111,7 +98120,7 @@ const vspace = (group, distanceBetween) => {
         const current = group.children[i];
         current.position
             .copy(previous.position)
-            .addScaledVector(DOWN, distanceBetween ?? defaultSpacing);
+            .addScaledVector(DOWN, distanceBetween !== null && distanceBetween !== void 0 ? distanceBetween : defaultSpacing);
         center.add(group.children[i].position);
     }
     center.divideScalar(group.children.length);
@@ -98134,6 +98143,7 @@ const furthestInDirection = (object, direction, exclude = []) => {
     let maxDot = -Infinity;
     let maxDotPoint = unitDirection.clone().negate().setLength(Infinity);
     object.traverse((obj) => {
+        var _a, _b;
         let exclusionCheckObj = obj;
         while (exclusionCheckObj) {
             if (excludeArray.includes(exclusionCheckObj)) {
@@ -98156,7 +98166,7 @@ const furthestInDirection = (object, direction, exclude = []) => {
             }
         }
         else if (obj instanceof Mesh &&
-            obj.parent?.parent?.parent instanceof Text) {
+            ((_b = (_a = obj.parent) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.parent) instanceof Text) {
             const pointsArray = obj.geometry.attributes.position.array;
             const pointContainer = new Vector3();
             for (let i = 0; i < pointsArray.length; i += 3) {
@@ -98365,13 +98375,14 @@ const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
         .length() < adjacentThreshold);
 };
 const intersectionsBetween = (shape1, shape2) => {
+    var _a, _b, _c, _d;
     let intersections = [];
     shape1.updateMatrixWorld();
     shape2.updateMatrixWorld();
     for (let i = 0; i < shape1.points.length - 1; i++) {
-        const segment1 = new Line3(shape1.points[i]?.clone().applyMatrix4(shape1.matrixWorld), shape1.points[i + 1]?.clone().applyMatrix4(shape1.matrixWorld));
+        const segment1 = new Line3((_a = shape1.points[i]) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape1.matrixWorld), (_b = shape1.points[i + 1]) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape1.matrixWorld));
         for (let j = 0; j < shape2.points.length - 1; j++) {
-            const segment2 = new Line3(shape2.points[j]?.clone().applyMatrix4(shape2.matrixWorld), shape2.points[j + 1]?.clone().applyMatrix4(shape2.matrixWorld));
+            const segment2 = new Line3((_c = shape2.points[j]) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape2.matrixWorld), (_d = shape2.points[j + 1]) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape2.matrixWorld));
             const maybeIntersection = getIntersection(segment1.start, segment1.end, segment2.start, segment2.end);
             if (maybeIntersection !== null) {
                 intersections.push(maybeIntersection);
@@ -98381,11 +98392,12 @@ const intersectionsBetween = (shape1, shape2) => {
     return intersections;
 };
 class ShapeFromCurves {
-    adjacentThreshold = 0.0001;
-    segmentClosestToPoint = new Vector3();
-    pointToSegment = new Vector3();
-    points;
-    style = {};
+    constructor() {
+        this.adjacentThreshold = 0.0001;
+        this.segmentClosestToPoint = new Vector3();
+        this.pointToSegment = new Vector3();
+        this.style = {};
+    }
     withStyle(style) {
         this.style = style;
         return this;
@@ -98395,7 +98407,8 @@ class ShapeFromCurves {
         return this;
     }
     extendAlong(shape, direction, until) {
-        const startPoint = this.points.at(-1)?.clone();
+        var _a, _b, _c, _d, _e;
+        const startPoint = (_a = this.points.at(-1)) === null || _a === void 0 ? void 0 : _a.clone();
         if (startPoint === undefined) {
             throw new Error("Cannot extend with no current points.");
         }
@@ -98404,10 +98417,8 @@ class ShapeFromCurves {
         let intersectIndex = null;
         shape.updateMatrixWorld();
         for (let j = 0; j < shape.points.length - 1; j++) {
-            const segment = new Line3(shape.points.at(j)?.clone().applyMatrix4(shape.matrixWorld), shape.points
-                .at(j + 1)
-                ?.clone()
-                .applyMatrix4(shape.matrixWorld));
+            const segment = new Line3((_b = shape.points.at(j)) === null || _b === void 0 ? void 0 : _b.clone().applyMatrix4(shape.matrixWorld), (_c = shape.points
+                .at(j + 1)) === null || _c === void 0 ? void 0 : _c.clone().applyMatrix4(shape.matrixWorld));
             segment.closestPointToPoint(startPoint, true, this.segmentClosestToPoint);
             const distanceToSegment = this.pointToSegment
                 .subVectors(this.segmentClosestToPoint, startPoint)
@@ -98422,10 +98433,9 @@ class ShapeFromCurves {
             throw new Error(`No intersection between ${startPoint.toArray()} and ${shape}`);
         }
         const vectorFromPointToIndex = (point, index) => {
-            let endPoint = shape.points
-                .at(index)
-                ?.clone()
-                .applyMatrix4(shape.matrixWorld);
+            var _a;
+            let endPoint = (_a = shape.points
+                .at(index)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
             if (endPoint === undefined) {
                 return new Vector3();
             }
@@ -98462,10 +98472,8 @@ class ShapeFromCurves {
             .length();
         if (endToIntersection < this.adjacentThreshold &&
             intersectIndex + 2 < shape.points.length) {
-            let nextPoint = shape.points
-                .at(intersectIndex + 2)
-                ?.clone()
-                .applyMatrix4(shape.matrixWorld);
+            let nextPoint = (_d = shape.points
+                .at(intersectIndex + 2)) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape.matrixWorld);
             if (nextPoint === undefined) {
                 throw new Error("No next point");
             }
@@ -98474,10 +98482,8 @@ class ShapeFromCurves {
                 .normalize();
             // Handle closed curves (shape.points.at(0) === shape.points.at(-1))
             if (towardEndVector.length() < this.adjacentThreshold) {
-                nextPoint = shape.points
-                    .at(intersectIndex + 3)
-                    ?.clone()
-                    .applyMatrix4(shape.matrixWorld);
+                nextPoint = (_e = shape.points
+                    .at(intersectIndex + 3)) === null || _e === void 0 ? void 0 : _e.clone().applyMatrix4(shape.matrixWorld);
                 if (nextPoint === undefined) {
                     throw new Error("No next point");
                 }
@@ -98495,6 +98501,7 @@ class ShapeFromCurves {
         return this;
     }
     extendCurve(shape, initialPointIndex, forward, until) {
+        var _a, _b;
         const advance = (i) => {
             i += increment;
             if (i === shape.points.length && shapeIsClosed(shape)) {
@@ -98515,14 +98522,12 @@ class ShapeFromCurves {
                 console.log("rip");
                 break;
             }
-            const newPoint = shape.points
-                .at(i)
-                ?.clone()
-                .applyMatrix4(shape.matrixWorld);
+            const newPoint = (_a = shape.points
+                .at(i)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
             if (newPoint === undefined) {
                 throw new Error("Error extending curve.");
             }
-            const newSegment = new Line3(this.points.at(-1)?.clone(), newPoint);
+            const newSegment = new Line3((_b = this.points.at(-1)) === null || _b === void 0 ? void 0 : _b.clone(), newPoint);
             if (newSegment.distance() < this.adjacentThreshold) {
                 i += increment;
                 continue;
@@ -98595,28 +98600,14 @@ const modulate = (t, dt) => {
     return [modulatedTime, modulatedDelta];
 };
 class Animation {
-    func;
-    scene;
-    startTime;
-    endTime;
-    prevUpdateTime;
-    beforeFunc;
-    afterFunc;
-    parent;
-    object;
-    before;
-    after;
-    family;
-    reveal;
-    hide;
-    scale = 1;
-    runTime = 1;
-    finished = false;
-    elapsedSinceStart = 0;
     // family: whether or not the animation will affect the entire family
     // add: whether or not affected shapes will be added to their parents
     constructor(func, { object = undefined, parent = undefined, before = undefined, after = undefined, family = undefined, reveal = undefined, hide = undefined, } = {}) {
         this.func = func;
+        this.scale = 1;
+        this.runTime = 1;
+        this.finished = false;
+        this.elapsedSinceStart = 0;
         this.object = object;
         this.parent = parent;
         this.before = before;
@@ -98627,7 +98618,7 @@ class Animation {
     }
     setUp() {
         if (this.reveal && this.object.parentComponent) {
-            this.object.revealAncestors();
+            this.object.revealAncestors({ includeSelf: true });
         }
     }
     tearDown() {
@@ -98696,24 +98687,16 @@ class Shift extends Animation {
     constructor(object, offset, config) {
         super((_elapsedTime, deltaTime) => {
             object.position.add(offset.clone().multiplyScalar(deltaTime));
-        }, {
-            object,
-            reveal: true,
-            ...config,
-        });
+        }, Object.assign({ object, reveal: true }, config));
     }
 }
 class MoveTo extends Animation {
-    target;
-    obj;
-    start;
-    displacement;
     constructor(target, obj, config) {
         super((elapsedTime) => {
             obj.position
                 .copy(this.start)
                 .addScaledVector(this.displacement, elapsedTime);
-        }, { obj, reveal: true, ...config });
+        }, Object.assign({ obj, reveal: true }, config));
         this.target = target;
         this.obj = obj;
     }
@@ -98731,7 +98714,7 @@ class Rotate extends Animation {
     constructor(object, angle, config) {
         super((_elapsedTime, deltaTime) => {
             object.rotation.z += angle * deltaTime;
-        }, { object, reveal: true, ...config });
+        }, Object.assign({ object, reveal: true }, config));
     }
 }
 class SetScale extends Animation {
@@ -98740,7 +98723,7 @@ class SetScale extends Animation {
         super((elapsedTime, deltaTime) => {
             const scale = MathUtils.lerp(initialScale, factor, elapsedTime);
             object.scale.set(scale, scale, scale);
-        }, { object, reveal: true, ...config });
+        }, Object.assign({ object, reveal: true }, config));
     }
 }
 class Draw extends Animation {
@@ -98751,31 +98734,29 @@ class Draw extends Animation {
                     child.stroke.material.uniforms.drawRange.value.y = elapsedTime;
                 }
             });
-        }, { object, reveal: true, ...config });
+        }, Object.assign({ object, reveal: true }, config));
     }
 }
 class Erase extends Animation {
-    object;
-    config;
     constructor(object, config) {
         super((elapsedTime) => {
             object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
-        }, { object, hide: true, ...config });
+        }, Object.assign({ object, hide: true }, config));
         this.object = object;
         this.config = config;
     }
     tearDown() {
-        if (this.config?.remove) {
+        var _a, _b;
+        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
             this.object.parent.remove(this.object);
         }
-        if (this.config?.restore) {
+        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
             this.object.stroke.material.uniforms.drawRange.value.y = 1;
         }
         super.tearDown();
     }
 }
 class FadeIn extends Animation {
-    initialOpacity = new Map();
     constructor(object, config) {
         let family = true;
         if (config && config.family === false) {
@@ -98785,7 +98766,7 @@ class FadeIn extends Animation {
             if (family) {
                 this.object.traverse((child) => {
                     if (child instanceof Mesh) {
-                        child.material.opacity = MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(child) : 1, elapsedTime);
+                        child.material.opacity = MathUtils.lerp(0, (config === null || config === void 0 ? void 0 : config.preserveOpacity) ? this.initialOpacity.get(child) : 1, elapsedTime);
                     }
                 });
             }
@@ -98793,10 +98774,11 @@ class FadeIn extends Animation {
                 [this.object.stroke, this.object.fill].forEach((mesh) => {
                     if (!mesh)
                         return;
-                    mesh.material.opacity = MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(mesh) : 1, elapsedTime);
+                    mesh.material.opacity = MathUtils.lerp(0, (config === null || config === void 0 ? void 0 : config.preserveOpacity) ? this.initialOpacity.get(mesh) : 1, elapsedTime);
                 });
             }
-        }, { object, reveal: true, ...config });
+        }, Object.assign({ object, reveal: true }, config));
+        this.initialOpacity = new Map();
     }
     setUp() {
         super.setUp();
@@ -98808,8 +98790,6 @@ class FadeIn extends Animation {
     }
 }
 class FadeOut extends Animation {
-    config;
-    initialOpacity = new Map();
     constructor(objectOrFunc, config) {
         let family = true;
         if (config && config.family === false) {
@@ -98833,8 +98813,9 @@ class FadeOut extends Animation {
                     mesh.material.opacity = MathUtils.lerp(this.initialOpacity.get(mesh), 0, elapsedTime);
                 });
             }
-        }, { object: objectOrFunc, hide: true, ...config });
+        }, Object.assign({ object: objectOrFunc, hide: true }, config));
         this.config = config;
+        this.initialOpacity = new Map();
     }
     setUp() {
         super.setUp();
@@ -98845,10 +98826,11 @@ class FadeOut extends Animation {
         });
     }
     tearDown() {
-        if (this.config?.remove) {
+        var _a, _b;
+        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
             this.object.parent.remove(this.object);
         }
-        if (this.config?.restore) {
+        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
             this.object.traverse((child) => {
                 if (child instanceof Mesh) {
                     if (!this.initialOpacity.has(child)) {
@@ -98882,24 +98864,20 @@ var animation = /*#__PURE__*/Object.freeze({
 });
 
 class SceneController {
-    UserScene;
-    animationIndex = 0;
-    deltaTime = 0;
-    elapsedTime = 0;
-    firstFrame = true;
-    paused = true;
-    fps = 60;
-    timePrecision = 1e5;
-    startTime = 0;
-    endTime = Infinity;
-    loopAnimations = [];
-    finishedAnimationCount = 0;
-    userScene;
-    three = THREE;
-    viewport;
-    aspectRatio;
     constructor(UserScene, canvasRef, config) {
         this.UserScene = UserScene;
+        this.animationIndex = 0;
+        this.deltaTime = 0;
+        this.elapsedTime = 0;
+        this.firstFrame = true;
+        this.paused = true;
+        this.fps = 60;
+        this.timePrecision = 1e5;
+        this.startTime = 0;
+        this.endTime = Infinity;
+        this.loopAnimations = [];
+        this.finishedAnimationCount = 0;
+        this.three = THREE;
         this.viewport = config.viewport;
         this.aspectRatio = config.aspectRatio;
         this.userScene = new UserScene(...setupCanvas(canvasRef, config));
@@ -99035,11 +99013,6 @@ class SceneController {
 }
 
 class Indicator extends Group {
-    start;
-    end;
-    startTick;
-    endTick;
-    stem;
     constructor(start, end, config = {}) {
         const { tickLength = 0.4 } = config;
         super();
@@ -99071,11 +99044,10 @@ class Indicator extends Group {
             this.stem.stroke.material.uniforms.drawRange.value.set(0.5 - halfTime, 0.5 + halfTime);
             this.startTick.position.set(0, 0, 0).addScaledVector(vec, halfTime);
             this.endTick.position.set(0, 0, 0).addScaledVector(vec, -halfTime);
-        }, { object: this, ...config });
+        }, Object.assign({ object: this }, config));
     }
 }
 class Congruent extends Group {
-    ticks;
     constructor(ticks, config = {}) {
         config = Object.assign({ tickLength: 0.25, spacing: 0.3 }, config);
         super();
@@ -99106,14 +99078,13 @@ var diagram = /*#__PURE__*/Object.freeze({
  * A curve described by an equation.
  */
 class Curve extends Polyline {
-    equation;
     constructor(equation, config = {}) {
-        config = { ...Polyline.defaultConfig(), ...config };
+        config = Object.assign(Object.assign({}, Polyline.defaultConfig()), config);
         super([new Vector3(-1, -1, 0), new Vector3(1, 1, 0)], config);
         this.equation = equation;
     }
     static defaultConfig() {
-        return { ...super.defaultConfig() };
+        return Object.assign({}, super.defaultConfig());
     }
     getClassConfig() {
         return {};
@@ -99258,28 +99229,38 @@ Object3D.prototype.isComponent = function () {
     return this.parentComponent !== undefined;
 };
 Object3D.prototype.isRevealed = function () {
+    var _a;
     if (!this.isComponent()) {
         throw new Error("Attempt to check revealed status of a non-component");
     }
-    return this.parentComponent.children.includes(this) ?? false;
+    return (_a = this.parentComponent.children.includes(this)) !== null && _a !== void 0 ? _a : false;
 };
 Object3D.prototype.isHidden = function () {
+    if (!this.isComponent()) {
+        throw new Error("Attempt to check revealed status of a non-component");
+    }
     return !this.isRevealed();
 };
-Object3D.prototype.revealDescendants = function () {
-    this.traverseComponents((obj) => obj.parentComponent && obj.reveal());
+Object3D.prototype.revealDescendants = function ({ includeSelf = false, } = {}) {
+    this.traverseComponents((obj) => obj.parentComponent && obj.reveal(), {
+        includeSelf,
+    });
     return this;
 };
-Object3D.prototype.hideDescendants = function () {
-    this.traverseComponents((obj) => obj.parentComponent && obj.hide());
+Object3D.prototype.hideDescendants = function ({ includeSelf = false, } = {}) {
+    this.traverseComponents((obj) => obj.parentComponent && obj.hide(), {
+        includeSelf,
+    });
     return this;
 };
-Object3D.prototype.revealAncestors = function () {
-    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.reveal());
+Object3D.prototype.revealAncestors = function ({ includeSelf = false, } = {}) {
+    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.reveal(), { includeSelf });
     return this;
 };
-Object3D.prototype.hideAncestors = function () {
-    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.hide());
+Object3D.prototype.hideAncestors = function ({ includeSelf = false, } = {}) {
+    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.hide(), {
+        includeSelf,
+    });
     return this;
 };
 Object3D.prototype.revealComponents = function () {
@@ -99290,23 +99271,32 @@ Object3D.prototype.hideComponents = function () {
     this.components && this.components.forEach((child) => this.remove(child));
     return this;
 };
-Object3D.prototype.traverseComponents = function (f) {
-    f(this);
-    this.components &&
-        this.components.forEach((child) => child && child.traverseComponents(f));
+Object3D.prototype.traverseComponents = function (f, config) {
+    if (config === null || config === void 0 ? void 0 : config.includeSelf)
+        f(this);
+    if (!this.components)
+        return;
+    this.components.forEach((child) => {
+        f(child);
+        child.traverseComponents(f);
+    });
 };
-Object3D.prototype.traverseAncestorComponents = function (f) {
-    f(this);
-    this.parentComponent && this.parentComponent.traverseAncestorComponents(f);
+Object3D.prototype.traverseAncestorComponents = function (f, config) {
+    if (config === null || config === void 0 ? void 0 : config.includeSelf)
+        f(this);
+    if (!this.parentComponent)
+        return;
+    f(this.parentComponent);
+    this.parentComponent.traverseAncestorComponents(f);
 };
 Object3D.prototype.revealLineage = function () {
-    this.revealAncestors();
-    this.revealDescendants();
+    this.revealAncestors({ includeSelf: true });
+    this.revealDescendants({ includeSelf: true });
     return this;
 };
 Object3D.prototype.hideLineage = function () {
-    this.hideAncestors();
-    this.hideDescendants();
+    this.hideAncestors({ includeSelf: true });
+    this.hideDescendants({ includeSelf: true });
     return this;
 };
 function component(_, context) {

@@ -73,7 +73,7 @@ class Animation {
 
   setUp() {
     if (this.reveal && this.object.parentComponent) {
-      this.object.revealAncestors();
+      this.object.revealAncestors({ includeSelf: true });
     }
   }
 

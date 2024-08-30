@@ -2,7 +2,6 @@ import * as THREE from "three";
 import { SVGLoader } from "./SVGLoader.js";
 import tex2svg from "./mathjax";
 class Text extends THREE.Group {
-    text;
     constructor(text, config = {}) {
         super();
         this.text = text;
