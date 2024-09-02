@@ -27,6 +27,8 @@ declare abstract class Shape extends THREE.Group {
     copyFill(shape: Shape): void;
     copyStrokeFill(shape: Shape): void;
     get points(): Array<THREE.Vector3>;
+    worldPoint(index: number): THREE.Vector3;
+    transformedPoint(index: number, targetSpace: THREE.Object3D): THREE.Vector3;
     segment(index: number): THREE.Line3;
     curve(curveIndex: number, worldTransform?: boolean): THREE.Vector3[];
     get numCurves(): number;

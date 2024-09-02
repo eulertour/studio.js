@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { ERROR_THRESHOLD } from "./constants";
 import { MeshLine, MeshLineGeometry, MeshLineMaterial } from "./MeshLine";
 import { ORIGIN } from "./utils";
+import { Utils } from "src";
 const getFillGeometry = (points) => {
     const shape = new THREE.Shape();
     shape.moveTo(points[0].x, points[0].y);
@@ -67,6 +68,13 @@ class Shape extends THREE.Group {
     }
     get points() {
         return this.stroke.geometry.points;
+    }
+    worldPoint(index) {
+        return this.localToWorld(this.points[index].clone());
+    }
+    transformedPoint(index, targetSpace) {
+        const startingPoint = this.points[index].clone();
+        return Utils.transformBetweenSpaces(this, targetSpace, startingPoint);
     }
     segment(index) {
         return new THREE.Line3(this.points[index].clone(), this.points[index + 1].clone());

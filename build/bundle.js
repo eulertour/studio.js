@@ -55741,6 +55741,13 @@ class Shape extends Group {
     get points() {
         return this.stroke.geometry.points;
     }
+    worldPoint(index) {
+        return this.localToWorld(this.points[index].clone());
+    }
+    transformedPoint(index, targetSpace) {
+        const startingPoint = this.points[index].clone();
+        return transformBetweenSpaces(this, targetSpace, startingPoint);
+    }
     segment(index) {
         return new Line3(this.points[index].clone(), this.points[index + 1].clone());
     }

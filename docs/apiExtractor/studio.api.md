@@ -691,6 +691,10 @@ abstract class Shape extends THREE_2.Group {
     //
     // (undocumented)
     stroke: Stroke;
+    // (undocumented)
+    transformedPoint(index: number, targetSpace: THREE_2.Object3D): THREE_2.Vector3;
+    // (undocumented)
+    worldPoint(index: number): THREE_2.Vector3;
 }
 
 // @public (undocumented)

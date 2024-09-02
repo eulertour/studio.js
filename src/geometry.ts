@@ -10,6 +10,7 @@ import type {
   RectangleAttributes,
 } from "./geometry.types.js";
 import { ORIGIN } from "./utils";
+import { Utils } from "src";
 
 const getFillGeometry = (points: Array<THREE.Vector3>) => {
   const shape = new THREE.Shape();
@@ -98,6 +99,15 @@ abstract class Shape extends THREE.Group {
 
   get points(): Array<THREE.Vector3> {
     return this.stroke.geometry.points;
+  }
+
+  worldPoint(index: number) {
+    return this.localToWorld(this.points[index].clone());
+  }
+
+  transformedPoint(index: number, targetSpace: THREE.Object3D) {
+    const startingPoint = this.points[index].clone();
+    return Utils.transformBetweenSpaces(this, targetSpace, startingPoint);
   }
 
   segment(index: number) {
