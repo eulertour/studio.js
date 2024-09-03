@@ -18,7 +18,9 @@ declare module "three" {
         recenter(center: THREE.Vector3): THREE.Object3D;
         reorient(zRotation: number): void;
         pointAlongCurve(t: number): THREE.Vector3;
-        addComponent(name: string, child: THREE.Object3D): THREE.Object3D;
+        addComponent<T extends THREE.Object3D, K extends string>(name: K, child: T): this & {
+            [P in K]: T;
+        };
         updateComponent(name: string, child: THREE.Object3D): void;
         removeComponent(name: string): THREE.Object3D;
         hideComponents(): THREE.Object3D;
@@ -28,14 +30,26 @@ declare module "three" {
         isHidden(): boolean;
         isRevealed(): boolean;
         isComponent(): boolean;
-        revealDescendants(): THREE.Object3D;
-        hideDescendants(): THREE.Object3D;
-        revealAncestors(): THREE.Object3D;
-        hideAncestors(): THREE.Object3D;
+        revealDescendants(config?: {
+            includeSelf: boolean;
+        }): this;
+        hideDescendants(config?: {
+            includeSelf: boolean;
+        }): THREE.Object3D;
+        revealAncestors(config?: {
+            includeSelf: boolean;
+        }): THREE.Object3D;
+        hideAncestors(config?: {
+            includeSelf: boolean;
+        }): THREE.Object3D;
         revealLineage(): THREE.Object3D;
         hideLineage(): THREE.Object3D;
-        traverseComponents(f: () => void): void;
-        traverseAncestorComponents(f: () => void): void;
+        traverseComponents(f: () => void, config?: {
+            includeSelf: boolean;
+        }): void;
+        traverseAncestorComponents(f: () => void, config?: {
+            includeSelf: boolean;
+        }): void;
     }
     interface Vector3 {
         rotate90(): THREE.Vector3;

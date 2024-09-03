@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { SVGLoader } from "./SVGLoader.js";
-// import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import * as Utils from "./utils";
 THREE.Vector3.prototype.rotate90 = function () {
     return Utils.rotate90(this);
@@ -104,26 +103,20 @@ THREE.Object3D.prototype.isHidden = function () {
     }
     return !this.isRevealed();
 };
-THREE.Object3D.prototype.revealDescendants = function ({ includeSelf = false, } = {}) {
-    this.traverseComponents((obj) => obj.parentComponent && obj.reveal(), {
-        includeSelf,
-    });
+THREE.Object3D.prototype.revealDescendants = function (config) {
+    this.traverseComponents((obj) => obj.parentComponent && obj.reveal(), config);
     return this;
 };
-THREE.Object3D.prototype.hideDescendants = function ({ includeSelf = false, } = {}) {
-    this.traverseComponents((obj) => obj.parentComponent && obj.hide(), {
-        includeSelf,
-    });
+THREE.Object3D.prototype.hideDescendants = function (config) {
+    this.traverseComponents((obj) => obj.parentComponent && obj.hide(), config);
     return this;
 };
-THREE.Object3D.prototype.revealAncestors = function ({ includeSelf = false, } = {}) {
-    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.reveal(), { includeSelf });
+THREE.Object3D.prototype.revealAncestors = function (config) {
+    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.reveal(), config);
     return this;
 };
-THREE.Object3D.prototype.hideAncestors = function ({ includeSelf = false, } = {}) {
-    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.hide(), {
-        includeSelf,
-    });
+THREE.Object3D.prototype.hideAncestors = function (config) {
+    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.hide(), config);
     return this;
 };
 THREE.Object3D.prototype.revealComponents = function () {

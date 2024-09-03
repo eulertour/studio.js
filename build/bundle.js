@@ -99248,26 +99248,20 @@ Object3D.prototype.isHidden = function () {
     }
     return !this.isRevealed();
 };
-Object3D.prototype.revealDescendants = function ({ includeSelf = false, } = {}) {
-    this.traverseComponents((obj) => obj.parentComponent && obj.reveal(), {
-        includeSelf,
-    });
+Object3D.prototype.revealDescendants = function (config) {
+    this.traverseComponents((obj) => obj.parentComponent && obj.reveal(), config);
     return this;
 };
-Object3D.prototype.hideDescendants = function ({ includeSelf = false, } = {}) {
-    this.traverseComponents((obj) => obj.parentComponent && obj.hide(), {
-        includeSelf,
-    });
+Object3D.prototype.hideDescendants = function (config) {
+    this.traverseComponents((obj) => obj.parentComponent && obj.hide(), config);
     return this;
 };
-Object3D.prototype.revealAncestors = function ({ includeSelf = false, } = {}) {
-    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.reveal(), { includeSelf });
+Object3D.prototype.revealAncestors = function (config) {
+    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.reveal(), config);
     return this;
 };
-Object3D.prototype.hideAncestors = function ({ includeSelf = false, } = {}) {
-    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.hide(), {
-        includeSelf,
-    });
+Object3D.prototype.hideAncestors = function (config) {
+    this.traverseAncestorComponents((obj) => obj.parentComponent && obj.hide(), config);
     return this;
 };
 Object3D.prototype.revealComponents = function () {
