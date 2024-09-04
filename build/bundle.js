@@ -55116,11 +55116,13 @@ attribute vec3 endPosition;
 attribute vec3 nextPosition;
 attribute float textureCoords;
 attribute float proportion;
+attribute float endProportion;
 
 varying vec2 vStartFragment;
 varying vec2 vEndFragment;
 varying vec2 vNextFragment;
 varying float vProportion;
+varying float vEndProportion;
 varying float vFlag;
 varying float vArrow;
 varying float vBeforeArrow;
@@ -55137,6 +55139,7 @@ vec2 fragmentCoords(vec4 v) {
 
 void main() {
   vProportion = proportion;
+  vEndProportion = endProportion;
 
   mat4 modelViewProjection = projectionMatrix * modelViewMatrix;
   vec4 start = modelViewProjection * vec4(position, 1.0);
@@ -55168,7 +55171,7 @@ void main() {
   vec2 fragmentOffset
     = 0.75 * unitWidth * segmentVec
     + 0.75 * unitWidth * segmentNormal
-      * (eq(vArrow, 0.) + eq(vArrow, 1.) * 2.618033988);
+           * (eq(vArrow, 0.) + eq(vArrow, 1.) * 2.618033988); // 1 + phi
 
   gl_Position = start * eq(startEnd, 0.) + end * eq(startEnd, 1.);
   gl_Position.xy += (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
@@ -55193,6 +55196,7 @@ varying vec2 vStartFragment;
 varying vec2 vEndFragment;
 varying vec2 vNextFragment;
 varying float vProportion;
+varying float vEndProportion;
 varying float vFlag;
 varying float vArrow;
 varying float vBeforeArrow;
@@ -55247,7 +55251,8 @@ void main() {
     vec2 startToFrag = gl_FragCoord.xy - vStartFragment;
     vec2 startToEnd = vEndFragment - vStartFragment;
     float startToEndDotProduct = dot(startToEnd, startToFrag);
-    vec2 startToEndProjection = startToEndDotProduct / lengthSquared(startToEnd) * startToEnd;
+    float startToEndProjectionFactor = startToEndDotProduct / lengthSquared(startToEnd);
+    vec2 startToEndProjection = startToEndProjectionFactor * startToEnd;
     vec2 startToEndNormal = startToFrag - startToEndProjection;
     vec2 endToFrag = gl_FragCoord.xy - vEndFragment;
     vec2 endToNext = vNextFragment - vEndFragment;
@@ -55309,14 +55314,16 @@ void main() {
     ) discard;
 
     // Exclude fragments that are outside the draw range.
-    if (vProportion < drawRange[0] || drawRange[1] < vProportion) discard;
+    float alpha = clamp(startToEndProjectionFactor, 0., 1.);
+    float proportion = mix(vProportion, vEndProportion, alpha);
+    if (proportion < drawRange[0] || drawRange[1] < proportion) discard;
 
     gl_FragColor = vec4(color, opacity);
 
   ${ShaderChunk.fog_fragment}
 }`;
 
-var _MeshLineGeometry_instances, _MeshLineGeometry_position, _MeshLineGeometry_endPosition, _MeshLineGeometry_nextPosition, _MeshLineGeometry_textureCoords, _MeshLineGeometry_proportion, _MeshLineGeometry_indices, _MeshLineGeometry_attributes, _MeshLineGeometry_previousPointCount, _MeshLineGeometry_pointCount, _MeshLineGeometry_addSegment, _MeshLineGeometry_makeNewBuffers;
+var _MeshLineGeometry_instances, _MeshLineGeometry_position, _MeshLineGeometry_endPosition, _MeshLineGeometry_nextPosition, _MeshLineGeometry_textureCoords, _MeshLineGeometry_proportion, _MeshLineGeometry_endProportion, _MeshLineGeometry_indices, _MeshLineGeometry_attributes, _MeshLineGeometry_previousPointCount, _MeshLineGeometry_pointCount, _MeshLineGeometry_addSegment, _MeshLineGeometry_makeNewBuffers;
 class MeshLineGeometry extends BufferGeometry {
     constructor(arrow = false) {
         super();
@@ -55329,6 +55336,7 @@ class MeshLineGeometry extends BufferGeometry {
         _MeshLineGeometry_nextPosition.set(this, new Float32Array());
         _MeshLineGeometry_textureCoords.set(this, new Float32Array());
         _MeshLineGeometry_proportion.set(this, new Float32Array());
+        _MeshLineGeometry_endProportion.set(this, new Float32Array());
         _MeshLineGeometry_indices.set(this, new Uint16Array());
         _MeshLineGeometry_attributes.set(this, null);
         _MeshLineGeometry_previousPointCount.set(this, 0);
@@ -55450,8 +55458,12 @@ class MeshLineGeometry extends BufferGeometry {
             const offset = 4 * i;
             __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset] = startProportion;
             __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 1] = startProportion;
-            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 2] = endProportion;
-            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 3] = endProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 2] = startProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 3] = startProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_endProportion, "f")[offset] = endProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_endProportion, "f")[offset + 1] = endProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_endProportion, "f")[offset + 2] = endProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_endProportion, "f")[offset + 3] = endProportion;
         }
         if (!__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f"))
             throw new Error("missing attributes");
@@ -55460,6 +55472,7 @@ class MeshLineGeometry extends BufferGeometry {
         __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition.needsUpdate = true;
         __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords.needsUpdate = sizeChanged;
         __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endProportion.needsUpdate = true;
         __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index.needsUpdate = sizeChanged;
         if (updateBounds) {
             this.computeBoundingSphere();
@@ -55482,7 +55495,7 @@ class MeshLineGeometry extends BufferGeometry {
     }
     // These are used to specify where each vertex falls on the line.
     // y ^
-    //   |                   3
+    //   |                  3
     // 0 *-----------------*
     //   |                 |
     //   |                 |
@@ -55525,7 +55538,7 @@ class MeshLineGeometry extends BufferGeometry {
         }
     }
 }
-_MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new WeakMap(), _MeshLineGeometry_nextPosition = new WeakMap(), _MeshLineGeometry_textureCoords = new WeakMap(), _MeshLineGeometry_proportion = new WeakMap(), _MeshLineGeometry_indices = new WeakMap(), _MeshLineGeometry_attributes = new WeakMap(), _MeshLineGeometry_previousPointCount = new WeakMap(), _MeshLineGeometry_pointCount = new WeakMap(), _MeshLineGeometry_instances = new WeakSet(), _MeshLineGeometry_addSegment = function _MeshLineGeometry_addSegment(index, start, end, next) {
+_MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new WeakMap(), _MeshLineGeometry_nextPosition = new WeakMap(), _MeshLineGeometry_textureCoords = new WeakMap(), _MeshLineGeometry_proportion = new WeakMap(), _MeshLineGeometry_endProportion = new WeakMap(), _MeshLineGeometry_indices = new WeakMap(), _MeshLineGeometry_attributes = new WeakMap(), _MeshLineGeometry_previousPointCount = new WeakMap(), _MeshLineGeometry_pointCount = new WeakMap(), _MeshLineGeometry_instances = new WeakSet(), _MeshLineGeometry_addSegment = function _MeshLineGeometry_addSegment(index, start, end, next) {
     let x, y, z;
     const vertexOffset = 12 * index;
     ({ x, y, z } = start);
@@ -55548,6 +55561,7 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
     __classPrivateFieldSet(this, _MeshLineGeometry_nextPosition, new Float32Array(12 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_textureCoords, new Float32Array(4 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_proportion, new Float32Array(4 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_endProportion, new Float32Array(4 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_indices, new Uint16Array(6 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_attributes, {
         position: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_position, "f"), 3),
@@ -55555,6 +55569,7 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
         nextPosition: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_nextPosition, "f"), 3),
         textureCoords: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f"), 1),
         proportion: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f"), 1),
+        endProportion: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_endProportion, "f"), 1),
         index: new BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), 1),
     }, "f");
     this.setAttribute("position", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position);
@@ -55562,6 +55577,7 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
     this.setAttribute("nextPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition);
     this.setAttribute("textureCoords", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords);
     this.setAttribute("proportion", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion);
+    this.setAttribute("endProportion", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endProportion);
     this.setIndex(__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index);
 };
 

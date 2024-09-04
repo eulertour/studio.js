@@ -10,6 +10,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
   #nextPosition = new Float32Array();
   #textureCoords = new Float32Array();
   #proportion = new Float32Array();
+  #endProportion = new Float32Array();
   #indices = new Uint16Array();
 
   #attributes: {
@@ -18,6 +19,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
     nextPosition: THREE.Float32BufferAttribute;
     textureCoords: THREE.Float32BufferAttribute;
     proportion: THREE.Float32BufferAttribute;
+    endProportion: THREE.Float32BufferAttribute;
     index: THREE.Uint16BufferAttribute;
   } | null = null;
 
@@ -167,8 +169,12 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
       const offset = 4 * i;
       this.#proportion[offset] = startProportion;
       this.#proportion[offset + 1] = startProportion;
-      this.#proportion[offset + 2] = endProportion;
-      this.#proportion[offset + 3] = endProportion;
+      this.#proportion[offset + 2] = startProportion;
+      this.#proportion[offset + 3] = startProportion;
+      this.#endProportion[offset] = endProportion;
+      this.#endProportion[offset + 1] = endProportion;
+      this.#endProportion[offset + 2] = endProportion;
+      this.#endProportion[offset + 3] = endProportion;
     }
 
     if (!this.#attributes) throw new Error("missing attributes");
@@ -177,6 +183,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
     this.#attributes.nextPosition.needsUpdate = true;
     this.#attributes.textureCoords.needsUpdate = sizeChanged;
     this.#attributes.proportion.needsUpdate = true;
+    this.#attributes.endProportion.needsUpdate = true;
     this.#attributes.index.needsUpdate = sizeChanged;
 
     if (updateBounds) {
@@ -221,6 +228,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
     this.#nextPosition = new Float32Array(12 * rectCount);
     this.#textureCoords = new Float32Array(4 * rectCount);
     this.#proportion = new Float32Array(4 * rectCount);
+    this.#endProportion = new Float32Array(4 * rectCount);
     this.#indices = new Uint16Array(6 * rectCount);
 
     this.#attributes = {
@@ -229,6 +237,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
       nextPosition: new THREE.BufferAttribute(this.#nextPosition, 3),
       textureCoords: new THREE.BufferAttribute(this.#textureCoords, 1),
       proportion: new THREE.BufferAttribute(this.#proportion, 1),
+      endProportion: new THREE.BufferAttribute(this.#endProportion, 1),
       index: new THREE.BufferAttribute(this.#indices, 1),
     };
 
@@ -237,6 +246,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
     this.setAttribute("nextPosition", this.#attributes.nextPosition);
     this.setAttribute("textureCoords", this.#attributes.textureCoords);
     this.setAttribute("proportion", this.#attributes.proportion);
+    this.setAttribute("endProportion", this.#attributes.endProportion);
     this.setIndex(this.#attributes.index);
   }
 
@@ -263,7 +273,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 
   // These are used to specify where each vertex falls on the line.
   // y ^
-  //   |                   3
+  //   |                  3
   // 0 *-----------------*
   //   |                 |
   //   |                 |

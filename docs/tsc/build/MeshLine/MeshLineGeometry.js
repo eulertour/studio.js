@@ -9,7 +9,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _MeshLineGeometry_instances, _MeshLineGeometry_position, _MeshLineGeometry_endPosition, _MeshLineGeometry_nextPosition, _MeshLineGeometry_textureCoords, _MeshLineGeometry_proportion, _MeshLineGeometry_indices, _MeshLineGeometry_attributes, _MeshLineGeometry_previousPointCount, _MeshLineGeometry_pointCount, _MeshLineGeometry_addSegment, _MeshLineGeometry_makeNewBuffers;
+var _MeshLineGeometry_instances, _MeshLineGeometry_position, _MeshLineGeometry_endPosition, _MeshLineGeometry_nextPosition, _MeshLineGeometry_textureCoords, _MeshLineGeometry_proportion, _MeshLineGeometry_endProportion, _MeshLineGeometry_indices, _MeshLineGeometry_attributes, _MeshLineGeometry_previousPointCount, _MeshLineGeometry_pointCount, _MeshLineGeometry_addSegment, _MeshLineGeometry_makeNewBuffers;
 import * as THREE from "three";
 import "./meshline.glsl.js";
 class MeshLineGeometry extends THREE.BufferGeometry {
@@ -24,6 +24,7 @@ class MeshLineGeometry extends THREE.BufferGeometry {
         _MeshLineGeometry_nextPosition.set(this, new Float32Array());
         _MeshLineGeometry_textureCoords.set(this, new Float32Array());
         _MeshLineGeometry_proportion.set(this, new Float32Array());
+        _MeshLineGeometry_endProportion.set(this, new Float32Array());
         _MeshLineGeometry_indices.set(this, new Uint16Array());
         _MeshLineGeometry_attributes.set(this, null);
         _MeshLineGeometry_previousPointCount.set(this, 0);
@@ -145,8 +146,12 @@ class MeshLineGeometry extends THREE.BufferGeometry {
             const offset = 4 * i;
             __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset] = startProportion;
             __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 1] = startProportion;
-            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 2] = endProportion;
-            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 3] = endProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 2] = startProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 3] = startProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_endProportion, "f")[offset] = endProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_endProportion, "f")[offset + 1] = endProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_endProportion, "f")[offset + 2] = endProportion;
+            __classPrivateFieldGet(this, _MeshLineGeometry_endProportion, "f")[offset + 3] = endProportion;
         }
         if (!__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f"))
             throw new Error("missing attributes");
@@ -155,6 +160,7 @@ class MeshLineGeometry extends THREE.BufferGeometry {
         __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition.needsUpdate = true;
         __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords.needsUpdate = sizeChanged;
         __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion.needsUpdate = true;
+        __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endProportion.needsUpdate = true;
         __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index.needsUpdate = sizeChanged;
         if (updateBounds) {
             this.computeBoundingSphere();
@@ -177,7 +183,7 @@ class MeshLineGeometry extends THREE.BufferGeometry {
     }
     // These are used to specify where each vertex falls on the line.
     // y ^
-    //   |                   3
+    //   |                  3
     // 0 *-----------------*
     //   |                 |
     //   |                 |
@@ -220,7 +226,7 @@ class MeshLineGeometry extends THREE.BufferGeometry {
         }
     }
 }
-_MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new WeakMap(), _MeshLineGeometry_nextPosition = new WeakMap(), _MeshLineGeometry_textureCoords = new WeakMap(), _MeshLineGeometry_proportion = new WeakMap(), _MeshLineGeometry_indices = new WeakMap(), _MeshLineGeometry_attributes = new WeakMap(), _MeshLineGeometry_previousPointCount = new WeakMap(), _MeshLineGeometry_pointCount = new WeakMap(), _MeshLineGeometry_instances = new WeakSet(), _MeshLineGeometry_addSegment = function _MeshLineGeometry_addSegment(index, start, end, next) {
+_MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new WeakMap(), _MeshLineGeometry_nextPosition = new WeakMap(), _MeshLineGeometry_textureCoords = new WeakMap(), _MeshLineGeometry_proportion = new WeakMap(), _MeshLineGeometry_endProportion = new WeakMap(), _MeshLineGeometry_indices = new WeakMap(), _MeshLineGeometry_attributes = new WeakMap(), _MeshLineGeometry_previousPointCount = new WeakMap(), _MeshLineGeometry_pointCount = new WeakMap(), _MeshLineGeometry_instances = new WeakSet(), _MeshLineGeometry_addSegment = function _MeshLineGeometry_addSegment(index, start, end, next) {
     let x, y, z;
     const vertexOffset = 12 * index;
     ({ x, y, z } = start);
@@ -243,6 +249,7 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
     __classPrivateFieldSet(this, _MeshLineGeometry_nextPosition, new Float32Array(12 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_textureCoords, new Float32Array(4 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_proportion, new Float32Array(4 * rectCount), "f");
+    __classPrivateFieldSet(this, _MeshLineGeometry_endProportion, new Float32Array(4 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_indices, new Uint16Array(6 * rectCount), "f");
     __classPrivateFieldSet(this, _MeshLineGeometry_attributes, {
         position: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_position, "f"), 3),
@@ -250,6 +257,7 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
         nextPosition: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_nextPosition, "f"), 3),
         textureCoords: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f"), 1),
         proportion: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f"), 1),
+        endProportion: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_endProportion, "f"), 1),
         index: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), 1),
     }, "f");
     this.setAttribute("position", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position);
@@ -257,6 +265,7 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
     this.setAttribute("nextPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition);
     this.setAttribute("textureCoords", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords);
     this.setAttribute("proportion", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion);
+    this.setAttribute("endProportion", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endProportion);
     this.setIndex(__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index);
 };
 export default MeshLineGeometry;

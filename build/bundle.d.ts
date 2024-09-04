@@ -13,7 +13,7 @@ declare namespace Geometry {
         setVertexData(array: WritableArrayLike<number>, offset: number, x: number, y: number, z: number): void;
         // These are used to specify where each vertex falls on the line.
         // y ^
-        //   |                   3
+        //   |                  3
         // 0 *-----------------*
         //   |                 |
         //   |                 |
@@ -803,7 +803,7 @@ declare namespace Graphing {
         setVertexData(array: WritableArrayLike<number>, offset: number, x: number, y: number, z: number): void;
         // These are used to specify where each vertex falls on the line.
         // y ^
-        //   |                   3
+        //   |                  3
         // 0 *-----------------*
         //   |                 |
         //   |                 |

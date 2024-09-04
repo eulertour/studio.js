@@ -17,11 +17,13 @@ attribute vec3 endPosition;
 attribute vec3 nextPosition;
 attribute float textureCoords;
 attribute float proportion;
+attribute float endProportion;
 
 varying vec2 vStartFragment;
 varying vec2 vEndFragment;
 varying vec2 vNextFragment;
 varying float vProportion;
+varying float vEndProportion;
 varying float vFlag;
 varying float vArrow;
 varying float vBeforeArrow;
@@ -38,6 +40,7 @@ vec2 fragmentCoords(vec4 v) {
 
 void main() {
   vProportion = proportion;
+  vEndProportion = endProportion;
 
   mat4 modelViewProjection = projectionMatrix * modelViewMatrix;
   vec4 start = modelViewProjection * vec4(position, 1.0);
@@ -69,7 +72,7 @@ void main() {
   vec2 fragmentOffset
     = 0.75 * unitWidth * segmentVec
     + 0.75 * unitWidth * segmentNormal
-      * (eq(vArrow, 0.) + eq(vArrow, 1.) * 2.618033988);
+           * (eq(vArrow, 0.) + eq(vArrow, 1.) * 2.618033988); // 1 + phi
 
   gl_Position = start * eq(startEnd, 0.) + end * eq(startEnd, 1.);
   gl_Position.xy += (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
@@ -94,6 +97,7 @@ varying vec2 vStartFragment;
 varying vec2 vEndFragment;
 varying vec2 vNextFragment;
 varying float vProportion;
+varying float vEndProportion;
 varying float vFlag;
 varying float vArrow;
 varying float vBeforeArrow;
@@ -148,7 +152,8 @@ void main() {
     vec2 startToFrag = gl_FragCoord.xy - vStartFragment;
     vec2 startToEnd = vEndFragment - vStartFragment;
     float startToEndDotProduct = dot(startToEnd, startToFrag);
-    vec2 startToEndProjection = startToEndDotProduct / lengthSquared(startToEnd) * startToEnd;
+    float startToEndProjectionFactor = startToEndDotProduct / lengthSquared(startToEnd);
+    vec2 startToEndProjection = startToEndProjectionFactor * startToEnd;
     vec2 startToEndNormal = startToFrag - startToEndProjection;
     vec2 endToFrag = gl_FragCoord.xy - vEndFragment;
     vec2 endToNext = vNextFragment - vEndFragment;
@@ -210,7 +215,9 @@ void main() {
     ) discard;
 
     // Exclude fragments that are outside the draw range.
-    if (vProportion < drawRange[0] || drawRange[1] < vProportion) discard;
+    float alpha = clamp(startToEndProjectionFactor, 0., 1.);
+    float proportion = mix(vProportion, vEndProportion, alpha);
+    if (proportion < drawRange[0] || drawRange[1] < proportion) discard;
 
     gl_FragColor = vec4(color, opacity);
 
