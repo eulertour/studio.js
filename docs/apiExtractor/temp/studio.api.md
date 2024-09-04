@@ -373,7 +373,7 @@ class Indicator extends THREE_2.Group {
     // (undocumented)
     endTick: Geometry.Line;
     // (undocumented)
-    grow(config: any): Animation_3;
+    grow(config?: any): Animation_3;
     // (undocumented)
     start: THREE_2.Vector3;
     // (undocumented)

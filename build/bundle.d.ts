@@ -11,7 +11,23 @@ declare namespace Geometry {
         constructor(arrow?: boolean);
         setPoints(points: Array<THREE.Vector3>, updateBounds?: boolean): void;
         setVertexData(array: WritableArrayLike<number>, offset: number, x: number, y: number, z: number): void;
+        // These are used to specify where each vertex falls on the line.
+        // y ^
+        //   |                   3
+        // 0 *-----------------*
+        //   |                 |
+        //   |                 |
+        //   |                 |
+        //   *-----------------*--> x
+        // 1                   2
         setTextureCoords(array: WritableArrayLike<number>, offset: number): void;
+        // 0, 3              5
+        // *-----------------*
+        // |                 |
+        // |                 |
+        // |                 |
+        // *-----------------*
+        // 1                 2, 4
         setIndices(array: WritableArrayLike<number>, offset: number, startIndex: number): void;
         computeBoundingSphere(): void;
     }
@@ -745,7 +761,7 @@ declare namespace Diagram {
         endTick: Geometry.Line;
         stem: any;
         constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig & Style);
-        grow(config: any): Animation;
+        grow(config?: any): Animation;
     }
     class Congruent extends THREE.Group {
         ticks: number;
@@ -785,7 +801,23 @@ declare namespace Graphing {
         constructor(arrow?: boolean);
         setPoints(points: Array<THREE.Vector3>, updateBounds?: boolean): void;
         setVertexData(array: WritableArrayLike<number>, offset: number, x: number, y: number, z: number): void;
+        // These are used to specify where each vertex falls on the line.
+        // y ^
+        //   |                   3
+        // 0 *-----------------*
+        //   |                 |
+        //   |                 |
+        //   |                 |
+        //   *-----------------*--> x
+        // 1                   2
         setTextureCoords(array: WritableArrayLike<number>, offset: number): void;
+        // 0, 3              5
+        // *-----------------*
+        // |                 |
+        // |                 |
+        // |                 |
+        // *-----------------*
+        // 1                 2, 4
         setIndices(array: WritableArrayLike<number>, offset: number, startIndex: number): void;
         computeBoundingSphere(): void;
     }

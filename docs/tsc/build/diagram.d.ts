@@ -12,7 +12,7 @@ declare class Indicator extends THREE.Group {
     endTick: Geometry.Line;
     stem: any;
     constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig & Style);
-    grow(config: any): Animation;
+    grow(config?: any): Animation;
 }
 declare class Congruent extends THREE.Group {
     ticks: number;

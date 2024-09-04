@@ -261,6 +261,15 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
     array[offset + 11] = z;
   }
 
+  // These are used to specify where each vertex falls on the line.
+  // y ^
+  //   |                   3
+  // 0 *-----------------*
+  //   |                 |
+  //   |                 |
+  //   |                 |
+  //   *-----------------*--> x
+  // 1                   2
   setTextureCoords(array: WritableArrayLike<number>, offset: number) {
     array[offset] = 1; // 8 * 0 + 4 * 0 + 2 * 0 + 1;
     // array[offset + 1] = 0; // 8 * 0 + 4 * 0 + 2 * 0 + 0;
@@ -268,6 +277,13 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
     array[offset + 3] = 3; // 8 * 0 + 4 * 0 + 2 * 1 + 1;
   }
 
+  // 0, 3              5
+  // *-----------------*
+  // |                 |
+  // |                 |
+  // |                 |
+  // *-----------------*
+  // 1                 2, 4
   setIndices(
     array: WritableArrayLike<number>,
     offset: number,

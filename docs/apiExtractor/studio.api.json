@@ -2874,7 +2874,7 @@
                   "excerptTokens": [
                     {
                       "kind": "Content",
-                      "text": "grow(config: "
+                      "text": "grow(config?: "
                     },
                     {
                       "kind": "Content",
@@ -2909,7 +2909,7 @@
                         "startIndex": 1,
                         "endIndex": 2
                       },
-                      "isOptional": false
+                      "isOptional": true
                     }
                   ],
                   "isOptional": false,
