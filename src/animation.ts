@@ -267,7 +267,7 @@ class FadeIn extends Animation {
             if (child instanceof THREE.Mesh) {
               child.material.opacity = THREE.MathUtils.lerp(
                 0,
-                config?.preserveOpacity ? this.initialOpacity.get(child) : 1,
+                this.initialOpacity.get(child),
                 elapsedTime,
               );
             }
@@ -277,7 +277,7 @@ class FadeIn extends Animation {
             if (!mesh) return;
             mesh.material.opacity = THREE.MathUtils.lerp(
               0,
-              config?.preserveOpacity ? this.initialOpacity.get(mesh) : 1,
+              this.initialOpacity.get(mesh),
               elapsedTime,
             );
           });

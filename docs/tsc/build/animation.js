@@ -178,7 +178,7 @@ class FadeIn extends Animation {
             if (family) {
                 this.object.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
-                        child.material.opacity = THREE.MathUtils.lerp(0, (config === null || config === void 0 ? void 0 : config.preserveOpacity) ? this.initialOpacity.get(child) : 1, elapsedTime);
+                        child.material.opacity = THREE.MathUtils.lerp(0, this.initialOpacity.get(child), elapsedTime);
                     }
                 });
             }
@@ -186,7 +186,7 @@ class FadeIn extends Animation {
                 [this.object.stroke, this.object.fill].forEach((mesh) => {
                     if (!mesh)
                         return;
-                    mesh.material.opacity = THREE.MathUtils.lerp(0, (config === null || config === void 0 ? void 0 : config.preserveOpacity) ? this.initialOpacity.get(mesh) : 1, elapsedTime);
+                    mesh.material.opacity = THREE.MathUtils.lerp(0, this.initialOpacity.get(mesh), elapsedTime);
                 });
             }
         }, Object.assign({ object, reveal: true }, config));
