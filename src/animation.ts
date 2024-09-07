@@ -267,7 +267,7 @@ class FadeIn extends Animation {
             if (child instanceof THREE.Mesh) {
               child.material.opacity = THREE.MathUtils.lerp(
                 0,
-                this.initialOpacity.get(child),
+                config?.preserveOpacity ? this.initialOpacity.get(child) : 1,
                 elapsedTime,
               );
             }
@@ -277,7 +277,7 @@ class FadeIn extends Animation {
             if (!mesh) return;
             mesh.material.opacity = THREE.MathUtils.lerp(
               0,
-              this.initialOpacity.get(mesh),
+              config?.preserveOpacity ? this.initialOpacity.get(mesh) : 1,
               elapsedTime,
             );
           });
@@ -290,12 +290,6 @@ class FadeIn extends Animation {
   setUp() {
     super.setUp();
     this.object.traverse((child: THREE.Object3D) => {
-      if (child instanceof THREE.Mesh) {
-        this.initialOpacity.set(child, child.material.opacity);
-      }
-    });
-
-    this.object.traverseComponents((child: THREE.Object3D) => {
       if (child instanceof THREE.Mesh) {
         this.initialOpacity.set(child, child.material.opacity);
       }
@@ -348,12 +342,6 @@ class FadeOut extends Animation {
   setUp() {
     super.setUp();
     this.object.traverse((child: THREE.Object3D) => {
-      if (child instanceof THREE.Mesh) {
-        this.initialOpacity.set(child, child.material.opacity);
-      }
-    });
-
-    this.object.traverseComponents((child: THREE.Object3D) => {
       if (child instanceof THREE.Mesh) {
         this.initialOpacity.set(child, child.material.opacity);
       }

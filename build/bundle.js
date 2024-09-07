@@ -98805,7 +98805,7 @@ class FadeIn extends Animation {
             if (family) {
                 this.object.traverse((child) => {
                     if (child instanceof Mesh) {
-                        child.material.opacity = MathUtils.lerp(0, this.initialOpacity.get(child), elapsedTime);
+                        child.material.opacity = MathUtils.lerp(0, (config === null || config === void 0 ? void 0 : config.preserveOpacity) ? this.initialOpacity.get(child) : 1, elapsedTime);
                     }
                 });
             }
@@ -98813,7 +98813,7 @@ class FadeIn extends Animation {
                 [this.object.stroke, this.object.fill].forEach((mesh) => {
                     if (!mesh)
                         return;
-                    mesh.material.opacity = MathUtils.lerp(0, this.initialOpacity.get(mesh), elapsedTime);
+                    mesh.material.opacity = MathUtils.lerp(0, (config === null || config === void 0 ? void 0 : config.preserveOpacity) ? this.initialOpacity.get(mesh) : 1, elapsedTime);
                 });
             }
         }, Object.assign({ object, reveal: true }, config));
@@ -98822,11 +98822,6 @@ class FadeIn extends Animation {
     setUp() {
         super.setUp();
         this.object.traverse((child) => {
-            if (child instanceof Mesh) {
-                this.initialOpacity.set(child, child.material.opacity);
-            }
-        });
-        this.object.traverseComponents((child) => {
             if (child instanceof Mesh) {
                 this.initialOpacity.set(child, child.material.opacity);
             }
@@ -98864,11 +98859,6 @@ class FadeOut extends Animation {
     setUp() {
         super.setUp();
         this.object.traverse((child) => {
-            if (child instanceof Mesh) {
-                this.initialOpacity.set(child, child.material.opacity);
-            }
-        });
-        this.object.traverseComponents((child) => {
             if (child instanceof Mesh) {
                 this.initialOpacity.set(child, child.material.opacity);
             }
