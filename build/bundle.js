@@ -98826,6 +98826,11 @@ class FadeIn extends Animation {
                 this.initialOpacity.set(child, child.material.opacity);
             }
         });
+        this.object.traverseComponents((child) => {
+            if (child instanceof Mesh) {
+                this.initialOpacity.set(child, child.material.opacity);
+            }
+        });
     }
 }
 class FadeOut extends Animation {
@@ -98859,6 +98864,11 @@ class FadeOut extends Animation {
     setUp() {
         super.setUp();
         this.object.traverse((child) => {
+            if (child instanceof Mesh) {
+                this.initialOpacity.set(child, child.material.opacity);
+            }
+        });
+        this.object.traverseComponents((child) => {
             if (child instanceof Mesh) {
                 this.initialOpacity.set(child, child.material.opacity);
             }
