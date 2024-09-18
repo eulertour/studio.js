@@ -29,12 +29,14 @@ class Animation {
         this.hide = hide;
     }
     setUp() {
-        if (this.object.parentComponent) {
+        var _a;
+        if ((_a = this === null || this === void 0 ? void 0 : this.object) === null || _a === void 0 ? void 0 : _a.parentComponent) {
             this.object.revealAncestors({ includeSelf: true });
         }
     }
     tearDown() {
-        if (this.hide && this.object.parentComponent) {
+        var _a;
+        if (this.hide && ((_a = this === null || this === void 0 ? void 0 : this.object) === null || _a === void 0 ? void 0 : _a.parentComponent)) {
             this.object.hide();
         }
     }

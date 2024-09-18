@@ -72,13 +72,13 @@ class Animation {
   }
 
   setUp() {
-    if (this.object.parentComponent) {
+    if (this?.object?.parentComponent) {
       this.object.revealAncestors({ includeSelf: true });
     }
   }
 
   tearDown() {
-    if (this.hide && this.object.parentComponent) {
+    if (this.hide && this?.object?.parentComponent) {
       this.object.hide();
     }
   }
