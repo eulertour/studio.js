@@ -10,7 +10,7 @@ import {
 export default class Example implements StudioScene {
   animations: Array<AnimationRepresentation>;
 
-  // Data referenced in both constructor() and loop() should
+  // Data referenced in both constructor() and update() should
   // be saved to instance variables.
   square: Geometry.Square;
   circle: Geometry.Circle;
@@ -79,10 +79,10 @@ export default class Example implements StudioScene {
     ];
   }
 
-  // this.loop() is called before each render (except the very first).
+  // this.update() is called before each render (except the very first).
   // This usually means that it's called 60 times per second, but it
   // will vary depending on your display settings.
-  loop(time: number, deltaTime: number) {
+  update(deltaTime: number, time: number) {
     this.welcome.position.x = 6 - (6 / 5) * time;
 
     this.circle.position.x = 3.5 + Math.cos(-2 * time);

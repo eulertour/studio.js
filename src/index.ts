@@ -363,10 +363,28 @@ THREE.Object3D.prototype.recenter = function (
   globalPosition: THREE.Vector3,
 ): THREE.Object3D {
   const localPosition = globalPosition.clone();
-  this.worldToLocal(localPosition);
+  this.worldToLocal(globalPosition.clone());
   const offset = new THREE.Vector3().subVectors(localPosition, this.position);
   this.position.add(offset);
-  this.children.forEach((child) => child.position.sub(offset));
+
+  if (this.points) {
+    // Update stroke and fill geometries.
+    const newPoints = this.points.map((point) => point.clone().sub(offset));
+    this.stroke.geometry.setPoints(newPoints);
+    for (let i = 0; i < this.stroke.geometry.points.length - 1; i++) {
+      const { x, y, z } = newPoints[i];
+      this.fill.geometry.attributes.position.array[i * 3] = x;
+      this.fill.geometry.attributes.position.array[i * 3 + 1] = y;
+      this.fill.geometry.attributes.position.array[i * 3 + 2] = z;
+    }
+  }
+
+  // Update children.
+  this.children.forEach((child) => {
+    if (child === this.stroke || child === this.fill) return;
+    child.position.sub(offset);
+  });
+
   return this;
 };
 

@@ -35,7 +35,7 @@ export default class Example implements StudioScene {
     this.scene.add(this.square);
   }
 
-  loop(t: number) {
+  update(_: number, t: number) {
     if (t - this.lastRevealTime >= this.revealInterval) {
       if (this.square.label.isHidden()) {
         this.square.label.reveal();

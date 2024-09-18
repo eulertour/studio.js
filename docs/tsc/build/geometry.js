@@ -24,6 +24,7 @@ class Shape extends THREE.Group {
             color: config.fillColor,
             opacity: config.fillOpacity,
             transparent: true,
+            side: THREE.DoubleSide,
         });
         this.fill = new THREE.Mesh(fillGeometry, fillMaterial);
         this.add(this.fill);

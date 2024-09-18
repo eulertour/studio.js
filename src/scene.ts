@@ -35,7 +35,7 @@ export interface StudioScene<
   camera: T;
   renderer: THREE.WebGLRenderer;
   animations?: Array<AnimationRepresentation>;
-  loop?: (time: number, deltaTime: number) => void;
+  update?: (deltaTime: number, time: number) => void;
 }
 
 export class SceneController {
@@ -147,8 +147,8 @@ export class SceneController {
     }
 
     try {
-      this.userScene.loop &&
-        this.userScene.loop(this.elapsedTime, this.deltaTime);
+      this.userScene.update &&
+        this.userScene.update(this.deltaTime, this.elapsedTime);
       const roundedTime =
         Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
       this.loopAnimations.forEach((animation) => animation.update(roundedTime));

@@ -96,8 +96,8 @@ export class SceneController {
             this.elapsedTime += deltaTime;
         }
         try {
-            this.userScene.loop &&
-                this.userScene.loop(this.elapsedTime, this.deltaTime);
+            this.userScene.update &&
+                this.userScene.update(this.deltaTime, this.elapsedTime);
             const roundedTime = Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
             this.loopAnimations.forEach((animation) => animation.update(roundedTime));
         }

@@ -754,11 +754,11 @@ export interface StudioScene<T extends THREE_2.Camera = THREE_2.OrthographicCame
     // (undocumented)
     camera: T;
     // (undocumented)
-    loop?: (time: number, deltaTime: number) => void;
-    // (undocumented)
     renderer: THREE_2.WebGLRenderer;
     // (undocumented)
     scene: THREE_2.Scene;
+    // (undocumented)
+    update?: (deltaTime: number, time: number) => void;
 }
 
 export { SVGLoader }

@@ -28,7 +28,7 @@ export default class Animation implements StudioScene {
     this.animations = [];
   }
 
-  loop(time: number, deltaTime: number) {}
+  update(deltaTime: number, time: number) {}
 }
 ```
 

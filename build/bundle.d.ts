@@ -614,7 +614,7 @@ interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
     camera: T;
     renderer: THREE.WebGLRenderer;
     animations?: Array<AnimationRepresentation>;
-    loop?: (time: number, deltaTime: number) => void;
+    update?: (deltaTime: number, time: number) => void;
 }
 declare class SceneController {
     UserScene: Class<StudioScene>;

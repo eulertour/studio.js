@@ -8708,33 +8708,6 @@
             },
             {
               "kind": "PropertySignature",
-              "canonicalReference": "@eulertour/studio!StudioScene#loop:member",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "loop?: "
-                },
-                {
-                  "kind": "Content",
-                  "text": "(time: number, deltaTime: number) => void"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "isReadonly": false,
-              "isOptional": true,
-              "releaseTag": "Public",
-              "name": "loop",
-              "propertyTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
-              "kind": "PropertySignature",
               "canonicalReference": "@eulertour/studio!StudioScene#renderer:member",
               "docComment": "",
               "excerptTokens": [
@@ -8784,6 +8757,33 @@
               "isOptional": false,
               "releaseTag": "Public",
               "name": "scene",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "@eulertour/studio!StudioScene#update:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "update?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(deltaTime: number, time: number) => void"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "update",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
                 "endIndex": 2
