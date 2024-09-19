@@ -14,7 +14,7 @@ export default [
       nodeResolve({ extensions: [".js", ".ts"] }),
       ts(),
       commonjs(),
-      // terser(),
+      terser(),
     ],
   },
 ];
