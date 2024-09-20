@@ -96,7 +96,7 @@ declare class Polyline extends Shape {
     getClassConfig(): {};
     getAttributes(): PolygonAttributes;
     static asRightAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
-        sideLength: number;
+        sideLength?: number;
     }): Polyline;
     static fromAttributes(attributes: PolygonAttributes): Polyline;
 }
@@ -114,12 +114,17 @@ declare class Arc extends Shape {
     });
     static defaultConfig(): {
         closed: boolean;
+        fill: boolean;
     };
     reshape(radius?: number, angle?: number, config?: Style & {
         closed?: boolean;
     }): void;
     getCloneAttributes(): (number | boolean)[];
     getAttributes(): ArcAttributes;
+    static asAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+        radius?: number;
+        reflex?: boolean;
+    }): Arc;
     static fromAttributes(attributes: ArcAttributes): Arc;
     get attributeData(): ({
         attribute: string;
@@ -161,6 +166,7 @@ declare class Point extends Circle {
     static defaultConfig(): {
         radius: number;
         closed: boolean;
+        fill: boolean;
     };
     getAttributes(): ArcAttributes;
     static fromAttributes(): Point;

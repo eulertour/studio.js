@@ -101,6 +101,11 @@ class Arc extends Shape {
     // (undocumented)
     angle: number;
     // (undocumented)
+    static asAngle(point1: THREE_2.Vector3, point2: THREE_2.Vector3, point3: THREE_2.Vector3, config?: Style & {
+        radius?: number;
+        reflex?: boolean;
+    }): Arc;
+    // (undocumented)
     get attributeData(): ({
         attribute: string;
         type: string;
@@ -115,6 +120,7 @@ class Arc extends Shape {
     // (undocumented)
     static defaultConfig(): {
         closed: boolean;
+        fill: boolean;
     };
     // (undocumented)
     static fromAttributes(attributes: ArcAttributes): Arc;
@@ -469,6 +475,7 @@ class Point extends Circle {
     static defaultConfig(): {
         radius: number;
         closed: boolean;
+        fill: boolean;
     };
     // (undocumented)
     static fromAttributes(): Point;
@@ -499,7 +506,7 @@ class Polyline extends Shape {
     constructor(points: Array<THREE_2.Vector3>, config?: Style);
     // (undocumented)
     static asRightAngle(point1: THREE_2.Vector3, point2: THREE_2.Vector3, point3: THREE_2.Vector3, config?: Style & {
-        sideLength: number;
+        sideLength?: number;
     }): Polyline;
     // (undocumented)
     static defaultConfig(): {

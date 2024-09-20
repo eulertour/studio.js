@@ -289,7 +289,8 @@ class Polyline extends Shape {
             points: this.points,
         };
     }
-    static asRightAngle(point1, point2, point3, config = { sideLength: 0.35 }) {
+    static asRightAngle(point1, point2, point3, config = {}) {
+        config = Object.assign({ sideLength: 0.35 }, config);
         const vector21 = new THREE.Vector3()
             .subVectors(point1, point2)
             .setLength(config.sideLength);
@@ -352,7 +353,7 @@ class Arc extends Shape {
         }
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { closed: false });
+        return Object.assign(Object.assign({}, super.defaultConfig()), { closed: false, fill: false });
     }
     reshape(radius = 1, angle = Math.PI / 2, config = {}) {
         this.radius = radius;
@@ -368,6 +369,21 @@ class Arc extends Shape {
             angle: this.angle,
             closed: this.closed,
         };
+    }
+    // TODO: Handle obtuse angles.
+    static asAngle(point1, point2, point3, config = {}) {
+        config = Object.assign({ radius: 0.4, reflex: false }, config);
+        const vector21 = new THREE.Vector3().subVectors(point1, point2);
+        const vector23 = new THREE.Vector3().subVectors(point3, point2);
+        let arcAngle = vector21.angleTo(vector23);
+        if (config.reflex) {
+            arcAngle = Math.PI - arcAngle;
+        }
+        const arcRotation = Math.min(Utils.RIGHT.angleTo(vector21), Utils.RIGHT.angleTo(vector23));
+        const arc = new Arc(config.radius, arcAngle, config);
+        arc.position.copy(point2);
+        arc.rotateZ(arcRotation);
+        return arc;
     }
     static fromAttributes(attributes) {
         const { radius, angle, closed } = attributes;

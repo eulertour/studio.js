@@ -177,7 +177,7 @@ declare namespace Geometry {
         getClassConfig(): {};
         getAttributes(): PolygonAttributes;
         static asRightAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
-            sideLength: number;
+            sideLength?: number;
         }): Polyline;
         static fromAttributes(attributes: PolygonAttributes): Polyline;
     }
@@ -195,12 +195,18 @@ declare namespace Geometry {
         });
         static defaultConfig(): {
             closed: boolean;
+            fill: boolean;
         };
         reshape(radius?: number, angle?: number, config?: Style & {
             closed?: boolean;
         }): void;
         getCloneAttributes(): (number | boolean)[];
         getAttributes(): ArcAttributes;
+        // TODO: Handle obtuse angles.
+        static asAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+            radius?: number;
+            reflex?: boolean;
+        }): Arc;
         static fromAttributes(attributes: ArcAttributes): Arc;
         get attributeData(): ({
             attribute: string;
@@ -242,6 +248,7 @@ declare namespace Geometry {
         static defaultConfig(): {
             radius: number;
             closed: boolean;
+            fill: boolean;
         };
         getAttributes(): ArcAttributes;
         static fromAttributes(): Point;
@@ -979,7 +986,7 @@ declare namespace Graphing {
         getClassConfig(): {};
         getAttributes(): PolygonAttributes;
         static asRightAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
-            sideLength: number;
+            sideLength?: number;
         }): Polyline;
         static fromAttributes(attributes: PolygonAttributes): Polyline;
     }
@@ -997,12 +1004,18 @@ declare namespace Graphing {
         });
         static defaultConfig(): {
             closed: boolean;
+            fill: boolean;
         };
         reshape(radius?: number, angle?: number, config?: Style & {
             closed?: boolean;
         }): void;
         getCloneAttributes(): (number | boolean)[];
         getAttributes(): ArcAttributes;
+        // TODO: Handle obtuse angles.
+        static asAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+            radius?: number;
+            reflex?: boolean;
+        }): Arc;
         static fromAttributes(attributes: ArcAttributes): Arc;
         get attributeData(): ({
             attribute: string;
@@ -1044,6 +1057,7 @@ declare namespace Graphing {
         static defaultConfig(): {
             radius: number;
             closed: boolean;
+            fill: boolean;
         };
         getAttributes(): ArcAttributes;
         static fromAttributes(): Point;
