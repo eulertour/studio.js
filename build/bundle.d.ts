@@ -94,6 +94,8 @@ declare namespace Geometry {
         arrow: boolean;
         constructor(points: Array<THREE.Vector3>, config?: Style & {
             arrow?: boolean;
+            stroke?: boolean;
+            fill?: boolean;
         });
         static defaultStyle(): {
             strokeColor: THREE.Color;
@@ -169,8 +171,14 @@ declare namespace Geometry {
     class Polyline extends Shape {
         constructor(points: Array<THREE.Vector3>, config?: Style);
         reshape(points: Array<THREE.Vector3>, config?: Style): void;
+        static defaultConfig(): {
+            fill: boolean;
+        };
         getClassConfig(): {};
         getAttributes(): PolygonAttributes;
+        static asRightAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+            sideLength: number;
+        }): Polyline;
         static fromAttributes(attributes: PolygonAttributes): Polyline;
     }
     /**
@@ -501,7 +509,9 @@ declare namespace Animation {
         constructor(object: any, angle: any, config?: any);
     }
     class SetScale extends Animation {
+        initialScale: number;
         constructor(object: any, factor: any, config?: any);
+        setUp(): void;
     }
     class Draw extends Animation {
         constructor(object: any, config?: any);
@@ -697,7 +707,9 @@ declare namespace Diagram {
         constructor(object: any, angle: any, config?: any);
     }
     class SetScale extends Animation {
+        initialScale: number;
         constructor(object: any, factor: any, config?: any);
+        setUp(): void;
     }
     class Draw extends Animation {
         constructor(object: any, config?: any);
@@ -884,6 +896,8 @@ declare namespace Graphing {
         arrow: boolean;
         constructor(points: Array<THREE.Vector3>, config?: Style & {
             arrow?: boolean;
+            stroke?: boolean;
+            fill?: boolean;
         });
         static defaultStyle(): {
             strokeColor: THREE.Color;
@@ -959,8 +973,14 @@ declare namespace Graphing {
     class Polyline extends Shape {
         constructor(points: Array<THREE.Vector3>, config?: Style);
         reshape(points: Array<THREE.Vector3>, config?: Style): void;
+        static defaultConfig(): {
+            fill: boolean;
+        };
         getClassConfig(): {};
         getAttributes(): PolygonAttributes;
+        static asRightAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+            sideLength: number;
+        }): Polyline;
         static fromAttributes(attributes: PolygonAttributes): Polyline;
     }
     /**
@@ -1084,7 +1104,9 @@ declare namespace Graphing {
     class Curve extends Polyline {
         equation: () => void;
         constructor(equation: () => void, config?: Style);
-        static defaultConfig(): {};
+        static defaultConfig(): {
+            fill: boolean;
+        };
         getClassConfig(): {};
     }
 }

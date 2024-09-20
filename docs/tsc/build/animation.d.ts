@@ -48,7 +48,9 @@ declare class Rotate extends Animation {
     constructor(object: any, angle: any, config?: any);
 }
 declare class SetScale extends Animation {
+    initialScale: number;
     constructor(object: any, factor: any, config?: any);
+    setUp(): void;
 }
 declare class Draw extends Animation {
     constructor(object: any, config?: any);

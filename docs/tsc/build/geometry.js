@@ -19,25 +19,29 @@ class Shape extends THREE.Group {
     constructor(points, config = {}) {
         super();
         config = Object.assign(Shape.defaultStyle(), config);
-        const fillGeometry = getFillGeometry(points);
-        const fillMaterial = new THREE.MeshBasicMaterial({
-            color: config.fillColor,
-            opacity: config.fillOpacity,
-            transparent: true,
-            side: THREE.DoubleSide,
-        });
-        this.fill = new THREE.Mesh(fillGeometry, fillMaterial);
-        this.add(this.fill);
-        const strokeGeometry = new MeshLineGeometry(config.arrow);
-        strokeGeometry.setPoints(points);
-        const strokeMaterial = new MeshLineMaterial({
-            color: config.strokeColor,
-            opacity: config.strokeOpacity,
-            width: config.strokeWidth,
-            transparent: true,
-        });
-        this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
-        this.add(this.stroke);
+        if (config.fill !== false) {
+            const fillGeometry = getFillGeometry(points);
+            const fillMaterial = new THREE.MeshBasicMaterial({
+                color: config.fillColor,
+                opacity: config.fillOpacity,
+                transparent: true,
+                side: THREE.DoubleSide,
+            });
+            this.fill = new THREE.Mesh(fillGeometry, fillMaterial);
+            this.add(this.fill);
+        }
+        if (config.stroke !== false) {
+            const strokeGeometry = new MeshLineGeometry(config.arrow);
+            strokeGeometry.setPoints(points);
+            const strokeMaterial = new MeshLineMaterial({
+                color: config.strokeColor,
+                opacity: config.strokeOpacity,
+                width: config.strokeWidth,
+                transparent: true,
+            });
+            this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
+            this.add(this.stroke);
+        }
         this.curveEndIndices = this.getCurveEndIndices();
     }
     static defaultStyle() {
@@ -274,6 +278,9 @@ class Polyline extends Shape {
     reshape(points, config = {}) {
         this.copyStrokeFill(new Polyline(points, config));
     }
+    static defaultConfig() {
+        return Object.assign(Object.assign({}, super.defaultConfig()), { fill: false });
+    }
     getClassConfig() {
         return {};
     }
@@ -281,6 +288,19 @@ class Polyline extends Shape {
         return {
             points: this.points,
         };
+    }
+    static asRightAngle(point1, point2, point3, config = { sideLength: 0.35 }) {
+        const vector21 = new THREE.Vector3()
+            .subVectors(point1, point2)
+            .setLength(config.sideLength);
+        const vector23 = new THREE.Vector3()
+            .subVectors(point3, point2)
+            .setLength(config.sideLength);
+        return new Polyline([
+            new THREE.Vector3().addVectors(point2, vector21),
+            new THREE.Vector3().add(point2).add(vector21).add(vector23),
+            new THREE.Vector3().addVectors(point2, vector23),
+        ], config);
     }
     static fromAttributes(attributes) {
         const { points } = attributes;

@@ -13,6 +13,8 @@ declare abstract class Shape extends THREE.Group {
     arrow: boolean;
     constructor(points: Array<THREE.Vector3>, config?: Style & {
         arrow?: boolean;
+        stroke?: boolean;
+        fill?: boolean;
     });
     static defaultStyle(): {
         strokeColor: THREE.Color;
@@ -88,8 +90,14 @@ declare class Arrow extends Line {
 declare class Polyline extends Shape {
     constructor(points: Array<THREE.Vector3>, config?: Style);
     reshape(points: Array<THREE.Vector3>, config?: Style): void;
+    static defaultConfig(): {
+        fill: boolean;
+    };
     getClassConfig(): {};
     getAttributes(): PolygonAttributes;
+    static asRightAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+        sideLength: number;
+    }): Polyline;
     static fromAttributes(attributes: PolygonAttributes): Polyline;
 }
 /**

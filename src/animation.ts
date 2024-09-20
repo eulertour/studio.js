@@ -1,4 +1,3 @@
-import { MeshLine } from "./MeshLine";
 import { clamp, getBoundingBoxCenter } from "./utils";
 import * as THREE from "three";
 
@@ -200,15 +199,25 @@ class Rotate extends Animation {
 }
 
 class SetScale extends Animation {
+  initialScale: number;
+
   constructor(object, factor, config?) {
-    const initialScale = object.scale.x;
     super(
       (elapsedTime, deltaTime) => {
-        const scale = THREE.MathUtils.lerp(initialScale, factor, elapsedTime);
+        const scale = THREE.MathUtils.lerp(
+          this.initialScale,
+          factor,
+          elapsedTime,
+        );
         object.scale.set(scale, scale, scale);
       },
       { object, reveal: true, ...config },
     );
+  }
+
+  setUp() {
+    super.setUp();
+    this.initialScale = this.object.scale.x;
   }
 }
 

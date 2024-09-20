@@ -207,7 +207,9 @@ const COORDS_TO_PIXELS: number;
 class Curve extends Polyline {
     constructor(equation: () => void, config?: Style);
     // (undocumented)
-    static defaultConfig(): {};
+    static defaultConfig(): {
+        fill: boolean;
+    };
     // (undocumented)
     equation: () => void;
     // (undocumented)
@@ -496,6 +498,14 @@ class Polygon extends Shape {
 class Polyline extends Shape {
     constructor(points: Array<THREE_2.Vector3>, config?: Style);
     // (undocumented)
+    static asRightAngle(point1: THREE_2.Vector3, point2: THREE_2.Vector3, point3: THREE_2.Vector3, config?: Style & {
+        sideLength: number;
+    }): Polyline;
+    // (undocumented)
+    static defaultConfig(): {
+        fill: boolean;
+    };
+    // (undocumented)
     static fromAttributes(attributes: PolygonAttributes): Polyline;
     // (undocumented)
     getAttributes(): PolygonAttributes;
@@ -613,6 +623,10 @@ export const setCanvasViewport: (viewport: THREE_2.Vector4) => void;
 // @public (undocumented)
 class SetScale extends Animation_3 {
     constructor(object: any, factor: any, config?: any);
+    // (undocumented)
+    initialScale: number;
+    // (undocumented)
+    setUp(): void;
 }
 
 // @public (undocumented)
@@ -624,6 +638,8 @@ export const setupCanvas: (canvas: HTMLCanvasElement, config?: (WidthSetupConfig
 abstract class Shape extends THREE_2.Group {
     constructor(points: Array<THREE_2.Vector3>, config?: Style & {
         arrow?: boolean;
+        stroke?: boolean;
+        fill?: boolean;
     });
     // (undocumented)
     arrow: boolean;

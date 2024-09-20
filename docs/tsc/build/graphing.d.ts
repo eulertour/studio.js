@@ -6,6 +6,8 @@ import { Style } from "./geometry.types";
 export declare class Curve extends Polyline {
     equation: () => void;
     constructor(equation: () => void, config?: Style);
-    static defaultConfig(): {};
+    static defaultConfig(): {
+        fill: boolean;
+    };
     getClassConfig(): {};
 }
