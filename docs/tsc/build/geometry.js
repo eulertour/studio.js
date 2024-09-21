@@ -376,7 +376,7 @@ class Arc extends Shape {
         const vector21 = new THREE.Vector3().subVectors(point1, point2);
         const vector23 = new THREE.Vector3().subVectors(point3, point2);
         const arcAngle = vector21.angleTo(vector23);
-        const arcRotation = Math.min(Utils.RIGHT.signedAngleTo(vector21), Utils.RIGHT.signedAngleTo(vector23));
+        const arcRotation = Math.min(Utils.RIGHT.positiveAngleTo(vector21), Utils.RIGHT.positiveAngleTo(vector23));
         const arc = new Arc(config.radius, arcAngle, config);
         arc.position.copy(point2);
         arc.rotateZ(arcRotation);

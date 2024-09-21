@@ -585,9 +585,15 @@ const intersectionsBetween = (
   return intersections;
 };
 
-const signedAngleTo = (a: THREE.Vector3, b: THREE.Vector3) => {
+const positiveAngleTo = (a: THREE.Vector3, b: THREE.Vector3) => {
   const normal = a.clone().rotate90();
-  return a.angleTo(b) * Math.sign(normal.dot(b));
+  const angle = a.angleTo(b);
+
+  if (Math.sign(normal.dot(b)) < 0) {
+    return 2 * Math.PI - angle;
+  } else {
+    return angle;
+  }
 };
 
 class ShapeFromCurves {
@@ -821,7 +827,7 @@ export {
   convertWorldDirectionToObjectSpace,
   intersectionsBetween,
   pointAlongCurve,
-  signedAngleTo,
+  positiveAngleTo,
   ShapeFromCurves,
   BUFFER,
   RIGHT,

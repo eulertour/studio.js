@@ -56080,7 +56080,7 @@ class Arc extends Shape {
         const vector21 = new Vector3().subVectors(point1, point2);
         const vector23 = new Vector3().subVectors(point3, point2);
         const arcAngle = vector21.angleTo(vector23);
-        const arcRotation = Math.min(RIGHT.signedAngleTo(vector21), RIGHT.signedAngleTo(vector23));
+        const arcRotation = Math.min(RIGHT.positiveAngleTo(vector21), RIGHT.positiveAngleTo(vector23));
         const arc = new Arc(config.radius, arcAngle, config);
         arc.position.copy(point2);
         arc.rotateZ(arcRotation);
@@ -98467,9 +98467,15 @@ const intersectionsBetween = (shape1, shape2) => {
     }
     return intersections;
 };
-const signedAngleTo = (a, b) => {
+const positiveAngleTo = (a, b) => {
     const normal = a.clone().rotate90();
-    return a.angleTo(b) * Math.sign(normal.dot(b));
+    const angle = a.angleTo(b);
+    if (Math.sign(normal.dot(b)) < 0) {
+        return 2 * Math.PI - angle;
+    }
+    else {
+        return angle;
+    }
 };
 class ShapeFromCurves {
     constructor() {
@@ -98659,11 +98665,11 @@ var utils = /*#__PURE__*/Object.freeze({
 	moveToLeftOf: moveToLeftOf,
 	moveToRightOf: moveToRightOf,
 	pointAlongCurve: pointAlongCurve,
+	positiveAngleTo: positiveAngleTo,
 	rotate180: rotate180,
 	rotate270: rotate270,
 	rotate90: rotate90,
 	setupCanvas: setupCanvas,
-	signedAngleTo: signedAngleTo,
 	transformBetweenSpaces: transformBetweenSpaces,
 	vspace: vspace,
 	vstack: vstack
@@ -99246,8 +99252,8 @@ Vector3.prototype.rotate270 = function () {
 Vector3.prototype.transformBetweenSpaces = function (from, to) {
     return transformBetweenSpaces(from, to, this);
 };
-Vector3.prototype.signedAngleTo = function (other) {
-    return signedAngleTo(this, other);
+Vector3.prototype.positiveAngleTo = function (other) {
+    return positiveAngleTo(this, other);
 };
 Vector3.prototype.rotateZ = function (angle) {
     return this.applyAxisAngle(OUT, angle);

@@ -396,7 +396,7 @@ declare namespace Utils {
     const getBoundingBoxHelper: (obj: THREE.Object3D, color: string) => THREE.Box3Helper;
     const pointAlongCurve: (shape: Geometry.Shape, t: number) => THREE.Vector3;
     const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
-    const signedAngleTo: (a: THREE.Vector3, b: THREE.Vector3) => number;
+    const positiveAngleTo: (a: THREE.Vector3, b: THREE.Vector3) => number;
     class ShapeFromCurves {
         adjacentThreshold: number;
         segmentClosestToPoint: THREE.Vector3;
@@ -466,7 +466,7 @@ declare module "three" {
         rotate270(): THREE.Vector3;
         rotateZ(angle: number): THREE.Vector3;
         transformBetweenSpaces(from: THREE.Object3D, to: THREE.Object3D): THREE.Vector3;
-        signedAngleTo(vector: THREE.Vector3): number;
+        positiveAngleTo(vector: THREE.Vector3): number;
     }
 }
 type ComponentParent = THREE.Object3D & {

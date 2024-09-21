@@ -11096,6 +11096,65 @@
               "name": "pointAlongCurve"
             },
             {
+              "kind": "Function",
+              "canonicalReference": "@eulertour/studio!Utils.positiveAngleTo:function(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "positiveAngleTo: (a: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", b: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ") => "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                }
+              ],
+              "fileUrlPath": "build/utils.d.ts",
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "a",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "b",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                }
+              ],
+              "name": "positiveAngleTo"
+            },
+            {
               "kind": "Variable",
               "canonicalReference": "@eulertour/studio!Utils.RIGHT:var",
               "docComment": "",
@@ -11877,65 +11936,6 @@
                 }
               ],
               "implementsTokenRanges": []
-            },
-            {
-              "kind": "Function",
-              "canonicalReference": "@eulertour/studio!Utils.signedAngleTo:function(1)",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "signedAngleTo: (a: "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "THREE.Vector3",
-                  "canonicalReference": "@types/three!Vector3:class"
-                },
-                {
-                  "kind": "Content",
-                  "text": ", b: "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "THREE.Vector3",
-                  "canonicalReference": "@types/three!Vector3:class"
-                },
-                {
-                  "kind": "Content",
-                  "text": ") => "
-                },
-                {
-                  "kind": "Content",
-                  "text": "number"
-                }
-              ],
-              "fileUrlPath": "build/utils.d.ts",
-              "returnTypeTokenRange": {
-                "startIndex": 5,
-                "endIndex": 6
-              },
-              "releaseTag": "Public",
-              "overloadIndex": 1,
-              "parameters": [
-                {
-                  "parameterName": "a",
-                  "parameterTypeTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 2
-                  },
-                  "isOptional": false
-                },
-                {
-                  "parameterName": "b",
-                  "parameterTypeTokenRange": {
-                    "startIndex": 3,
-                    "endIndex": 4
-                  },
-                  "isOptional": false
-                }
-              ],
-              "name": "signedAngleTo"
             },
             {
               "kind": "Function",

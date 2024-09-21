@@ -510,8 +510,8 @@ class Arc extends Shape {
 
     const arcAngle = vector21.angleTo(vector23);
     const arcRotation = Math.min(
-      Utils.RIGHT.signedAngleTo(vector21),
-      Utils.RIGHT.signedAngleTo(vector23),
+      Utils.RIGHT.positiveAngleTo(vector21),
+      Utils.RIGHT.positiveAngleTo(vector23),
     );
 
     const arc = new Arc(config.radius, arcAngle, config);

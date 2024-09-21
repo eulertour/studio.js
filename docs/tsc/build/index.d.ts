@@ -57,7 +57,7 @@ declare module "three" {
         rotate270(): THREE.Vector3;
         rotateZ(angle: number): THREE.Vector3;
         transformBetweenSpaces(from: THREE.Object3D, to: THREE.Object3D): THREE.Vector3;
-        signedAngleTo(vector: THREE.Vector3): number;
+        positiveAngleTo(vector: THREE.Vector3): number;
     }
 }
 type ComponentParent = THREE.Object3D & {

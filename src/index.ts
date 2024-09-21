@@ -58,7 +58,7 @@ declare module "three" {
       from: THREE.Object3D,
       to: THREE.Object3D,
     ): THREE.Vector3;
-    signedAngleTo(vector: THREE.Vector3): number;
+    positiveAngleTo(vector: THREE.Vector3): number;
   }
 }
 
@@ -81,10 +81,10 @@ THREE.Vector3.prototype.transformBetweenSpaces = function (
   return Utils.transformBetweenSpaces(from, to, this);
 };
 
-THREE.Vector3.prototype.signedAngleTo = function (
+THREE.Vector3.prototype.positiveAngleTo = function (
   other: THREE.Vector3,
 ): number {
-  return Utils.signedAngleTo(this, other);
+  return Utils.positiveAngleTo(this, other);
 };
 
 THREE.Vector3.prototype.rotateZ = function (angle: number) {

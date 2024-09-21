@@ -13,8 +13,8 @@ THREE.Vector3.prototype.rotate270 = function () {
 THREE.Vector3.prototype.transformBetweenSpaces = function (from, to) {
     return Utils.transformBetweenSpaces(from, to, this);
 };
-THREE.Vector3.prototype.signedAngleTo = function (other) {
-    return Utils.signedAngleTo(this, other);
+THREE.Vector3.prototype.positiveAngleTo = function (other) {
+    return Utils.positiveAngleTo(this, other);
 };
 THREE.Vector3.prototype.rotateZ = function (angle) {
     return this.applyAxisAngle(Utils.OUT, angle);

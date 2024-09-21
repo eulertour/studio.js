@@ -47,7 +47,7 @@ declare const getBoundingBoxCenter: (obj: THREE.Object3D, target: THREE.Vector3)
 declare const getBoundingBoxHelper: (obj: THREE.Object3D, color: string) => THREE.Box3Helper;
 declare const pointAlongCurve: (shape: Geometry.Shape, t: number) => THREE.Vector3;
 declare const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
-declare const signedAngleTo: (a: THREE.Vector3, b: THREE.Vector3) => number;
+declare const positiveAngleTo: (a: THREE.Vector3, b: THREE.Vector3) => number;
 declare class ShapeFromCurves {
     adjacentThreshold: number;
     segmentClosestToPoint: THREE.Vector3;
@@ -60,4 +60,4 @@ declare class ShapeFromCurves {
     extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until?: THREE.Vector3 | undefined): void;
     finish(): Geometry.Polygon;
 }
-export { getFrameAttributes, setupCanvas, clamp, vstack, vspace, furthestInDirection, moveToRightOf, moveToLeftOf, moveAbove, moveBelow, moveNextTo, rotate90, rotate180, rotate270, getBoundingBoxCenter, getBoundingBoxHelper, transformBetweenSpaces, convertWorldDirectionToObjectSpace, intersectionsBetween, pointAlongCurve, signedAngleTo, ShapeFromCurves, BUFFER, RIGHT, LEFT, UP, DOWN, OUT, IN, ORIGIN, };
+export { getFrameAttributes, setupCanvas, clamp, vstack, vspace, furthestInDirection, moveToRightOf, moveToLeftOf, moveAbove, moveBelow, moveNextTo, rotate90, rotate180, rotate270, getBoundingBoxCenter, getBoundingBoxHelper, transformBetweenSpaces, convertWorldDirectionToObjectSpace, intersectionsBetween, pointAlongCurve, positiveAngleTo, ShapeFromCurves, BUFFER, RIGHT, LEFT, UP, DOWN, OUT, IN, ORIGIN, };

@@ -407,9 +407,15 @@ const intersectionsBetween = (shape1, shape2) => {
     }
     return intersections;
 };
-const signedAngleTo = (a, b) => {
+const positiveAngleTo = (a, b) => {
     const normal = a.clone().rotate90();
-    return a.angleTo(b) * Math.sign(normal.dot(b));
+    const angle = a.angleTo(b);
+    if (Math.sign(normal.dot(b)) < 0) {
+        return 2 * Math.PI - angle;
+    }
+    else {
+        return angle;
+    }
 };
 class ShapeFromCurves {
     constructor() {
@@ -574,5 +580,5 @@ class ShapeFromCurves {
         return new Geometry.Polygon(this.points, this.style);
     }
 }
-export { getFrameAttributes, setupCanvas, clamp, vstack, vspace, furthestInDirection, moveToRightOf, moveToLeftOf, moveAbove, moveBelow, moveNextTo, rotate90, rotate180, rotate270, getBoundingBoxCenter, getBoundingBoxHelper, transformBetweenSpaces, convertWorldDirectionToObjectSpace, intersectionsBetween, pointAlongCurve, signedAngleTo, ShapeFromCurves, BUFFER, RIGHT, LEFT, UP, DOWN, OUT, IN, ORIGIN, };
+export { getFrameAttributes, setupCanvas, clamp, vstack, vspace, furthestInDirection, moveToRightOf, moveToLeftOf, moveAbove, moveBelow, moveNextTo, rotate90, rotate180, rotate270, getBoundingBoxCenter, getBoundingBoxHelper, transformBetweenSpaces, convertWorldDirectionToObjectSpace, intersectionsBetween, pointAlongCurve, positiveAngleTo, ShapeFromCurves, BUFFER, RIGHT, LEFT, UP, DOWN, OUT, IN, ORIGIN, };
 //# sourceMappingURL=utils.js.map

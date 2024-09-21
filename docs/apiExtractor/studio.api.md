@@ -539,6 +539,9 @@ class Polyline extends Shape {
     reshape(points: Array<THREE_2.Vector3>, config?: Style): void;
 }
 
+// @public (undocumented)
+const positiveAngleTo: (a: THREE_2.Vector3, b: THREE_2.Vector3) => number;
+
 // @public
 class Rectangle extends Shape {
     constructor(width?: number, height?: number, config?: Style);
@@ -766,9 +769,6 @@ class Shift extends Animation_3 {
     constructor(object: any, offset: any, config?: any);
 }
 
-// @public (undocumented)
-const signedAngleTo: (a: THREE_2.Vector3, b: THREE_2.Vector3) => number;
-
 // @public
 class Square extends Rectangle {
     constructor(sideLength?: number, config?: Style);
@@ -893,7 +893,7 @@ declare namespace Utils {
         convertWorldDirectionToObjectSpace,
         intersectionsBetween,
         pointAlongCurve,
-        signedAngleTo,
+        positiveAngleTo,
         ShapeFromCurves,
         BUFFER,
         RIGHT,
