@@ -508,8 +508,8 @@ class Arc extends Shape {
     const vector21 = new THREE.Vector3().subVectors(point1, point2);
     const vector23 = new THREE.Vector3().subVectors(point3, point2);
 
-    let arcAngle = vector21.angleTo(vector23);
-    let arcRotation = Math.min(
+    const arcAngle = vector21.angleTo(vector23);
+    const arcRotation = Math.min(
       Utils.RIGHT.signedAngleTo(vector21),
       Utils.RIGHT.signedAngleTo(vector23),
     );
@@ -557,13 +557,20 @@ class Arc extends Shape {
  * @example circle.ts
  */
 class Circle extends Arc {
-  constructor(radius = 1, config: Style = {}) {
-    super(radius, 2 * Math.PI, { ...Circle.defaultConfig(), ...config });
+  constructor(radius = 1, config: Style & { fill?: boolean } = {}) {
+    super(radius, 2 * Math.PI, {
+      ...Circle.defaultConfig(),
+      ...config,
+    });
   }
 
   reshape(radius: number, config = {}) {
     this.radius = radius;
     this.copyStrokeFill(new Circle(radius, config));
+  }
+
+  static defaultConfig() {
+    return { ...super.defaultConfig(), fill: true };
   }
 
   getCloneAttributes() {

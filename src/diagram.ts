@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { Animation } from "./animation";
 import { Style } from "./geometry.types";
 import * as Geometry from "./geometry";
-import { OUT } from "./utils";
+import * as Utils from "./utils";
 
 interface IndicatorConfig {
   tickLength?: number;
@@ -26,7 +26,7 @@ class Indicator extends THREE.Group {
     const tickVector = new THREE.Vector3()
       .subVectors(end, start)
       .normalize()
-      .applyAxisAngle(OUT, Math.PI / 2)
+      .applyAxisAngle(Utils.OUT, Math.PI / 2)
       .multiplyScalar(tickLength / 2);
     const negativeTickVector = tickVector.clone().multiplyScalar(-1);
 
@@ -72,22 +72,19 @@ class Indicator extends THREE.Group {
 
 class CongruentLine extends THREE.Group {
   constructor(
+    ticks: number,
     start: THREE.Vector3,
     end: THREE.Vector3,
     config: Style & {
-      ticks?: number;
       tickLength?: number;
       spacing?: number;
     } = {},
   ) {
-    config = Object.assign(
-      { ticks: 1, tickLength: 0.25, spacing: 0.3 },
-      config,
-    );
+    config = Object.assign({ tickLength: 0.25, spacing: 0.15 }, config);
     super();
-    const left = (-config.spacing * (config.ticks - 1)) / 4;
-    for (let i = 0; i < config.ticks; i++) {
-      const pos = left + 0.5 * config.spacing * i;
+    const left = -(config.spacing * (ticks - 1)) / 2;
+    for (let i = 0; i < ticks; i++) {
+      const pos = left + config.spacing * i;
       const tick = new Geometry.Line(
         new THREE.Vector3(pos, -config.tickLength / 2, 0),
         new THREE.Vector3(pos, config.tickLength / 2, 0),
@@ -105,4 +102,32 @@ class CongruentLine extends THREE.Group {
   }
 }
 
-export { Indicator, CongruentLine };
+class CongruentAngle extends THREE.Group {
+  constructor(
+    arcs: number,
+    point1: THREE.Vector3,
+    point2: THREE.Vector3,
+    point3: THREE.Vector3,
+    public config: Style & {
+      minRadius?: number;
+      spacing?: number;
+    } = {},
+  ) {
+    config = {
+      minRadius: 0.4,
+      spacing: 0.15,
+      ...config,
+    };
+
+    super();
+    for (let i = 0; i < arcs; i++) {
+      const arc = Geometry.Arc.asAngle(point1, point2, point3, {
+        radius: config.minRadius + i * config.spacing,
+        ...config,
+      });
+      this.add(arc);
+    }
+  }
+}
+
+export { Indicator, CongruentLine, CongruentAngle };

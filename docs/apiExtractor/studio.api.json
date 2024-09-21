@@ -2586,6 +2586,177 @@
           "members": [
             {
               "kind": "Class",
+              "canonicalReference": "@eulertour/studio!Diagram.CongruentAngle:class",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "declare class CongruentAngle extends "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Group",
+                  "canonicalReference": "@types/three!Group:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": " "
+                }
+              ],
+              "fileUrlPath": "build/diagram.d.ts",
+              "releaseTag": "Public",
+              "isAbstract": false,
+              "name": "CongruentAngle",
+              "preserveMemberOrder": false,
+              "members": [
+                {
+                  "kind": "Constructor",
+                  "canonicalReference": "@eulertour/studio!Diagram.CongruentAngle:constructor(1)",
+                  "docComment": "/**\n * Constructs a new instance of the `CongruentAngle` class\n */\n",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "constructor(arcs: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", point1: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Vector3",
+                      "canonicalReference": "@types/three!Vector3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", point2: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Vector3",
+                      "canonicalReference": "@types/three!Vector3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", point3: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Vector3",
+                      "canonicalReference": "@types/three!Vector3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", config?: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Style",
+                      "canonicalReference": "@eulertour/studio!~Style:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": " & {\n        minRadius?: number;\n        spacing?: number;\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ");"
+                    }
+                  ],
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "arcs",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": false
+                    },
+                    {
+                      "parameterName": "point1",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 3,
+                        "endIndex": 4
+                      },
+                      "isOptional": false
+                    },
+                    {
+                      "parameterName": "point2",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 5,
+                        "endIndex": 6
+                      },
+                      "isOptional": false
+                    },
+                    {
+                      "parameterName": "point3",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 7,
+                        "endIndex": 8
+                      },
+                      "isOptional": false
+                    },
+                    {
+                      "parameterName": "config",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 9,
+                        "endIndex": 11
+                      },
+                      "isOptional": true
+                    }
+                  ]
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Diagram.CongruentAngle#config:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "config: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Style",
+                      "canonicalReference": "@eulertour/studio!~Style:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": " & {\n        minRadius?: number;\n        spacing?: number;\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "config",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 3
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                }
+              ],
+              "extendsTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "implementsTokenRanges": []
+            },
+            {
+              "kind": "Class",
               "canonicalReference": "@eulertour/studio!Diagram.CongruentLine:class",
               "docComment": "",
               "excerptTokens": [
@@ -2616,7 +2787,15 @@
                   "excerptTokens": [
                     {
                       "kind": "Content",
-                      "text": "constructor(start: "
+                      "text": "constructor(ticks: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", start: "
                     },
                     {
                       "kind": "Reference",
@@ -2643,7 +2822,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": " & {\n        ticks?: number;\n        tickLength?: number;\n        spacing?: number;\n    }"
+                      "text": " & {\n        tickLength?: number;\n        spacing?: number;\n    }"
                     },
                     {
                       "kind": "Content",
@@ -2655,7 +2834,7 @@
                   "overloadIndex": 1,
                   "parameters": [
                     {
-                      "parameterName": "start",
+                      "parameterName": "ticks",
                       "parameterTypeTokenRange": {
                         "startIndex": 1,
                         "endIndex": 2
@@ -2663,7 +2842,7 @@
                       "isOptional": false
                     },
                     {
-                      "parameterName": "end",
+                      "parameterName": "start",
                       "parameterTypeTokenRange": {
                         "startIndex": 3,
                         "endIndex": 4
@@ -2671,10 +2850,18 @@
                       "isOptional": false
                     },
                     {
-                      "parameterName": "config",
+                      "parameterName": "end",
                       "parameterTypeTokenRange": {
                         "startIndex": 5,
-                        "endIndex": 7
+                        "endIndex": 6
+                      },
+                      "isOptional": false
+                    },
+                    {
+                      "parameterName": "config",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 7,
+                        "endIndex": 9
                       },
                       "isOptional": true
                     }
@@ -3913,6 +4100,10 @@
                     },
                     {
                       "kind": "Content",
+                      "text": " & {\n        fill?: boolean;\n    }"
+                    },
+                    {
+                      "kind": "Content",
                       "text": ");"
                     }
                   ],
@@ -3932,7 +4123,7 @@
                       "parameterName": "config",
                       "parameterTypeTokenRange": {
                         "startIndex": 3,
-                        "endIndex": 4
+                        "endIndex": 5
                       },
                       "isOptional": true
                     }
@@ -3967,6 +4158,37 @@
                   "isStatic": false,
                   "isProtected": false,
                   "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Circle.defaultConfig:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static defaultConfig(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{\n        fill: boolean;\n        closed: boolean;\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": true,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "defaultConfig"
                 },
                 {
                   "kind": "Method",
@@ -4780,7 +5002,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": "{\n        radius: number;\n        closed: boolean;\n        fill: boolean;\n    }"
+                      "text": "{\n        radius: number;\n        fill: boolean;\n        closed: boolean;\n    }"
                     },
                     {
                       "kind": "Content",

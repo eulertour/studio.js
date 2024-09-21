@@ -16,6 +16,9 @@ THREE.Vector3.prototype.transformBetweenSpaces = function (from, to) {
 THREE.Vector3.prototype.signedAngleTo = function (other) {
     return Utils.signedAngleTo(this, other);
 };
+THREE.Vector3.prototype.rotateZ = function (angle) {
+    return this.applyAxisAngle(Utils.OUT, angle);
+};
 THREE.Object3D.prototype.vstack = function (buffer = 0.2) {
     return Utils.vstack(this, buffer);
 };

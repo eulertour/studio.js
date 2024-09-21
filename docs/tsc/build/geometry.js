@@ -375,8 +375,8 @@ class Arc extends Shape {
         config = Object.assign({ radius: 0.4, reflex: false }, config);
         const vector21 = new THREE.Vector3().subVectors(point1, point2);
         const vector23 = new THREE.Vector3().subVectors(point3, point2);
-        let arcAngle = vector21.angleTo(vector23);
-        let arcRotation = Math.min(Utils.RIGHT.signedAngleTo(vector21), Utils.RIGHT.signedAngleTo(vector23));
+        const arcAngle = vector21.angleTo(vector23);
+        const arcRotation = Math.min(Utils.RIGHT.signedAngleTo(vector21), Utils.RIGHT.signedAngleTo(vector23));
         const arc = new Arc(config.radius, arcAngle, config);
         arc.position.copy(point2);
         arc.rotateZ(arcRotation);
@@ -422,6 +422,9 @@ class Circle extends Arc {
     reshape(radius, config = {}) {
         this.radius = radius;
         this.copyStrokeFill(new Circle(radius, config));
+    }
+    static defaultConfig() {
+        return Object.assign(Object.assign({}, super.defaultConfig()), { fill: true });
     }
     getCloneAttributes() {
         return [this.radius];

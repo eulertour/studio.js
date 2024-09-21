@@ -143,8 +143,14 @@ declare class Arc extends Shape {
  * @example circle.ts
  */
 declare class Circle extends Arc {
-    constructor(radius?: number, config?: Style);
+    constructor(radius?: number, config?: Style & {
+        fill?: boolean;
+    });
     reshape(radius: number, config?: {}): void;
+    static defaultConfig(): {
+        fill: boolean;
+        closed: boolean;
+    };
     getCloneAttributes(): number[];
     getAttributes(): ArcAttributes;
     static fromAttributes(attributes: ArcAttributes): Circle;
@@ -165,8 +171,8 @@ declare class Point extends Circle {
     });
     static defaultConfig(): {
         radius: number;
-        closed: boolean;
         fill: boolean;
+        closed: boolean;
     };
     getAttributes(): ArcAttributes;
     static fromAttributes(): Point;

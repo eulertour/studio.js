@@ -225,8 +225,14 @@ declare namespace Geometry {
      * @example circle.ts
      */
     class Circle extends Arc {
-        constructor(radius?: number, config?: Style);
+        constructor(radius?: number, config?: Style & {
+            fill?: boolean;
+        });
         reshape(radius: number, config?: {}): void;
+        static defaultConfig(): {
+            fill: boolean;
+            closed: boolean;
+        };
         getCloneAttributes(): number[];
         getAttributes(): ArcAttributes;
         static fromAttributes(attributes: ArcAttributes): Circle;
@@ -247,8 +253,8 @@ declare namespace Geometry {
         });
         static defaultConfig(): {
             radius: number;
-            closed: boolean;
             fill: boolean;
+            closed: boolean;
         };
         getAttributes(): ArcAttributes;
         static fromAttributes(): Point;
@@ -458,6 +464,7 @@ declare module "three" {
         rotate90(): THREE.Vector3;
         rotate180(): THREE.Vector3;
         rotate270(): THREE.Vector3;
+        rotateZ(angle: number): THREE.Vector3;
         transformBetweenSpaces(from: THREE.Object3D, to: THREE.Object3D): THREE.Vector3;
         signedAngleTo(vector: THREE.Vector3): number;
     }
@@ -785,9 +792,18 @@ declare namespace Diagram {
         grow(config?: any): Animation;
     }
     class CongruentLine extends THREE.Group {
-        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
-            ticks?: number;
+        constructor(ticks: number, start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
             tickLength?: number;
+            spacing?: number;
+        });
+    }
+    class CongruentAngle extends THREE.Group {
+        config: Style & {
+            minRadius?: number;
+            spacing?: number;
+        };
+        constructor(arcs: number, point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+            minRadius?: number;
             spacing?: number;
         });
     }
@@ -1035,8 +1051,14 @@ declare namespace Graphing {
      * @example circle.ts
      */
     class Circle extends Arc {
-        constructor(radius?: number, config?: Style);
+        constructor(radius?: number, config?: Style & {
+            fill?: boolean;
+        });
         reshape(radius: number, config?: {}): void;
+        static defaultConfig(): {
+            fill: boolean;
+            closed: boolean;
+        };
         getCloneAttributes(): number[];
         getAttributes(): ArcAttributes;
         static fromAttributes(attributes: ArcAttributes): Circle;
@@ -1057,8 +1079,8 @@ declare namespace Graphing {
         });
         static defaultConfig(): {
             radius: number;
-            closed: boolean;
             fill: boolean;
+            closed: boolean;
         };
         getAttributes(): ArcAttributes;
         static fromAttributes(): Point;

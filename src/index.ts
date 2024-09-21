@@ -53,6 +53,7 @@ declare module "three" {
     rotate90(): THREE.Vector3;
     rotate180(): THREE.Vector3;
     rotate270(): THREE.Vector3;
+    rotateZ(angle: number): THREE.Vector3;
     transformBetweenSpaces(
       from: THREE.Object3D,
       to: THREE.Object3D,
@@ -84,6 +85,10 @@ THREE.Vector3.prototype.signedAngleTo = function (
   other: THREE.Vector3,
 ): number {
   return Utils.signedAngleTo(this, other);
+};
+
+THREE.Vector3.prototype.rotateZ = function (angle: number) {
+  return this.applyAxisAngle(Utils.OUT, angle);
 };
 
 THREE.Object3D.prototype.vstack = function (buffer = 0.2): THREE.Object3D {

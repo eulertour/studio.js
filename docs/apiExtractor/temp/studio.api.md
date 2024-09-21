@@ -156,13 +156,20 @@ const BUFFER = 0.5;
 
 // @public
 class Circle extends Arc {
-    constructor(radius?: number, config?: Style);
+    constructor(radius?: number, config?: Style & {
+        fill?: boolean;
+    });
     // (undocumented)
     get attributeData(): {
         attribute: string;
         type: string;
         default: number;
     }[];
+    // (undocumented)
+    static defaultConfig(): {
+        fill: boolean;
+        closed: boolean;
+    };
     // (undocumented)
     static fromAttributes(attributes: ArcAttributes): Circle;
     // (undocumented)
@@ -182,9 +189,21 @@ const clamp: (num: any, min: any, max: any) => number;
 export function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE_2.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE_2.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 
 // @public (undocumented)
+class CongruentAngle extends THREE_2.Group {
+    constructor(arcs: number, point1: THREE_2.Vector3, point2: THREE_2.Vector3, point3: THREE_2.Vector3, config?: Style & {
+        minRadius?: number;
+        spacing?: number;
+    });
+    // (undocumented)
+    config: Style & {
+        minRadius?: number;
+        spacing?: number;
+    };
+}
+
+// @public (undocumented)
 class CongruentLine extends THREE_2.Group {
-    constructor(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style & {
-        ticks?: number;
+    constructor(ticks: number, start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style & {
         tickLength?: number;
         spacing?: number;
     });
@@ -225,7 +244,8 @@ const DEFAULT_BACKGROUND_HEX = 16775920;
 declare namespace Diagram {
     export {
         Indicator,
-        CongruentLine
+        CongruentLine,
+        CongruentAngle
     }
 }
 export { Diagram }
@@ -471,8 +491,8 @@ class Point extends Circle {
     // (undocumented)
     static defaultConfig(): {
         radius: number;
-        closed: boolean;
         fill: boolean;
+        closed: boolean;
     };
     // (undocumented)
     static fromAttributes(): Point;

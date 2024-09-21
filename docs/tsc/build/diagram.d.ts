@@ -15,10 +15,19 @@ declare class Indicator extends THREE.Group {
     grow(config?: any): Animation;
 }
 declare class CongruentLine extends THREE.Group {
-    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
-        ticks?: number;
+    constructor(ticks: number, start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
         tickLength?: number;
         spacing?: number;
     });
 }
-export { Indicator, CongruentLine };
+declare class CongruentAngle extends THREE.Group {
+    config: Style & {
+        minRadius?: number;
+        spacing?: number;
+    };
+    constructor(arcs: number, point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+        minRadius?: number;
+        spacing?: number;
+    });
+}
+export { Indicator, CongruentLine, CongruentAngle };
