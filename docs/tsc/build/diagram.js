@@ -37,19 +37,16 @@ class Indicator extends THREE.Group {
         }, Object.assign({ object: this }, config));
     }
 }
-class Congruent extends THREE.Group {
-    constructor(ticks, config = {}) {
-        config = Object.assign({ tickLength: 0.25, spacing: 0.3 }, config);
+class CongruentLine extends THREE.Group {
+    constructor(start, end, config = {}) {
+        config = Object.assign({ ticks: 1, tickLength: 0.25, spacing: 0.3 }, config);
         super();
-        this.ticks = ticks;
-        const left = (-config.spacing * (ticks - 1)) / 4;
-        for (let i = 0; i < ticks; i++) {
+        const left = (-config.spacing * (config.ticks - 1)) / 4;
+        for (let i = 0; i < config.ticks; i++) {
             const pos = left + 0.5 * config.spacing * i;
             const tick = new Geometry.Line(new THREE.Vector3(pos, -config.tickLength / 2, 0), new THREE.Vector3(pos, config.tickLength / 2, 0), config);
             this.add(tick);
         }
-    }
-    moveToSegment(start, end) {
         const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
         this.position.copy(center);
         const segmentVector = new THREE.Vector3().subVectors(end, start);
@@ -57,5 +54,5 @@ class Congruent extends THREE.Group {
         return this;
     }
 }
-export { Indicator, Congruent };
+export { Indicator, CongruentLine };
 //# sourceMappingURL=diagram.js.map

@@ -88,8 +88,8 @@ declare namespace Geometry {
      * An abstract class representing a generalized shape.
      */
     abstract class Shape extends THREE.Group {
-        fill: Fill;
-        stroke: Stroke;
+        fill?: Fill;
+        stroke?: Stroke;
         curveEndIndices: Array<Array<number>>;
         arrow: boolean;
         constructor(points: Array<THREE.Vector3>, config?: Style & {
@@ -202,7 +202,7 @@ declare namespace Geometry {
         }): void;
         getCloneAttributes(): (number | boolean)[];
         getAttributes(): ArcAttributes;
-        // TODO: Handle obtuse angles.
+        // TODO: Handle reflex angles.
         static asAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
             radius?: number;
             reflex?: boolean;
@@ -390,6 +390,7 @@ declare namespace Utils {
     const getBoundingBoxHelper: (obj: THREE.Object3D, color: string) => THREE.Box3Helper;
     const pointAlongCurve: (shape: Geometry.Shape, t: number) => THREE.Vector3;
     const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
+    const signedAngleTo: (a: THREE.Vector3, b: THREE.Vector3) => number;
     class ShapeFromCurves {
         adjacentThreshold: number;
         segmentClosestToPoint: THREE.Vector3;
@@ -458,6 +459,7 @@ declare module "three" {
         rotate180(): THREE.Vector3;
         rotate270(): THREE.Vector3;
         transformBetweenSpaces(from: THREE.Object3D, to: THREE.Object3D): THREE.Vector3;
+        signedAngleTo(vector: THREE.Vector3): number;
     }
 }
 type ComponentParent = THREE.Object3D & {
@@ -782,13 +784,12 @@ declare namespace Diagram {
         constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig & Style);
         grow(config?: any): Animation;
     }
-    class Congruent extends THREE.Group {
-        ticks: number;
-        constructor(ticks: number, config?: Style & {
+    class CongruentLine extends THREE.Group {
+        constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
+            ticks?: number;
             tickLength?: number;
             spacing?: number;
         });
-        moveToSegment(start: THREE.Vector3, end: THREE.Vector3): this;
     }
 }
 declare namespace Constants {
@@ -897,8 +898,8 @@ declare namespace Graphing {
      * An abstract class representing a generalized shape.
      */
     abstract class Shape extends THREE.Group {
-        fill: Fill;
-        stroke: Stroke;
+        fill?: Fill;
+        stroke?: Stroke;
         curveEndIndices: Array<Array<number>>;
         arrow: boolean;
         constructor(points: Array<THREE.Vector3>, config?: Style & {
@@ -1011,7 +1012,7 @@ declare namespace Graphing {
         }): void;
         getCloneAttributes(): (number | boolean)[];
         getAttributes(): ArcAttributes;
-        // TODO: Handle obtuse angles.
+        // TODO: Handle reflex angles.
         static asAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
             radius?: number;
             reflex?: boolean;

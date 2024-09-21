@@ -370,16 +370,13 @@ class Arc extends Shape {
             closed: this.closed,
         };
     }
-    // TODO: Handle obtuse angles.
+    // TODO: Handle reflex angles.
     static asAngle(point1, point2, point3, config = {}) {
         config = Object.assign({ radius: 0.4, reflex: false }, config);
         const vector21 = new THREE.Vector3().subVectors(point1, point2);
         const vector23 = new THREE.Vector3().subVectors(point3, point2);
         let arcAngle = vector21.angleTo(vector23);
-        if (config.reflex) {
-            arcAngle = Math.PI - arcAngle;
-        }
-        const arcRotation = Math.min(Utils.RIGHT.angleTo(vector21), Utils.RIGHT.angleTo(vector23));
+        let arcRotation = Math.min(Utils.RIGHT.signedAngleTo(vector21), Utils.RIGHT.signedAngleTo(vector23));
         const arc = new Arc(config.radius, arcAngle, config);
         arc.position.copy(point2);
         arc.rotateZ(arcRotation);

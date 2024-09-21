@@ -14,12 +14,11 @@ declare class Indicator extends THREE.Group {
     constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig & Style);
     grow(config?: any): Animation;
 }
-declare class Congruent extends THREE.Group {
-    ticks: number;
-    constructor(ticks: number, config?: Style & {
+declare class CongruentLine extends THREE.Group {
+    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
+        ticks?: number;
         tickLength?: number;
         spacing?: number;
     });
-    moveToSegment(start: THREE.Vector3, end: THREE.Vector3): this;
 }
-export { Indicator, Congruent };
+export { Indicator, CongruentLine };

@@ -70,15 +70,23 @@ class Indicator extends THREE.Group {
   }
 }
 
-class Congruent extends THREE.Group {
+class CongruentLine extends THREE.Group {
   constructor(
-    public ticks: number,
-    config: Style & { tickLength?: number; spacing?: number } = {},
+    start: THREE.Vector3,
+    end: THREE.Vector3,
+    config: Style & {
+      ticks?: number;
+      tickLength?: number;
+      spacing?: number;
+    } = {},
   ) {
-    config = Object.assign({ tickLength: 0.25, spacing: 0.3 }, config);
+    config = Object.assign(
+      { ticks: 1, tickLength: 0.25, spacing: 0.3 },
+      config,
+    );
     super();
-    const left = (-config.spacing * (ticks - 1)) / 4;
-    for (let i = 0; i < ticks; i++) {
+    const left = (-config.spacing * (config.ticks - 1)) / 4;
+    for (let i = 0; i < config.ticks; i++) {
       const pos = left + 0.5 * config.spacing * i;
       const tick = new Geometry.Line(
         new THREE.Vector3(pos, -config.tickLength / 2, 0),
@@ -87,9 +95,7 @@ class Congruent extends THREE.Group {
       );
       this.add(tick);
     }
-  }
 
-  moveToSegment(start: THREE.Vector3, end: THREE.Vector3) {
     const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
     this.position.copy(center);
 
@@ -99,4 +105,4 @@ class Congruent extends THREE.Group {
   }
 }
 
-export { Indicator, Congruent };
+export { Indicator, CongruentLine };

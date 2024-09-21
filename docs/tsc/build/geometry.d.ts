@@ -7,8 +7,8 @@ type Stroke = MeshLine;
  * An abstract class representing a generalized shape.
  */
 declare abstract class Shape extends THREE.Group {
-    fill: Fill;
-    stroke: Stroke;
+    fill?: Fill;
+    stroke?: Stroke;
     curveEndIndices: Array<Array<number>>;
     arrow: boolean;
     constructor(points: Array<THREE.Vector3>, config?: Style & {

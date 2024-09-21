@@ -2586,12 +2586,12 @@
           "members": [
             {
               "kind": "Class",
-              "canonicalReference": "@eulertour/studio!Diagram.Congruent:class",
+              "canonicalReference": "@eulertour/studio!Diagram.CongruentLine:class",
               "docComment": "",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class Congruent extends "
+                  "text": "declare class CongruentLine extends "
                 },
                 {
                   "kind": "Reference",
@@ -2606,70 +2606,17 @@
               "fileUrlPath": "build/diagram.d.ts",
               "releaseTag": "Public",
               "isAbstract": false,
-              "name": "Congruent",
+              "name": "CongruentLine",
               "preserveMemberOrder": false,
               "members": [
                 {
                   "kind": "Constructor",
-                  "canonicalReference": "@eulertour/studio!Diagram.Congruent:constructor(1)",
-                  "docComment": "/**\n * Constructs a new instance of the `Congruent` class\n */\n",
+                  "canonicalReference": "@eulertour/studio!Diagram.CongruentLine:constructor(1)",
+                  "docComment": "/**\n * Constructs a new instance of the `CongruentLine` class\n */\n",
                   "excerptTokens": [
                     {
                       "kind": "Content",
-                      "text": "constructor(ticks: "
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "number"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": ", config?: "
-                    },
-                    {
-                      "kind": "Reference",
-                      "text": "Style",
-                      "canonicalReference": "@eulertour/studio!~Style:type"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": " & {\n        tickLength?: number;\n        spacing?: number;\n    }"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": ");"
-                    }
-                  ],
-                  "releaseTag": "Public",
-                  "isProtected": false,
-                  "overloadIndex": 1,
-                  "parameters": [
-                    {
-                      "parameterName": "ticks",
-                      "parameterTypeTokenRange": {
-                        "startIndex": 1,
-                        "endIndex": 2
-                      },
-                      "isOptional": false
-                    },
-                    {
-                      "parameterName": "config",
-                      "parameterTypeTokenRange": {
-                        "startIndex": 3,
-                        "endIndex": 5
-                      },
-                      "isOptional": true
-                    }
-                  ]
-                },
-                {
-                  "kind": "Method",
-                  "canonicalReference": "@eulertour/studio!Diagram.Congruent#moveToSegment:member(1)",
-                  "docComment": "",
-                  "excerptTokens": [
-                    {
-                      "kind": "Content",
-                      "text": "moveToSegment(start: "
+                      "text": "constructor(start: "
                     },
                     {
                       "kind": "Reference",
@@ -2687,22 +2634,22 @@
                     },
                     {
                       "kind": "Content",
-                      "text": "): "
+                      "text": ", config?: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Style",
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
-                      "text": "this"
+                      "text": " & {\n        ticks?: number;\n        tickLength?: number;\n        spacing?: number;\n    }"
                     },
                     {
                       "kind": "Content",
-                      "text": ";"
+                      "text": ");"
                     }
                   ],
-                  "isStatic": false,
-                  "returnTypeTokenRange": {
-                    "startIndex": 5,
-                    "endIndex": 6
-                  },
                   "releaseTag": "Public",
                   "isProtected": false,
                   "overloadIndex": 1,
@@ -2722,41 +2669,16 @@
                         "endIndex": 4
                       },
                       "isOptional": false
-                    }
-                  ],
-                  "isOptional": false,
-                  "isAbstract": false,
-                  "name": "moveToSegment"
-                },
-                {
-                  "kind": "Property",
-                  "canonicalReference": "@eulertour/studio!Diagram.Congruent#ticks:member",
-                  "docComment": "",
-                  "excerptTokens": [
-                    {
-                      "kind": "Content",
-                      "text": "ticks: "
                     },
                     {
-                      "kind": "Content",
-                      "text": "number"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": ";"
+                      "parameterName": "config",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 5,
+                        "endIndex": 7
+                      },
+                      "isOptional": true
                     }
-                  ],
-                  "isReadonly": false,
-                  "isOptional": false,
-                  "releaseTag": "Public",
-                  "name": "ticks",
-                  "propertyTypeTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 2
-                  },
-                  "isStatic": false,
-                  "isProtected": false,
-                  "isAbstract": false
+                  ]
                 }
               ],
               "extendsTokenRange": {
@@ -6601,7 +6523,7 @@
                   "excerptTokens": [
                     {
                       "kind": "Content",
-                      "text": "fill: "
+                      "text": "fill?: "
                     },
                     {
                       "kind": "Reference",
@@ -6614,7 +6536,7 @@
                     }
                   ],
                   "isReadonly": false,
-                  "isOptional": false,
+                  "isOptional": true,
                   "releaseTag": "Public",
                   "name": "fill",
                   "propertyTypeTokenRange": {
@@ -7126,7 +7048,7 @@
                   "excerptTokens": [
                     {
                       "kind": "Content",
-                      "text": "stroke: "
+                      "text": "stroke?: "
                     },
                     {
                       "kind": "Reference",
@@ -7139,7 +7061,7 @@
                     }
                   ],
                   "isReadonly": false,
-                  "isOptional": false,
+                  "isOptional": true,
                   "releaseTag": "Public",
                   "name": "stroke",
                   "propertyTypeTokenRange": {
@@ -11733,6 +11655,65 @@
                 }
               ],
               "implementsTokenRanges": []
+            },
+            {
+              "kind": "Function",
+              "canonicalReference": "@eulertour/studio!Utils.signedAngleTo:function(1)",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "signedAngleTo: (a: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", b: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector3",
+                  "canonicalReference": "@types/three!Vector3:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": ") => "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                }
+              ],
+              "fileUrlPath": "build/utils.d.ts",
+              "returnTypeTokenRange": {
+                "startIndex": 5,
+                "endIndex": 6
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "a",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "b",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                }
+              ],
+              "name": "signedAngleTo"
             },
             {
               "kind": "Function",

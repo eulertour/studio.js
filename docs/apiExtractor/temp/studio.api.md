@@ -182,15 +182,12 @@ const clamp: (num: any, min: any, max: any) => number;
 export function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE_2.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE_2.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 
 // @public (undocumented)
-class Congruent extends THREE_2.Group {
-    constructor(ticks: number, config?: Style & {
+class CongruentLine extends THREE_2.Group {
+    constructor(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style & {
+        ticks?: number;
         tickLength?: number;
         spacing?: number;
     });
-    // (undocumented)
-    moveToSegment(start: THREE_2.Vector3, end: THREE_2.Vector3): this;
-    // (undocumented)
-    ticks: number;
 }
 
 declare namespace Constants {
@@ -228,7 +225,7 @@ const DEFAULT_BACKGROUND_HEX = 16775920;
 declare namespace Diagram {
     export {
         Indicator,
-        Congruent
+        CongruentLine
     }
 }
 export { Diagram }
@@ -681,7 +678,7 @@ abstract class Shape extends THREE_2.Group {
     // Warning: (ae-forgotten-export) The symbol "Fill" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    fill: Fill;
+    fill?: Fill;
     // (undocumented)
     abstract getAttributes(): object;
     // (undocumented)
@@ -713,7 +710,7 @@ abstract class Shape extends THREE_2.Group {
     // Warning: (ae-forgotten-export) The symbol "Stroke" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    stroke: Stroke;
+    stroke?: Stroke;
     // (undocumented)
     transformedPoint(index: number, targetSpace: THREE_2.Object3D): THREE_2.Vector3;
     // (undocumented)
@@ -748,6 +745,9 @@ class ShapeFromCurves {
 class Shift extends Animation_3 {
     constructor(object: any, offset: any, config?: any);
 }
+
+// @public (undocumented)
+const signedAngleTo: (a: THREE_2.Vector3, b: THREE_2.Vector3) => number;
 
 // @public
 class Square extends Rectangle {
@@ -873,6 +873,7 @@ declare namespace Utils {
         convertWorldDirectionToObjectSpace,
         intersectionsBetween,
         pointAlongCurve,
+        signedAngleTo,
         ShapeFromCurves,
         BUFFER,
         RIGHT,

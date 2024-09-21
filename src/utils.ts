@@ -585,6 +585,11 @@ const intersectionsBetween = (
   return intersections;
 };
 
+const signedAngleTo = (a: THREE.Vector3, b: THREE.Vector3) => {
+  const normal = a.clone().rotate90();
+  return a.angleTo(b) * Math.sign(normal.dot(b));
+};
+
 class ShapeFromCurves {
   adjacentThreshold = 0.0001;
   segmentClosestToPoint = new THREE.Vector3();
@@ -816,6 +821,7 @@ export {
   convertWorldDirectionToObjectSpace,
   intersectionsBetween,
   pointAlongCurve,
+  signedAngleTo,
   ShapeFromCurves,
   BUFFER,
   RIGHT,

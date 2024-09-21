@@ -57,6 +57,7 @@ declare module "three" {
       from: THREE.Object3D,
       to: THREE.Object3D,
     ): THREE.Vector3;
+    signedAngleTo(vector: THREE.Vector3): number;
   }
 }
 
@@ -77,6 +78,12 @@ THREE.Vector3.prototype.transformBetweenSpaces = function (
   to: THREE.Object3D,
 ): THREE.Vector3 {
   return Utils.transformBetweenSpaces(from, to, this);
+};
+
+THREE.Vector3.prototype.signedAngleTo = function (
+  other: THREE.Vector3,
+): number {
+  return Utils.signedAngleTo(this, other);
 };
 
 THREE.Object3D.prototype.vstack = function (buffer = 0.2): THREE.Object3D {
@@ -370,12 +377,16 @@ THREE.Object3D.prototype.recenter = function (
   if (this.points) {
     // Update stroke and fill geometries.
     const newPoints = this.points.map((point) => point.clone().sub(offset));
-    this.stroke.geometry.setPoints(newPoints);
-    for (let i = 0; i < this.stroke.geometry.points.length - 1; i++) {
-      const { x, y, z } = newPoints[i];
-      this.fill.geometry.attributes.position.array[i * 3] = x;
-      this.fill.geometry.attributes.position.array[i * 3 + 1] = y;
-      this.fill.geometry.attributes.position.array[i * 3 + 2] = z;
+    if (this.stroke) {
+      this.stroke.geometry.setPoints(newPoints);
+    }
+    if (this.fill) {
+      for (let i = 0; i < this.stroke.geometry.points.length - 1; i++) {
+        const { x, y, z } = newPoints[i];
+        this.fill.geometry.attributes.position.array[i * 3] = x;
+        this.fill.geometry.attributes.position.array[i * 3 + 1] = y;
+        this.fill.geometry.attributes.position.array[i * 3 + 2] = z;
+      }
     }
   }
 
