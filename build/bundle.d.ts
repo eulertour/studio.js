@@ -176,9 +176,6 @@ declare namespace Geometry {
         };
         getClassConfig(): {};
         getAttributes(): PolygonAttributes;
-        static asRightAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
-            sideLength?: number;
-        }): Polyline;
         static fromAttributes(attributes: PolygonAttributes): Polyline;
     }
     /**
@@ -202,11 +199,6 @@ declare namespace Geometry {
         }): void;
         getCloneAttributes(): (number | boolean)[];
         getAttributes(): ArcAttributes;
-        // TODO: Handle reflex angles.
-        static asAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
-            radius?: number;
-            reflex?: boolean;
-        }): Arc;
         static fromAttributes(attributes: ArcAttributes): Arc;
         get attributeData(): ({
             attribute: string;
@@ -807,6 +799,18 @@ declare namespace Diagram {
             spacing?: number;
         });
     }
+    // TODO: Handle reflex angles.
+    class Angle extends Geometry.Arc {
+        constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+            radius?: number;
+            reflex?: boolean;
+        });
+    }
+    class RightAngle extends Geometry.Polyline {
+        constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+            sideLength?: number;
+        });
+    }
 }
 declare namespace Constants {
     const PIXELS_TO_COORDS: number;
@@ -1002,9 +1006,6 @@ declare namespace Graphing {
         };
         getClassConfig(): {};
         getAttributes(): PolygonAttributes;
-        static asRightAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
-            sideLength?: number;
-        }): Polyline;
         static fromAttributes(attributes: PolygonAttributes): Polyline;
     }
     /**
@@ -1028,11 +1029,6 @@ declare namespace Graphing {
         }): void;
         getCloneAttributes(): (number | boolean)[];
         getAttributes(): ArcAttributes;
-        // TODO: Handle reflex angles.
-        static asAngle(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
-            radius?: number;
-            reflex?: boolean;
-        }): Arc;
         static fromAttributes(attributes: ArcAttributes): Arc;
         get attributeData(): ({
             attribute: string;

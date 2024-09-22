@@ -7,6 +7,15 @@
 import { SVGLoader } from './SVGLoader.js';
 import * as THREE_2 from 'three';
 
+// @public (undocumented)
+class Angle extends Geometry.Arc {
+    // Warning: (ae-forgotten-export) The symbol "Style" needs to be exported by the entry point index.d.ts
+    constructor(point1: THREE_2.Vector3, point2: THREE_2.Vector3, point3: THREE_2.Vector3, config?: Style & {
+        radius?: number;
+        reflex?: boolean;
+    });
+}
+
 declare namespace Animation_2 {
     export {
         Animation_3 as Animation,
@@ -94,17 +103,11 @@ export type AnimationRepresentation = Animation_3 | Array<Animation_3> | {
 
 // @public
 class Arc extends Shape {
-    // Warning: (ae-forgotten-export) The symbol "Style" needs to be exported by the entry point index.d.ts
     constructor(radius?: number, angle?: number, config?: Style & {
         closed?: boolean;
     });
     // (undocumented)
     angle: number;
-    // (undocumented)
-    static asAngle(point1: THREE_2.Vector3, point2: THREE_2.Vector3, point3: THREE_2.Vector3, config?: Style & {
-        radius?: number;
-        reflex?: boolean;
-    }): Arc;
     // (undocumented)
     get attributeData(): ({
         attribute: string;
@@ -244,6 +247,8 @@ const DEFAULT_BACKGROUND_HEX = 16775920;
 declare namespace Diagram {
     export {
         Indicator,
+        Angle,
+        RightAngle,
         CongruentLine,
         CongruentAngle
     }
@@ -522,10 +527,6 @@ class Polygon extends Shape {
 class Polyline extends Shape {
     constructor(points: Array<THREE_2.Vector3>, config?: Style);
     // (undocumented)
-    static asRightAngle(point1: THREE_2.Vector3, point2: THREE_2.Vector3, point3: THREE_2.Vector3, config?: Style & {
-        sideLength?: number;
-    }): Polyline;
-    // (undocumented)
     static defaultConfig(): {
         fill: boolean;
     };
@@ -569,6 +570,13 @@ class Rectangle extends Shape {
 
 // @public (undocumented)
 const RIGHT: Readonly<THREE_2.Vector3>;
+
+// @public (undocumented)
+class RightAngle extends Geometry.Polyline {
+    constructor(point1: THREE_2.Vector3, point2: THREE_2.Vector3, point3: THREE_2.Vector3, config?: Style & {
+        sideLength?: number;
+    });
+}
 
 // @public (undocumented)
 class Rotate extends Animation_3 {

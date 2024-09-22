@@ -289,20 +289,6 @@ class Polyline extends Shape {
             points: this.points,
         };
     }
-    static asRightAngle(point1, point2, point3, config = {}) {
-        config = Object.assign({ sideLength: 0.35 }, config);
-        const vector21 = new THREE.Vector3()
-            .subVectors(point1, point2)
-            .setLength(config.sideLength);
-        const vector23 = new THREE.Vector3()
-            .subVectors(point3, point2)
-            .setLength(config.sideLength);
-        return new Polyline([
-            new THREE.Vector3().addVectors(point2, vector21),
-            new THREE.Vector3().add(point2).add(vector21).add(vector23),
-            new THREE.Vector3().addVectors(point2, vector23),
-        ], config);
-    }
     static fromAttributes(attributes) {
         const { points } = attributes;
         return new Polyline(points);
@@ -369,18 +355,6 @@ class Arc extends Shape {
             angle: this.angle,
             closed: this.closed,
         };
-    }
-    // TODO: Handle reflex angles.
-    static asAngle(point1, point2, point3, config = {}) {
-        config = Object.assign({ radius: 0.4, reflex: false }, config);
-        const vector21 = new THREE.Vector3().subVectors(point1, point2);
-        const vector23 = new THREE.Vector3().subVectors(point3, point2);
-        const arcAngle = vector21.angleTo(vector23);
-        const arcRotation = Math.min(Utils.RIGHT.positiveAngleTo(vector21), Utils.RIGHT.positiveAngleTo(vector23));
-        const arc = new Arc(config.radius, arcAngle, config);
-        arc.position.copy(point2);
-        arc.rotateZ(arcRotation);
-        return arc;
     }
     static fromAttributes(attributes) {
         const { radius, angle, closed } = attributes;

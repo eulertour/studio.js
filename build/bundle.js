@@ -55993,20 +55993,6 @@ class Polyline extends Shape {
             points: this.points,
         };
     }
-    static asRightAngle(point1, point2, point3, config = {}) {
-        config = Object.assign({ sideLength: 0.35 }, config);
-        const vector21 = new Vector3()
-            .subVectors(point1, point2)
-            .setLength(config.sideLength);
-        const vector23 = new Vector3()
-            .subVectors(point3, point2)
-            .setLength(config.sideLength);
-        return new Polyline([
-            new Vector3().addVectors(point2, vector21),
-            new Vector3().add(point2).add(vector21).add(vector23),
-            new Vector3().addVectors(point2, vector23),
-        ], config);
-    }
     static fromAttributes(attributes) {
         const { points } = attributes;
         return new Polyline(points);
@@ -56073,18 +56059,6 @@ class Arc extends Shape {
             angle: this.angle,
             closed: this.closed,
         };
-    }
-    // TODO: Handle reflex angles.
-    static asAngle(point1, point2, point3, config = {}) {
-        config = Object.assign({ radius: 0.4, reflex: false }, config);
-        const vector21 = new Vector3().subVectors(point1, point2);
-        const vector23 = new Vector3().subVectors(point3, point2);
-        const arcAngle = vector21.angleTo(vector23);
-        const arcRotation = Math.min(RIGHT.positiveAngleTo(vector21), RIGHT.positiveAngleTo(vector23));
-        const arc = new Arc(config.radius, arcAngle, config);
-        arc.position.copy(point2);
-        arc.rotateZ(arcRotation);
-        return arc;
     }
     static fromAttributes(attributes) {
         const { radius, angle, closed } = attributes;
@@ -99162,17 +99136,48 @@ class CongruentAngle extends Group {
         super();
         this.config = config;
         for (let i = 0; i < arcs; i++) {
-            const arc = Arc.asAngle(point1, point2, point3, Object.assign({ radius: config.minRadius + i * config.spacing }, config));
+            const arc = new Angle(point1, point2, point3, Object.assign({ radius: config.minRadius + i * config.spacing }, config));
             this.add(arc);
         }
+    }
+}
+// TODO: Handle reflex angles.
+class Angle extends Arc {
+    constructor(point1, point2, point3, config = {}) {
+        config = Object.assign({ radius: 0.4, reflex: false }, config);
+        const vector21 = new Vector3().subVectors(point1, point2);
+        const vector23 = new Vector3().subVectors(point3, point2);
+        const arcAngle = vector21.angleTo(vector23);
+        const arcRotation = Math.min(RIGHT.positiveAngleTo(vector21), RIGHT.positiveAngleTo(vector23));
+        super(config.radius, arcAngle, config);
+        this.position.copy(point2);
+        this.rotateZ(arcRotation);
+    }
+}
+class RightAngle extends Polyline {
+    constructor(point1, point2, point3, config = {}) {
+        config = Object.assign({ sideLength: 0.35 }, config);
+        const vector21 = new Vector3()
+            .subVectors(point1, point2)
+            .setLength(config.sideLength);
+        const vector23 = new Vector3()
+            .subVectors(point3, point2)
+            .setLength(config.sideLength);
+        super([
+            new Vector3().addVectors(point2, vector21),
+            new Vector3().add(point2).add(vector21).add(vector23),
+            new Vector3().addVectors(point2, vector23),
+        ], config);
     }
 }
 
 var diagram = /*#__PURE__*/Object.freeze({
 	__proto__: null,
+	Angle: Angle,
 	CongruentAngle: CongruentAngle,
 	CongruentLine: CongruentLine,
-	Indicator: Indicator
+	Indicator: Indicator,
+	RightAngle: RightAngle
 });
 
 /**
