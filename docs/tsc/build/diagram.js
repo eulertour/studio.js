@@ -72,7 +72,14 @@ class Angle extends Geometry.Arc {
         const vector21 = new THREE.Vector3().subVectors(point1, point2);
         const vector23 = new THREE.Vector3().subVectors(point3, point2);
         const arcAngle = vector21.angleTo(vector23);
-        const arcRotation = Math.min(Utils.RIGHT.positiveAngleTo(vector21), Utils.RIGHT.positiveAngleTo(vector23));
+        let arcRotation;
+        // TODO: Handle 180 degree angles
+        if (vector21.positiveAngleTo(vector23) < Math.PI) {
+            arcRotation = Utils.RIGHT.positiveAngleTo(vector21);
+        }
+        else {
+            arcRotation = Utils.RIGHT.positiveAngleTo(vector23);
+        }
         super(config.radius, arcAngle, config);
         this.position.copy(point2);
         this.rotateZ(arcRotation);

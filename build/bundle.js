@@ -98909,6 +98909,61 @@ class FadeOut extends Animation {
         super.tearDown();
     }
 }
+class SetOpacity extends Animation {
+    constructor(objectOrFunc, targetOpacity, config) {
+        let family = true;
+        if (config && config.family === false) {
+            family = false;
+        }
+        super((elapsedTime, _deltaTime) => {
+            if (family) {
+                this.object.traverse((child) => {
+                    if (child instanceof Mesh) {
+                        if (!this.initialOpacity.has(child)) {
+                            console.error("Unknown child");
+                        }
+                        child.material.opacity = MathUtils.lerp(this.initialOpacity.get(child), this.targetOpacity, elapsedTime);
+                    }
+                });
+            }
+            else {
+                [this.object.stroke, this.object.fill].forEach((mesh) => {
+                    if (!mesh)
+                        return;
+                    mesh.material.opacity = MathUtils.lerp(this.initialOpacity.get(mesh), this.targetOpacity, elapsedTime);
+                });
+            }
+        }, Object.assign({ object: objectOrFunc, hide: true }, config));
+        this.targetOpacity = targetOpacity;
+        this.config = config;
+        this.initialOpacity = new Map();
+    }
+    setUp() {
+        super.setUp();
+        this.object.traverse((child) => {
+            if (child instanceof Mesh) {
+                this.initialOpacity.set(child, child.material.opacity);
+            }
+        });
+    }
+    tearDown() {
+        var _a, _b;
+        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
+            this.object.parent.remove(this.object);
+        }
+        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
+            this.object.traverse((child) => {
+                if (child instanceof Mesh) {
+                    if (!this.initialOpacity.has(child)) {
+                        console.error("Unknown child");
+                    }
+                    child.material.opacity = this.initialOpacity.get(child);
+                }
+            });
+        }
+        super.tearDown();
+    }
+}
 class Wait extends Animation {
     constructor(config) {
         super(() => { }, config);
@@ -98924,6 +98979,7 @@ var animation = /*#__PURE__*/Object.freeze({
 	FadeOut: FadeOut,
 	MoveTo: MoveTo,
 	Rotate: Rotate,
+	SetOpacity: SetOpacity,
 	SetScale: SetScale,
 	Shift: Shift,
 	Wait: Wait
@@ -99148,7 +99204,14 @@ class Angle extends Arc {
         const vector21 = new Vector3().subVectors(point1, point2);
         const vector23 = new Vector3().subVectors(point3, point2);
         const arcAngle = vector21.angleTo(vector23);
-        const arcRotation = Math.min(RIGHT.positiveAngleTo(vector21), RIGHT.positiveAngleTo(vector23));
+        let arcRotation;
+        // TODO: Handle 180 degree angles
+        if (vector21.positiveAngleTo(vector23) < Math.PI) {
+            arcRotation = RIGHT.positiveAngleTo(vector21);
+        }
+        else {
+            arcRotation = RIGHT.positiveAngleTo(vector23);
+        }
         super(config.radius, arcAngle, config);
         this.position.copy(point2);
         this.rotateZ(arcRotation);

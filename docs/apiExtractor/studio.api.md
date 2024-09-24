@@ -27,6 +27,7 @@ declare namespace Animation_2 {
         Erase,
         FadeIn,
         FadeOut,
+        SetOpacity,
         Wait
     }
 }
@@ -654,6 +655,21 @@ export const setCameraDimensions: (camera: THREE_2.OrthographicCamera) => void;
 
 // @public (undocumented)
 export const setCanvasViewport: (viewport: THREE_2.Vector4) => void;
+
+// @public (undocumented)
+class SetOpacity extends Animation_3 {
+    constructor(objectOrFunc: any, targetOpacity: any, config?: any);
+    // (undocumented)
+    config?: any;
+    // (undocumented)
+    initialOpacity: Map<any, any>;
+    // (undocumented)
+    setUp(): void;
+    // (undocumented)
+    targetOpacity: any;
+    // (undocumented)
+    tearDown(): void;
+}
 
 // @public (undocumented)
 class SetScale extends Animation_3 {

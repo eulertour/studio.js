@@ -260,10 +260,65 @@ class FadeOut extends Animation {
         super.tearDown();
     }
 }
+class SetOpacity extends Animation {
+    constructor(objectOrFunc, targetOpacity, config) {
+        let family = true;
+        if (config && config.family === false) {
+            family = false;
+        }
+        super((elapsedTime, _deltaTime) => {
+            if (family) {
+                this.object.traverse((child) => {
+                    if (child instanceof THREE.Mesh) {
+                        if (!this.initialOpacity.has(child)) {
+                            console.error("Unknown child");
+                        }
+                        child.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), this.targetOpacity, elapsedTime);
+                    }
+                });
+            }
+            else {
+                [this.object.stroke, this.object.fill].forEach((mesh) => {
+                    if (!mesh)
+                        return;
+                    mesh.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), this.targetOpacity, elapsedTime);
+                });
+            }
+        }, Object.assign({ object: objectOrFunc, hide: true }, config));
+        this.targetOpacity = targetOpacity;
+        this.config = config;
+        this.initialOpacity = new Map();
+    }
+    setUp() {
+        super.setUp();
+        this.object.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                this.initialOpacity.set(child, child.material.opacity);
+            }
+        });
+    }
+    tearDown() {
+        var _a, _b;
+        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
+            this.object.parent.remove(this.object);
+        }
+        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
+            this.object.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    if (!this.initialOpacity.has(child)) {
+                        console.error("Unknown child");
+                    }
+                    child.material.opacity = this.initialOpacity.get(child);
+                }
+            });
+        }
+        super.tearDown();
+    }
+}
 class Wait extends Animation {
     constructor(config) {
         super(() => { }, config);
     }
 }
-export { Animation, Shift, MoveTo, Rotate, SetScale, Draw, Erase, FadeIn, FadeOut, Wait, };
+export { Animation, Shift, MoveTo, Rotate, SetScale, Draw, Erase, FadeIn, FadeOut, SetOpacity, Wait, };
 //# sourceMappingURL=animation.js.map

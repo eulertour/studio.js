@@ -73,7 +73,15 @@ declare class FadeOut extends Animation {
     setUp(): void;
     tearDown(): void;
 }
+declare class SetOpacity extends Animation {
+    targetOpacity: any;
+    config?: any;
+    initialOpacity: Map<any, any>;
+    constructor(objectOrFunc: any, targetOpacity: any, config?: any);
+    setUp(): void;
+    tearDown(): void;
+}
 declare class Wait extends Animation {
     constructor(config?: any);
 }
-export { Animation, Shift, MoveTo, Rotate, SetScale, Draw, Erase, FadeIn, FadeOut, Wait, };
+export { Animation, Shift, MoveTo, Rotate, SetScale, Draw, Erase, FadeIn, FadeOut, SetOpacity, Wait, };
