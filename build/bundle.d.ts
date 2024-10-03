@@ -548,7 +548,6 @@ declare namespace Animation {
         initialOpacity: Map<any, any>;
         constructor(objectOrFunc: any, targetOpacity: any, config?: any);
         setUp(): void;
-        tearDown(): void;
     }
     class Wait extends Animation {
         constructor(config?: any);
@@ -754,7 +753,6 @@ declare namespace Diagram {
         initialOpacity: Map<any, any>;
         constructor(objectOrFunc: any, targetOpacity: any, config?: any);
         setUp(): void;
-        tearDown(): void;
     }
     class Wait extends Animation {
         constructor(config?: any);

@@ -414,7 +414,7 @@ class SetOpacity extends Animation {
           });
         }
       },
-      { object: objectOrFunc, hide: true, ...config },
+      { object: objectOrFunc, ...config },
     );
   }
 
@@ -425,23 +425,6 @@ class SetOpacity extends Animation {
         this.initialOpacity.set(child, child.material.opacity);
       }
     });
-  }
-
-  tearDown() {
-    if (this.config?.remove) {
-      this.object.parent.remove(this.object);
-    }
-    if (this.config?.restore) {
-      this.object.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          if (!this.initialOpacity.has(child)) {
-            console.error("Unknown child");
-          }
-          child.material.opacity = this.initialOpacity.get(child);
-        }
-      });
-    }
-    super.tearDown();
   }
 }
 

@@ -667,8 +667,6 @@ class SetOpacity extends Animation_3 {
     setUp(): void;
     // (undocumented)
     targetOpacity: any;
-    // (undocumented)
-    tearDown(): void;
 }
 
 // @public (undocumented)

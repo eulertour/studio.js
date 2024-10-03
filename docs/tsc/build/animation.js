@@ -284,7 +284,7 @@ class SetOpacity extends Animation {
                     mesh.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), this.targetOpacity, elapsedTime);
                 });
             }
-        }, Object.assign({ object: objectOrFunc, hide: true }, config));
+        }, Object.assign({ object: objectOrFunc }, config));
         this.targetOpacity = targetOpacity;
         this.config = config;
         this.initialOpacity = new Map();
@@ -296,23 +296,6 @@ class SetOpacity extends Animation {
                 this.initialOpacity.set(child, child.material.opacity);
             }
         });
-    }
-    tearDown() {
-        var _a, _b;
-        if ((_a = this.config) === null || _a === void 0 ? void 0 : _a.remove) {
-            this.object.parent.remove(this.object);
-        }
-        if ((_b = this.config) === null || _b === void 0 ? void 0 : _b.restore) {
-            this.object.traverse((child) => {
-                if (child instanceof THREE.Mesh) {
-                    if (!this.initialOpacity.has(child)) {
-                        console.error("Unknown child");
-                    }
-                    child.material.opacity = this.initialOpacity.get(child);
-                }
-            });
-        }
-        super.tearDown();
     }
 }
 class Wait extends Animation {

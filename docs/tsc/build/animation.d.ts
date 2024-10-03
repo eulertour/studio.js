@@ -79,7 +79,6 @@ declare class SetOpacity extends Animation {
     initialOpacity: Map<any, any>;
     constructor(objectOrFunc: any, targetOpacity: any, config?: any);
     setUp(): void;
-    tearDown(): void;
 }
 declare class Wait extends Animation {
     constructor(config?: any);
