@@ -73,7 +73,7 @@ MeshLine.prototype.setGeometry = function (g, c) {
 };
 
 MeshLine.prototype.setPoints = function (points, wcb) {
-	if (!(points instanceof Float32Array) && !(points instanceof Array)) {
+	if (!(points instanceof Float32Array) && !Array.isArray(points)) {
 		console.error('ERROR: The BufferArray of points is not instancied correctly.');
 		return;
 	}
@@ -87,17 +87,17 @@ MeshLine.prototype.setPoints = function (points, wcb) {
 		// could transform Vector3 array into the array used below
 		// but this approach will only loop through the array once
 		// and is more performant
-		for (var j = 0; j < points.length; j++) {
-			var p = points[j];
-			var c = j / points.length;
+		for (let j = 0; j < points.length; j++) {
+			const p = points[j];
+			const c = j / points.length;
 			this.positions.push(p.x, p.y, p.z);
 			this.positions.push(p.x, p.y, p.z);
 			this.counters.push(c);
 			this.counters.push(c);
 		}
 	} else {
-		for (var j = 0; j < points.length; j += 3) {
-			var c = j / points.length;
+		for (let j = 0; j < points.length; j += 3) {
+			const c = j / points.length;
 			this.positions.push(points[j], points[j + 1], points[j + 2]);
 			this.positions.push(points[j], points[j + 1], points[j + 2]);
 			this.counters.push(c);
@@ -299,7 +299,7 @@ MeshLine.prototype.process = function () {
 };
 
 function memcpy(src, srcOffset, dst, dstOffset, length) {
-	var i;
+	let i;
 
 	src = src.subarray || src.slice ? src : src.buffer;
 	dst = dst.subarray || dst.slice ? dst : dst.buffer;
@@ -326,10 +326,10 @@ function memcpy(src, srcOffset, dst, dstOffset, length) {
  * @param position
  */
 MeshLine.prototype.advance = function (position) {
-	var positions = this._attributes.position.array;
-	var previous = this._attributes.previous.array;
-	var next = this._attributes.next.array;
-	var l = positions.length;
+	const positions = this._attributes.position.array;
+	const previous = this._attributes.previous.array;
+	const next = this._attributes.next.array;
+	const l = positions.length;
 
 	// PREVIOUS
 	memcpy(positions, 0, previous, 0, l);
@@ -359,7 +359,7 @@ MeshLine.prototype.advance = function (position) {
 	this._attributes.next.needsUpdate = true;
 };
 
-THREE.ShaderChunk['meshline_vert'] = [
+THREE.ShaderChunk.meshline_vert = [
 	'',
 	THREE.ShaderChunk.logdepthbuf_pars_vertex,
 	THREE.ShaderChunk.fog_pars_vertex,
@@ -450,7 +450,7 @@ THREE.ShaderChunk['meshline_vert'] = [
 	'}',
 ].join('\n');
 
-THREE.ShaderChunk['meshline_frag'] = [
+THREE.ShaderChunk.meshline_frag = [
 	'',
 	THREE.ShaderChunk.fog_pars_fragment,
 	THREE.ShaderChunk.logdepthbuf_pars_fragment,

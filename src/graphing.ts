@@ -19,7 +19,7 @@ export class Curve extends Polyline {
 	}
 
 	static defaultConfig() {
-		return { ...super.defaultConfig() };
+		return { ...Polyline.defaultConfig() };
 	}
 
 	getClassConfig() {

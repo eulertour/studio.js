@@ -191,7 +191,9 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 	}
 
 	#addSegment(index: number, start: THREE.Vector3, end: THREE.Vector3, next: THREE.Vector3) {
-		let x, y, z;
+		let x;
+		let y;
+		let z;
 
 		const vertexOffset = 12 * index;
 		({ x, y, z } = start);

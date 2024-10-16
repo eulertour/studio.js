@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import {
 	type ApiClass,
 	type ApiDeclaredItem,
@@ -75,7 +75,7 @@ const dumpTSDocTree = (docNode: DocNode, indent: string): void => {
 	}
 
 	for (const child of docNode.getChildNodes()) {
-		dumpTSDocTree(child, indent + '  ');
+		dumpTSDocTree(child, `${indent}  `);
 	}
 };
 

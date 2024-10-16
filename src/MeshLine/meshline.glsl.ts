@@ -79,7 +79,7 @@ void main() {
   gl_Position.xy += (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
 
   ${ShaderChunk.logdepthbuf_vertex}
-  ${ShaderChunk.fog_vertex && /*glsl*/ `vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );`}
+  ${ShaderChunk.fog_vertex && /*glsl*/ 'vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );'}
   ${ShaderChunk.fog_vertex}
 }`;
 

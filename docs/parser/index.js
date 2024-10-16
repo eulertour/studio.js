@@ -1,5 +1,5 @@
-var _a;
-import fs from 'fs';
+let _a;
+import fs from 'node:fs';
 import { ApiItemKind, ApiModel, ApiNamespace } from '@microsoft/api-extractor-model';
 import { DocExcerpt, DocNodeKind } from '@microsoft/tsdoc';
 import colors from 'colors';
@@ -49,7 +49,7 @@ const dumpTSDocTree = (docNode, indent) => {
 		dumpText += `${indent}- ${docNode.kind}`;
 	}
 	for (const child of docNode.getChildNodes()) {
-		dumpTSDocTree(child, indent + '  ');
+		dumpTSDocTree(child, `${indent}  `);
 	}
 };
 const apiModel = new ApiModel();

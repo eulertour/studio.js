@@ -90,7 +90,7 @@ class Animation {
 				const parent = this.parent;
 				!parent.children.includes(this.object) && parent.add(this.object);
 			}
-			this.beforeFunc && this.beforeFunc();
+			this.beforeFunc?.();
 			this.setUp();
 			deltaTime = worldTime - this.startTime;
 		} else if (worldTime > this.endTime) {
@@ -106,7 +106,7 @@ class Animation {
 		if (worldTime >= this.endTime) {
 			this.finished = true;
 			this.tearDown();
-			this.afterFunc && this.afterFunc();
+			this.afterFunc?.();
 		}
 	}
 

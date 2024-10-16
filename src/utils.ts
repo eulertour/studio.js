@@ -61,7 +61,11 @@ const setupCanvas = (
 		viewport: undefined,
 	},
 ): [THREE.Scene, THREE.Camera, THREE.WebGLRenderer] => {
-	let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
+	let aspectRatio;
+	let pixelWidth;
+	let pixelHeight;
+	let coordinateWidth;
+	let coordinateHeight;
 	if (isWidthSetup(config)) {
 		aspectRatio = config.aspectRatio;
 		pixelWidth = config.pixelWidth;
@@ -205,7 +209,8 @@ const furthestInDirection = (
 		while (exclusionCheckObj) {
 			if (excludeArray.includes(exclusionCheckObj)) {
 				return;
-			} else if (exclusionCheckObj === object) {
+			}
+			if (exclusionCheckObj === object) {
 				break;
 			}
 			exclusionCheckObj = exclusionCheckObj.parent;
@@ -529,9 +534,8 @@ const positiveAngleTo = (a: THREE.Vector3, b: THREE.Vector3) => {
 
 	if (Math.sign(normal.dot(b)) < 0) {
 		return 2 * Math.PI - angle;
-	} else {
-		return angle;
 	}
+	return angle;
 };
 
 class ShapeFromCurves {

@@ -30,7 +30,7 @@ export default function MeshLineRaycast(
 		for (let i = 0; i < positions.length; i += 12) {
 			vStart.fromArray(positions, i);
 			vEnd.fromArray(endPositions, i);
-			const precision = raycaster.params.Line!.threshold;
+			const precision = raycaster.params.Line?.threshold;
 			const precisionSq = precision * precision;
 
 			const distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment);
