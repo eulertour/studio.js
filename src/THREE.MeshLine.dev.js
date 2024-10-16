@@ -108,11 +108,11 @@ MeshLine.prototype.setPoints = function (points, wcb) {
 };
 
 function MeshLineRaycast(raycaster, intersects) {
-	var inverseMatrix = new THREE.Matrix4();
-	var ray = new THREE.Ray();
-	var sphere = new THREE.Sphere();
-	var interRay = new THREE.Vector3();
-	var geometry = this.geometry;
+	const inverseMatrix = new THREE.Matrix4();
+	const ray = new THREE.Ray();
+	const sphere = new THREE.Sphere();
+	const interRay = new THREE.Vector3();
+	const geometry = this.geometry;
 	// Checking boundingSphere distance to ray
 
 	if (!geometry.boundingSphere) geometry.computeBoundingSphere();
@@ -126,35 +126,35 @@ function MeshLineRaycast(raycaster, intersects) {
 	inverseMatrix.copy(this.matrixWorld).invert();
 	ray.copy(raycaster.ray).applyMatrix4(inverseMatrix);
 
-	var vStart = new THREE.Vector3();
-	var vEnd = new THREE.Vector3();
-	var interSegment = new THREE.Vector3();
-	var step = this instanceof THREE.LineSegments ? 2 : 1;
-	var index = geometry.index;
-	var attributes = geometry.attributes;
+	const vStart = new THREE.Vector3();
+	const vEnd = new THREE.Vector3();
+	const interSegment = new THREE.Vector3();
+	const step = this instanceof THREE.LineSegments ? 2 : 1;
+	const index = geometry.index;
+	const attributes = geometry.attributes;
 
 	if (index !== null) {
-		var indices = index.array;
-		var positions = attributes.position.array;
-		var widths = attributes.width.array;
+		const indices = index.array;
+		const positions = attributes.position.array;
+		const widths = attributes.width.array;
 
-		for (var i = 0, l = indices.length - 1; i < l; i += step) {
-			var a = indices[i];
-			var b = indices[i + 1];
+		for (let i = 0, l = indices.length - 1; i < l; i += step) {
+			const a = indices[i];
+			const b = indices[i + 1];
 
 			vStart.fromArray(positions, a * 3);
 			vEnd.fromArray(positions, b * 3);
-			var width = widths[Math.floor(i / 3)] !== undefined ? widths[Math.floor(i / 3)] : 1;
-			var precision = raycaster.params.Line.threshold + (this.material.lineWidth * width) / 2;
-			var precisionSq = precision * precision;
+			const width = widths[Math.floor(i / 3)] !== undefined ? widths[Math.floor(i / 3)] : 1;
+			const precision = raycaster.params.Line.threshold + (this.material.lineWidth * width) / 2;
+			const precisionSq = precision * precision;
 
-			var distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment);
+			const distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment);
 
 			if (distSq > precisionSq) continue;
 
 			interRay.applyMatrix4(this.matrixWorld); //Move back to world space for distance calculation
 
-			var distance = raycaster.ray.origin.distanceTo(interRay);
+			const distance = raycaster.ray.origin.distanceTo(interRay);
 
 			if (distance < raycaster.near || distance > raycaster.far) continue;
 
@@ -175,8 +175,8 @@ function MeshLineRaycast(raycaster, intersects) {
 }
 MeshLine.prototype.raycast = MeshLineRaycast;
 MeshLine.prototype.compareV3 = function (a, b) {
-	var aa = a * 6;
-	var ab = b * 6;
+	const aa = a * 6;
+	const ab = b * 6;
 	return (
 		this.positions[aa] === this.positions[ab] &&
 		this.positions[aa + 1] === this.positions[ab + 1] &&
@@ -185,12 +185,12 @@ MeshLine.prototype.compareV3 = function (a, b) {
 };
 
 MeshLine.prototype.copyV3 = function (a) {
-	var aa = a * 6;
+	const aa = a * 6;
 	return [this.positions[aa], this.positions[aa + 1], this.positions[aa + 2]];
 };
 
 MeshLine.prototype.process = function () {
-	var l = this.positions.length / 6;
+	const l = this.positions.length / 6;
 
 	this.previous = [];
 	this.next = [];
@@ -199,9 +199,9 @@ MeshLine.prototype.process = function () {
 	this.indices_array = [];
 	this.uvs = [];
 
-	var w;
+	let w;
 
-	var v;
+	let v;
 	// initial previous points
 	if (this.compareV3(0, l - 1)) {
 		v = this.copyV3(l - 2);
@@ -211,7 +211,7 @@ MeshLine.prototype.process = function () {
 	this.previous.push(v[0], v[1], v[2]);
 	this.previous.push(v[0], v[1], v[2]);
 
-	for (var j = 0; j < l; j++) {
+	for (let j = 0; j < l; j++) {
 		// sides
 		this.side.push(1);
 		this.side.push(-1);
@@ -233,7 +233,7 @@ MeshLine.prototype.process = function () {
 			this.previous.push(v[0], v[1], v[2]);
 
 			// indices
-			var n = j * 2;
+			const n = j * 2;
 			this.indices_array.push(n, n + 1, n + 2);
 			this.indices_array.push(n + 2, n + 1, n + 3);
 		}

@@ -116,7 +116,7 @@ class SVGLoader extends Loader {
 					isDefsNode = true;
 					break;
 
-				case 'use':
+				case 'use': {
 					style = parseStyle(node, style);
 
 					const href = node.getAttributeNS('http://www.w3.org/1999/xlink', 'href') || '';
@@ -125,10 +125,11 @@ class SVGLoader extends Loader {
 					if (usedNode) {
 						parseNode(usedNode, style);
 					} else {
-						console.warn("SVGLoader: 'use node' references non-existent node id: " + usedNodeId);
+						console.warn(`SVGLoader: 'use node' references non-existent node id: ${usedNodeId}`);
 					}
 
 					break;
+				}
 
 				default:
 				// console.log( node );
@@ -347,7 +348,7 @@ class SVGLoader extends Loader {
 
 						for (let j = 0, jl = numbers.length; j < jl; j += 7) {
 							// skip command if start point == end point
-							if (numbers[j + 5] == point.x && numbers[j + 6] == point.y) continue;
+							if (numbers[j + 5] === point.x && numbers[j + 6] === point.y) continue;
 
 							const start = point.clone();
 							point.x = numbers[j + 5];
@@ -519,7 +520,7 @@ class SVGLoader extends Loader {
 
 						for (let j = 0, jl = numbers.length; j < jl; j += 7) {
 							// skip command if no displacement
-							if (numbers[j + 5] == 0 && numbers[j + 6] == 0) continue;
+							if (numbers[j + 5] === 0 && numbers[j + 6] === 0) continue;
 
 							const start = point.clone();
 							point.x += numbers[j + 5];
@@ -613,7 +614,7 @@ class SVGLoader extends Loader {
 			start,
 			end,
 		) {
-			if (rx == 0 || ry == 0) {
+			if (rx === 0 || ry === 0) {
 				// draw a line if either of the radii == 0
 				path.lineTo(end.x, end.y);
 				return;
@@ -942,7 +943,7 @@ class SVGLoader extends Loader {
 			function newNumber() {
 				if (number !== '') {
 					if (exponent === '') result.push(Number(number));
-					else result.push(Number(number) * Math.pow(10, Number(exponent)));
+					else result.push(Number(number) * 10 ** Number(exponent));
 				}
 
 				number = '';
@@ -1157,14 +1158,14 @@ class SVGLoader extends Loader {
 			if (theUnit === 'px' && scope.defaultUnit !== 'px') {
 				// Conversion scale from  pixels to inches, then to default units
 
-				scale = unitConversion['in'][scope.defaultUnit] / scope.defaultDPI;
+				scale = unitConversion.in[scope.defaultUnit] / scope.defaultDPI;
 			} else {
 				scale = unitConversion[theUnit][scope.defaultUnit];
 
 				if (scale < 0) {
 					// Conversion scale to pixels
 
-					scale = unitConversion[theUnit]['in'] * scope.defaultDPI;
+					scale = unitConversion[theUnit].in * scope.defaultDPI;
 				}
 			}
 
@@ -1651,10 +1652,11 @@ class SVGLoader extends Loader {
 				for (let i = 0; i < 2; i++) {
 					classifyPoint(i === 0 ? b0 : b1, a0, a1);
 					//find position of this endpoints relatively to edge1
-					if (classifyResult.loc == IntersectionLocationType.ORIGIN) {
+					if (classifyResult.loc === IntersectionLocationType.ORIGIN) {
 						const point = i === 0 ? b0 : b1;
 						return { x: point.x, y: point.y, t: classifyResult.t };
-					} else if (classifyResult.loc == IntersectionLocationType.BETWEEN) {
+					}
+					if (classifyResult.loc === IntersectionLocationType.BETWEEN) {
 						const x = +(x1 + classifyResult.t * (x2 - x1)).toPrecision(10);
 						const y = +(y1 + classifyResult.t * (y2 - y1)).toPrecision(10);
 						return { x: x, y: y, t: classifyResult.t };
@@ -1662,22 +1664,21 @@ class SVGLoader extends Loader {
 				}
 
 				return null;
-			} else {
-				//3. edges intersect
-
-				for (let i = 0; i < 2; i++) {
-					classifyPoint(i === 0 ? b0 : b1, a0, a1);
-
-					if (classifyResult.loc == IntersectionLocationType.ORIGIN) {
-						const point = i === 0 ? b0 : b1;
-						return { x: point.x, y: point.y, t: classifyResult.t };
-					}
-				}
-
-				const x = +(x1 + t1 * (x2 - x1)).toPrecision(10);
-				const y = +(y1 + t1 * (y2 - y1)).toPrecision(10);
-				return { x: x, y: y, t: t1 };
 			}
+			//3. edges intersect
+
+			for (let i = 0; i < 2; i++) {
+				classifyPoint(i === 0 ? b0 : b1, a0, a1);
+
+				if (classifyResult.loc === IntersectionLocationType.ORIGIN) {
+					const point = i === 0 ? b0 : b1;
+					return { x: point.x, y: point.y, t: classifyResult.t };
+				}
+			}
+
+			const x = +(x1 + t1 * (x2 - x1)).toPrecision(10);
+			const y = +(y1 + t1 * (y2 - y1)).toPrecision(10);
+			return { x: x, y: y, t: t1 };
 		}
 
 		function classifyPoint(p, edgeStart, edgeEnd) {
