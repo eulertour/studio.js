@@ -165,4 +165,12 @@ describe('Shape', () => {
 			assert.isUndefined(shape.stroke);
 		});
 	});
+
+	it('returns attributes', () => {
+		const shape = new TestShape(getTestPoints());
+		const attributes = shape.getAttributes();
+
+		assert.isObject(attributes);
+		assert.isTrue(attributes.test);
+	});
 });
