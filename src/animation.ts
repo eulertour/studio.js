@@ -15,10 +15,12 @@ const modulate = (t, dt): [number, number] => {
 };
 
 interface IAnimation {
+	// biome-ignore lint/suspicious/noMisleadingInstantiator:
 	constructor(func: (elapsedTime: number, deltaTime: number) => void, config?: any): Animation;
 }
 
 interface INoConfigAnimation {
+	// biome-ignore lint/suspicious/noMisleadingInstantiator:
 	constructor(func: (elapsedTime: number, deltaTime: number) => void, config?: any): Animation;
 }
 

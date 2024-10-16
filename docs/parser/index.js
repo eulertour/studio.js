@@ -78,6 +78,7 @@ for (const module of apiEntryPoint.members) {
 		}
 		const classJson = {};
 		apiJson.extendsMap[studioClass.displayName] =
+			// biome-ignore lint/suspicious/noAssignInExpressions:
 			((_a = studioClass.extendsType) === null || _a === void 0 ? void 0 : _a.excerpt.text) || '';
 		const docComment = studioClass.tsdocComment;
 		const curClass = Studio[moduleName][studioClass.displayName];

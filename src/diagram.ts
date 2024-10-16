@@ -95,7 +95,6 @@ class CongruentLine extends THREE.Group {
 
 		const segmentVector = new THREE.Vector3().subVectors(end, start);
 		this.rotation.z = Math.atan2(segmentVector.y, segmentVector.x);
-		return this;
 	}
 }
 
