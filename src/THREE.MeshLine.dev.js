@@ -30,7 +30,7 @@ class MeshLine extends THREE.BufferGeometry {
 				enumerable: true,
 				get: function () {
 					return this;
-				}
+				},
 			},
 			geom: {
 				enumerable: true,
@@ -39,7 +39,7 @@ class MeshLine extends THREE.BufferGeometry {
 				},
 				set: function (value) {
 					this.setGeometry(value, this.widthCallback);
-				}
+				},
 			},
 			// for declaritive architectures
 			// to return the same value that sets the points
@@ -52,8 +52,8 @@ class MeshLine extends THREE.BufferGeometry {
 				},
 				set: function (value) {
 					this.setPoints(value, this.widthCallback);
-				}
-			}
+				},
+			},
 		});
 	}
 }
@@ -166,7 +166,7 @@ function MeshLineRaycast(raycaster, intersects) {
 				index: i,
 				face: null,
 				faceIndex: null,
-				object: this
+				object: this,
 			});
 			// make event only fire once
 			i = l;
@@ -265,7 +265,7 @@ MeshLine.prototype.process = function () {
 			width: new THREE.BufferAttribute(new Float32Array(this.width), 1),
 			uv: new THREE.BufferAttribute(new Float32Array(this.uvs), 2),
 			index: new THREE.BufferAttribute(new Uint16Array(this.indices_array), 1),
-			counters: new THREE.BufferAttribute(new Float32Array(this.counters), 1)
+			counters: new THREE.BufferAttribute(new Float32Array(this.counters), 1),
 		};
 	} else {
 		this._attributes.position.copyArray(new Float32Array(this.positions));
@@ -447,7 +447,7 @@ THREE.ShaderChunk['meshline_vert'] = [
 	THREE.ShaderChunk.logdepthbuf_vertex,
 	THREE.ShaderChunk.fog_vertex && '    vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );',
 	THREE.ShaderChunk.fog_vertex,
-	'}'
+	'}',
 ].join('\n');
 
 THREE.ShaderChunk['meshline_frag'] = [
@@ -486,7 +486,7 @@ THREE.ShaderChunk['meshline_frag'] = [
 	'    gl_FragColor.a *= step(vCounters, visibility);',
 	'',
 	THREE.ShaderChunk.fog_fragment,
-	'}'
+	'}',
 ].join('\n');
 
 class MeshLineMaterial extends THREE.ShaderMaterial {
@@ -508,12 +508,12 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				useDash: { value: 0 },
 				visibility: { value: 1 },
 				alphaTest: { value: 0 },
-				repeat: { value: new THREE.Vector2(1, 1) }
+				repeat: { value: new THREE.Vector2(1, 1) },
 			}),
 
 			vertexShader: THREE.ShaderChunk.meshline_vert,
 
-			fragmentShader: THREE.ShaderChunk.meshline_frag
+			fragmentShader: THREE.ShaderChunk.meshline_frag,
 		});
 		this.isMeshLineMaterial = true;
 		this.type = 'MeshLineMaterial';
@@ -526,7 +526,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.lineWidth.value = value;
-				}
+				},
 			},
 			map: {
 				enumerable: true,
@@ -535,7 +535,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.map.value = value;
-				}
+				},
 			},
 			useMap: {
 				enumerable: true,
@@ -544,7 +544,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.useMap.value = value;
-				}
+				},
 			},
 			alphaMap: {
 				enumerable: true,
@@ -553,7 +553,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.alphaMap.value = value;
-				}
+				},
 			},
 			useAlphaMap: {
 				enumerable: true,
@@ -562,7 +562,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.useAlphaMap.value = value;
-				}
+				},
 			},
 			color: {
 				enumerable: true,
@@ -571,7 +571,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.color.value = value;
-				}
+				},
 			},
 			opacity: {
 				enumerable: true,
@@ -580,7 +580,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.opacity.value = value;
-				}
+				},
 			},
 			resolution: {
 				enumerable: true,
@@ -589,7 +589,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.resolution.value.copy(value);
-				}
+				},
 			},
 			sizeAttenuation: {
 				enumerable: true,
@@ -598,7 +598,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.sizeAttenuation.value = value;
-				}
+				},
 			},
 			dashArray: {
 				enumerable: true,
@@ -608,7 +608,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				set: function (value) {
 					this.uniforms.dashArray.value = value;
 					this.useDash = value !== 0 ? 1 : 0;
-				}
+				},
 			},
 			dashOffset: {
 				enumerable: true,
@@ -617,7 +617,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.dashOffset.value = value;
-				}
+				},
 			},
 			dashRatio: {
 				enumerable: true,
@@ -626,7 +626,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.dashRatio.value = value;
-				}
+				},
 			},
 			useDash: {
 				enumerable: true,
@@ -635,7 +635,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.useDash.value = value;
-				}
+				},
 			},
 			visibility: {
 				enumerable: true,
@@ -644,7 +644,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.visibility.value = value;
-				}
+				},
 			},
 			alphaTest: {
 				enumerable: true,
@@ -653,7 +653,7 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.alphaTest.value = value;
-				}
+				},
 			},
 			repeat: {
 				enumerable: true,
@@ -662,8 +662,8 @@ class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: function (value) {
 					this.uniforms.repeat.value.copy(value);
-				}
-			}
+				},
+			},
 		});
 
 		this.setValues(parameters);

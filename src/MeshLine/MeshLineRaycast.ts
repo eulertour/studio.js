@@ -1,63 +1,63 @@
-import * as THREE from 'three'
-import type MeshLineMaterial from './MeshLineMaterial'
+import * as THREE from 'three';
+import type MeshLineMaterial from './MeshLineMaterial';
 
 export default function MeshLineRaycast(
-  this: THREE.Mesh<THREE.BufferGeometry, MeshLineMaterial>,
-  raycaster: THREE.Raycaster,
-  intersects: THREE.Intersection[],
+	this: THREE.Mesh<THREE.BufferGeometry, MeshLineMaterial>,
+	raycaster: THREE.Raycaster,
+	intersects: THREE.Intersection[],
 ): void {
-  const nextIntersectIndex = intersects.length;
-  const inverseMatrix = new THREE.Matrix4()
-  const ray = new THREE.Ray()
-  const interRay = new THREE.Vector3()
-  const geometry = this.geometry
+	const nextIntersectIndex = intersects.length;
+	const inverseMatrix = new THREE.Matrix4();
+	const ray = new THREE.Ray();
+	const interRay = new THREE.Vector3();
+	const geometry = this.geometry;
 
-  inverseMatrix.copy(this.matrixWorld).invert()
-  ray.copy(raycaster.ray).applyMatrix4(inverseMatrix)
+	inverseMatrix.copy(this.matrixWorld).invert();
+	ray.copy(raycaster.ray).applyMatrix4(inverseMatrix);
 
-  const vStart = new THREE.Vector3()
-  const vEnd = new THREE.Vector3()
-  const interSegment = new THREE.Vector3()
-  const index = geometry.index
-  const attributes = geometry.attributes
+	const vStart = new THREE.Vector3();
+	const vEnd = new THREE.Vector3();
+	const interSegment = new THREE.Vector3();
+	const index = geometry.index;
+	const attributes = geometry.attributes;
 
-  if (index !== null) {
-    const indices = index.array
-    const positions = attributes.position.array
-    const endPositions = attributes.endPosition.array
-    let minDistance = Infinity;
+	if (index !== null) {
+		const indices = index.array;
+		const positions = attributes.position.array;
+		const endPositions = attributes.endPosition.array;
+		let minDistance = Infinity;
 
-    for (let i = 0; i < positions.length; i += 12) {
-      vStart.fromArray(positions, i);
-      vEnd.fromArray(endPositions, i);
-      const precision = raycaster.params.Line!.threshold
-      const precisionSq = precision * precision
+		for (let i = 0; i < positions.length; i += 12) {
+			vStart.fromArray(positions, i);
+			vEnd.fromArray(endPositions, i);
+			const precision = raycaster.params.Line!.threshold;
+			const precisionSq = precision * precision;
 
-      const distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment)
+			const distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment);
 
-      if (distSq > precisionSq) continue;
+			if (distSq > precisionSq) continue;
 
-      // Move back to world space for distance calculation
-      interRay.applyMatrix4(this.matrixWorld)
-      interSegment.applyMatrix4(this.matrixWorld)
+			// Move back to world space for distance calculation
+			interRay.applyMatrix4(this.matrixWorld);
+			interSegment.applyMatrix4(this.matrixWorld);
 
-      const distance = interSegment.distanceTo(interRay)
-      if (distance < raycaster.near || distance > raycaster.far) continue
+			const distance = interSegment.distanceTo(interRay);
+			if (distance < raycaster.near || distance > raycaster.far) continue;
 
-      if (distance < minDistance) {
-        minDistance = distance;
-        intersects[nextIntersectIndex] = {
-          distance,
-          // What do we want? intersection point on the ray or on the segment??
-          // point: raycaster.ray.at( distance ),
-          point: interSegment.clone(),
-          index: i / 12,
-          face: null,
-          faceIndex: undefined,
-          object: this,
-        };
-        break;
-      }
-    }
-  }
+			if (distance < minDistance) {
+				minDistance = distance;
+				intersects[nextIntersectIndex] = {
+					distance,
+					// What do we want? intersection point on the ray or on the segment??
+					// point: raycaster.ray.at( distance ),
+					point: interSegment.clone(),
+					index: i / 12,
+					face: null,
+					faceIndex: undefined,
+					object: this,
+				};
+				break;
+			}
+		}
+	}
 }
