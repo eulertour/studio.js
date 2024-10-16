@@ -25,9 +25,12 @@
     "build:examples": "([ ! -d examples/build ] && ln -sfh $(pwd)/build/ examples/build); tsc -p ./examples",
     "dev:examples": "nodemon -w examples/src -e js,ts --exec 'npm run build:examples'",
     "storage-dev": "nodemon -w src -e js,ts --exec 'npm run build && npm run storage-deploy-emulator'",
-    "storage-deploy-emulator": "npm --prefix storageDeploy run deploy-emulator"
+    "storage-deploy-emulator": "npm --prefix storageDeploy run deploy-emulator",
+    "lint": "biome check",
+    "lint:fix": "biome check --write"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.3",
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-terser": "^0.4.4",
