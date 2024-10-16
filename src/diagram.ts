@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Animation } from './animation';
 import * as Geometry from './geometry';
-import { Style } from './geometry.types';
+import type { Style } from './geometry.types';
 import * as Utils from './utils';
 
 interface IndicatorConfig {

@@ -240,7 +240,7 @@ abstract class Shape extends THREE.Group {
 		}
 		const segment = new THREE.Line3();
 		const closestPointOnSegment = new THREE.Vector3();
-		let minDistance = Infinity;
+		let minDistance = Number.POSITIVE_INFINITY;
 		for (let i = 0; i < this.points.length - 1; i++) {
 			segment.set(this.points[i], this.points[i + 1]);
 			const distance = segment
@@ -666,7 +666,7 @@ class Rectangle extends Shape {
  */
 class Square extends Rectangle {
 	constructor(
-		public sideLength: number = 2,
+		public sideLength = 2,
 		config: Style = {},
 	) {
 		super(sideLength, sideLength, { ...Square.defaultConfig(), ...config });

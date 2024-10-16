@@ -28,17 +28,15 @@ class SVGLoader extends Loader {
 	}
 
 	load(url, onLoad, onProgress, onError) {
-		const scope = this;
-
-		const loader = new FileLoader(scope.manager);
-		loader.setPath(scope.path);
-		loader.setRequestHeader(scope.requestHeader);
-		loader.setWithCredentials(scope.withCredentials);
+		const loader = new FileLoader(this.manager);
+		loader.setPath(this.path);
+		loader.setRequestHeader(this.requestHeader);
+		loader.setWithCredentials(this.withCredentials);
 		loader.load(
 			url,
-			function (text) {
+			(text) => {
 				try {
-					onLoad(scope.parse(text));
+					onLoad(this.parse(text));
 				} catch (e) {
 					if (onError) {
 						onError(e);
@@ -46,7 +44,7 @@ class SVGLoader extends Loader {
 						console.error(e);
 					}
 
-					scope.manager.itemError(url);
+					this.manager.itemError(url);
 				}
 			},
 			onProgress,
@@ -1170,7 +1168,7 @@ class SVGLoader extends Loader {
 				}
 			}
 
-			return scale * parseFloat(string);
+			return scale * Number.parseFloat(string);
 		}
 
 		// Transforms

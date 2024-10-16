@@ -24,15 +24,15 @@ const renderDocNode = (docNode) => {
 	return result.trim();
 };
 const parseDocComment = (docComment) => {
-	let parsedComment = {
+	const parsedComment = {
 		summary: '',
 		exampleTags: [],
 	};
-	for (let child of docComment.getChildNodes()) {
+	for (const child of docComment.getChildNodes()) {
 		if (child.kind === DocNodeKind.Section) {
 			parsedComment.summary = renderDocNode(child);
 		} else if (child.kind === DocNodeKind.Block) {
-			let sectionChild = child.getChildNodes()[1];
+			const sectionChild = child.getChildNodes()[1];
 			const tagContent = renderDocNode(sectionChild);
 			parsedComment.exampleTags.push(tagContent);
 		}

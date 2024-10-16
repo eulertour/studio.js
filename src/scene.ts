@@ -34,7 +34,7 @@ export class SceneController {
 	fps = 60;
 	timePrecision = 1e5;
 	startTime = 0;
-	endTime = Infinity;
+	endTime = Number.POSITIVE_INFINITY;
 	loopAnimations: Array<Animation> = [];
 	finishedAnimationCount = 0;
 	userScene: StudioScene;

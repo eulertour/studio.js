@@ -1,16 +1,16 @@
 import * as THREE from 'three';
 import { clamp, getBoundingBoxCenter } from './utils';
 
-let sigmoid = (x) => 1 / (1 + Math.exp(-x));
-let smooth = (t) => {
-	let error = sigmoid(-10 / 2);
+const sigmoid = (x) => 1 / (1 + Math.exp(-x));
+const smooth = (t) => {
+	const error = sigmoid(-10 / 2);
 	return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
 };
 
 const modulate = (t, dt): [number, number] => {
-	let tSeconds = t;
-	let modulatedDelta = smooth(tSeconds) - smooth(t - dt);
-	let modulatedTime = smooth(tSeconds);
+	const tSeconds = t;
+	const modulatedDelta = smooth(tSeconds) - smooth(t - dt);
+	const modulatedTime = smooth(tSeconds);
 	return [modulatedTime, modulatedDelta];
 };
 

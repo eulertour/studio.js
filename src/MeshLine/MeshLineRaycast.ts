@@ -25,7 +25,7 @@ export default function MeshLineRaycast(
 		const indices = index.array;
 		const positions = attributes.position.array;
 		const endPositions = attributes.endPosition.array;
-		let minDistance = Infinity;
+		let minDistance = Number.POSITIVE_INFINITY;
 
 		for (let i = 0; i < positions.length; i += 12) {
 			vStart.fromArray(positions, i);

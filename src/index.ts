@@ -142,7 +142,7 @@ THREE.Object3D.prototype.addComponent = function <T extends THREE.Object3D>(
 	return this;
 };
 
-THREE.Object3D.prototype.updateComponent = function (name: string, child: THREE.Object3D) {
+THREE.Object3D.prototype.updateComponent = (name: string, child: THREE.Object3D) => {
 	throw new Error('Not implemented');
 };
 
@@ -362,9 +362,7 @@ THREE.Object3D.prototype.recenter = function (globalPosition: THREE.Vector3): TH
 	return this;
 };
 
-THREE.Object3D.prototype.reorient = function (): void {};
-
-import { Object3D } from 'three/src/Three.js';
+THREE.Object3D.prototype.reorient = (): void => {};
 import { setCameraDimensions, setCanvasViewport } from './MeshLine/MeshLineMaterial';
 import * as Animation from './animation';
 import * as Constants from './constants';

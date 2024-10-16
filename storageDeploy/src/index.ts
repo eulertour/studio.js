@@ -1,5 +1,5 @@
 import { readdir } from 'node:fs/promises';
-import { basename, dirname, join, relative } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { setTimeout } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { type AppOptions, initializeApp } from 'firebase-admin/app';

@@ -5,7 +5,7 @@ import { setCameraDimensions } from './MeshLine/MeshLineMaterial';
 import { CanvasViewport } from './MeshLine/MeshLineMaterial';
 import { DEFAULT_BACKGROUND_HEX, PIXELS_TO_COORDS } from './constants';
 import * as Geometry from './geometry';
-import { Style } from './geometry.types';
+import type { Style } from './geometry.types';
 import * as Text from './text';
 
 const BUFFER = 0.5;
@@ -148,7 +148,7 @@ const vspace = (group: THREE.Group, distanceBetween?: number) => {
 	if (group.children.length < 2) return group;
 
 	const defaultBuffer = 0.2;
-	let defaultSpacing = -Infinity;
+	let defaultSpacing = Number.NEGATIVE_INFINITY;
 	for (let i = 1; i < group.children.length; i++) {
 		const previous = group.children[i - 1];
 		const previousLowest = furthestInDirection(previous, DOWN);
@@ -198,8 +198,8 @@ const furthestInDirection = (
 	// const unitDirection = convertWorldDirectionToObjectSpace(direction, object);
 	const unitDirection = direction.clone().normalize();
 
-	let maxDot = -Infinity;
-	let maxDotPoint = unitDirection.clone().negate().setLength(Infinity);
+	let maxDot = Number.NEGATIVE_INFINITY;
+	const maxDotPoint = unitDirection.clone().negate().setLength(Number.POSITIVE_INFINITY);
 	object.traverse((obj) => {
 		let exclusionCheckObj = obj;
 		while (exclusionCheckObj) {
@@ -313,7 +313,7 @@ const moveNextTo = (
 		.negate();
 	const objectSpaceFurthestInDirection = furthestInDirection(object, objectSpaceDirection, target);
 
-	let objectSpaceOffsetInitial = new THREE.Vector3();
+	const objectSpaceOffsetInitial = new THREE.Vector3();
 	const objectSpaceOffsetFinalLength = objectSpaceDirection
 		.clone()
 		.normalize()
@@ -496,7 +496,7 @@ const intersectionsBetween = (
 	shape1: Geometry.Shape,
 	shape2: Geometry.Shape,
 ): Array<THREE.Vector3> => {
-	let intersections: Array<THREE.Vector3> = [];
+	const intersections: Array<THREE.Vector3> = [];
 	shape1.updateMatrixWorld();
 	shape2.updateMatrixWorld();
 	for (let i = 0; i < shape1.points.length - 1; i++) {
@@ -584,7 +584,7 @@ class ShapeFromCurves {
 		}
 
 		const vectorFromPointToIndex = (point: THREE.Vector3, index: number) => {
-			let endPoint = shape.points.at(index)?.clone().applyMatrix4(shape.matrixWorld);
+			const endPoint = shape.points.at(index)?.clone().applyMatrix4(shape.matrixWorld);
 			if (endPoint === undefined) {
 				return new THREE.Vector3();
 			}
@@ -698,11 +698,11 @@ class ShapeFromCurves {
 				i += increment;
 				continue;
 			}
-			let pointsToCheck = this.points.slice(0, this.points.length - 1);
+			const pointsToCheck = this.points.slice(0, this.points.length - 1);
 			if (until !== undefined) {
 				pointsToCheck.push(until);
 			}
-			for (let point of pointsToCheck) {
+			for (const point of pointsToCheck) {
 				newSegment.closestPointToPoint(point, true, this.segmentClosestToPoint);
 				const distanceToSegment = this.pointToSegment
 					.subVectors(this.segmentClosestToPoint, point)
