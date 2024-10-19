@@ -28,17 +28,15 @@ class SVGLoader extends Loader {
 	}
 
 	load(url, onLoad, onProgress, onError) {
-		const scope = this;
-
-		const loader = new FileLoader(scope.manager);
-		loader.setPath(scope.path);
-		loader.setRequestHeader(scope.requestHeader);
-		loader.setWithCredentials(scope.withCredentials);
+		const loader = new FileLoader(this.manager);
+		loader.setPath(this.path);
+		loader.setRequestHeader(this.requestHeader);
+		loader.setWithCredentials(this.withCredentials);
 		loader.load(
 			url,
-			function (text) {
+			(text) => {
 				try {
-					onLoad(scope.parse(text));
+					onLoad(this.parse(text));
 				} catch (e) {
 					if (onError) {
 						onError(e);
@@ -46,7 +44,7 @@ class SVGLoader extends Loader {
 						console.error(e);
 					}
 
-					scope.manager.itemError(url);
+					this.manager.itemError(url);
 				}
 			},
 			onProgress,
@@ -118,7 +116,7 @@ class SVGLoader extends Loader {
 					isDefsNode = true;
 					break;
 
-				case 'use':
+				case 'use': {
 					style = parseStyle(node, style);
 
 					const href = node.getAttributeNS('http://www.w3.org/1999/xlink', 'href') || '';
@@ -127,10 +125,11 @@ class SVGLoader extends Loader {
 					if (usedNode) {
 						parseNode(usedNode, style);
 					} else {
-						console.warn("SVGLoader: 'use node' references non-existent node id: " + usedNodeId);
+						console.warn(`SVGLoader: 'use node' references non-existent node id: ${usedNodeId}`);
 					}
 
 					break;
+				}
 
 				default:
 				// console.log( node );
@@ -349,7 +348,7 @@ class SVGLoader extends Loader {
 
 						for (let j = 0, jl = numbers.length; j < jl; j += 7) {
 							// skip command if start point == end point
-							if (numbers[j + 5] == point.x && numbers[j + 6] == point.y) continue;
+							if (numbers[j + 5] === point.x && numbers[j + 6] === point.y) continue;
 
 							const start = point.clone();
 							point.x = numbers[j + 5];
@@ -521,7 +520,7 @@ class SVGLoader extends Loader {
 
 						for (let j = 0, jl = numbers.length; j < jl; j += 7) {
 							// skip command if no displacement
-							if (numbers[j + 5] == 0 && numbers[j + 6] == 0) continue;
+							if (numbers[j + 5] === 0 && numbers[j + 6] === 0) continue;
 
 							const start = point.clone();
 							point.x += numbers[j + 5];
@@ -615,7 +614,7 @@ class SVGLoader extends Loader {
 			start,
 			end,
 		) {
-			if (rx == 0 || ry == 0) {
+			if (rx === 0 || ry === 0) {
 				// draw a line if either of the radii == 0
 				path.lineTo(end.x, end.y);
 				return;
@@ -850,14 +849,14 @@ class SVGLoader extends Loader {
 					.map((i) => i.trim());
 
 				for (let i = 0; i < classSelectors.length; i++) {
-					stylesheetStyles = Object.assign(stylesheetStyles, stylesheets['.' + classSelectors[i]]);
+					stylesheetStyles = Object.assign(stylesheetStyles, stylesheets[`.${classSelectors[i]}`]);
 				}
 			}
 
 			if (node.hasAttribute('id')) {
 				stylesheetStyles = Object.assign(
 					stylesheetStyles,
-					stylesheets['#' + node.getAttribute('id')],
+					stylesheets[`#${node.getAttribute('id')}`],
 				);
 			}
 
@@ -872,7 +871,7 @@ class SVGLoader extends Loader {
 
 				if (node.hasAttribute(svgName)) style[jsName] = adjustFunction(node.getAttribute(svgName));
 				if (stylesheetStyles[svgName]) style[jsName] = adjustFunction(stylesheetStyles[svgName]);
-				if (node.style && node.style[svgName]) style[jsName] = adjustFunction(node.style[svgName]);
+				if (node.style?.[svgName]) style[jsName] = adjustFunction(node.style[svgName]);
 			}
 
 			function clamp(v) {
@@ -908,7 +907,7 @@ class SVGLoader extends Loader {
 
 		function parseFloats(input, flags, stride) {
 			if (typeof input !== 'string') {
-				throw new TypeError('Invalid input: ' + typeof input);
+				throw new TypeError(`Invalid input: ${typeof input}`);
 			}
 
 			// Character groups
@@ -931,12 +930,12 @@ class SVGLoader extends Loader {
 
 			let state = SEP;
 			let seenComma = true;
-			let number = '',
-				exponent = '';
+			let number = '';
+			let exponent = '';
 			const result = [];
 
 			function throwSyntaxError(current, i, partial) {
-				const error = new SyntaxError('Unexpected character "' + current + '" at index ' + i + '.');
+				const error = new SyntaxError(`Unexpected character "${current}" at index ${i}.`);
 				error.partial = partial;
 				throw error;
 			}
@@ -944,7 +943,7 @@ class SVGLoader extends Loader {
 			function newNumber() {
 				if (number !== '') {
 					if (exponent === '') result.push(Number(number));
-					else result.push(Number(number) * Math.pow(10, Number(exponent)));
+					else result.push(Number(number) * 10 ** Number(exponent));
 				}
 
 				number = '';
@@ -1159,18 +1158,18 @@ class SVGLoader extends Loader {
 			if (theUnit === 'px' && scope.defaultUnit !== 'px') {
 				// Conversion scale from  pixels to inches, then to default units
 
-				scale = unitConversion['in'][scope.defaultUnit] / scope.defaultDPI;
+				scale = unitConversion.in[scope.defaultUnit] / scope.defaultDPI;
 			} else {
 				scale = unitConversion[theUnit][scope.defaultUnit];
 
 				if (scale < 0) {
 					// Conversion scale to pixels
 
-					scale = unitConversion[theUnit]['in'] * scope.defaultDPI;
+					scale = unitConversion[theUnit].in * scope.defaultDPI;
 				}
 			}
 
-			return scale * parseFloat(string);
+			return scale * Number.parseFloat(string);
 		}
 
 		// Transforms
@@ -1519,7 +1518,11 @@ class SVGLoader extends Loader {
 		// Adapted from: https://www.mpi-hd.mpg.de/personalhomes/globes/3x3/index.html
 		// -> Algorithms for real symmetric matrices -> Analytical (2x2 symmetric)
 		function eigenDecomposition(A, B, C) {
-			let rt1, rt2, cs, sn, t;
+			let rt1;
+			let rt2;
+			let cs;
+			let sn;
+			let t;
 			const sm = A + C;
 			const df = A - C;
 			const rt = Math.sqrt(df * df + 4 * B * B);
@@ -1641,17 +1644,19 @@ class SVGLoader extends Loader {
 				//1. lines are parallel or edges don't intersect
 
 				return null;
-			} else if (nom1 === 0 && denom === 0) {
+			}
+			if (nom1 === 0 && denom === 0) {
 				//2. lines are colinear
 
 				//check if endpoints of edge2 (b0-b1) lies on edge1 (a0-a1)
 				for (let i = 0; i < 2; i++) {
 					classifyPoint(i === 0 ? b0 : b1, a0, a1);
 					//find position of this endpoints relatively to edge1
-					if (classifyResult.loc == IntersectionLocationType.ORIGIN) {
+					if (classifyResult.loc === IntersectionLocationType.ORIGIN) {
 						const point = i === 0 ? b0 : b1;
 						return { x: point.x, y: point.y, t: classifyResult.t };
-					} else if (classifyResult.loc == IntersectionLocationType.BETWEEN) {
+					}
+					if (classifyResult.loc === IntersectionLocationType.BETWEEN) {
 						const x = +(x1 + classifyResult.t * (x2 - x1)).toPrecision(10);
 						const y = +(y1 + classifyResult.t * (y2 - y1)).toPrecision(10);
 						return { x: x, y: y, t: classifyResult.t };
@@ -1659,22 +1664,21 @@ class SVGLoader extends Loader {
 				}
 
 				return null;
-			} else {
-				//3. edges intersect
-
-				for (let i = 0; i < 2; i++) {
-					classifyPoint(i === 0 ? b0 : b1, a0, a1);
-
-					if (classifyResult.loc == IntersectionLocationType.ORIGIN) {
-						const point = i === 0 ? b0 : b1;
-						return { x: point.x, y: point.y, t: classifyResult.t };
-					}
-				}
-
-				const x = +(x1 + t1 * (x2 - x1)).toPrecision(10);
-				const y = +(y1 + t1 * (y2 - y1)).toPrecision(10);
-				return { x: x, y: y, t: t1 };
 			}
+			//3. edges intersect
+
+			for (let i = 0; i < 2; i++) {
+				classifyPoint(i === 0 ? b0 : b1, a0, a1);
+
+				if (classifyResult.loc === IntersectionLocationType.ORIGIN) {
+					const point = i === 0 ? b0 : b1;
+					return { x: point.x, y: point.y, t: classifyResult.t };
+				}
+			}
+
+			const x = +(x1 + t1 * (x2 - x1)).toPrecision(10);
+			const y = +(y1 + t1 * (y2 - y1)).toPrecision(10);
+			return { x: x, y: y, t: t1 };
 		}
 
 		function classifyPoint(p, edgeStart, edgeEnd) {
@@ -1842,11 +1846,12 @@ class SVGLoader extends Loader {
 			stack.push(simplePath.identifier);
 
 			if (_fillRule === 'evenodd') {
-				const isHole = stack.length % 2 === 0 ? true : false;
+				const isHole = stack.length % 2 === 0;
 				const isHoleFor = stack[stack.length - 2];
 
 				return { identifier: simplePath.identifier, isHole: isHole, for: isHoleFor };
-			} else if (_fillRule === 'nonzero') {
+			}
+			if (_fillRule === 'nonzero') {
 				// check if path is a hole by counting the amount of paths with alternating rotations it has to cross.
 				let isHole = true;
 				let isHoleFor = null;
@@ -1865,9 +1870,8 @@ class SVGLoader extends Loader {
 				}
 
 				return { identifier: simplePath.identifier, isHole: isHole, for: isHoleFor };
-			} else {
-				console.warn('fill-rule: "' + _fillRule + '" is currently not implemented.');
 			}
+			console.warn(`fill-rule: "${_fillRule}" is currently not implemented.`);
 		}
 
 		// check for self intersecting paths
@@ -2078,8 +2082,8 @@ class SVGLoader extends Loader {
 		const strokeWidth2 = style.strokeWidth / 2;
 
 		const deltaU = 1 / (numPoints - 1);
-		let u0 = 0,
-			u1;
+		let u0 = 0;
+		let u1;
 
 		let innerSideModified;
 		let joinIsOnLeftSide;
@@ -2204,9 +2208,11 @@ class SVGLoader extends Loader {
 
 							break;
 
+						// biome-ignore lint/complexity/noUselessSwitchCase: readability
 						case 'miter':
+						// biome-ignore lint/complexity/noUselessSwitchCase: readability
 						case 'miter-clip':
-						default:
+						default: {
 							const miterFraction = (strokeWidth2 * style.strokeMiterLimit) / miterLength2;
 
 							if (miterFraction < 1) {
@@ -2215,56 +2221,55 @@ class SVGLoader extends Loader {
 								if (style.strokeLineJoin !== 'miter-clip') {
 									makeSegmentWithBevelJoin(joinIsOnLeftSide, innerSideModified, u1);
 									break;
+								}
+								// Segment triangles
+
+								createSegmentTrianglesWithMiddleSection(joinIsOnLeftSide, innerSideModified);
+
+								// Miter-clip join triangles
+
+								if (joinIsOnLeftSide) {
+									tempV2_6
+										.subVectors(outerPoint, currentPointL)
+										.multiplyScalar(miterFraction)
+										.add(currentPointL);
+									tempV2_7
+										.subVectors(outerPoint, nextPointL)
+										.multiplyScalar(miterFraction)
+										.add(nextPointL);
+
+									addVertex(currentPointL, u1, 0);
+									addVertex(tempV2_6, u1, 0);
+									addVertex(currentPoint, u1, 0.5);
+
+									addVertex(currentPoint, u1, 0.5);
+									addVertex(tempV2_6, u1, 0);
+									addVertex(tempV2_7, u1, 0);
+
+									addVertex(currentPoint, u1, 0.5);
+									addVertex(tempV2_7, u1, 0);
+									addVertex(nextPointL, u1, 0);
 								} else {
-									// Segment triangles
+									tempV2_6
+										.subVectors(outerPoint, currentPointR)
+										.multiplyScalar(miterFraction)
+										.add(currentPointR);
+									tempV2_7
+										.subVectors(outerPoint, nextPointR)
+										.multiplyScalar(miterFraction)
+										.add(nextPointR);
 
-									createSegmentTrianglesWithMiddleSection(joinIsOnLeftSide, innerSideModified);
+									addVertex(currentPointR, u1, 1);
+									addVertex(tempV2_6, u1, 1);
+									addVertex(currentPoint, u1, 0.5);
 
-									// Miter-clip join triangles
+									addVertex(currentPoint, u1, 0.5);
+									addVertex(tempV2_6, u1, 1);
+									addVertex(tempV2_7, u1, 1);
 
-									if (joinIsOnLeftSide) {
-										tempV2_6
-											.subVectors(outerPoint, currentPointL)
-											.multiplyScalar(miterFraction)
-											.add(currentPointL);
-										tempV2_7
-											.subVectors(outerPoint, nextPointL)
-											.multiplyScalar(miterFraction)
-											.add(nextPointL);
-
-										addVertex(currentPointL, u1, 0);
-										addVertex(tempV2_6, u1, 0);
-										addVertex(currentPoint, u1, 0.5);
-
-										addVertex(currentPoint, u1, 0.5);
-										addVertex(tempV2_6, u1, 0);
-										addVertex(tempV2_7, u1, 0);
-
-										addVertex(currentPoint, u1, 0.5);
-										addVertex(tempV2_7, u1, 0);
-										addVertex(nextPointL, u1, 0);
-									} else {
-										tempV2_6
-											.subVectors(outerPoint, currentPointR)
-											.multiplyScalar(miterFraction)
-											.add(currentPointR);
-										tempV2_7
-											.subVectors(outerPoint, nextPointR)
-											.multiplyScalar(miterFraction)
-											.add(nextPointR);
-
-										addVertex(currentPointR, u1, 1);
-										addVertex(tempV2_6, u1, 1);
-										addVertex(currentPoint, u1, 0.5);
-
-										addVertex(currentPoint, u1, 0.5);
-										addVertex(tempV2_6, u1, 1);
-										addVertex(tempV2_7, u1, 1);
-
-										addVertex(currentPoint, u1, 0.5);
-										addVertex(tempV2_7, u1, 1);
-										addVertex(nextPointR, u1, 1);
-									}
+									addVertex(currentPoint, u1, 0.5);
+									addVertex(tempV2_7, u1, 1);
+									addVertex(nextPointR, u1, 1);
 								}
 							} else {
 								// Miter join segment triangles
@@ -2321,6 +2326,7 @@ class SVGLoader extends Loader {
 							}
 
 							break;
+						}
 					}
 				} else {
 					// The segment triangles are generated here when two consecutive points are collinear
@@ -2604,6 +2610,7 @@ class SVGLoader extends Loader {
 
 					break;
 
+				// biome-ignore lint/complexity/noUselessSwitchCase: readability
 				case 'butt':
 				default:
 					// Nothing to do here

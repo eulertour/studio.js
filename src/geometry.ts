@@ -124,9 +124,8 @@ abstract class Shape extends THREE.Group {
 		const curvePoints = this.points.slice(curveEndIndices[0], curveEndIndices[1] + 1);
 		if (worldTransform) {
 			return curvePoints.map((p) => p.clone().applyMatrix4(this.matrixWorld));
-		} else {
-			return curvePoints;
 		}
+		return curvePoints;
 	}
 
 	get numCurves() {
@@ -240,7 +239,7 @@ abstract class Shape extends THREE.Group {
 		}
 		const segment = new THREE.Line3();
 		const closestPointOnSegment = new THREE.Vector3();
-		let minDistance = Infinity;
+		let minDistance = Number.POSITIVE_INFINITY;
 		for (let i = 0; i < this.points.length - 1; i++) {
 			segment.set(this.points[i], this.points[i + 1]);
 			const distance = segment
@@ -273,7 +272,7 @@ class Line extends Shape {
 	}
 
 	static defaultConfig() {
-		return { ...super.defaultConfig(), arrow: false };
+		return { ...Shape.defaultConfig(), arrow: false };
 	}
 
 	static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config: Style = {}) {
@@ -358,7 +357,7 @@ class Polyline extends Shape {
 	}
 
 	static defaultConfig() {
-		return { ...super.defaultConfig(), fill: false };
+		return { ...Shape.defaultConfig(), fill: false };
 	}
 
 	getClassConfig() {
@@ -423,7 +422,7 @@ class Arc extends Shape {
 	}
 
 	static defaultConfig() {
-		return { ...super.defaultConfig(), closed: false, fill: false };
+		return { ...Shape.defaultConfig(), closed: false, fill: false };
 	}
 
 	reshape(radius = 1, angle: number = Math.PI / 2, config: Style & { closed?: boolean } = {}) {
@@ -494,7 +493,7 @@ class Circle extends Arc {
 	}
 
 	static defaultConfig() {
-		return { ...super.defaultConfig(), fill: true };
+		return { ...Arc.defaultConfig(), fill: true };
 	}
 
 	getCloneAttributes() {
@@ -546,7 +545,7 @@ class Point extends Circle {
 	}
 
 	static defaultConfig() {
-		return { ...super.defaultConfig(), radius: 0.08 };
+		return { ...Circle.defaultConfig(), radius: 0.08 };
 	}
 
 	getAttributes(): ArcAttributes {
@@ -666,7 +665,7 @@ class Rectangle extends Shape {
  */
 class Square extends Rectangle {
 	constructor(
-		public sideLength: number = 2,
+		public sideLength = 2,
 		config: Style = {},
 	) {
 		super(sideLength, sideLength, { ...Square.defaultConfig(), ...config });

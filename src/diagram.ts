@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Animation } from './animation';
 import * as Geometry from './geometry';
-import { Style } from './geometry.types';
+import type { Style } from './geometry.types';
 import * as Utils from './utils';
 
 interface IndicatorConfig {
@@ -95,7 +95,6 @@ class CongruentLine extends THREE.Group {
 
 		const segmentVector = new THREE.Vector3().subVectors(end, start);
 		this.rotation.z = Math.atan2(segmentVector.y, segmentVector.x);
-		return this;
 	}
 }
 

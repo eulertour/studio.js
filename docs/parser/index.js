@@ -1,5 +1,5 @@
-var _a;
-import fs from 'fs';
+let _a;
+import fs from 'node:fs';
 import { ApiItemKind, ApiModel, ApiNamespace } from '@microsoft/api-extractor-model';
 import { DocExcerpt, DocNodeKind } from '@microsoft/tsdoc';
 import colors from 'colors';
@@ -24,15 +24,15 @@ const renderDocNode = (docNode) => {
 	return result.trim();
 };
 const parseDocComment = (docComment) => {
-	let parsedComment = {
+	const parsedComment = {
 		summary: '',
 		exampleTags: [],
 	};
-	for (let child of docComment.getChildNodes()) {
+	for (const child of docComment.getChildNodes()) {
 		if (child.kind === DocNodeKind.Section) {
 			parsedComment.summary = renderDocNode(child);
 		} else if (child.kind === DocNodeKind.Block) {
-			let sectionChild = child.getChildNodes()[1];
+			const sectionChild = child.getChildNodes()[1];
 			const tagContent = renderDocNode(sectionChild);
 			parsedComment.exampleTags.push(tagContent);
 		}
@@ -49,7 +49,7 @@ const dumpTSDocTree = (docNode, indent) => {
 		dumpText += `${indent}- ${docNode.kind}`;
 	}
 	for (const child of docNode.getChildNodes()) {
-		dumpTSDocTree(child, indent + '  ');
+		dumpTSDocTree(child, `${indent}  `);
 	}
 };
 const apiModel = new ApiModel();
@@ -78,6 +78,7 @@ for (const module of apiEntryPoint.members) {
 		}
 		const classJson = {};
 		apiJson.extendsMap[studioClass.displayName] =
+			// biome-ignore lint/suspicious/noAssignInExpressions:
 			((_a = studioClass.extendsType) === null || _a === void 0 ? void 0 : _a.excerpt.text) || '';
 		const docComment = studioClass.tsdocComment;
 		const curClass = Studio[moduleName][studioClass.displayName];

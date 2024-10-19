@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { SVGLoader } from './SVGLoader.js';
 // import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
-import type { Style, Transform } from './geometry.types';
+import type { Transform } from './geometry.types';
 import tex2svg from './mathjax';
 
 type TextStyle = {
@@ -32,10 +32,7 @@ class Text extends THREE.Group {
 				break;
 			}
 
-			svgString =
-				svgString.slice(0, match.index) +
-				'd="M0,0"' +
-				svgString.slice(match.index + emptyPath.length);
+			svgString = `${svgString.slice(0, match.index)}d="M0,0"${svgString.slice(match.index + emptyPath.length)}`;
 		}
 
 		const parseData = new SVGLoader().parse(svgString);
@@ -165,7 +162,7 @@ class Text extends THREE.Group {
 	}
 
 	static fromJson(json) {
-		const text = this.fromAttributes(json.attributes);
+		const text = Text.fromAttributes(json.attributes);
 
 		if (json.transform !== undefined) {
 			text.setTransform(json.transform);

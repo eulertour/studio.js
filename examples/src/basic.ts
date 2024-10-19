@@ -1,8 +1,8 @@
 import {
 	Animation, // EulerStudio Animations
-	AnimationRepresentation, // A union of animation formats that can be added to this.animations
+	type AnimationRepresentation, // A union of animation formats that can be added to this.animations
 	Geometry, // EulerStudio Shapes
-	StudioScene, // An interface that all scenes must implement
+	type StudioScene, // An interface that all scenes must implement
 	THREE, // The three.js library
 	Text, // EulerStudio Text
 } from '@eulertour/studio';

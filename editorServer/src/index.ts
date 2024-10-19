@@ -1,4 +1,5 @@
-import WebSocket, { WebSocketServer } from 'ws';
+import type WebSocket from 'ws';
+import { WebSocketServer } from 'ws';
 
 const port = 8082;
 

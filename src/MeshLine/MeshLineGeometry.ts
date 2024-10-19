@@ -32,7 +32,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 		super();
 	}
 
-	setPoints(points: Array<THREE.Vector3>, updateBounds: boolean = true) {
+	setPoints(points: Array<THREE.Vector3>, updateBounds = true) {
 		const arrowLength = 0.3;
 		if (this.arrow) {
 			// Find the index of the last point that is at least arrowLength away from the end.
@@ -85,7 +85,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 
 		this.#previousPointCount = pointCount;
 
-		let lengths = new Float32Array(this.points.length);
+		const lengths = new Float32Array(this.points.length);
 		lengths[0] = 0;
 		for (let i = 0; i < this.points.length - 2; i++) {
 			const position = points[i];
@@ -191,7 +191,9 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 	}
 
 	#addSegment(index: number, start: THREE.Vector3, end: THREE.Vector3, next: THREE.Vector3) {
-		let x, y, z;
+		let x;
+		let y;
+		let z;
 
 		const vertexOffset = 12 * index;
 		({ x, y, z } = start);
