@@ -38,6 +38,8 @@ describe('Shape', () => {
 			return { test: true };
 		}
 	}
+	const shape = new TestShape(getTestPoints());
+	const defaults = TestShape.defaultStyle();
 
 	function getTestPoints() {
 		return [new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 1)];
@@ -45,32 +47,21 @@ describe('Shape', () => {
 
 	describe('sets default config', () => {
 		it.skip('arrow', () => {
-			const shape = new TestShape(getTestPoints());
-
 			assert.isFalse(shape.arrow);
 		});
 	});
 
 	describe('sets default style', () => {
 		it('fillColor', () => {
-			const defaults = TestShape.defaultStyle();
-			const shape = new TestShape(getTestPoints());
-
 			assert.equal(shape.fill?.material.color.getHexString(), defaults.fillColor.getHexString());
 		});
 
 		it('fillOpacity', () => {
-			const defaults = TestShape.defaultStyle();
-			const shape = new TestShape(getTestPoints());
-
 			assert.equal(shape.fill?.material.opacity, defaults.fillOpacity);
 			assert.isTrue(shape.fill?.material.transparent);
 		});
 
 		it('strokeColor', () => {
-			const defaults = TestShape.defaultStyle();
-			const shape = new TestShape(getTestPoints());
-
 			assert.equal(
 				shape.stroke?.material.color.getHexString(),
 				defaults.strokeColor.getHexString(),
@@ -78,24 +69,16 @@ describe('Shape', () => {
 		});
 
 		it('strokeOpacity', () => {
-			const defaults = TestShape.defaultStyle();
-			const shape = new TestShape(getTestPoints());
-
 			assert.equal(shape.stroke?.material.opacity, defaults.strokeOpacity);
 		});
 
 		it('strokeWidth', () => {
-			const defaults = TestShape.defaultStyle();
-			const shape = new TestShape(getTestPoints());
-
 			assert.equal(shape.stroke?.material.width, defaults.strokeWidth);
 		});
 	});
 
 	describe('fill', () => {
 		it('adds a fill by default', () => {
-			const shape = new TestShape(getTestPoints());
-
 			assert.instanceOf(shape.fill, THREE.Mesh);
 			assert.instanceOf(shape.fill?.material, THREE.MeshBasicMaterial);
 			assert.instanceOf(shape.fill?.geometry, THREE.ShapeGeometry);
@@ -129,7 +112,6 @@ describe('Shape', () => {
 
 	describe('stroke', () => {
 		it('adds a stroke by default', () => {
-			const shape = new TestShape(getTestPoints());
 			assert.instanceOf(shape.stroke, MeshLine);
 		});
 
@@ -167,7 +149,6 @@ describe('Shape', () => {
 	});
 
 	it('returns attributes', () => {
-		const shape = new TestShape(getTestPoints());
 		const attributes = shape.getAttributes();
 
 		assert.isObject(attributes);
