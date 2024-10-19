@@ -99103,9 +99103,9 @@ class SceneController {
     }
     dispose() {
         this.userScene.scene.traverse((child) => {
-            if (child instanceof BufferGeometry ||
-                child instanceof Material) {
-                child.dispose();
+            if (child instanceof Mesh) {
+                child.geometry.dispose();
+                child.material.dispose();
             }
             else if (!(child instanceof Scene ||
                 child instanceof Group ||

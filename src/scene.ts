@@ -195,11 +195,9 @@ export class SceneController {
 
   dispose() {
     this.userScene.scene.traverse((child) => {
-      if (
-        child instanceof THREE.BufferGeometry ||
-        child instanceof THREE.Material
-      ) {
-        child.dispose();
+      if (child instanceof THREE.Mesh) {
+        child.geometry.dispose();
+        child.material.dispose();
       } else if (
         !(
           child instanceof THREE.Scene ||
