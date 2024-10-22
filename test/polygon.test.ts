@@ -41,7 +41,7 @@ describe('Polygon', () => {
 	});
 
 	describe('attributes', () => {
-		it('should have a start and end attribute', () => {
+		it('should have a points attribute', () => {
 			const points = getTestPoints();
 			const polygon = new Geometry.Polygon(points);
 			assert.containsAllKeys(polygon.getAttributes(), ['points']);
@@ -50,7 +50,7 @@ describe('Polygon', () => {
 	});
 
 	describe('shape', () => {
-		it('should set start and end correctly', () => {
+		it('should set points correctly', () => {
 			const points = getTestPoints();
 			const polygon = new Geometry.Polygon(points);
 

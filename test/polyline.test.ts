@@ -28,7 +28,7 @@ describe('Polyline', () => {
 	});
 
 	describe('attributes', () => {
-		it('should have a start and end attribute', () => {
+		it('should have points attribute', () => {
 			const points = getTestPoints();
 			const polyline = new Geometry.Polyline(points);
 			assert.containsAllKeys(polyline.getAttributes(), ['points']);
@@ -37,7 +37,7 @@ describe('Polyline', () => {
 	});
 
 	describe('shape', () => {
-		it('should set start and end correctly', () => {
+		it('should set points correctly', () => {
 			const points = getTestPoints();
 			const polyline = new Geometry.Polyline(points);
 
