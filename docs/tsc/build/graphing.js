@@ -1,5 +1,5 @@
-import * as THREE from "three";
-import { Polyline } from "./geometry";
+import * as THREE from 'three';
+import { Polyline } from './geometry';
 /**
  * A curve described by an equation.
  */

@@ -1,11 +1,11 @@
-import * as THREE from "three";
-import { SVGLoader } from "./SVGLoader.js";
-import tex2svg from "./mathjax";
+import * as THREE from 'three';
+import { SVGLoader } from './SVGLoader.js';
+import tex2svg from './mathjax';
 class Text extends THREE.Group {
     constructor(text, config = {}) {
         super();
         this.text = text;
-        config = Object.assign({ fillColor: new THREE.Color("black"), fillOpacity: 1 }, config);
+        config = Object.assign({ fillColor: new THREE.Color('black'), fillOpacity: 1 }, config);
         let svgString = tex2svg(this.text);
         // Remove after updating to three.js r150 (https://github.com/mrdoob/three.js/issues/25548)
         const emptyPath = 'd=""';
@@ -83,7 +83,7 @@ class Text extends THREE.Group {
     }
     clone(recursive) {
         if (recursive === false) {
-            throw Error("Text.clone() is always recursive");
+            throw Error('Text.clone() is always recursive');
         }
         const cloneFunc = this.constructor;
         const clone = new cloneFunc(...this.getCloneAttributes());
@@ -92,7 +92,7 @@ class Text extends THREE.Group {
     }
     copy(source, recursive) {
         if (recursive === false) {
-            throw Error("Text.clone() is always recursive");
+            throw Error('Text.clone() is always recursive');
         }
         return this;
     }
@@ -116,9 +116,9 @@ class Text extends THREE.Group {
     get attributeData() {
         return [
             {
-                attribute: "text",
-                type: "string",
-                default: "x^2",
+                attribute: 'text',
+                type: 'string',
+                default: 'x^2',
             },
         ];
     }

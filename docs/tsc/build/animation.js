@@ -1,5 +1,5 @@
-import { clamp, getBoundingBoxCenter } from "./utils";
-import * as THREE from "three";
+import * as THREE from 'three';
+import { clamp, getBoundingBoxCenter } from './utils';
 let sigmoid = (x) => 1 / (1 + Math.exp(-x));
 let smooth = (t) => {
     let error = sigmoid(-10 / 2);
@@ -107,9 +107,7 @@ class Shift extends Animation {
 class MoveTo extends Animation {
     constructor(target, obj, config) {
         super((elapsedTime) => {
-            obj.position
-                .copy(this.start)
-                .addScaledVector(this.displacement, elapsedTime);
+            obj.position.copy(this.start).addScaledVector(this.displacement, elapsedTime);
         }, Object.assign({ obj, reveal: true }, config));
         this.target = target;
         this.obj = obj;
@@ -217,7 +215,7 @@ class FadeOut extends Animation {
                 this.object.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
                         if (!this.initialOpacity.has(child)) {
-                            console.error("Unknown child");
+                            console.error('Unknown child');
                         }
                         child.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
                     }
@@ -251,7 +249,7 @@ class FadeOut extends Animation {
             this.object.traverse((child) => {
                 if (child instanceof THREE.Mesh) {
                     if (!this.initialOpacity.has(child)) {
-                        console.error("Unknown child");
+                        console.error('Unknown child');
                     }
                     child.material.opacity = this.initialOpacity.get(child);
                 }
@@ -271,7 +269,7 @@ class SetOpacity extends Animation {
                 this.object.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
                         if (!this.initialOpacity.has(child)) {
-                            console.error("Unknown child");
+                            console.error('Unknown child');
                         }
                         child.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), this.targetOpacity, elapsedTime);
                     }

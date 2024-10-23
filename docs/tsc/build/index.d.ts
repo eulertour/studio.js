@@ -1,7 +1,7 @@
-import * as THREE from "three";
-import { SVGLoader } from "./SVGLoader.js";
-import * as Utils from "./utils";
-declare module "three" {
+import * as THREE from 'three';
+import { SVGLoader } from './SVGLoader.js';
+import * as Utils from './utils';
+declare module 'three' {
     interface Object3D {
         vstack(buffer?: number): THREE.Object3D;
         vspace(distanceBetween?: number): THREE.Object3D;
@@ -64,14 +64,14 @@ type ComponentParent = THREE.Object3D & {
     components?: Map<string, THREE.Object3D>;
 };
 declare function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
-import * as Geometry from "./geometry";
-import * as Animation from "./animation";
-import * as Text from "./text";
-import { setupCanvas } from "./utils";
-import { SceneController, type StudioScene, type AnimationRepresentation } from "./scene";
-import * as Diagram from "./diagram";
-import * as Constants from "./constants";
-import { setCameraDimensions, setCanvasViewport } from "./MeshLine/MeshLineMaterial";
-import * as Graphing from "./graphing";
-import Frame from "./frame.js";
+import { setCameraDimensions, setCanvasViewport } from './MeshLine/MeshLineMaterial';
+import * as Animation from './animation';
+import * as Constants from './constants';
+import * as Diagram from './diagram';
+import Frame from './frame.js';
+import * as Geometry from './geometry';
+import * as Graphing from './graphing';
+import { type AnimationRepresentation, SceneController, type StudioScene } from './scene';
+import * as Text from './text';
+import { setupCanvas } from './utils';
 export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, type StudioScene, type AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };

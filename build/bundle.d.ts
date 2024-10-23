@@ -1,6 +1,6 @@
 /// <reference types="three" />
-import * as THREE from "three";
-import { SVGLoader } from "./SVGLoader.js";
+import * as THREE from 'three';
+import { SVGLoader } from './SVGLoader.js';
 declare namespace Geometry {
     class MeshLineGeometry extends THREE.BufferGeometry {
         #private;
@@ -402,7 +402,7 @@ declare namespace Utils {
         finish(): Geometry.Polygon;
     }
 }
-declare module "three" {
+declare module 'three' {
     interface Object3D {
         vstack(buffer?: number): THREE.Object3D;
         vspace(distanceBetween?: number): THREE.Object3D;
@@ -465,6 +465,19 @@ type ComponentParent = THREE.Object3D & {
     components?: Map<string, THREE.Object3D>;
 };
 declare function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
+declare const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
+declare const setCanvasViewport: (viewport: THREE.Vector4) => void;
+declare class MeshLineMaterial extends THREE.ShaderMaterial {
+    constructor(parameters: THREE.ShaderMaterialParameters & {
+        color: THREE.ColorRepresentation;
+        opacity: number;
+        width: number;
+    });
+    get color(): any;
+    set color(value: any);
+    get width(): number;
+    set width(value: number);
+}
 declare namespace Animation {
     class Animation {
         func: (elapsedTime: number, deltaTime: number) => void;
@@ -553,122 +566,11 @@ declare namespace Animation {
         constructor(config?: any);
     }
 }
-declare namespace Text {
-    type Transform = {
-        position: THREE.Vector3;
-        rotation: THREE.Euler;
-        scale: THREE.Vector3;
-    };
-    type Style = {
-        strokeColor?: THREE.Color;
-        strokeWidth?: number;
-        strokeOpacity?: number;
-        fillColor?: THREE.Color;
-        fillOpacity?: number;
-    };
-    type LineAttributes = {
-        start: THREE.Vector3;
-        end: THREE.Vector3;
-    };
-    type ArcAttributes = {
-        radius: number;
-        angle: number;
-        closed: boolean;
-    };
-    type RectangleAttributes = {
-        width: number;
-        height: number;
-    };
-    type PolygonAttributes = {
-        points: Array<THREE.Vector3>;
-    };
-    type TextStyle = {
-        fillColor?: THREE.Color;
-        fillOpacity?: number;
-    };
-    type TextConfig = {
-        groupColoring?: Array<[
-            number,
-            string?
-        ]>;
-        batchMaterials?: boolean;
-    };
-    class Text extends THREE.Group {
-        text: string;
-        constructor(text: string, config?: TextStyle & TextConfig);
-        dispose(): void;
-        clone(recursive: boolean): this;
-        copy(source: this, recursive: boolean): this;
-        getDimensions(): THREE.Vector2;
-        getCloneAttributes(): string[];
-        getAttributes(): {
-            text: string;
-        };
-        static fromAttributes(attributes: any): Text;
-        get attributeData(): {
-            attribute: string;
-            type: string;
-            default: string;
-        }[];
-        toJson(): {
-            className: string;
-            attributes: {
-                text: string;
-            };
-            transform: Transform;
-            style: {
-                fillColor: number[];
-            };
-        };
-        static fromJson(json: any): Text;
-        getTransform(): Transform;
-        setTransform(transform: Transform): void;
-    }
-}
-type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
-type AnimationRepresentation = Animation | Array<Animation> | {
-    animations: Array<Animation>;
-    before?: () => void;
-    after?: () => void;
-    parent?: THREE.Object3D;
-    runTime?: number;
-    scale?: number;
-};
-interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
-    scene: THREE.Scene;
-    camera: T;
-    renderer: THREE.WebGLRenderer;
-    animations?: Array<AnimationRepresentation>;
-    update?: (deltaTime: number, time: number) => void;
-}
-declare class SceneController {
-    UserScene: Class<StudioScene>;
-    animationIndex: number;
-    deltaTime: number;
-    elapsedTime: number;
-    firstFrame: boolean;
-    paused: boolean;
-    fps: number;
-    timePrecision: number;
-    startTime: number;
-    endTime: number;
-    loopAnimations: Array<Animation>;
-    finishedAnimationCount: number;
-    userScene: StudioScene;
-    three: typeof THREE;
-    viewport: THREE.Vector4;
-    aspectRatio: number;
-    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: (WidthSetupConfig | HeightSetupConfig) & {
-        viewport?: THREE.Vector4;
-    });
-    get scene(): THREE.Scene;
-    get camera(): THREE.OrthographicCamera;
-    get renderer(): THREE.WebGLRenderer;
-    render(): void;
-    tick(deltaTime: number, render?: boolean): void;
-    play(): void;
-    pause(): void;
-    dispose(): void;
+declare namespace Constants {
+    const PIXELS_TO_COORDS: number;
+    const COORDS_TO_PIXELS: number;
+    const ERROR_THRESHOLD = 0.001;
+    const DEFAULT_BACKGROUND_HEX = 16775920;
 }
 declare namespace Diagram {
     class Animation {
@@ -826,25 +728,49 @@ declare namespace Diagram {
         });
     }
 }
-declare namespace Constants {
-    const PIXELS_TO_COORDS: number;
-    const COORDS_TO_PIXELS: number;
-    const ERROR_THRESHOLD = 0.001;
-    const DEFAULT_BACKGROUND_HEX = 16775920;
-}
-declare const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
-declare const setCanvasViewport: (viewport: THREE.Vector4) => void;
-declare class MeshLineMaterial extends THREE.ShaderMaterial {
-    constructor(parameters: THREE.ShaderMaterialParameters & {
-        color: THREE.ColorRepresentation;
-        opacity: number;
-        width: number;
-    });
-    get color(): any;
-    set color(value: any);
-    get width(): number;
-    set width(value: number);
-}
+declare const _default: {
+    readonly horizontal: {
+        readonly nhd: {
+            readonly aspectRatio: number;
+            readonly coordinateHeight: 8;
+            readonly pixelHeight: 360;
+            readonly frameRate: 30;
+        };
+        readonly hd: {
+            readonly aspectRatio: number;
+            readonly coordinateHeight: 8;
+            readonly pixelHeight: 720;
+            readonly frameRate: 30;
+        };
+        readonly fhd: {
+            readonly aspectRatio: number;
+            readonly coordinateHeight: 8;
+            readonly pixelHeight: 1080;
+            readonly frameRate: 60;
+        };
+    };
+    readonly vertical: {
+        readonly nhd: {
+            readonly aspectRatio: number;
+            readonly coordinateWidth: 8;
+            readonly pixelWidth: 360;
+            readonly frameRate: 30;
+        };
+        readonly hd: {
+            readonly aspectRatio: number;
+            readonly coordinateWidth: 8;
+            readonly pixelWidth: 720;
+            readonly frameRate: 30;
+        };
+        readonly fhd: {
+            readonly aspectRatio: number;
+            readonly coordinateWidth: 8;
+            readonly pixelWidth: 1080;
+            readonly frameRate: 60;
+        };
+    };
+};
+declare const Frame: typeof _default;
 declare namespace Graphing {
     class MeshLineGeometry extends THREE.BufferGeometry {
         #private;
@@ -1157,47 +1083,121 @@ declare namespace Graphing {
         getClassConfig(): {};
     }
 }
-declare const _default: {
-    readonly horizontal: {
-        readonly nhd: {
-            readonly aspectRatio: number;
-            readonly coordinateHeight: 8;
-            readonly pixelHeight: 360;
-            readonly frameRate: 30;
-        };
-        readonly hd: {
-            readonly aspectRatio: number;
-            readonly coordinateHeight: 8;
-            readonly pixelHeight: 720;
-            readonly frameRate: 30;
-        };
-        readonly fhd: {
-            readonly aspectRatio: number;
-            readonly coordinateHeight: 8;
-            readonly pixelHeight: 1080;
-            readonly frameRate: 60;
-        };
-    };
-    readonly vertical: {
-        readonly nhd: {
-            readonly aspectRatio: number;
-            readonly coordinateWidth: 8;
-            readonly pixelWidth: 360;
-            readonly frameRate: 30;
-        };
-        readonly hd: {
-            readonly aspectRatio: number;
-            readonly coordinateWidth: 8;
-            readonly pixelWidth: 720;
-            readonly frameRate: 30;
-        };
-        readonly fhd: {
-            readonly aspectRatio: number;
-            readonly coordinateWidth: 8;
-            readonly pixelWidth: 1080;
-            readonly frameRate: 60;
-        };
-    };
+type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
+type AnimationRepresentation = Animation | Array<Animation> | {
+    animations: Array<Animation>;
+    before?: () => void;
+    after?: () => void;
+    parent?: THREE.Object3D;
+    runTime?: number;
+    scale?: number;
 };
-declare const Frame: typeof _default;
+interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
+    scene: THREE.Scene;
+    camera: T;
+    renderer: THREE.WebGLRenderer;
+    animations?: Array<AnimationRepresentation>;
+    update?: (deltaTime: number, time: number) => void;
+}
+declare class SceneController {
+    UserScene: Class<StudioScene>;
+    animationIndex: number;
+    deltaTime: number;
+    elapsedTime: number;
+    firstFrame: boolean;
+    paused: boolean;
+    fps: number;
+    timePrecision: number;
+    startTime: number;
+    endTime: number;
+    loopAnimations: Array<Animation>;
+    finishedAnimationCount: number;
+    userScene: StudioScene;
+    three: typeof THREE;
+    viewport: THREE.Vector4;
+    aspectRatio: number;
+    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: (WidthSetupConfig | HeightSetupConfig) & {
+        viewport?: THREE.Vector4;
+    });
+    get scene(): THREE.Scene;
+    get camera(): THREE.OrthographicCamera;
+    get renderer(): THREE.WebGLRenderer;
+    render(): void;
+    tick(deltaTime: number, render?: boolean): void;
+    play(): void;
+    pause(): void;
+    dispose(): void;
+}
+declare namespace Text {
+    type Transform = {
+        position: THREE.Vector3;
+        rotation: THREE.Euler;
+        scale: THREE.Vector3;
+    };
+    type Style = {
+        strokeColor?: THREE.Color;
+        strokeWidth?: number;
+        strokeOpacity?: number;
+        fillColor?: THREE.Color;
+        fillOpacity?: number;
+    };
+    type LineAttributes = {
+        start: THREE.Vector3;
+        end: THREE.Vector3;
+    };
+    type ArcAttributes = {
+        radius: number;
+        angle: number;
+        closed: boolean;
+    };
+    type RectangleAttributes = {
+        width: number;
+        height: number;
+    };
+    type PolygonAttributes = {
+        points: Array<THREE.Vector3>;
+    };
+    type TextStyle = {
+        fillColor?: THREE.Color;
+        fillOpacity?: number;
+    };
+    type TextConfig = {
+        groupColoring?: Array<[
+            number,
+            string?
+        ]>;
+        batchMaterials?: boolean;
+    };
+    class Text extends THREE.Group {
+        text: string;
+        constructor(text: string, config?: TextStyle & TextConfig);
+        dispose(): void;
+        clone(recursive: boolean): this;
+        copy(source: this, recursive: boolean): this;
+        getDimensions(): THREE.Vector2;
+        getCloneAttributes(): string[];
+        getAttributes(): {
+            text: string;
+        };
+        static fromAttributes(attributes: any): Text;
+        get attributeData(): {
+            attribute: string;
+            type: string;
+            default: string;
+        }[];
+        toJson(): {
+            className: string;
+            attributes: {
+                text: string;
+            };
+            transform: Transform;
+            style: {
+                fillColor: number[];
+            };
+        };
+        static fromJson(json: any): Text;
+        getTransform(): Transform;
+        setTransform(transform: Transform): void;
+    }
+}
 export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, StudioScene, AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame };

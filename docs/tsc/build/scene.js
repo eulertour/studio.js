@@ -1,7 +1,7 @@
-import * as THREE from "three";
-import { Animation } from "./animation";
-import { setupCanvas, } from "./utils";
-import { setCanvasViewport, setCameraDimensions, } from "./MeshLine/MeshLineMaterial";
+import * as THREE from 'three';
+import { setCameraDimensions, setCanvasViewport } from './MeshLine/MeshLineMaterial';
+import { Animation } from './animation';
+import { setupCanvas } from './utils';
 export class SceneController {
     constructor(UserScene, canvasRef, config) {
         this.UserScene = UserScene;
@@ -67,7 +67,7 @@ export class SceneController {
                         this.loopAnimations.push(animation);
                         currentEndTime = animation.endTime;
                     }
-                    else if (typeof o === "object") {
+                    else if (typeof o === 'object') {
                         const animationArray = o.animations;
                         const runTime = o.runTime || 1;
                         const scale = o.scale || 1;
@@ -81,8 +81,7 @@ export class SceneController {
                             animation.scale = scale;
                             animation.before && animation.addBefore(animation.before);
                             animation.after && animation.addAfter(animation.after);
-                            animation.parent =
-                                animation.parent || o.parent || this.userScene.scene;
+                            animation.parent = animation.parent || o.parent || this.userScene.scene;
                             this.loopAnimations.push(...animationArray);
                         }
                         animationArray.at(0).addBefore(before);
@@ -96,8 +95,7 @@ export class SceneController {
             this.elapsedTime += deltaTime;
         }
         try {
-            this.userScene.update &&
-                this.userScene.update(this.deltaTime, this.elapsedTime);
+            this.userScene.update && this.userScene.update(this.deltaTime, this.elapsedTime);
             const roundedTime = Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
             this.loopAnimations.forEach((animation) => animation.update(roundedTime));
         }

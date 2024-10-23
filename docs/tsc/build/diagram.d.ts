@@ -1,7 +1,7 @@
-import * as THREE from "three";
-import { Animation } from "./animation";
-import { Style } from "./geometry.types";
-import * as Geometry from "./geometry";
+import * as THREE from 'three';
+import { Animation } from './animation';
+import * as Geometry from './geometry';
+import { Style } from './geometry.types';
 interface IndicatorConfig {
     tickLength?: number;
 }

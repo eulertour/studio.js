@@ -1,7 +1,7 @@
-import * as THREE from "three";
-import { Animation } from "./animation";
-import * as Geometry from "./geometry";
-import * as Utils from "./utils";
+import * as THREE from 'three';
+import { Animation } from './animation';
+import * as Geometry from './geometry';
+import * as Utils from './utils';
 class Indicator extends THREE.Group {
     constructor(start, end, config = {}) {
         const { tickLength = 0.4 } = config;
@@ -88,12 +88,8 @@ class Angle extends Geometry.Arc {
 class RightAngle extends Geometry.Polyline {
     constructor(point1, point2, point3, config = {}) {
         config = Object.assign({ sideLength: 0.35 }, config);
-        const vector21 = new THREE.Vector3()
-            .subVectors(point1, point2)
-            .setLength(config.sideLength);
-        const vector23 = new THREE.Vector3()
-            .subVectors(point3, point2)
-            .setLength(config.sideLength);
+        const vector21 = new THREE.Vector3().subVectors(point1, point2).setLength(config.sideLength);
+        const vector23 = new THREE.Vector3().subVectors(point3, point2).setLength(config.sideLength);
         super([
             new THREE.Vector3().addVectors(point2, vector21),
             new THREE.Vector3().add(point2).add(vector21).add(vector23),

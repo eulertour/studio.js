@@ -1,11 +1,11 @@
-import * as THREE from "three";
-import { DEFAULT_BACKGROUND_HEX, PIXELS_TO_COORDS } from "./constants";
-import * as Geometry from "./geometry";
-import * as Text from "./text";
+import * as THREE from 'three';
+import { MeshLine } from './MeshLine';
 // import { Camera } from "build/three-types";
-import { setCameraDimensions } from "./MeshLine/MeshLineMaterial";
-import { CanvasViewport } from "./MeshLine/MeshLineMaterial";
-import { MeshLine } from "./MeshLine";
+import { setCameraDimensions } from './MeshLine/MeshLineMaterial';
+import { CanvasViewport } from './MeshLine/MeshLineMaterial';
+import { DEFAULT_BACKGROUND_HEX, PIXELS_TO_COORDS } from './constants';
+import * as Geometry from './geometry';
+import * as Text from './text';
 const BUFFER = 0.5;
 const ORIGIN = Object.freeze(new THREE.Vector3(0, 0, 0));
 const RIGHT = Object.freeze(new THREE.Vector3(1, 0, 0));
@@ -26,14 +26,10 @@ const getFrameAttributes = (aspectRatio, height) => {
     };
 };
 const isWidthSetup = (config) => {
-    return ("aspectRatio" in config &&
-        "pixelWidth" in config &&
-        "coordinateWidth" in config);
+    return 'aspectRatio' in config && 'pixelWidth' in config && 'coordinateWidth' in config;
 };
 const isHeightSetup = (config) => {
-    return ("aspectRatio" in config &&
-        "pixelHeight" in config &&
-        "coordinateHeight" in config);
+    return 'aspectRatio' in config && 'pixelHeight' in config && 'coordinateHeight' in config;
 };
 const setupCanvas = (canvas, config = {
     aspectRatio: 16 / 9,
@@ -57,7 +53,7 @@ const setupCanvas = (canvas, config = {
         coordinateWidth = coordinateHeight * aspectRatio;
     }
     else {
-        throw new Error("Invalid config:", config);
+        throw new Error('Invalid config:', config);
     }
     const camera = new THREE.OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
     camera.position.z = 6;
@@ -76,7 +72,7 @@ const setupCanvas = (canvas, config = {
         renderer.setSize(pixelWidth, pixelHeight, false);
         CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
     }
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
         renderer.setPixelRatio(window.devicePixelRatio);
         CanvasViewport.multiplyScalar(window.devicePixelRatio);
     }
@@ -86,9 +82,7 @@ const convertWorldDirectionToObjectSpace = (worldDirection, object) => {
     const worldQuaternion = new THREE.Quaternion();
     object.getWorldQuaternion(worldQuaternion);
     const inverseQuaternion = worldQuaternion.clone().invert();
-    const localDirection = worldDirection
-        .clone()
-        .applyQuaternion(inverseQuaternion);
+    const localDirection = worldDirection.clone().applyQuaternion(inverseQuaternion);
     localDirection.normalize();
     return localDirection;
 };
@@ -101,9 +95,7 @@ const vstack = (group, buffer = 0.2) => {
         return group;
     const center = group.children[0].position.clone();
     for (let i = 1; i < group.children.length; i++) {
-        group.children[i].position
-            .copy(group.children[i - 1].position)
-            .addScaledVector(DOWN, buffer);
+        group.children[i].position.copy(group.children[i - 1].position).addScaledVector(DOWN, buffer);
         center.add(group.children[i].position);
     }
     center.divideScalar(group.children.length);
@@ -125,9 +117,7 @@ const vspace = (group, distanceBetween) => {
             .dot(DOWN);
         const current = group.children[i];
         const currentTop = furthestInDirection(current, UP);
-        const distanceToTop = new THREE.Vector3()
-            .subVectors(currentTop, current.position)
-            .dot(UP);
+        const distanceToTop = new THREE.Vector3().subVectors(currentTop, current.position).dot(UP);
         defaultSpacing = Math.max(defaultSpacing, distanceToBottom + distanceToTop + defaultBuffer);
     }
     const center = group.children[0].position.clone();
@@ -181,8 +171,7 @@ const furthestInDirection = (object, direction, exclude = []) => {
                 }
             }
         }
-        else if (obj instanceof THREE.Mesh &&
-            ((_b = (_a = obj.parent) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.parent) instanceof Text.Text) {
+        else if (obj instanceof THREE.Mesh && ((_b = (_a = obj.parent) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.parent) instanceof Text.Text) {
             const pointsArray = obj.geometry.attributes.position.array;
             const pointContainer = new THREE.Vector3();
             for (let i = 0; i < pointsArray.length; i += 3) {
@@ -229,12 +218,7 @@ const moveNextTo = (target, object, direction, buffer = 0.2) => {
         const normalDot = targetSpaceDirection.dot(normal);
         const againstVectorDot = targetSpaceDirection.dot(vector.clone().negate());
         const againstNormalDot = targetSpaceDirection.dot(normal.clone().negate());
-        const dotProducts = [
-            vectorDot,
-            normalDot,
-            againstVectorDot,
-            againstNormalDot,
-        ];
+        const dotProducts = [vectorDot, normalDot, againstVectorDot, againstNormalDot];
         const maxDot = Math.max(...dotProducts);
         if (maxDot === vectorDot) {
             targetSpaceStartPosition = target.end.clone();
@@ -278,10 +262,7 @@ const moveNextTo = (target, object, direction, buffer = 0.2) => {
     const worldSpaceObjectOffset = new THREE.Vector3().subVectors(worldSpaceObjectOffsetFinal, worldSpaceObjectOffsetInitial);
     const worldSpaceOffset = direction
         .clone()
-        .setLength(0 +
-        worldSpaceTargetOffset.length() +
-        buffer +
-        worldSpaceObjectOffset.length());
+        .setLength(0 + worldSpaceTargetOffset.length() + buffer + worldSpaceObjectOffset.length());
     const worldSpaceOffsetInitial = new THREE.Vector3();
     const worldSpaceOffsetFinal = worldSpaceOffset.clone();
     // Object parent space
@@ -295,9 +276,7 @@ const moveNextTo = (target, object, direction, buffer = 0.2) => {
         .applyMatrix4(object.matrixWorld.clone().invert())
         .applyMatrix4(object.matrix);
     const objectParentSpaceOffset = new THREE.Vector3().subVectors(objectParentSpaceOffsetFinal, objectParentSpaceOffsetInitial);
-    object.position
-        .copy(objectParentSpaceStartPosition)
-        .add(objectParentSpaceOffset);
+    object.position.copy(objectParentSpaceStartPosition).add(objectParentSpaceOffset);
     return object;
 };
 const moveToRightOf = (target, object, distance = 0.2) => {
@@ -386,9 +365,8 @@ const getIntersection = (p1, p2, q1, q2) => {
     return p1.multiplyScalar(1 - s).addScaledVector(p2, s);
 };
 const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
-    return (new THREE.Vector3()
-        .subVectors(shape.points.at(0), shape.points.at(-1))
-        .length() < adjacentThreshold);
+    return (new THREE.Vector3().subVectors(shape.points.at(0), shape.points.at(-1)).length() <
+        adjacentThreshold);
 };
 const intersectionsBetween = (shape1, shape2) => {
     var _a, _b, _c, _d;
@@ -436,7 +414,7 @@ class ShapeFromCurves {
         var _a, _b, _c, _d, _e;
         const startPoint = (_a = this.points.at(-1)) === null || _a === void 0 ? void 0 : _a.clone();
         if (startPoint === undefined) {
-            throw new Error("Cannot extend with no current points.");
+            throw new Error('Cannot extend with no current points.');
         }
         // Find where the shape intersects the current endpoint.
         let intersectSegment = null;
@@ -460,8 +438,7 @@ class ShapeFromCurves {
         }
         const vectorFromPointToIndex = (point, index) => {
             var _a;
-            let endPoint = (_a = shape.points
-                .at(index)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
+            let endPoint = (_a = shape.points.at(index)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
             if (endPoint === undefined) {
                 return new THREE.Vector3();
             }
@@ -496,22 +473,19 @@ class ShapeFromCurves {
         const endToIntersection = new THREE.Vector3()
             .subVectors(intersectSegment.end, this.segmentClosestToPoint)
             .length();
-        if (endToIntersection < this.adjacentThreshold &&
-            intersectIndex + 2 < shape.points.length) {
+        if (endToIntersection < this.adjacentThreshold && intersectIndex + 2 < shape.points.length) {
             let nextPoint = (_d = shape.points
                 .at(intersectIndex + 2)) === null || _d === void 0 ? void 0 : _d.clone().applyMatrix4(shape.matrixWorld);
             if (nextPoint === undefined) {
-                throw new Error("No next point");
+                throw new Error('No next point');
             }
-            towardEndVector = new THREE.Vector3()
-                .subVectors(nextPoint, intersectSegment.end)
-                .normalize();
+            towardEndVector = new THREE.Vector3().subVectors(nextPoint, intersectSegment.end).normalize();
             // Handle closed curves (shape.points.at(0) === shape.points.at(-1))
             if (towardEndVector.length() < this.adjacentThreshold) {
                 nextPoint = (_e = shape.points
                     .at(intersectIndex + 3)) === null || _e === void 0 ? void 0 : _e.clone().applyMatrix4(shape.matrixWorld);
                 if (nextPoint === undefined) {
-                    throw new Error("No next point");
+                    throw new Error('No next point');
                 }
             }
             forwardInitialPointIndex = intersectIndex + 2;
@@ -545,13 +519,12 @@ class ShapeFromCurves {
         while (0 <= i && i < shape.points.length) {
             count += 1;
             if (count === 500) {
-                console.log("rip");
+                console.log('rip');
                 break;
             }
-            const newPoint = (_a = shape.points
-                .at(i)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
+            const newPoint = (_a = shape.points.at(i)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
             if (newPoint === undefined) {
-                throw new Error("Error extending curve.");
+                throw new Error('Error extending curve.');
             }
             const newSegment = new THREE.Line3((_b = this.points.at(-1)) === null || _b === void 0 ? void 0 : _b.clone(), newPoint);
             if (newSegment.distance() < this.adjacentThreshold) {

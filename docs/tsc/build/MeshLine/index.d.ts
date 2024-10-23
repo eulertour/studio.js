@@ -1,6 +1,6 @@
-import MeshLineGeometry from "./MeshLineGeometry";
-import MeshLineMaterial from "./MeshLineMaterial";
-import * as THREE from "three";
+import * as THREE from 'three';
+import MeshLineGeometry from './MeshLineGeometry';
+import MeshLineMaterial from './MeshLineMaterial';
 declare class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
     constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
     get points(): THREE.Vector3[];

@@ -1,5 +1,5 @@
-import * as THREE from "three";
-import { MESHLINE_FRAG, MESHLINE_VERT } from "./meshline.glsl";
+import * as THREE from 'three';
+import { MESHLINE_FRAG, MESHLINE_VERT } from './meshline.glsl';
 export const CameraDimensions = new THREE.Vector2();
 export const setCameraDimensions = (camera) => {
     const { left, right, top, bottom } = camera;
@@ -8,7 +8,7 @@ export const setCameraDimensions = (camera) => {
 export const CanvasViewport = new THREE.Vector4();
 export const setCanvasViewport = (viewport) => {
     CanvasViewport.copy(viewport);
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
         CanvasViewport.multiplyScalar(window.devicePixelRatio);
     }
 };
@@ -47,9 +47,7 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
                 },
             },
         });
-        parameters.color = new THREE.Color()
-            .set(parameters.color)
-            .convertLinearToSRGB();
+        parameters.color = new THREE.Color().set(parameters.color).convertLinearToSRGB();
         this.setValues(parameters);
     }
     get color() {

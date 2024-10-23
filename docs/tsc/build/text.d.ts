@@ -1,5 +1,5 @@
-import * as THREE from "three";
-import type { Transform } from "./geometry.types";
+import * as THREE from 'three';
+import type { Transform } from './geometry.types';
 type TextStyle = {
     fillColor?: THREE.Color;
     fillOpacity?: number;

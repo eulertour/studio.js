@@ -358,7 +358,8 @@ declare namespace Geometry {
         Polygon,
         Polyline,
         Rectangle,
-        Square
+        Square,
+        MeshLine
     }
 }
 export { Geometry }
@@ -448,6 +449,16 @@ class Line extends Shape {
     }): void;
     // (undocumented)
     start: THREE_2.Vector3;
+}
+
+// Warning: (ae-forgotten-export) The symbol "MeshLineGeometry" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "MeshLineMaterial" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+class MeshLine extends THREE_2.Mesh<MeshLineGeometry, MeshLineMaterial> {
+    constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
+    // (undocumented)
+    get points(): THREE_2.Vector3[];
 }
 
 // @public (undocumented)

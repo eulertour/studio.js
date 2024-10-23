@@ -704,4 +704,4 @@ class Square extends Rectangle {
 	}
 }
 
-export { Shape, Line, Arrow, Point, Circle, Arc, Polygon, Polyline, Rectangle, Square };
+export { Shape, Line, Arrow, Point, Circle, Arc, Polygon, Polyline, Rectangle, Square, MeshLine };
