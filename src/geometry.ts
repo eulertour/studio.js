@@ -165,7 +165,13 @@ abstract class Shape extends THREE.Group {
 		return {};
 	}
 
-	abstract getAttributes(): object;
+	abstract getAttributes(): Record<string, any>;
+
+	abstract get attributeData(): {
+		attribute: string;
+		type: string;
+		default?: any;
+	}[];
 
 	getCloneAttributes(): Array<unknown> {
 		return [this.points];
@@ -303,6 +309,19 @@ class Line extends Shape {
 		};
 	}
 
+	get attributeData() {
+		return [
+			{
+				attribute: 'start',
+				type: 'number',
+			},
+			{
+				attribute: 'end',
+				type: 'number',
+			},
+		];
+	}
+
 	getVector(global = false) {
 		this.updateWorldMatrix(true, false);
 		return global
@@ -368,6 +387,15 @@ class Polyline extends Shape {
 		return {
 			points: this.points,
 		};
+	}
+
+	get attributeData() {
+		return [
+			{
+				attribute: 'points',
+				type: 'THREE.Vector3[]',
+			},
+		];
 	}
 
 	static fromAttributes(attributes: PolygonAttributes): Polyline {
