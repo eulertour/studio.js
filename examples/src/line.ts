@@ -17,14 +17,13 @@ export default class Example {
 			],
 			{
 				strokeWidth: 4,
-				strokeDashLength: 0.6,
+				strokeDashLength: 0.4,
 			},
 		);
 		scene.add(this.line);
 	}
 
 	update(dt, t) {
-		// this.line.stroke.material.uniforms.dashOffset.value = t / 10;
-		// console.log(this.line.stroke.material.uniforms.dashOffset.value);
+		this.line.stroke.material.uniforms.dashOffset.value = t / 4;
 	}
 }

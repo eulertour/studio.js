@@ -238,22 +238,37 @@ void main() {
     // and discard all fragments that start before it.
     if (dashLength != 0.) {
       float length = proportion * totalLength;
-      float dashLengthRatio = length / (2. * dashLength);
-      float dashLengthQuotient;
-      float dashLengthFraction = modf(dashLengthRatio, dashLengthQuotient);
-      if (dashLengthFraction > 0.5) {
-        // This fragment isn't part of a dash, but it might be part of
-        // the end cap of the previous dash or the start cap of the
-        // next dash.
+      float mappedLength = length - dashOffset;
+
+      float dashQuotient = mappedLength / dashLength;
+      float dashNum = trunc(dashQuotient);
+      bool isDash;
+      if (mappedLength > 0.) {
+        isDash = mod(dashNum, 2.) == 1.;
+      } else {
+        isDash = mod(dashNum, 2.) == 0.;
+      }
+      if (!isDash) {
+        // discard;
+
         float startLength = vProportion * totalLength;
         float endLength = vEndProportion * totalLength;
 
-        float previousDashEndLength = 2. * dashLength * dashLengthQuotient + dashLength;
+        float previousDashEndMappedLength = dashLength * floor(dashQuotient);
+        float previousDashEndLength = previousDashEndMappedLength + dashOffset;
         float previousDashEndAlpha = (previousDashEndLength - startLength) / (endLength - startLength);
+        // if (previousDashEndAlpha < 0.) {
+        //   gl_FragColor = vec4(0., 1., 0., 1.);
+        // } else {
+        //   gl_FragColor = vec4(1., 0., 0., 1.);
+        // }
+        // return;
+
         vec2 previousDashEndFrag = mix(vStartFragment, vEndFragment, previousDashEndAlpha);
         bool previousDashEnd = lengthSquared(gl_FragCoord.xy - previousDashEndFrag) < halfWidthSquared;
 
-        float nextDashStartLength = 2. * dashLength * dashLengthQuotient + 2. * dashLength;
+        float nextDashStartMappedLength = dashLength * ceil(dashQuotient);
+        float nextDashStartLength = nextDashStartMappedLength + dashOffset;
         float nextDashStartAlpha = (nextDashStartLength - startLength) / (endLength - startLength);
         vec2 nextDashStartFrag = mix(vStartFragment, vEndFragment, nextDashStartAlpha);
         bool nextDashStart = lengthSquared(gl_FragCoord.xy - nextDashStartFrag) < halfWidthSquared;
