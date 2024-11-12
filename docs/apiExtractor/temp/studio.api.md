@@ -723,11 +723,12 @@ abstract class Shape extends THREE_2.Group {
     static defaultConfig(): {};
     // (undocumented)
     static defaultStyle(): {
+        fillColor: THREE_2.Color;
+        fillOpacity: number;
         strokeColor: THREE_2.Color;
         strokeOpacity: number;
         strokeWidth: number;
-        fillColor: THREE_2.Color;
-        fillOpacity: number;
+        strokeDashLength: number;
     };
     // (undocumented)
     dispose(): this;

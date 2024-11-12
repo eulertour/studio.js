@@ -22,6 +22,8 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
                 dimensions: { value: CameraDimensions },
                 unitWidth: { value: 1 / 10 },
                 drawRange: { value: new THREE.Vector2(0, 1) },
+                dashLength: { value: 0 },
+                totalLength: { value: 0 },
             }),
             vertexShader: MESHLINE_VERT,
             fragmentShader: MESHLINE_FRAG,
@@ -46,6 +48,15 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
                     this.uniforms.drawRange.value = value;
                 },
             },
+            dashLength: {
+                enumerable: true,
+                get: () => {
+                    return this.uniforms.dashLength.value;
+                },
+                set: (value) => {
+                    this.uniforms.dashLength.value = value;
+                },
+            },
         });
         parameters.color = new THREE.Color().set(parameters.color).convertLinearToSRGB();
         this.setValues(parameters);
@@ -61,6 +72,12 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
     }
     set width(value) {
         this.uniforms.unitWidth.value = value / 32.5;
+    }
+    get totalLength() {
+        return this.uniforms.totalLength.value;
+    }
+    set totalLength(value) {
+        this.uniforms.totalLength.value = value;
     }
 }
 //# sourceMappingURL=MeshLineMaterial.js.map

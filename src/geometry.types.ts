@@ -5,11 +5,12 @@ type Transform = {
 };
 
 type Style = {
-	strokeColor?: THREE.Color;
-	strokeWidth?: number;
-	strokeOpacity?: number;
 	fillColor?: THREE.Color;
 	fillOpacity?: number;
+	strokeColor?: THREE.Color;
+	strokeOpacity?: number;
+	strokeWidth?: number;
+	strokeDashLength?: number;
 };
 
 type LineAttributes = {

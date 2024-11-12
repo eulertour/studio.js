@@ -17,11 +17,12 @@ declare abstract class Shape extends THREE.Group {
         fill?: boolean;
     });
     static defaultStyle(): {
+        fillColor: THREE.Color;
+        fillOpacity: number;
         strokeColor: THREE.Color;
         strokeOpacity: number;
         strokeWidth: number;
-        fillColor: THREE.Color;
-        fillOpacity: number;
+        strokeDashLength: number;
     };
     static defaultConfig(): {};
     reshape(...args: any[]): void;

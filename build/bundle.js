@@ -54620,6 +54620,8 @@ void main() {
   remaining -= 2. * startEnd;
   float bottomTop = remaining;
 
+  // segmentVector is the vector from the start to the end of the current segment.
+  // segmentNormal is the normal of the segmentVector in the +theta direction.
   // Add 0.2 so all pixels are covered.
   vec2 segmentVec = 1.2 * normalize(vEndFragment - vStartFragment);
   vec2 segmentNormal = vec2(-segmentVec.y, segmentVec.x);
@@ -54628,6 +54630,14 @@ void main() {
   segmentVec *= (2. * startEnd - 1.);
   segmentNormal *= (2. * bottomTop - 1.);
 
+  // fragmentOffset is the vector offset from the start or end of the current segment
+  // to a corner of the polygon representing it. It's represented by the diagonal lines
+  // in the diagram below.
+  // *-------------------*
+  // |\                 /|
+  // | *---------------* |
+  // |/                 \|
+  // *-------------------*
   vec2 fragmentOffset
     = 0.75 * unitWidth * segmentVec
     + 0.75 * unitWidth * segmentNormal
@@ -54650,6 +54660,8 @@ uniform float opacity;
 uniform vec2 drawRange;
 uniform vec4 viewport;
 uniform vec4 dimensions;
+uniform float dashLength;
+uniform float totalLength;
 
 varying vec2 vStartFragment;
 varying vec2 vEndFragment;
@@ -54666,7 +54678,7 @@ float and(float a, float b, float c) { return a * b * c; }
 float or(float a, float b, float c) { return min(a + b + c, 1.0); }
 float lengthSquared(vec2 vec) { return dot(vec, vec); }
 
-float segmentCoversFragment(
+float segmentContainsFragment(
   float halfWidthSquared,
   vec2 segmentVec,
   vec2 startToFrag,
@@ -54685,7 +54697,7 @@ float segmentCoversFragment(
   return or(segmentStem, segmentStart, segmentEnd);
 }
 
-float arrowCoversFragment(
+float arrowContainsFragment(
   vec2 startToEnd,
   vec2 startToEndProjection,
   vec2 startToEndNormal,
@@ -54725,7 +54737,7 @@ void main() {
       vBeforeArrow == 0.
       && vArrow == 0.
       && vNextFragment != vEndFragment
-      && segmentCoversFragment(
+      && segmentContainsFragment(
         halfWidthSquared,
         endToNext,
         endToFrag,
@@ -54746,7 +54758,7 @@ void main() {
     // For segments that aren't part of arrows, exclude the fragment if it is not covered by the segment.
     if (
       vArrow == 0.
-      && segmentCoversFragment(
+      && segmentContainsFragment(
         halfWidthSquared,
         startToEnd,
         startToFrag,
@@ -54763,7 +54775,7 @@ void main() {
     // For segments that are part of arrows, exclude fragments that aren't covered by the arrow.
     if (
       vArrow == 1.
-      && arrowCoversFragment(
+      && arrowContainsFragment(
         startToEnd,
         startToEndProjection,
         startToEndNormal,
@@ -54777,9 +54789,39 @@ void main() {
     float proportion = mix(vProportion, vEndProportion, alpha);
     if (proportion < drawRange[0] || drawRange[1] < proportion) discard;
 
+    // Exclude fragments that aren't part of a dash.
+    // TODO: To animate dashes, pass an increasing uniform, take its fractional part,
+    // and discard all fragments that start before it.
+    if (dashLength != 0.) {
+      float length = proportion * totalLength;
+      float dashLengthRatio = length / (2. * dashLength);
+      float dashLengthQuotient;
+      float dashLengthFraction = modf(dashLengthRatio, dashLengthQuotient);
+      // if (mod(length, 2. * dashLength) > dashLength) {
+      if (dashLengthFraction > 0.5) {
+        // This fragment isn't part of a dash, but it might be part of
+        // the end cap of the previous dash or the start cap of the
+        // next dash.
+        float startLength = vProportion * totalLength;
+        float endLength = vEndProportion * totalLength;
+
+        float previousDashEndLength = 2. * dashLength * dashLengthQuotient + dashLength;
+        float previousDashEndAlpha = (previousDashEndLength - startLength) / (endLength - startLength);
+        vec2 previousDashEndFrag = mix(vStartFragment, vEndFragment, previousDashEndAlpha);
+        bool previousDashEnd = lengthSquared(gl_FragCoord.xy - previousDashEndFrag) < halfWidthSquared;
+
+        float nextDashStartLength = 2. * dashLength * dashLengthQuotient + 2. * dashLength;
+        float nextDashStartAlpha = (nextDashStartLength - startLength) / (endLength - startLength);
+        vec2 nextDashStartFrag = mix(vStartFragment, vEndFragment, nextDashStartAlpha);
+        bool nextDashStart = lengthSquared(gl_FragCoord.xy - nextDashStartFrag) < halfWidthSquared;
+        if (!previousDashEnd && !nextDashStart) {
+          discard;
+        }
+      }
+    }
     gl_FragColor = vec4(color, opacity);
 
-  ${ShaderChunk.fog_fragment}
+    ${ShaderChunk.fog_fragment}
 }`;
 
 var _MeshLineGeometry_instances, _MeshLineGeometry_position, _MeshLineGeometry_endPosition, _MeshLineGeometry_nextPosition, _MeshLineGeometry_textureCoords, _MeshLineGeometry_proportion, _MeshLineGeometry_endProportion, _MeshLineGeometry_indices, _MeshLineGeometry_attributes, _MeshLineGeometry_previousPointCount, _MeshLineGeometry_pointCount, _MeshLineGeometry_addSegment, _MeshLineGeometry_makeNewBuffers;
@@ -54902,8 +54944,8 @@ class MeshLineGeometry extends BufferGeometry {
             __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2) + 2] = 6; // 4 * 1 + 2 * 1 + 0;
             __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2) + 3] = 7; // 4 * 1 + 2 * 1 + 1;
         }
-        const totalLength = lengths.at(-1);
-        if (totalLength === undefined) {
+        this.totalLength = lengths.at(-1);
+        if (this.totalLength === undefined) {
             throw new Error('Invalid length');
         }
         for (let i = 0; i < this.points.length - 1; i++) {
@@ -54912,8 +54954,8 @@ class MeshLineGeometry extends BufferGeometry {
             if (startLength === undefined || endLength === undefined) {
                 throw new Error('Invalid length');
             }
-            const startProportion = startLength / totalLength;
-            const endProportion = endLength / totalLength;
+            const startProportion = startLength / this.totalLength;
+            const endProportion = endLength / this.totalLength;
             const offset = 4 * i;
             __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset] = startProportion;
             __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 1] = startProportion;
@@ -55062,6 +55104,8 @@ class MeshLineMaterial extends ShaderMaterial {
                 dimensions: { value: CameraDimensions },
                 unitWidth: { value: 1 / 10 },
                 drawRange: { value: new Vector2(0, 1) },
+                dashLength: { value: 0 },
+                totalLength: { value: 0 },
             }),
             vertexShader: MESHLINE_VERT,
             fragmentShader: MESHLINE_FRAG,
@@ -55086,6 +55130,15 @@ class MeshLineMaterial extends ShaderMaterial {
                     this.uniforms.drawRange.value = value;
                 },
             },
+            dashLength: {
+                enumerable: true,
+                get: () => {
+                    return this.uniforms.dashLength.value;
+                },
+                set: (value) => {
+                    this.uniforms.dashLength.value = value;
+                },
+            },
         });
         parameters.color = new Color().set(parameters.color).convertLinearToSRGB();
         this.setValues(parameters);
@@ -55101,6 +55154,12 @@ class MeshLineMaterial extends ShaderMaterial {
     }
     set width(value) {
         this.uniforms.unitWidth.value = value / 32.5;
+    }
+    get totalLength() {
+        return this.uniforms.totalLength.value;
+    }
+    set totalLength(value) {
+        this.uniforms.totalLength.value = value;
     }
 }
 
@@ -55157,6 +55216,7 @@ function MeshLineRaycast(raycaster, intersects) {
 class MeshLine extends Mesh {
     constructor(geometry, material) {
         super(geometry, material);
+        material.totalLength = geometry.totalLength;
         this.raycast = MeshLineRaycast;
     }
     get points() {
@@ -55210,8 +55270,10 @@ class Shape extends Group {
             const strokeMaterial = new MeshLineMaterial({
                 color: config.strokeColor,
                 opacity: config.strokeOpacity,
-                width: config.strokeWidth,
                 transparent: true,
+                side: DoubleSide,
+                width: config.strokeWidth,
+                dashLength: config.strokeDashLength,
             });
             this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
             this.add(this.stroke);
@@ -55220,11 +55282,12 @@ class Shape extends Group {
     }
     static defaultStyle() {
         return {
+            fillColor: new Color(0xfffaf0),
+            fillOpacity: 0.0,
             strokeColor: new Color(0x000000),
             strokeOpacity: 1.0,
             strokeWidth: 4,
-            fillColor: new Color(0xfffaf0),
-            fillOpacity: 0.0,
+            strokeDashLength: 0,
         };
     }
     static defaultConfig() {

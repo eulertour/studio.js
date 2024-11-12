@@ -61,6 +61,8 @@ void main() {
   remaining -= 2. * startEnd;
   float bottomTop = remaining;
 
+  // segmentVector is the vector from the start to the end of the current segment.
+  // segmentNormal is the normal of the segmentVector in the +theta direction.
   // Add 0.2 so all pixels are covered.
   vec2 segmentVec = 1.2 * normalize(vEndFragment - vStartFragment);
   vec2 segmentNormal = vec2(-segmentVec.y, segmentVec.x);
@@ -69,6 +71,14 @@ void main() {
   segmentVec *= (2. * startEnd - 1.);
   segmentNormal *= (2. * bottomTop - 1.);
 
+  // fragmentOffset is the vector offset from the start or end of the current segment
+  // to a corner of the polygon representing it. It's represented by the diagonal lines
+  // in the diagram below.
+  // *-------------------*
+  // |\                 /|
+  // | *---------------* |
+  // |/                 \|
+  // *-------------------*
   vec2 fragmentOffset
     = 0.75 * unitWidth * segmentVec
     + 0.75 * unitWidth * segmentNormal
@@ -91,6 +101,8 @@ uniform float opacity;
 uniform vec2 drawRange;
 uniform vec4 viewport;
 uniform vec4 dimensions;
+uniform float dashLength;
+uniform float totalLength;
 
 varying vec2 vStartFragment;
 varying vec2 vEndFragment;
@@ -107,7 +119,7 @@ float and(float a, float b, float c) { return a * b * c; }
 float or(float a, float b, float c) { return min(a + b + c, 1.0); }
 float lengthSquared(vec2 vec) { return dot(vec, vec); }
 
-float segmentCoversFragment(
+float segmentContainsFragment(
   float halfWidthSquared,
   vec2 segmentVec,
   vec2 startToFrag,
@@ -126,7 +138,7 @@ float segmentCoversFragment(
   return or(segmentStem, segmentStart, segmentEnd);
 }
 
-float arrowCoversFragment(
+float arrowContainsFragment(
   vec2 startToEnd,
   vec2 startToEndProjection,
   vec2 startToEndNormal,
@@ -166,7 +178,7 @@ void main() {
       vBeforeArrow == 0.
       && vArrow == 0.
       && vNextFragment != vEndFragment
-      && segmentCoversFragment(
+      && segmentContainsFragment(
         halfWidthSquared,
         endToNext,
         endToFrag,
@@ -187,7 +199,7 @@ void main() {
     // For segments that aren't part of arrows, exclude the fragment if it is not covered by the segment.
     if (
       vArrow == 0.
-      && segmentCoversFragment(
+      && segmentContainsFragment(
         halfWidthSquared,
         startToEnd,
         startToFrag,
@@ -204,7 +216,7 @@ void main() {
     // For segments that are part of arrows, exclude fragments that aren't covered by the arrow.
     if (
       vArrow == 1.
-      && arrowCoversFragment(
+      && arrowContainsFragment(
         startToEnd,
         startToEndProjection,
         startToEndNormal,
@@ -218,8 +230,38 @@ void main() {
     float proportion = mix(vProportion, vEndProportion, alpha);
     if (proportion < drawRange[0] || drawRange[1] < proportion) discard;
 
+    // Exclude fragments that aren't part of a dash.
+    // TODO: To animate dashes, pass an increasing uniform, take its fractional part,
+    // and discard all fragments that start before it.
+    if (dashLength != 0.) {
+      float length = proportion * totalLength;
+      float dashLengthRatio = length / (2. * dashLength);
+      float dashLengthQuotient;
+      float dashLengthFraction = modf(dashLengthRatio, dashLengthQuotient);
+      // if (mod(length, 2. * dashLength) > dashLength) {
+      if (dashLengthFraction > 0.5) {
+        // This fragment isn't part of a dash, but it might be part of
+        // the end cap of the previous dash or the start cap of the
+        // next dash.
+        float startLength = vProportion * totalLength;
+        float endLength = vEndProportion * totalLength;
+
+        float previousDashEndLength = 2. * dashLength * dashLengthQuotient + dashLength;
+        float previousDashEndAlpha = (previousDashEndLength - startLength) / (endLength - startLength);
+        vec2 previousDashEndFrag = mix(vStartFragment, vEndFragment, previousDashEndAlpha);
+        bool previousDashEnd = lengthSquared(gl_FragCoord.xy - previousDashEndFrag) < halfWidthSquared;
+
+        float nextDashStartLength = 2. * dashLength * dashLengthQuotient + 2. * dashLength;
+        float nextDashStartAlpha = (nextDashStartLength - startLength) / (endLength - startLength);
+        vec2 nextDashStartFrag = mix(vStartFragment, vEndFragment, nextDashStartAlpha);
+        bool nextDashStart = lengthSquared(gl_FragCoord.xy - nextDashStartFrag) < halfWidthSquared;
+        if (!previousDashEnd && !nextDashStart) {
+          discard;
+        }
+      }
+    }
     gl_FragColor = vec4(color, opacity);
 
-  ${ShaderChunk.fog_fragment}
+    ${ShaderChunk.fog_fragment}
 }`;
 //# sourceMappingURL=meshline.glsl.js.map

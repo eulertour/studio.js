@@ -24,6 +24,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 	} | null = null;
 
 	points: THREE.Vector3[];
+	totalLength: number;
 
 	#previousPointCount = 0;
 	#pointCount = 0;
@@ -152,8 +153,8 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 			this.#textureCoords[4 * (points.length - 2) + 3] = 7; // 4 * 1 + 2 * 1 + 1;
 		}
 
-		const totalLength = lengths.at(-1);
-		if (totalLength === undefined) {
+		this.totalLength = lengths.at(-1);
+		if (this.totalLength === undefined) {
 			throw new Error('Invalid length');
 		}
 		for (let i = 0; i < this.points.length - 1; i++) {
@@ -162,8 +163,8 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 			if (startLength === undefined || endLength === undefined) {
 				throw new Error('Invalid length');
 			}
-			const startProportion = startLength / totalLength;
-			const endProportion = endLength / totalLength;
+			const startProportion = startLength / this.totalLength;
+			const endProportion = endLength / this.totalLength;
 			const offset = 4 * i;
 			this.#proportion[offset] = startProportion;
 			this.#proportion[offset + 1] = startProportion;

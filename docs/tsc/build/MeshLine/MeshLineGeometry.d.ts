@@ -6,6 +6,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
     readonly isMeshLineGeometry = true;
     readonly type = "MeshLineGeometry";
     points: THREE.Vector3[];
+    totalLength: number;
     constructor(arrow?: boolean);
     setPoints(points: Array<THREE.Vector3>, updateBounds?: boolean): void;
     setVertexData(array: WritableArrayLike<number>, offset: number, x: number, y: number, z: number): void;

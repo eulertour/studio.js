@@ -5,6 +5,7 @@ import MeshLineRaycast from './MeshLineRaycast';
 class MeshLine extends THREE.Mesh {
     constructor(geometry, material) {
         super(geometry, material);
+        material.totalLength = geometry.totalLength;
         this.raycast = MeshLineRaycast;
     }
     get points() {

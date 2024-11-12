@@ -8,6 +8,7 @@ declare namespace Geometry {
         readonly isMeshLineGeometry = true;
         readonly type = "MeshLineGeometry";
         points: THREE.Vector3[];
+        totalLength: number;
         constructor(arrow?: boolean);
         setPoints(points: Array<THREE.Vector3>, updateBounds?: boolean): void;
         setVertexData(array: WritableArrayLike<number>, offset: number, x: number, y: number, z: number): void;
@@ -44,11 +45,14 @@ declare namespace Geometry {
             color: THREE.ColorRepresentation;
             opacity: number;
             width: number;
+            dashLength: number;
         });
         get color(): any;
         set color(value: any);
         get width(): number;
         set width(value: number);
+        get totalLength(): any;
+        set totalLength(value: any);
     }
     class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
         constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
@@ -60,11 +64,12 @@ declare namespace Geometry {
         scale: THREE.Vector3;
     };
     type Style = {
-        strokeColor?: THREE.Color;
-        strokeWidth?: number;
-        strokeOpacity?: number;
         fillColor?: THREE.Color;
         fillOpacity?: number;
+        strokeColor?: THREE.Color;
+        strokeOpacity?: number;
+        strokeWidth?: number;
+        strokeDashLength?: number;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -98,11 +103,12 @@ declare namespace Geometry {
             fill?: boolean;
         });
         static defaultStyle(): {
+            fillColor: THREE.Color;
+            fillOpacity: number;
             strokeColor: THREE.Color;
             strokeOpacity: number;
             strokeWidth: number;
-            fillColor: THREE.Color;
-            fillOpacity: number;
+            strokeDashLength: number;
         };
         static defaultConfig(): {};
         reshape(...args: any[]): void;
@@ -309,11 +315,12 @@ declare namespace Utils {
         scale: THREE.Vector3;
     };
     type Style = {
-        strokeColor?: THREE.Color;
-        strokeWidth?: number;
-        strokeOpacity?: number;
         fillColor?: THREE.Color;
         fillOpacity?: number;
+        strokeColor?: THREE.Color;
+        strokeOpacity?: number;
+        strokeWidth?: number;
+        strokeDashLength?: number;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -472,11 +479,14 @@ declare class MeshLineMaterial extends THREE.ShaderMaterial {
         color: THREE.ColorRepresentation;
         opacity: number;
         width: number;
+        dashLength: number;
     });
     get color(): any;
     set color(value: any);
     get width(): number;
     set width(value: number);
+    get totalLength(): any;
+    set totalLength(value: any);
 }
 declare namespace Animation {
     class Animation {
@@ -665,11 +675,12 @@ declare namespace Diagram {
         scale: THREE.Vector3;
     };
     type Style = {
-        strokeColor?: THREE.Color;
-        strokeWidth?: number;
-        strokeOpacity?: number;
         fillColor?: THREE.Color;
         fillOpacity?: number;
+        strokeColor?: THREE.Color;
+        strokeOpacity?: number;
+        strokeWidth?: number;
+        strokeDashLength?: number;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -778,6 +789,7 @@ declare namespace Graphing {
         readonly isMeshLineGeometry = true;
         readonly type = "MeshLineGeometry";
         points: THREE.Vector3[];
+        totalLength: number;
         constructor(arrow?: boolean);
         setPoints(points: Array<THREE.Vector3>, updateBounds?: boolean): void;
         setVertexData(array: WritableArrayLike<number>, offset: number, x: number, y: number, z: number): void;
@@ -814,11 +826,14 @@ declare namespace Graphing {
             color: THREE.ColorRepresentation;
             opacity: number;
             width: number;
+            dashLength: number;
         });
         get color(): any;
         set color(value: any);
         get width(): number;
         set width(value: number);
+        get totalLength(): any;
+        set totalLength(value: any);
     }
     class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
         constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
@@ -830,11 +845,12 @@ declare namespace Graphing {
         scale: THREE.Vector3;
     };
     type Style = {
-        strokeColor?: THREE.Color;
-        strokeWidth?: number;
-        strokeOpacity?: number;
         fillColor?: THREE.Color;
         fillOpacity?: number;
+        strokeColor?: THREE.Color;
+        strokeOpacity?: number;
+        strokeWidth?: number;
+        strokeDashLength?: number;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -868,11 +884,12 @@ declare namespace Graphing {
             fill?: boolean;
         });
         static defaultStyle(): {
+            fillColor: THREE.Color;
+            fillOpacity: number;
             strokeColor: THREE.Color;
             strokeOpacity: number;
             strokeWidth: number;
-            fillColor: THREE.Color;
-            fillOpacity: number;
+            strokeDashLength: number;
         };
         static defaultConfig(): {};
         reshape(...args: any[]): void;
@@ -1135,11 +1152,12 @@ declare namespace Text {
         scale: THREE.Vector3;
     };
     type Style = {
-        strokeColor?: THREE.Color;
-        strokeWidth?: number;
-        strokeOpacity?: number;
         fillColor?: THREE.Color;
         fillOpacity?: number;
+        strokeColor?: THREE.Color;
+        strokeOpacity?: number;
+        strokeWidth?: number;
+        strokeDashLength?: number;
     };
     type LineAttributes = {
         start: THREE.Vector3;

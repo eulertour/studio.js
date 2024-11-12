@@ -4,11 +4,12 @@ type Transform = {
     scale: THREE.Vector3;
 };
 type Style = {
-    strokeColor?: THREE.Color;
-    strokeWidth?: number;
-    strokeOpacity?: number;
     fillColor?: THREE.Color;
     fillOpacity?: number;
+    strokeColor?: THREE.Color;
+    strokeOpacity?: number;
+    strokeWidth?: number;
+    strokeDashLength?: number;
 };
 type LineAttributes = {
     start: THREE.Vector3;

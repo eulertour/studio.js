@@ -7060,7 +7060,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": "{\n        strokeColor: "
+                      "text": "{\n        fillColor: "
                     },
                     {
                       "kind": "Reference",
@@ -7069,7 +7069,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": ";\n        strokeOpacity: number;\n        strokeWidth: number;\n        fillColor: "
+                      "text": ";\n        fillOpacity: number;\n        strokeColor: "
                     },
                     {
                       "kind": "Reference",
@@ -7078,7 +7078,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": ";\n        fillOpacity: number;\n    }"
+                      "text": ";\n        strokeOpacity: number;\n        strokeWidth: number;\n        strokeDashLength: number;\n    }"
                     },
                     {
                       "kind": "Content",

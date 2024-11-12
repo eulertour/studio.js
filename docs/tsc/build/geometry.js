@@ -36,8 +36,10 @@ class Shape extends THREE.Group {
             const strokeMaterial = new MeshLineMaterial({
                 color: config.strokeColor,
                 opacity: config.strokeOpacity,
-                width: config.strokeWidth,
                 transparent: true,
+                side: THREE.DoubleSide,
+                width: config.strokeWidth,
+                dashLength: config.strokeDashLength,
             });
             this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
             this.add(this.stroke);
@@ -46,11 +48,12 @@ class Shape extends THREE.Group {
     }
     static defaultStyle() {
         return {
+            fillColor: new THREE.Color(0xfffaf0),
+            fillOpacity: 0.0,
             strokeColor: new THREE.Color(0x000000),
             strokeOpacity: 1.0,
             strokeWidth: 4,
-            fillColor: new THREE.Color(0xfffaf0),
-            fillOpacity: 0.0,
+            strokeDashLength: 0,
         };
     }
     static defaultConfig() {

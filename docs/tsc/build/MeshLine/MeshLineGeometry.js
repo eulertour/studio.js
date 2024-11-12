@@ -131,8 +131,8 @@ class MeshLineGeometry extends THREE.BufferGeometry {
             __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2) + 2] = 6; // 4 * 1 + 2 * 1 + 0;
             __classPrivateFieldGet(this, _MeshLineGeometry_textureCoords, "f")[4 * (points.length - 2) + 3] = 7; // 4 * 1 + 2 * 1 + 1;
         }
-        const totalLength = lengths.at(-1);
-        if (totalLength === undefined) {
+        this.totalLength = lengths.at(-1);
+        if (this.totalLength === undefined) {
             throw new Error('Invalid length');
         }
         for (let i = 0; i < this.points.length - 1; i++) {
@@ -141,8 +141,8 @@ class MeshLineGeometry extends THREE.BufferGeometry {
             if (startLength === undefined || endLength === undefined) {
                 throw new Error('Invalid length');
             }
-            const startProportion = startLength / totalLength;
-            const endProportion = endLength / totalLength;
+            const startProportion = startLength / this.totalLength;
+            const endProportion = endLength / this.totalLength;
             const offset = 4 * i;
             __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset] = startProportion;
             __classPrivateFieldGet(this, _MeshLineGeometry_proportion, "f")[offset + 1] = startProportion;
