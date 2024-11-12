@@ -46,6 +46,7 @@ declare namespace Geometry {
             opacity: number;
             width: number;
             dashLength: number;
+            dashOffset: number;
         });
         get color(): any;
         set color(value: any);
@@ -70,6 +71,7 @@ declare namespace Geometry {
         strokeOpacity?: number;
         strokeWidth?: number;
         strokeDashLength?: number;
+        strokeDashOffset?: number;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -109,6 +111,7 @@ declare namespace Geometry {
             strokeOpacity: number;
             strokeWidth: number;
             strokeDashLength: number;
+            strokeDashOffset: number;
         };
         static defaultConfig(): {};
         reshape(...args: any[]): void;
@@ -321,6 +324,7 @@ declare namespace Utils {
         strokeOpacity?: number;
         strokeWidth?: number;
         strokeDashLength?: number;
+        strokeDashOffset?: number;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -480,6 +484,7 @@ declare class MeshLineMaterial extends THREE.ShaderMaterial {
         opacity: number;
         width: number;
         dashLength: number;
+        dashOffset: number;
     });
     get color(): any;
     set color(value: any);
@@ -681,6 +686,7 @@ declare namespace Diagram {
         strokeOpacity?: number;
         strokeWidth?: number;
         strokeDashLength?: number;
+        strokeDashOffset?: number;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -827,6 +833,7 @@ declare namespace Graphing {
             opacity: number;
             width: number;
             dashLength: number;
+            dashOffset: number;
         });
         get color(): any;
         set color(value: any);
@@ -851,6 +858,7 @@ declare namespace Graphing {
         strokeOpacity?: number;
         strokeWidth?: number;
         strokeDashLength?: number;
+        strokeDashOffset?: number;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -890,6 +898,7 @@ declare namespace Graphing {
             strokeOpacity: number;
             strokeWidth: number;
             strokeDashLength: number;
+            strokeDashOffset: number;
         };
         static defaultConfig(): {};
         reshape(...args: any[]): void;
@@ -1158,6 +1167,7 @@ declare namespace Text {
         strokeOpacity?: number;
         strokeWidth?: number;
         strokeDashLength?: number;
+        strokeDashOffset?: number;
     };
     type LineAttributes = {
         start: THREE.Vector3;

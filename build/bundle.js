@@ -54662,6 +54662,7 @@ uniform vec4 viewport;
 uniform vec4 dimensions;
 uniform float dashLength;
 uniform float totalLength;
+uniform float dashOffset;
 
 varying vec2 vStartFragment;
 varying vec2 vEndFragment;
@@ -54714,7 +54715,7 @@ float arrowContainsFragment(
 }
 
 void main() {
-  ${ShaderChunk.logdepthbuf_fragment}
+    ${ShaderChunk.logdepthbuf_fragment}
 
     float pixelsPerUnit = viewport.w / dimensions.y;
     float pixelWidth = unitWidth * pixelsPerUnit;
@@ -54797,7 +54798,6 @@ void main() {
       float dashLengthRatio = length / (2. * dashLength);
       float dashLengthQuotient;
       float dashLengthFraction = modf(dashLengthRatio, dashLengthQuotient);
-      // if (mod(length, 2. * dashLength) > dashLength) {
       if (dashLengthFraction > 0.5) {
         // This fragment isn't part of a dash, but it might be part of
         // the end cap of the previous dash or the start cap of the
@@ -55106,6 +55106,7 @@ class MeshLineMaterial extends ShaderMaterial {
                 drawRange: { value: new Vector2(0, 1) },
                 dashLength: { value: 0 },
                 totalLength: { value: 0 },
+                dashOffset: { value: 0 },
             }),
             vertexShader: MESHLINE_VERT,
             fragmentShader: MESHLINE_FRAG,
@@ -55137,6 +55138,15 @@ class MeshLineMaterial extends ShaderMaterial {
                 },
                 set: (value) => {
                     this.uniforms.dashLength.value = value;
+                },
+            },
+            dashOffset: {
+                enumerable: true,
+                get: () => {
+                    return this.uniforms.dashOffset.value;
+                },
+                set: (value) => {
+                    this.uniforms.dashOffset.value = value;
                 },
             },
         });
@@ -55274,6 +55284,7 @@ class Shape extends Group {
                 side: DoubleSide,
                 width: config.strokeWidth,
                 dashLength: config.strokeDashLength,
+                dashOffset: config.strokeDashOffset,
             });
             this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
             this.add(this.stroke);
@@ -55288,6 +55299,7 @@ class Shape extends Group {
             strokeOpacity: 1.0,
             strokeWidth: 4,
             strokeDashLength: 0,
+            strokeDashOffset: 0,
         };
     }
     static defaultConfig() {

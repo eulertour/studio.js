@@ -1,12 +1,14 @@
 import { Geometry, THREE } from '@eulertour/studio';
 
 export default class Example {
+	line: Geometry.Polyline;
+
 	constructor(
 		public scene,
 		public camera,
 		public renderer,
 	) {
-		const line = new Geometry.Polyline(
+		this.line = new Geometry.Polyline(
 			[
 				new THREE.Vector3(-1, -1, 0),
 				new THREE.Vector3(1, 1, 0),
@@ -18,6 +20,11 @@ export default class Example {
 				strokeDashLength: 0.6,
 			},
 		);
-		scene.add(line);
+		scene.add(this.line);
+	}
+
+	update(dt, t) {
+		// this.line.stroke.material.uniforms.dashOffset.value = t / 10;
+		// console.log(this.line.stroke.material.uniforms.dashOffset.value);
 	}
 }

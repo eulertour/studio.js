@@ -63,6 +63,7 @@ abstract class Shape extends THREE.Group {
 				side: THREE.DoubleSide,
 				width: config.strokeWidth,
 				dashLength: config.strokeDashLength,
+				dashOffset: config.strokeDashOffset,
 			});
 			this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
 			this.add(this.stroke);
@@ -79,6 +80,7 @@ abstract class Shape extends THREE.Group {
 			strokeOpacity: 1.0,
 			strokeWidth: 4,
 			strokeDashLength: 0,
+			strokeDashOffset: 0,
 		};
 	}
 

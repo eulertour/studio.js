@@ -7078,7 +7078,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": ";\n        strokeOpacity: number;\n        strokeWidth: number;\n        strokeDashLength: number;\n    }"
+                      "text": ";\n        strokeOpacity: number;\n        strokeWidth: number;\n        strokeDashLength: number;\n        strokeDashOffset: number;\n    }"
                     },
                     {
                       "kind": "Content",

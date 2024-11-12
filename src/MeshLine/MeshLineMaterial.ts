@@ -23,6 +23,7 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
 			opacity: number;
 			width: number;
 			dashLength: number;
+			dashOffset: number;
 		},
 	) {
 		super({
@@ -35,6 +36,7 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
 				drawRange: { value: new THREE.Vector2(0, 1) },
 				dashLength: { value: 0 },
 				totalLength: { value: 0 },
+				dashOffset: { value: 0 },
 			}),
 			vertexShader: MESHLINE_VERT,
 			fragmentShader: MESHLINE_FRAG,
@@ -67,6 +69,15 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
 				},
 				set: (value) => {
 					this.uniforms.dashLength.value = value;
+				},
+			},
+			dashOffset: {
+				enumerable: true,
+				get: () => {
+					return this.uniforms.dashOffset.value;
+				},
+				set: (value) => {
+					this.uniforms.dashOffset.value = value;
 				},
 			},
 		});

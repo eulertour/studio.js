@@ -11,6 +11,7 @@ type Style = {
 	strokeOpacity?: number;
 	strokeWidth?: number;
 	strokeDashLength?: number;
+	strokeDashOffset?: number;
 };
 
 type LineAttributes = {

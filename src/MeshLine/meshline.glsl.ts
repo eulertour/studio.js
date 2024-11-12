@@ -105,6 +105,7 @@ uniform vec4 viewport;
 uniform vec4 dimensions;
 uniform float dashLength;
 uniform float totalLength;
+uniform float dashOffset;
 
 varying vec2 vStartFragment;
 varying vec2 vEndFragment;
@@ -240,7 +241,6 @@ void main() {
       float dashLengthRatio = length / (2. * dashLength);
       float dashLengthQuotient;
       float dashLengthFraction = modf(dashLengthRatio, dashLengthQuotient);
-      // if (mod(length, 2. * dashLength) > dashLength) {
       if (dashLengthFraction > 0.5) {
         // This fragment isn't part of a dash, but it might be part of
         // the end cap of the previous dash or the start cap of the

@@ -9,6 +9,7 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
         opacity: number;
         width: number;
         dashLength: number;
+        dashOffset: number;
     });
     get color(): any;
     set color(value: any);
