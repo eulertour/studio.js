@@ -14,16 +14,18 @@ export default class Example {
 				new THREE.Vector3(1, 1, 0),
 				new THREE.Vector3(2, 1, 0),
 				new THREE.Vector3(2, 0, 0),
+				new THREE.Vector3(3, 0, 0),
 			],
 			{
-				strokeWidth: 4,
+				strokeWidth: 8,
 				strokeDashLength: 0.4,
+				strokeDashOffset: 0.27,
 			},
 		);
 		scene.add(this.line);
 	}
 
 	update(dt, t) {
-		this.line.stroke.material.uniforms.dashOffset.value = t / 4;
+		this.line.stroke.material.uniforms.dashOffset.value = -t / 4;
 	}
 }

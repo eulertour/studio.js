@@ -8,6 +8,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 	#position = new Float32Array();
 	#endPosition = new Float32Array();
 	#nextPosition = new Float32Array();
+	#previousPosition = new Float32Array();
 	#textureCoords = new Float32Array();
 	#proportion = new Float32Array();
 	#endProportion = new Float32Array();
@@ -17,6 +18,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 		position: THREE.Float32BufferAttribute;
 		endPosition: THREE.Float32BufferAttribute;
 		nextPosition: THREE.Float32BufferAttribute;
+		previousPosition: THREE.Float32BufferAttribute;
 		textureCoords: THREE.Float32BufferAttribute;
 		proportion: THREE.Float32BufferAttribute;
 		endProportion: THREE.Float32BufferAttribute;
@@ -88,12 +90,50 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 
 		let lengths = new Float32Array(this.points.length);
 		lengths[0] = 0;
-		for (let i = 0; i < this.points.length - 2; i++) {
+
+		const firstPoint = points.at(0);
+		const lastPoint = points.at(-1);
+		if (firstPoint === undefined || lastPoint === undefined) {
+			throw new Error('invalid endpoints');
+		}
+
+		// Handle the case where the first and last points are the same.
+		let previousPosition: THREE.Vector3 | undefined;
+		if (new THREE.Vector3().subVectors(firstPoint, lastPoint).length() < 0.001) {
+			previousPosition = points.at(-1);
+		} else {
+			previousPosition = points.at(0);
+		}
+
+		let position = points[0];
+		let endPosition = points[1];
+		let nextPosition = points[2];
+		let previousLength = lengths[0];
+		if (
+			previousPosition === undefined ||
+			position === undefined ||
+			endPosition === undefined ||
+			nextPosition === undefined ||
+			previousLength === undefined
+		) {
+			throw new Error('point missing');
+		}
+		lengths[1] =
+			previousLength +
+			((position.x - endPosition.x) ** 2 +
+				(position.y - endPosition.y) ** 2 +
+				(position.z - endPosition.z) ** 2) **
+				0.5;
+		this.#addSegment(0, previousPosition, position, endPosition, nextPosition);
+
+		for (let i = 1; i < this.points.length - 2; i++) {
+			const previousPosition = points[i - 1];
 			const position = points[i];
 			const endPosition = points[i + 1];
 			const nextPosition = points[i + 2];
 			const previousLength = lengths[i];
 			if (
+				previousPosition === undefined ||
 				position === undefined ||
 				endPosition === undefined ||
 				nextPosition === undefined ||
@@ -107,25 +147,22 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 					(position.y - endPosition.y) ** 2 +
 					(position.z - endPosition.z) ** 2) **
 					0.5;
-			this.#addSegment(i, position, endPosition, nextPosition);
-		}
-		const firstPoint = points.at(0);
-		const lastPoint = points.at(-1);
-		if (firstPoint === undefined || lastPoint === undefined) {
-			throw new Error('invalid endpoints');
+			this.#addSegment(i, previousPosition, position, endPosition, nextPosition);
 		}
 
-		let nextPosition: THREE.Vector3 | undefined;
+		// Handle the case where the first and last points are the same.
 		if (new THREE.Vector3().subVectors(firstPoint, lastPoint).length() < 0.001) {
 			nextPosition = points.at(1);
 		} else {
 			nextPosition = points.at(-1);
 		}
 
-		const position = points.at(-2);
-		const endPosition = points.at(-1);
-		const previousLength = lengths.at(-2);
+		previousPosition = points.at(-3);
+		position = points.at(-2);
+		endPosition = points.at(-1);
+		previousLength = lengths.at(-2);
 		if (
+			previousPosition === undefined ||
 			position === undefined ||
 			endPosition === undefined ||
 			nextPosition === undefined ||
@@ -139,7 +176,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 				(position.y - endPosition.y) ** 2 +
 				(position.z - endPosition.z) ** 2) **
 				0.5;
-		this.#addSegment(points.length - 2, position, endPosition, nextPosition);
+		this.#addSegment(points.length - 2, previousPosition, position, endPosition, nextPosition);
 
 		if (this.arrow) {
 			this.#textureCoords[4 * (points.length - 3)] = 9; // 8 * 1 + 2 * 0 + 1;
@@ -180,6 +217,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 		this.#attributes.position.needsUpdate = true;
 		this.#attributes.endPosition.needsUpdate = true;
 		this.#attributes.nextPosition.needsUpdate = true;
+		this.#attributes.previousPosition.needsUpdate = true;
 		this.#attributes.textureCoords.needsUpdate = sizeChanged;
 		this.#attributes.proportion.needsUpdate = true;
 		this.#attributes.endProportion.needsUpdate = true;
@@ -191,10 +229,21 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 		}
 	}
 
-	#addSegment(index: number, start: THREE.Vector3, end: THREE.Vector3, next: THREE.Vector3) {
-		let x, y, z;
-
+	#addSegment(
+		index: number,
+		previous: THREE.Vector3,
+		start: THREE.Vector3,
+		end: THREE.Vector3,
+		next: THREE.Vector3,
+	) {
 		const vertexOffset = 12 * index;
+		let x: number;
+		let y: number;
+		let z: number;
+
+		({ x, y, z } = previous);
+		this.setVertexData(this.#previousPosition, vertexOffset, x, y, z);
+
 		({ x, y, z } = start);
 		this.setVertexData(this.#position, vertexOffset, x, y, z);
 
@@ -217,6 +266,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 		this.dispose();
 
 		const rectCount = pointCount - 1;
+		this.#previousPosition = new Float32Array(12 * rectCount);
 		this.#position = new Float32Array(12 * rectCount);
 		this.#endPosition = new Float32Array(12 * rectCount);
 		this.#nextPosition = new Float32Array(12 * rectCount);
@@ -226,6 +276,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 		this.#indices = new Uint16Array(6 * rectCount);
 
 		this.#attributes = {
+			previousPosition: new THREE.BufferAttribute(this.#previousPosition, 3),
 			position: new THREE.BufferAttribute(this.#position, 3),
 			endPosition: new THREE.BufferAttribute(this.#endPosition, 3),
 			nextPosition: new THREE.BufferAttribute(this.#nextPosition, 3),
@@ -238,6 +289,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 		this.setAttribute('position', this.#attributes.position);
 		this.setAttribute('endPosition', this.#attributes.endPosition);
 		this.setAttribute('nextPosition', this.#attributes.nextPosition);
+		this.setAttribute('previousPosition', this.#attributes.previousPosition);
 		this.setAttribute('textureCoords', this.#attributes.textureCoords);
 		this.setAttribute('proportion', this.#attributes.proportion);
 		this.setAttribute('endProportion', this.#attributes.endProportion);

@@ -255,13 +255,6 @@ void main() {
         float previousDashEndMappedLength = dashLength * floor(dashQuotient);
         float previousDashEndLength = previousDashEndMappedLength + dashOffset;
         float previousDashEndAlpha = (previousDashEndLength - startLength) / (endLength - startLength);
-        // if (previousDashEndAlpha < 0.) {
-        //   gl_FragColor = vec4(0., 1., 0., 1.);
-        // } else {
-        //   gl_FragColor = vec4(1., 0., 0., 1.);
-        // }
-        // return;
-
         vec2 previousDashEndFrag = mix(vStartFragment, vEndFragment, previousDashEndAlpha);
         bool previousDashEnd = lengthSquared(gl_FragCoord.xy - previousDashEndFrag) < halfWidthSquared;
 
@@ -270,6 +263,15 @@ void main() {
         float nextDashStartAlpha = (nextDashStartLength - startLength) / (endLength - startLength);
         vec2 nextDashStartFrag = mix(vStartFragment, vEndFragment, nextDashStartAlpha);
         bool nextDashStart = lengthSquared(gl_FragCoord.xy - nextDashStartFrag) < halfWidthSquared;
+
+        if (nextDashStartAlpha > 1.) {
+          gl_FragColor = vec4(0., 1., 0., 1.);
+        } else {
+          gl_FragColor = vec4(1., 0., 0., 1.);
+        }
+        return;
+
+
         if (!previousDashEnd && !nextDashStart) {
           discard;
         }
