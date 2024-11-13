@@ -54861,41 +54861,80 @@ void main() {
       }
     }
 
-    float cursorWidth = 0.05;
-    float fragmentLength = proportion * totalLength;
+    float cursorWidth = 5.;
     float cursorLength = dashOffset;
+    float cursorEndLength = dashOffset + dashLength;
     float startLength = vProportion * totalLength;
-    // if (abs(cursorLength - fragmentLength) < cursorWidth) {
-    //   gl_FragColor = vec4(0., 0., 0., 1.);
-    //   return;
-    // }
+    float endLength = vEndProportion * totalLength;
+    float previousLength = startLength - length(previousToStart) / pixelsPerUnit;
+    float fragmentLength = proportion * totalLength;
+    vec2 cursorFragment;
+    if (startLength < cursorLength && cursorLength < endLength) {
+      // Handle the first dot when it lies on the segment.
+      cursorFragment = vStartFragment + normalize(startToEnd) * pixelsPerUnit * (cursorLength - startLength);
+      if (length(gl_FragCoord.xy - cursorFragment) < cursorWidth) {
+        gl_FragColor = vec4(1., 1., 1., 1.);
+        return;
+      }
+    } else if (previousLength < cursorLength && cursorLength < startLength) {
+      // Handle the first dot when it comes before the segment.
+      cursorFragment = vPreviousFragment + normalize(previousToStart) * pixelsPerUnit * (cursorLength - previousLength);
+      if (length(gl_FragCoord.xy - cursorFragment) < cursorWidth) {
+        gl_FragColor = vec4(1., 1., 1., 1.);
+        return;
+      }
+    }
+
+    if (startLength < cursorEndLength && cursorEndLength < endLength) {
+      // Handle the second dot when it lies on the segment.
+      cursorFragment = vStartFragment + normalize(startToEnd) * pixelsPerUnit * (cursorEndLength - startLength);
+      if (length(gl_FragCoord.xy - cursorFragment) < cursorWidth) {
+        gl_FragColor = vec4(1., 1., 1., 1.);
+        return;
+      }
+    } else if (previousLength < cursorEndLength && cursorEndLength < startLength) {
+      // Handle the second dot when it comes before the segment.
+      cursorFragment = vPreviousFragment + normalize(previousToStart) * pixelsPerUnit * (cursorEndLength - previousLength);
+      if (length(gl_FragCoord.xy - cursorFragment) < cursorWidth) {
+        gl_FragColor = vec4(1., 1., 1., 1.);
+        return;
+      }
+    }
+
+    // TODO: Project each fragment to the line and check if it's between the dash start and end.
+    vec4 innerColor;
+    if (cursorLength < fragmentLength && fragmentLength < cursorEndLength) {
+      innerColor = vec4(1., 1., 1., 1.);
+    } else {
+      innerColor = vec4(0., 0., 0., 1.);
+    }
 
     if (
       dot(startToEndProjection, startToEnd) > 0.
       && length(startToEndProjection) < length(startToEnd)
-      && length(startToEndNormal) < 4.
+      && length(startToEndNormal) < cursorWidth
     ) {
-      gl_FragColor = vec4(0., 0., 0., 1.);
-      return;
+      // Cover the start to end segment.
+      gl_FragColor = innerColor;
     } else if (
-      length(previousToStartNormal) < 4.
-      && (length(previousToStartProjection) < length(previousToStart) || length(startToEndNormal) < 4. && length(gl_FragCoord.xy - vStartFragment) < 4.)
+      length(previousToStartNormal) < cursorWidth
+      && (length(previousToStartProjection) < length(previousToStart) || length(startToEndNormal) < cursorWidth && length(gl_FragCoord.xy - vStartFragment) < cursorWidth)
     ) {
-      gl_FragColor = vec4(0., 0., 0., 1.);
-      return;
+      // Cover the previous to start segment.
+      gl_FragColor = innerColor;
     } else if (
-      length(gl_FragCoord.xy - vStartFragment) < 4.
-      || length(gl_FragCoord.xy - vEndFragment) < 4.
+      length(gl_FragCoord.xy - vStartFragment) < cursorWidth
+      || length(gl_FragCoord.xy - vEndFragment) < cursorWidth
     ) {
-      gl_FragColor = vec4(0., 0., 0., 1.);
-      return;
+      // Cover start and end caps.
+      gl_FragColor = innerColor;
+    } else {
+      vec3 red = vec3(1., 0., 0.);
+      vec3 blue = vec3(0., 0., 1.);
+      gl_FragColor = vec4(mix(red, blue, fragmentLength / totalLength), opacity);
     }
 
-    vec3 red = vec3(1., 0., 0.);
-    vec3 blue = vec3(0., 0., 1.);
-    gl_FragColor = vec4(mix(red, blue, fragmentLength / totalLength), opacity);
     // gl_FragColor = vec4(color, opacity);
-
     ${ShaderChunk.fog_fragment}
 }`;
 

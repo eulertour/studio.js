@@ -15,17 +15,18 @@ export default class Example {
 				new THREE.Vector3(2, 1, 0),
 				new THREE.Vector3(2, 0, 0),
 				new THREE.Vector3(3, 0, 0),
+				new THREE.Vector3(2, -1, 0),
 			],
 			{
 				strokeWidth: 8,
 				strokeDashLength: 0.4,
-				strokeDashOffset: 2.7,
+				strokeDashOffset: 1.5,
 			},
 		);
 		scene.add(this.line);
 	}
 
 	update(dt, t) {
-		// this.line.stroke.material.uniforms.dashOffset.value += dt / 2;
+		this.line.stroke.material.uniforms.dashOffset.value += dt / 1.5;
 	}
 }
