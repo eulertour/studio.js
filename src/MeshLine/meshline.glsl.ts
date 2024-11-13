@@ -16,6 +16,7 @@ uniform float unitWidth;
 // attribute vec3 position;
 attribute vec3 endPosition;
 attribute vec3 nextPosition;
+attribute vec3 previousPosition;
 attribute float textureCoords;
 attribute float proportion;
 attribute float endProportion;
@@ -23,6 +24,7 @@ attribute float endProportion;
 varying vec2 vStartFragment;
 varying vec2 vEndFragment;
 varying vec2 vNextFragment;
+varying vec2 vPreviousFragment;
 varying float vProportion;
 varying float vEndProportion;
 varying float vFlag;
@@ -47,10 +49,12 @@ void main() {
   vec4 start = modelViewProjection * vec4(position, 1.0);
   vec4 end = modelViewProjection * vec4(endPosition, 1.0);
   vec4 next = modelViewProjection * vec4(nextPosition, 1.0);
+  vec4 previous = modelViewProjection * vec4(previousPosition, 1.0);
 
   vStartFragment = fragmentCoords(start);
   vEndFragment = fragmentCoords(end);
   vNextFragment = fragmentCoords(next);
+  vPreviousFragment = fragmentCoords(previous);
 
   // Extract bools.
   float remaining = textureCoords;
@@ -110,6 +114,7 @@ uniform float dashOffset;
 varying vec2 vStartFragment;
 varying vec2 vEndFragment;
 varying vec2 vNextFragment;
+varying vec2 vPreviousFragment;
 varying float vProportion;
 varying float vEndProportion;
 varying float vFlag;
@@ -164,17 +169,32 @@ void main() {
     float pixelWidth = unitWidth * pixelsPerUnit;
     float halfWidthSquared = 0.25 * pixelWidth * pixelWidth;
     vec2 startToFrag = gl_FragCoord.xy - vStartFragment;
+    vec2 previousToFrag = gl_FragCoord.xy - vPreviousFragment;
+
     vec2 startToEnd = vEndFragment - vStartFragment;
     float startToEndDotProduct = dot(startToEnd, startToFrag);
     float startToEndProjectionFactor = startToEndDotProduct / lengthSquared(startToEnd);
     vec2 startToEndProjection = startToEndProjectionFactor * startToEnd;
     vec2 startToEndNormal = startToFrag - startToEndProjection;
+
     vec2 endToFrag = gl_FragCoord.xy - vEndFragment;
     vec2 endToNext = vNextFragment - vEndFragment;
     float endToNextDotProduct = dot(endToNext, endToFrag);
     vec2 endToNextProjection = endToNextDotProduct / lengthSquared(endToNext) * endToNext;
     vec2 endToNextNormal = endToFrag - endToNextProjection;
     vec2 nextToFrag = gl_FragCoord.xy - vNextFragment;
+
+    vec2 startToPrevious = vPreviousFragment - vStartFragment;
+    float startToPreviousDotProduct = dot(startToPrevious, startToFrag);
+    float startToPreviousProjectionFactor = startToPreviousDotProduct / lengthSquared(startToPrevious);
+    vec2 startToPreviousProjection = startToPreviousProjectionFactor * startToPrevious;
+    vec2 startToPreviousNormal = startToFrag - startToPreviousProjection;
+
+    vec2 previousToStart = vStartFragment - vPreviousFragment;
+    float previousToStartDotProduct = dot(previousToStart, previousToFrag);
+    float previousToStartProjectionFactor = previousToStartDotProduct / lengthSquared(previousToStart);
+    vec2 previousToStartProjection = previousToStartProjectionFactor * previousToStart;
+    vec2 previousToStartNormal = previousToFrag - previousToStartProjection;
 
     // For regular segments, exclude the fragment if it is covered by the next segment.
     if (
@@ -234,11 +254,9 @@ void main() {
     if (proportion < drawRange[0] || drawRange[1] < proportion) discard;
 
     // Exclude fragments that aren't part of a dash.
-    // TODO: To animate dashes, pass an increasing uniform, take its fractional part,
-    // and discard all fragments that start before it.
-    if (dashLength != 0.) {
-      float length = proportion * totalLength;
-      float mappedLength = length - dashOffset;
+    if (false && dashLength != 0.) {
+      float fragmentLength = proportion * totalLength;
+      float mappedLength = fragmentLength - dashOffset;
 
       float dashQuotient = mappedLength / dashLength;
       float dashNum = trunc(dashQuotient);
@@ -249,37 +267,80 @@ void main() {
         isDash = mod(dashNum, 2.) == 0.;
       }
       if (!isDash) {
-        // discard;
-
         float startLength = vProportion * totalLength;
         float endLength = vEndProportion * totalLength;
 
+        float startToPreviousFragLength = sqrt(lengthSquared(startToPrevious));
+        float startToPreviousLength = startToPreviousFragLength / pixelsPerUnit;
+
         float previousDashEndMappedLength = dashLength * floor(dashQuotient);
         float previousDashEndLength = previousDashEndMappedLength + dashOffset;
-        float previousDashEndAlpha = (previousDashEndLength - startLength) / (endLength - startLength);
-        vec2 previousDashEndFrag = mix(vStartFragment, vEndFragment, previousDashEndAlpha);
+
+        vec2 previousDashEndFrag;
+        if (startLength > 0. && previousDashEndLength < startLength) {
+          previousDashEndFrag = vStartFragment + normalize(startToPrevious) * pixelsPerUnit * (startLength - previousDashEndLength);
+        } else if (previousDashEndLength - startLength < pixelWidth * 0.5 / pixelsPerUnit) {
+          gl_FragColor = vec4(0., 1., 0., 1.);
+          return;
+          previousDashEndFrag = vStartFragment + normalize(startToEnd) * pixelsPerUnit * (previousDashEndLength - startLength);
+        } else {
+          previousDashEndFrag = vStartFragment + normalize(startToEnd) * pixelsPerUnit * (previousDashEndLength - startLength);
+        }
         bool previousDashEnd = lengthSquared(gl_FragCoord.xy - previousDashEndFrag) < halfWidthSquared;
 
         float nextDashStartMappedLength = dashLength * ceil(dashQuotient);
         float nextDashStartLength = nextDashStartMappedLength + dashOffset;
-        float nextDashStartAlpha = (nextDashStartLength - startLength) / (endLength - startLength);
-        vec2 nextDashStartFrag = mix(vStartFragment, vEndFragment, nextDashStartAlpha);
-        bool nextDashStart = lengthSquared(gl_FragCoord.xy - nextDashStartFrag) < halfWidthSquared;
-
-        if (nextDashStartAlpha > 1.) {
-          gl_FragColor = vec4(0., 1., 0., 1.);
+        vec2 nextDashStartFrag;
+        if (endLength < fragmentLength && nextDashStartLength > endLength) {
+          nextDashStartFrag = vEndFragment + normalize(endToNext) * pixelsPerUnit * (nextDashStartLength - endLength);
         } else {
-          gl_FragColor = vec4(1., 0., 0., 1.);
+          nextDashStartFrag = vStartFragment + normalize(startToEnd) * pixelsPerUnit * (nextDashStartLength - startLength);
         }
-        return;
-
+        bool nextDashStart = lengthSquared(gl_FragCoord.xy - nextDashStartFrag) < halfWidthSquared;
 
         if (!previousDashEnd && !nextDashStart) {
           discard;
         }
       }
     }
-    gl_FragColor = vec4(color, opacity);
+
+    float cursorWidth = 0.05;
+    float fragmentLength = proportion * totalLength;
+    float cursorLength = dashOffset;
+    float startLength = vProportion * totalLength;
+    // if (abs(cursorLength - fragmentLength) < cursorWidth) {
+    //   gl_FragColor = vec4(0., 0., 0., 1.);
+    //   return;
+    // }
+
+    if (
+      dot(startToEndProjection, startToEnd) > 0.
+      && length(startToEndProjection) < length(startToEnd)
+      && length(startToEndNormal) < 4.
+    ) {
+      // Cover the start to end segment.
+      gl_FragColor = vec4(0., 0., 0., 1.);
+      return;
+    } else if (
+      length(previousToStartNormal) < 4.
+      && (length(previousToStartProjection) < length(previousToStart) || length(startToEndNormal) < 4. && length(gl_FragCoord.xy - vStartFragment) < 4.)
+    ) {
+      // Cover the previous to start segment.
+      gl_FragColor = vec4(0., 0., 0., 1.);
+      return;
+    } else if (
+      length(gl_FragCoord.xy - vStartFragment) < 4.
+      || length(gl_FragCoord.xy - vEndFragment) < 4.
+    ) {
+      // Cover start and end caps.
+      gl_FragColor = vec4(0., 0., 0., 1.);
+      return;
+    }
+
+    vec3 red = vec3(1., 0., 0.);
+    vec3 blue = vec3(0., 0., 1.);
+    gl_FragColor = vec4(mix(red, blue, fragmentLength / totalLength), opacity);
+    // gl_FragColor = vec4(color, opacity);
 
     ${ShaderChunk.fog_fragment}
 }`;
