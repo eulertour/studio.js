@@ -20,7 +20,8 @@ export default class Example {
 			{
 				strokeWidth: 8,
 				strokeDashLength: 0.4,
-				strokeDashOffset: 1.5,
+				// strokeDashOffset: 6.1,
+				strokeDashOffset: 2.4,
 			},
 		);
 		scene.add(this.line);
