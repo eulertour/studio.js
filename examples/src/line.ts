@@ -29,7 +29,7 @@ export default class Example {
 
 	update(dt, t) {
 		if (t > 1) {
-			this.line.stroke.material.uniforms.dashOffset.value += dt / 1.5;
+			this.line.stroke.material.uniforms.dashOffset.value += 1.5 * dt;
 		}
 	}
 }
