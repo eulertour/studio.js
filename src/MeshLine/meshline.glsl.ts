@@ -393,11 +393,76 @@ void main() {
     float fragmentProportion = mix(vStartProportion, vEndProportion, alpha);
     if (fragmentProportion < drawRange[0] || drawRange[1] < fragmentProportion) discard;
 
+
     // Handle dashes.
     float cursorWidth = 5.;
     float cursorLength = dashOffset + dashLength;
     float cursorEndLength = dashOffset;
     float fragmentLength = fragmentProportion * totalLength;
+    float modDashOffset = mod(dashOffset, dashLength);
+
+    float dashLengthDividend = (fragmentLength - modDashOffset) / dashLength;
+    float dashLengthQuotient;
+    float dashLengthFraction = modf(dashLengthDividend, dashLengthQuotient);
+    if (mod(dashLengthQuotient, 2.) == 0.) {
+      float coveredByDash = dashCoversFragment(
+        cursorWidth,
+        dashOffset + dashLength * (dashLengthQuotient + 1.),
+        dashOffset + dashLengthQuotient * dashLength,
+        totalLength,
+        fragmentProportion,
+        previousToStart,
+        pixelsPerUnit,
+        startToEnd,
+        startToEndNormal,
+        previousToStartNormal,
+        startToEndProjection,
+        startToFrag,
+        previousToStartProjection,
+        endToFrag
+      );
+      if (coveredByDash > 0.) {
+        gl_FragColor = vec4(1., 0., 0., 1.);
+        return;
+      }
+    } else {
+      float coveredByPreviousDash = dashCoversFragment(
+        cursorWidth,
+        dashOffset + dashLengthQuotient * dashLength,
+        dashOffset + dashLength * (dashLengthQuotient - 1.),
+        totalLength,
+        fragmentProportion,
+        previousToStart,
+        pixelsPerUnit,
+        startToEnd,
+        startToEndNormal,
+        previousToStartNormal,
+        startToEndProjection,
+        startToFrag,
+        previousToStartProjection,
+        endToFrag
+      );
+      float coveredByNextDash = dashCoversFragment(
+        cursorWidth,
+        dashOffset + dashLengthQuotient * dashLength + dashLength + dashLength,
+        dashOffset + dashLengthQuotient * dashLength + dashLength,
+        totalLength,
+        fragmentProportion,
+        previousToStart,
+        pixelsPerUnit,
+        startToEnd,
+        startToEndNormal,
+        previousToStartNormal,
+        startToEndProjection,
+        startToFrag,
+        previousToStartProjection,
+        endToFrag
+      );
+      if (coveredByPreviousDash > 0. || coveredByNextDash > 0.) {
+        gl_FragColor = vec4(1., 0., 0., 1.);
+        return;
+      }
+    }
 
     float coveredByDash = dashCoversFragment(
       cursorWidth,
