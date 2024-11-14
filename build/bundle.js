@@ -54876,8 +54876,8 @@ void main() {
     }
 
     float cursorWidth = 5.;
-    float cursorLength = dashOffset;
-    float cursorEndLength = dashOffset - dashLength;
+    float cursorLength = dashOffset + dashLength;
+    float cursorEndLength = dashOffset;
     float startLength = vProportion * totalLength;
     float endLength = vEndProportion * totalLength;
     float previousLength = startLength - length(previousToStart) / pixelsPerUnit;
@@ -54929,7 +54929,7 @@ void main() {
       }
     }
 
-    // The first cursor is before the segment.
+    // The first cursor hasn't yet reached the start of the segment.
     if (
       segmentIntersectsFragment(vPreviousFragment, vStartFragment, cursorStartFragment) > 0.
       && segmentIntersectsFragment(vPreviousFragment, vStartFragment, cursorEndFragment) > 0.
@@ -54941,9 +54941,9 @@ void main() {
       }
     }
 
+    // The first cursor is on the segment and the second hasn't yet reached its start. Color
+    // the fragments between the start and the first cursor.
     vec2 projectedFragment = vStartFragment + startToEndProjection;
-    // The first cursor is on the segment and the second is not. Color the fragments
-    // between the start and the first cursor.
     if (
       segmentIntersectsFragment(vStartFragment, vEndFragment, cursorStartFragment) > 0.
       && segmentIntersectsFragment(vStartFragment, vEndFragment, cursorEndFragment) == 0.
@@ -54959,8 +54959,8 @@ void main() {
       }
     }
 
-    // The first cursor is on the segment and the second is not. Color the fragments
-    // before the start.
+    // The first cursor is on the segment and the second hasn't yet reached its start. Color
+    // the fragments before the start.
     if (
       segmentIntersectsFragment(vStartFragment, vEndFragment, cursorStartFragment) > 0.
       && segmentIntersectsFragment(vStartFragment, vEndFragment, cursorEndFragment) == 0.
@@ -54977,11 +54977,16 @@ void main() {
     if (
       segmentIntersectsFragment(vStartFragment, vEndFragment, cursorEndFragment) > 0.
       && segmentIntersectsFragment(vStartFragment, vEndFragment, cursorStartFragment) == 0.
-      && dot(vEndFragment - gl_FragCoord.xy, cursorEndFragment - gl_FragCoord.xy) < 0.
+      && fragmentLength > cursorEndLength
     ) {
-      if (length(startToEndNormal) < cursorWidth) {
-        gl_FragColor = vec4(1., 1., 1., 1.);
-        return;
+      if (
+        length(startToEndProjection) < length(startToEnd)
+        || length(endToFrag) < cursorWidth
+      ) {
+        if (length(startToEndNormal) < cursorWidth) {
+          gl_FragColor = vec4(1., 1., 1., 1.);
+          return;
+        }
       }
     }
 

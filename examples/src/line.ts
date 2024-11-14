@@ -20,14 +20,16 @@ export default class Example {
 			{
 				strokeWidth: 8,
 				strokeDashLength: 0.4,
-				// strokeDashOffset: 6.1,
-				strokeDashOffset: 2.4,
+				// strokeDashOffset: 6.9,
+				strokeDashOffset: 0.0,
 			},
 		);
 		scene.add(this.line);
 	}
 
 	update(dt, t) {
-		this.line.stroke.material.uniforms.dashOffset.value += dt / 1.5;
+		if (t > 1) {
+			this.line.stroke.material.uniforms.dashOffset.value += dt / 1.5;
+		}
 	}
 }
