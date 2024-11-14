@@ -21,7 +21,7 @@ export default class Example {
 				strokeWidth: 8,
 				strokeDashLength: 0.4,
 				// strokeDashOffset: 6.9,
-				strokeDashOffset: 0.5,
+				// strokeDashOffset: 0.5,
 			},
 		);
 		scene.add(this.line);
@@ -29,7 +29,7 @@ export default class Example {
 
 	update(dt, t) {
 		if (t > 1) {
-			// this.line.stroke.material.uniforms.dashOffset.value += 1.5 * dt;
+			this.line.stroke.material.uniforms.dashOffset.value += dt / 2;
 		}
 	}
 }

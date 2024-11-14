@@ -231,7 +231,6 @@ float dashCoversFragment(
     && dot(cursorEndFragment - gl_FragCoord.xy, cursorStartFragment - gl_FragCoord.xy) < 0.
   ) {
     if (length(startToEndNormal) < cursorWidth) {
-      gl_FragColor = vec4(1., 1., 1., 1.);
       return 1.;
     }
   }
@@ -243,7 +242,6 @@ float dashCoversFragment(
     && dot(cursorEndFragment - gl_FragCoord.xy, cursorStartFragment - gl_FragCoord.xy) < 0.
   ) {
     if (length(previousToStartNormal) < cursorWidth) {
-      gl_FragColor = vec4(1., 1., 1., 1.);
       return 1.;
     }
   }
@@ -260,7 +258,6 @@ float dashCoversFragment(
       || length(startToFrag) < cursorWidth
     ) {
       if (length(startToEndNormal) < cursorWidth) {
-        gl_FragColor = vec4(1., 1., 1., 1.);
         return 1.;
       }
     }
@@ -399,14 +396,14 @@ void main() {
     float fragmentLength = fragmentProportion * totalLength;
     float modDashOffset = mod(dashOffset, 2. * dashLength);
 
-    float dashLengthDividend = (fragmentLength - modDashOffset) / dashLength;
+    float dashLengthDivision = (fragmentLength - modDashOffset) / dashLength;
     float dashLengthQuotient;
-    float dashLengthFraction = modf(dashLengthDividend, dashLengthQuotient);
-    if (mod(dashLengthQuotient, 2.) == 0.) {
+    float dashLengthFraction = modf(dashLengthDivision, dashLengthQuotient);
+    if (dashLengthDivision < 0.) {
       float coveredByDash = dashCoversFragment(
         cursorWidth,
-        modDashOffset + dashLength * (dashLengthQuotient + 1.),
-        modDashOffset + dashLengthQuotient * dashLength,
+        modDashOffset - dashLength,
+        0.,
         totalLength,
         fragmentProportion,
         previousToStart,
@@ -420,7 +417,29 @@ void main() {
         endToFrag
       );
       if (coveredByDash > 0.) {
-        gl_FragColor = vec4(1., 0., 0., 1.);
+        gl_FragColor = vec4(1., 1., 1., 1.);
+        return;
+      }
+    }
+    if (mod(dashLengthQuotient, 2.) == 0.) {
+      float coveredByDash = dashCoversFragment(
+        cursorWidth,
+        modDashOffset + dashLength * (dashLengthQuotient + 1.), // 0.1 + 0.4 * (0 + 1) = 0.5
+        modDashOffset + dashLengthQuotient * dashLength,        // 0.1 + 0 * 0.4 = 0.1
+        totalLength,
+        fragmentProportion,
+        previousToStart,
+        pixelsPerUnit,
+        startToEnd,
+        startToEndNormal,
+        previousToStartNormal,
+        startToEndProjection,
+        startToFrag,
+        previousToStartProjection,
+        endToFrag
+      );
+      if (coveredByDash > 0.) {
+        gl_FragColor = vec4(1., 1., 1., 1.);
         return;
       }
     } else {
@@ -428,7 +447,6 @@ void main() {
         cursorWidth,
         modDashOffset + dashLengthQuotient * dashLength,
         modDashOffset + dashLength * (dashLengthQuotient - 1.),
-        // 0.1 + 0.5 * (0 - 1)
         totalLength,
         fragmentProportion,
         previousToStart,
@@ -462,7 +480,7 @@ void main() {
         return;
       }
       if (coveredByNextDash > 0.) {
-        gl_FragColor = vec4(0., 1., 0., 1.);
+        gl_FragColor = vec4(1., 1., 1., 1.);
         return;
       }
     }
