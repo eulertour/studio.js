@@ -90,9 +90,15 @@ class MeshLineGeometry extends THREE.BufferGeometry {
         else {
             previousPosition = points.at(0);
         }
+        let nextPosition;
+        if (points.length < 3) {
+            nextPosition = points[1];
+        }
+        else {
+            nextPosition = points[2];
+        }
         let position = points[0];
         let endPosition = points[1];
-        let nextPosition = points[2];
         let previousLength = lengths[0];
         if (previousPosition === undefined ||
             position === undefined ||
@@ -134,7 +140,12 @@ class MeshLineGeometry extends THREE.BufferGeometry {
         else {
             nextPosition = points.at(-1);
         }
-        previousPosition = points.at(-3);
+        if (points.length < 3) {
+            previousPosition = points.at(-2);
+        }
+        else {
+            previousPosition = points.at(-3);
+        }
         position = points.at(-2);
         endPosition = points.at(-1);
         previousLength = lengths.at(-2);

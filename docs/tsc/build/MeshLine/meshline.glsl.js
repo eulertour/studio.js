@@ -390,9 +390,8 @@ void main() {
     float fragmentProportion = mix(vStartProportion, vEndProportion, alpha);
     if (fragmentProportion < drawRange[0] || drawRange[1] < fragmentProportion) discard;
 
-
+    // Handle dashes.
     if (dashLength > 0.) {
-      // Handle dashes.
       float cursorWidth = pixelWidth / 2.;
       float fragmentLength = fragmentProportion * totalLength;
 

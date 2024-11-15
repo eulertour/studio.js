@@ -54949,9 +54949,8 @@ void main() {
     float fragmentProportion = mix(vStartProportion, vEndProportion, alpha);
     if (fragmentProportion < drawRange[0] || drawRange[1] < fragmentProportion) discard;
 
-
+    // Handle dashes.
     if (dashLength > 0.) {
-      // Handle dashes.
       float cursorWidth = pixelWidth / 2.;
       float fragmentLength = fragmentProportion * totalLength;
 
@@ -55085,9 +55084,15 @@ class MeshLineGeometry extends BufferGeometry {
         else {
             previousPosition = points.at(0);
         }
+        let nextPosition;
+        if (points.length < 3) {
+            nextPosition = points[1];
+        }
+        else {
+            nextPosition = points[2];
+        }
         let position = points[0];
         let endPosition = points[1];
-        let nextPosition = points[2];
         let previousLength = lengths[0];
         if (previousPosition === undefined ||
             position === undefined ||
@@ -55129,7 +55134,12 @@ class MeshLineGeometry extends BufferGeometry {
         else {
             nextPosition = points.at(-1);
         }
-        previousPosition = points.at(-3);
+        if (points.length < 3) {
+            previousPosition = points.at(-2);
+        }
+        else {
+            previousPosition = points.at(-3);
+        }
         position = points.at(-2);
         endPosition = points.at(-1);
         previousLength = lengths.at(-2);
