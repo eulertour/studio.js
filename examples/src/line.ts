@@ -18,7 +18,7 @@ export default class Example {
 				new THREE.Vector3(2, -1, 0),
 			],
 			{
-				strokeWidth: 8,
+				strokeWidth: 6,
 				// strokeDashLength: 0.4,
 				// strokeDashOffset: 6.9,
 				// strokeDashOffset: 0.7,
@@ -29,7 +29,7 @@ export default class Example {
 
 	update(dt, t) {
 		if (t > 1) {
-			// this.line.stroke.material.uniforms.dashOffset.value += dt / 2;
+			this.line.stroke.material.uniforms.dashOffset.value += dt / 2;
 		}
 	}
 }

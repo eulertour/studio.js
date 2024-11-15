@@ -54744,11 +54744,11 @@ struct DashCoversFragmentData {
   vec2 startToFrag;
   vec2 previousToStartProjection;
   vec2 endToFrag;
+  float cursorWidth;
 };
 
 float dashCoversFragment(
-    float cursorWidth,
-    float cursorLength,
+    float cursorStartLength,
     float cursorEndLength,
     DashCoversFragmentData data
 ) {
@@ -54758,31 +54758,31 @@ float dashCoversFragment(
   float fragmentLength = data.fragmentProportion * data.totalLength;
 
   vec2 cursorStartFragment;
-  if (startLength < cursorLength && cursorLength < endLength) {
+  if (startLength < cursorEndLength && cursorEndLength < endLength) {
     // Handle the first dot when it lies on the segment.
-    cursorStartFragment = vStartFragment + normalize(data.startToEnd) * data.pixelsPerUnit * (cursorLength - startLength);
-    if (length(gl_FragCoord.xy - cursorStartFragment) < cursorWidth) {
+    cursorStartFragment = vStartFragment + normalize(data.startToEnd) * data.pixelsPerUnit * (cursorEndLength - startLength);
+    if (length(gl_FragCoord.xy - cursorStartFragment) < data.cursorWidth) {
       return 1.;
     }
-  } else if (previousLength < cursorLength && cursorLength < startLength) {
+  } else if (previousLength < cursorEndLength && cursorEndLength < startLength) {
     // Handle the first dot when it comes before the segment.
-    cursorStartFragment = vPreviousFragment + normalize(data.previousToStart) * data.pixelsPerUnit * (cursorLength - previousLength);
-    if (length(gl_FragCoord.xy - cursorStartFragment) < cursorWidth) {
+    cursorStartFragment = vPreviousFragment + normalize(data.previousToStart) * data.pixelsPerUnit * (cursorEndLength - previousLength);
+    if (length(gl_FragCoord.xy - cursorStartFragment) < data.cursorWidth) {
       return 1.;
     }
   }
 
   vec2 cursorEndFragment;
-  if (startLength < cursorEndLength && cursorEndLength < endLength) {
+  if (startLength < cursorStartLength && cursorStartLength < endLength) {
     // Handle the second dot when it lies on the segment.
-    cursorEndFragment = vStartFragment + normalize(data.startToEnd) * data.pixelsPerUnit * (cursorEndLength - startLength);
-    if (length(gl_FragCoord.xy - cursorEndFragment) < cursorWidth) {
+    cursorEndFragment = vStartFragment + normalize(data.startToEnd) * data.pixelsPerUnit * (cursorStartLength - startLength);
+    if (length(gl_FragCoord.xy - cursorEndFragment) < data.cursorWidth) {
       return 1.;
     }
-  } else if (previousLength < cursorEndLength && cursorEndLength < startLength) {
+  } else if (previousLength < cursorStartLength && cursorStartLength < startLength) {
     // Handle the second dot when it comes before the segment.
-    cursorEndFragment = vPreviousFragment + normalize(data.previousToStart) * data.pixelsPerUnit * (cursorEndLength - previousLength);
-    if (length(gl_FragCoord.xy - cursorEndFragment) < cursorWidth) {
+    cursorEndFragment = vPreviousFragment + normalize(data.previousToStart) * data.pixelsPerUnit * (cursorStartLength - previousLength);
+    if (length(gl_FragCoord.xy - cursorEndFragment) < data.cursorWidth) {
       return 1.;
     }
   }
@@ -54793,7 +54793,7 @@ float dashCoversFragment(
   //   && segmentIntersectsFragment(vStartFragment, vEndFragment, cursorEndFragment) > 0.
   //   && dot(cursorEndFragment - gl_FragCoord.xy, cursorStartFragment - gl_FragCoord.xy) < 0.
   // ) {
-  //   if (length(data.startToEndNormal) < cursorWidth) {
+  //   if (length(data.startToEndNormal) < data.cursorWidth) {
   //     return 1.;
   //   }
   // }
@@ -54804,7 +54804,7 @@ float dashCoversFragment(
     && segmentIntersectsFragment(vPreviousFragment, vStartFragment, cursorEndFragment) > 0.
     && dot(cursorEndFragment - gl_FragCoord.xy, cursorStartFragment - gl_FragCoord.xy) < 0.
   ) {
-    if (length(data.previousToStartNormal) < cursorWidth) {
+    if (length(data.previousToStartNormal) < data.cursorWidth) {
       return 1.;
     }
   }
@@ -54818,9 +54818,9 @@ float dashCoversFragment(
   ) {
     if (
       dot(vStartFragment - projectedFragment, cursorStartFragment - projectedFragment) < 0.
-      || length(data.startToFrag) < cursorWidth
+      || length(data.startToFrag) < data.cursorWidth
     ) {
-      if (length(data.startToEndNormal) < cursorWidth) {
+      if (length(data.startToEndNormal) < data.cursorWidth) {
         return 1.;
       }
     }
@@ -54834,7 +54834,7 @@ float dashCoversFragment(
     && length(cursorEndFragment - vPreviousFragment) < length(data.previousToStartProjection)
     && length(data.previousToStartProjection) < length(vStartFragment - vPreviousFragment)
   ) {
-    if (length(data.previousToStartNormal) < cursorWidth) {
+    if (length(data.previousToStartNormal) < data.cursorWidth) {
       return 1.;
     }
   }
@@ -54843,13 +54843,13 @@ float dashCoversFragment(
   if (
     segmentIntersectsFragment(vStartFragment, vEndFragment, cursorEndFragment) > 0.
     && segmentIntersectsFragment(vStartFragment, vEndFragment, cursorStartFragment) == 0.
-    && fragmentLength > cursorEndLength
+    && fragmentLength > cursorStartLength
   ) {
     if (
       length(data.startToEndProjection) < length(data.startToEnd)
-      || length(data.endToFrag) < cursorWidth
+      || length(data.endToFrag) < data.cursorWidth
     ) {
-      if (length(data.startToEndNormal) < cursorWidth) {
+      if (length(data.startToEndNormal) < data.cursorWidth) {
         return 1.;
       }
     }
@@ -54953,14 +54953,13 @@ void main() {
     if (dashLength > 0.) {
       // Handle dashes.
       float cursorWidth = pixelWidth / 2.;
-      float cursorLength = dashOffset + dashLength;
-      float cursorEndLength = dashOffset;
       float fragmentLength = fragmentProportion * totalLength;
 
       float modDashOffset2 = mod(dashOffset, 2. * dashLength);
       float dashLengthDivision2 = (fragmentLength + 2. * dashLength - modDashOffset2) / dashLength;
       float dashLengthQuotient2;
       float dashLengthFraction2 = modf(dashLengthDivision2, dashLengthQuotient2);
+      float previousDashEndLength = dashLengthQuotient2 * dashLength - (2. * dashLength - modDashOffset2);
 
       DashCoversFragmentData dashCoversFragmentData;
       dashCoversFragmentData.totalLength = totalLength;
@@ -54974,6 +54973,7 @@ void main() {
       dashCoversFragmentData.startToFrag = startToFrag;
       dashCoversFragmentData.previousToStartProjection = previousToStartProjection;
       dashCoversFragmentData.endToFrag = endToFrag;
+      dashCoversFragmentData.cursorWidth = cursorWidth;
 
       float coveredByDash = 0.;
 
@@ -54985,16 +54985,14 @@ void main() {
         // may be covered by the previous or next dash's cap.
         // previous
         coveredByDash += dashCoversFragment(
-          cursorWidth,
-          dashLengthQuotient2 * dashLength - (2. * dashLength - modDashOffset2),
-          dashLengthQuotient2 * dashLength - (2. * dashLength - modDashOffset2) - dashLength,
+          previousDashEndLength - dashLength,
+          previousDashEndLength,
           dashCoversFragmentData
         );
         // next
         coveredByDash += dashCoversFragment(
-          cursorWidth,
-          dashLengthQuotient2 * dashLength - (2. * dashLength - modDashOffset2) + dashLength + dashLength,
-          dashLengthQuotient2 * dashLength - (2. * dashLength - modDashOffset2) + dashLength,
+          previousDashEndLength + dashLength,
+          previousDashEndLength + 2. * dashLength,
           dashCoversFragmentData
         );
       }
