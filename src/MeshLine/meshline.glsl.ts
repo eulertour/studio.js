@@ -230,16 +230,16 @@ float dashCoversFragment(
     }
   }
 
-  // The first and second cursors are on the segment.
-  if (
-    segmentIntersectsFragment(vStartFragment, vEndFragment, cursorStartFragment) > 0.
-    && segmentIntersectsFragment(vStartFragment, vEndFragment, cursorEndFragment) > 0.
-    && dot(cursorEndFragment - gl_FragCoord.xy, cursorStartFragment - gl_FragCoord.xy) < 0.
-  ) {
-    if (length(data.startToEndNormal) < cursorWidth) {
-      return 1.;
-    }
-  }
+  // // The first and second cursors are on the segment.
+  // if (
+  //   segmentIntersectsFragment(vStartFragment, vEndFragment, cursorStartFragment) > 0.
+  //   && segmentIntersectsFragment(vStartFragment, vEndFragment, cursorEndFragment) > 0.
+  //   && dot(cursorEndFragment - gl_FragCoord.xy, cursorStartFragment - gl_FragCoord.xy) < 0.
+  // ) {
+  //   if (length(data.startToEndNormal) < cursorWidth) {
+  //     return 1.;
+  //   }
+  // }
 
   // The first cursor hasn't yet reached the start of the segment.
   if (
@@ -393,103 +393,59 @@ void main() {
     if (fragmentProportion < drawRange[0] || drawRange[1] < fragmentProportion) discard;
 
 
-    // Handle dashes.
-    float cursorWidth = pixelWidth / 2.;
-    // float cursorWidth = 5.;
-    float cursorLength = dashOffset + dashLength;
-    float cursorEndLength = dashOffset;
-    float fragmentLength = fragmentProportion * totalLength;
+    if (dashLength > 0.) {
+      // Handle dashes.
+      float cursorWidth = pixelWidth / 2.;
+      float cursorLength = dashOffset + dashLength;
+      float cursorEndLength = dashOffset;
+      float fragmentLength = fragmentProportion * totalLength;
 
-    float modDashOffset = mod(dashOffset, 2. * dashLength);
-    float dashLengthDivision = (fragmentLength - modDashOffset) / dashLength;
-    float dashLengthQuotient;
-    float dashLengthFraction = modf(dashLengthDivision, dashLengthQuotient);
+      float modDashOffset2 = mod(dashOffset, 2. * dashLength);
+      float dashLengthDivision2 = (fragmentLength + 2. * dashLength - modDashOffset2) / dashLength;
+      float dashLengthQuotient2;
+      float dashLengthFraction2 = modf(dashLengthDivision2, dashLengthQuotient2);
 
-    float modDashOffset2 = mod(dashOffset, dashLength);
-    float dashLengthDivision2 = (fragmentLength - modDashOffset2) / dashLength;
-    float dashLengthQuotient2;
-    float dashLengthFraction2 = modf(dashLengthDivision2, dashLengthQuotient2);
+      DashCoversFragmentData dashCoversFragmentData;
+      dashCoversFragmentData.totalLength = totalLength;
+      dashCoversFragmentData.fragmentProportion = fragmentProportion;
+      dashCoversFragmentData.previousToStart = previousToStart;
+      dashCoversFragmentData.pixelsPerUnit = pixelsPerUnit;
+      dashCoversFragmentData.startToEnd = startToEnd;
+      dashCoversFragmentData.startToEndNormal = startToEndNormal;
+      dashCoversFragmentData.previousToStartNormal = previousToStartNormal;
+      dashCoversFragmentData.startToEndProjection = startToEndProjection;
+      dashCoversFragmentData.startToFrag = startToFrag;
+      dashCoversFragmentData.previousToStartProjection = previousToStartProjection;
+      dashCoversFragmentData.endToFrag = endToFrag;
 
-    DashCoversFragmentData dashCoversFragmentData;
-    dashCoversFragmentData.totalLength = totalLength;
-    dashCoversFragmentData.fragmentProportion = fragmentProportion;
-    dashCoversFragmentData.previousToStart = previousToStart;
-    dashCoversFragmentData.pixelsPerUnit = pixelsPerUnit;
-    dashCoversFragmentData.startToEnd = startToEnd;
-    dashCoversFragmentData.startToEndNormal = startToEndNormal;
-    dashCoversFragmentData.previousToStartNormal = previousToStartNormal;
-    dashCoversFragmentData.startToEndProjection = startToEndProjection;
-    dashCoversFragmentData.startToFrag = startToFrag;
-    dashCoversFragmentData.previousToStartProjection = previousToStartProjection;
-    dashCoversFragmentData.endToFrag = endToFrag;
+      float coveredByDash = 0.;
 
-    float red = 0.;
-    float coveredByDash = 0.;
-    float x = dashCoversFragment(
-      cursorWidth,
-      modDashOffset - dashLength,
-      0.,
-      dashCoversFragmentData
-    );
-    if (x > 0.) {
-      // This fragment is near the start of the line.
-      coveredByDash += 1.;
-    } else if (mod(dashLengthQuotient, 2.) == 0.) {
-      // This fragment's projection is within a dash.
-      coveredByDash += dashCoversFragment(
-        cursorWidth,
-        modDashOffset + dashLength * (dashLengthQuotient + 1.),
-        modDashOffset + dashLengthQuotient * dashLength,
-        dashCoversFragmentData
-      );
-      coveredByDash += gt(dashLengthDivision, 0.);
-    } else {
-      // This fragment's projection is not within a dash, but it
-      // may be covered by the next or previous dash's cap.
-      coveredByDash += dashCoversFragment(
-        cursorWidth,
-        modDashOffset + dashLengthQuotient * dashLength,
-        modDashOffset + dashLength * (dashLengthQuotient - 1.),
-        dashCoversFragmentData
-      );
-      coveredByDash += dashCoversFragment(
-        cursorWidth,
-        modDashOffset + dashLengthQuotient * dashLength + dashLength + dashLength,
-        modDashOffset + dashLengthQuotient * dashLength + dashLength,
-        dashCoversFragmentData
-      );
+      if (mod(dashLengthQuotient2, 2.) == 0.) {
+        // This fragment's projection is within a dash.
+        coveredByDash += 1.;
+      } else {
+        // This fragment's projection is not within a dash, but it
+        // may be covered by the previous or next dash's cap.
+        // previous
+        coveredByDash += dashCoversFragment(
+          cursorWidth,
+          dashLengthQuotient2 * dashLength - (2. * dashLength - modDashOffset2),
+          dashLengthQuotient2 * dashLength - (2. * dashLength - modDashOffset2) - dashLength,
+          dashCoversFragmentData
+        );
+        // next
+        coveredByDash += dashCoversFragment(
+          cursorWidth,
+          dashLengthQuotient2 * dashLength - (2. * dashLength - modDashOffset2) + dashLength + dashLength,
+          dashLengthQuotient2 * dashLength - (2. * dashLength - modDashOffset2) + dashLength,
+          dashCoversFragmentData
+        );
+      }
+
+      if (coveredByDash == 0.) {
+        discard;
+      }
     }
-
-    if (coveredByDash == 0.) {
-      discard;
-    }
-
-    // vec4 innerColor = vec4(0., 0., 0., 1.);
-    //
-    // if (
-    //   dot(startToEndProjection, startToEnd) > 0.
-    //   && length(startToEndProjection) < length(startToEnd)
-    //   && length(startToEndNormal) < cursorWidth
-    // ) {
-    //   // Cover the start to end segment.
-    //   gl_FragColor = innerColor;
-    // } else if (
-    //   length(previousToStartNormal) < cursorWidth
-    //   && (length(previousToStartProjection) < length(previousToStart) || length(startToEndNormal) < cursorWidth && length(gl_FragCoord.xy - vStartFragment) < cursorWidth)
-    // ) {
-    //   // Cover the previous to start segment.
-    //   gl_FragColor = innerColor;
-    // } else if (
-    //   length(gl_FragCoord.xy - vStartFragment) < cursorWidth
-    //   || length(gl_FragCoord.xy - vEndFragment) < cursorWidth
-    // ) {
-    //   // Cover start and end caps.
-    //   gl_FragColor = innerColor;
-    // } else {
-    //   vec3 red = vec3(1., 0., 0.);
-    //   vec3 blue = vec3(0., 0., 1.);
-    //   gl_FragColor = vec4(mix(red, blue, fragmentLength / totalLength), opacity);
-    // }
 
     gl_FragColor = vec4(color, opacity);
     ${ShaderChunk.fog_fragment}
