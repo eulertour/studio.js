@@ -175,37 +175,41 @@ float segmentIntersectsFragment(
   return lt(abs(dotProduct - lengthProduct), 0.1);
 }
 
+struct DashCoversFragmentData {
+  float totalLength;
+  float fragmentProportion;
+  vec2 previousToStart;
+  float pixelsPerUnit;
+  vec2 startToEnd;
+  vec2 startToEndNormal;
+  vec2 previousToStartNormal;
+  vec2 startToEndProjection;
+  vec2 startToFrag;
+  vec2 previousToStartProjection;
+  vec2 endToFrag;
+};
+
 float dashCoversFragment(
     float cursorWidth,
     float cursorLength,
     float cursorEndLength,
-    float totalLength,
-    float fragmentProportion,
-    vec2 previousToStart,
-    float pixelsPerUnit,
-    vec2 startToEnd,
-    vec2 startToEndNormal,
-    vec2 previousToStartNormal,
-    vec2 startToEndProjection,
-    vec2 startToFrag,
-    vec2 previousToStartProjection,
-    vec2 endToFrag
+    DashCoversFragmentData data
 ) {
-  float startLength = vStartProportion * totalLength;
-  float endLength = vEndProportion * totalLength;
-  float previousLength = startLength - length(previousToStart) / pixelsPerUnit;
-  float fragmentLength = fragmentProportion * totalLength;
+  float startLength = vStartProportion * data.totalLength;
+  float endLength = vEndProportion * data.totalLength;
+  float previousLength = startLength - length(data.previousToStart) / data.pixelsPerUnit;
+  float fragmentLength = data.fragmentProportion * data.totalLength;
 
   vec2 cursorStartFragment;
   if (startLength < cursorLength && cursorLength < endLength) {
     // Handle the first dot when it lies on the segment.
-    cursorStartFragment = vStartFragment + normalize(startToEnd) * pixelsPerUnit * (cursorLength - startLength);
+    cursorStartFragment = vStartFragment + normalize(data.startToEnd) * data.pixelsPerUnit * (cursorLength - startLength);
     if (length(gl_FragCoord.xy - cursorStartFragment) < cursorWidth) {
       return 1.;
     }
   } else if (previousLength < cursorLength && cursorLength < startLength) {
     // Handle the first dot when it comes before the segment.
-    cursorStartFragment = vPreviousFragment + normalize(previousToStart) * pixelsPerUnit * (cursorLength - previousLength);
+    cursorStartFragment = vPreviousFragment + normalize(data.previousToStart) * data.pixelsPerUnit * (cursorLength - previousLength);
     if (length(gl_FragCoord.xy - cursorStartFragment) < cursorWidth) {
       return 1.;
     }
@@ -214,13 +218,13 @@ float dashCoversFragment(
   vec2 cursorEndFragment;
   if (startLength < cursorEndLength && cursorEndLength < endLength) {
     // Handle the second dot when it lies on the segment.
-    cursorEndFragment = vStartFragment + normalize(startToEnd) * pixelsPerUnit * (cursorEndLength - startLength);
+    cursorEndFragment = vStartFragment + normalize(data.startToEnd) * data.pixelsPerUnit * (cursorEndLength - startLength);
     if (length(gl_FragCoord.xy - cursorEndFragment) < cursorWidth) {
       return 1.;
     }
   } else if (previousLength < cursorEndLength && cursorEndLength < startLength) {
     // Handle the second dot when it comes before the segment.
-    cursorEndFragment = vPreviousFragment + normalize(previousToStart) * pixelsPerUnit * (cursorEndLength - previousLength);
+    cursorEndFragment = vPreviousFragment + normalize(data.previousToStart) * data.pixelsPerUnit * (cursorEndLength - previousLength);
     if (length(gl_FragCoord.xy - cursorEndFragment) < cursorWidth) {
       return 1.;
     }
@@ -232,7 +236,7 @@ float dashCoversFragment(
     && segmentIntersectsFragment(vStartFragment, vEndFragment, cursorEndFragment) > 0.
     && dot(cursorEndFragment - gl_FragCoord.xy, cursorStartFragment - gl_FragCoord.xy) < 0.
   ) {
-    if (length(startToEndNormal) < cursorWidth) {
+    if (length(data.startToEndNormal) < cursorWidth) {
       return 1.;
     }
   }
@@ -243,23 +247,23 @@ float dashCoversFragment(
     && segmentIntersectsFragment(vPreviousFragment, vStartFragment, cursorEndFragment) > 0.
     && dot(cursorEndFragment - gl_FragCoord.xy, cursorStartFragment - gl_FragCoord.xy) < 0.
   ) {
-    if (length(previousToStartNormal) < cursorWidth) {
+    if (length(data.previousToStartNormal) < cursorWidth) {
       return 1.;
     }
   }
 
   // The first cursor is on the segment and the second hasn't yet reached its start. Color
   // the fragments between the start and the first cursor.
-  vec2 projectedFragment = vStartFragment + startToEndProjection;
+  vec2 projectedFragment = vStartFragment + data.startToEndProjection;
   if (
     segmentIntersectsFragment(vStartFragment, vEndFragment, cursorStartFragment) > 0.
     && segmentIntersectsFragment(vStartFragment, vEndFragment, cursorEndFragment) == 0.
   ) {
     if (
       dot(vStartFragment - projectedFragment, cursorStartFragment - projectedFragment) < 0.
-      || length(startToFrag) < cursorWidth
+      || length(data.startToFrag) < cursorWidth
     ) {
-      if (length(startToEndNormal) < cursorWidth) {
+      if (length(data.startToEndNormal) < cursorWidth) {
         return 1.;
       }
     }
@@ -270,11 +274,10 @@ float dashCoversFragment(
   if (
     segmentIntersectsFragment(vStartFragment, vEndFragment, cursorStartFragment) > 0.
     && segmentIntersectsFragment(vStartFragment, vEndFragment, cursorEndFragment) == 0.
-    && length(cursorEndFragment - vPreviousFragment) < length(previousToStartProjection)
-    && length(previousToStartProjection) < length(vStartFragment - vPreviousFragment)
+    && length(cursorEndFragment - vPreviousFragment) < length(data.previousToStartProjection)
+    && length(data.previousToStartProjection) < length(vStartFragment - vPreviousFragment)
   ) {
-    if (length(previousToStartNormal) < cursorWidth) {
-      gl_FragColor = vec4(1., 1., 1., 1.);
+    if (length(data.previousToStartNormal) < cursorWidth) {
       return 1.;
     }
   }
@@ -286,11 +289,10 @@ float dashCoversFragment(
     && fragmentLength > cursorEndLength
   ) {
     if (
-      length(startToEndProjection) < length(startToEnd)
-      || length(endToFrag) < cursorWidth
+      length(data.startToEndProjection) < length(data.startToEnd)
+      || length(data.endToFrag) < cursorWidth
     ) {
-      if (length(startToEndNormal) < cursorWidth) {
-        gl_FragColor = vec4(1., 1., 1., 1.);
+      if (length(data.startToEndNormal) < cursorWidth) {
         return 1.;
       }
     }
@@ -392,7 +394,8 @@ void main() {
 
 
     // Handle dashes.
-    float cursorWidth = 5.;
+    float cursorWidth = pixelWidth / 2.;
+    // float cursorWidth = 5.;
     float cursorLength = dashOffset + dashLength;
     float cursorEndLength = dashOffset;
     float fragmentLength = fragmentProportion * totalLength;
@@ -401,161 +404,86 @@ void main() {
     float dashLengthDivision = (fragmentLength - modDashOffset) / dashLength;
     float dashLengthQuotient;
     float dashLengthFraction = modf(dashLengthDivision, dashLengthQuotient);
+    float coveredByDash = 0.;
+
+    DashCoversFragmentData dashCoversFragmentData;
+    dashCoversFragmentData.totalLength = totalLength;
+    dashCoversFragmentData.fragmentProportion = fragmentProportion;
+    dashCoversFragmentData.previousToStart = previousToStart;
+    dashCoversFragmentData.pixelsPerUnit = pixelsPerUnit;
+    dashCoversFragmentData.startToEnd = startToEnd;
+    dashCoversFragmentData.startToEndNormal = startToEndNormal;
+    dashCoversFragmentData.previousToStartNormal = previousToStartNormal;
+    dashCoversFragmentData.startToEndProjection = startToEndProjection;
+    dashCoversFragmentData.startToFrag = startToFrag;
+    dashCoversFragmentData.previousToStartProjection = previousToStartProjection;
+    dashCoversFragmentData.endToFrag = endToFrag;
+
     if (dashLengthDivision < 0.) {
-      float coveredByDash = dashCoversFragment(
+      // This fragment is near the start of the line.
+      coveredByDash += dashCoversFragment(
         cursorWidth,
         modDashOffset - dashLength,
         0.,
-        totalLength,
-        fragmentProportion,
-        previousToStart,
-        pixelsPerUnit,
-        startToEnd,
-        startToEndNormal,
-        previousToStartNormal,
-        startToEndProjection,
-        startToFrag,
-        previousToStartProjection,
-        endToFrag
+        dashCoversFragmentData
       );
-      if (coveredByDash > 0.) {
-        gl_FragColor = vec4(1., 1., 1., 1.);
-        return;
-      }
     }
     if (mod(dashLengthQuotient, 2.) == 0.) {
-      float coveredByDash = dashCoversFragment(
+      // This fragment's projection is within a dash.
+      coveredByDash += dashCoversFragment(
         cursorWidth,
-        modDashOffset + dashLength * (dashLengthQuotient + 1.), // 0.1 + 0.4 * (0 + 1) = 0.5
-        modDashOffset + dashLengthQuotient * dashLength,        // 0.1 + 0 * 0.4 = 0.1
-        totalLength,
-        fragmentProportion,
-        previousToStart,
-        pixelsPerUnit,
-        startToEnd,
-        startToEndNormal,
-        previousToStartNormal,
-        startToEndProjection,
-        startToFrag,
-        previousToStartProjection,
-        endToFrag
+        modDashOffset + dashLength * (dashLengthQuotient + 1.),
+        modDashOffset + dashLengthQuotient * dashLength,
+        dashCoversFragmentData
       );
-      if (coveredByDash > 0.) {
-        gl_FragColor = vec4(1., 1., 1., 1.);
-        return;
-      }
     } else {
-      float coveredByPreviousDash = dashCoversFragment(
+      // This fragment's projection is not within a dash, but it
+      // may be covered by the next or previous dash's cap.
+      coveredByDash += dashCoversFragment(
         cursorWidth,
         modDashOffset + dashLengthQuotient * dashLength,
         modDashOffset + dashLength * (dashLengthQuotient - 1.),
-        totalLength,
-        fragmentProportion,
-        previousToStart,
-        pixelsPerUnit,
-        startToEnd,
-        startToEndNormal,
-        previousToStartNormal,
-        startToEndProjection,
-        startToFrag,
-        previousToStartProjection,
-        endToFrag
+        dashCoversFragmentData
       );
-      float coveredByNextDash = dashCoversFragment(
+      coveredByDash += dashCoversFragment(
         cursorWidth,
         modDashOffset + dashLengthQuotient * dashLength + dashLength + dashLength,
         modDashOffset + dashLengthQuotient * dashLength + dashLength,
-        totalLength,
-        fragmentProportion,
-        previousToStart,
-        pixelsPerUnit,
-        startToEnd,
-        startToEndNormal,
-        previousToStartNormal,
-        startToEndProjection,
-        startToFrag,
-        previousToStartProjection,
-        endToFrag
+        dashCoversFragmentData
       );
-      if (coveredByPreviousDash > 0.) {
-        gl_FragColor = vec4(1., 1., 1., 1.);
-        return;
-      }
-      if (coveredByNextDash > 0.) {
-        gl_FragColor = vec4(1., 1., 1., 1.);
-        return;
-      }
     }
 
-    float coveredByDash = dashCoversFragment(
-      cursorWidth,
-      cursorLength,
-      cursorEndLength,
-      totalLength,
-      fragmentProportion,
-      previousToStart,
-      pixelsPerUnit,
-      startToEnd,
-      startToEndNormal,
-      previousToStartNormal,
-      startToEndProjection,
-      startToFrag,
-      previousToStartProjection,
-      endToFrag
-    );
-    if (coveredByDash > 0.) {
-      gl_FragColor = vec4(1., 1., 1., 1.);
-      return;
+    if (coveredByDash == 0.) {
+      discard;
     }
 
-    coveredByDash = dashCoversFragment(
-      cursorWidth,
-      cursorLength + 2. * dashLength,
-      cursorEndLength + 2. * dashLength,
-      totalLength,
-      fragmentProportion,
-      previousToStart,
-      pixelsPerUnit,
-      startToEnd,
-      startToEndNormal,
-      previousToStartNormal,
-      startToEndProjection,
-      startToFrag,
-      previousToStartProjection,
-      endToFrag
-    );
-    if (coveredByDash > 0.) {
-      gl_FragColor = vec4(1., 1., 1., 1.);
-      return;
-    }
+    // vec4 innerColor = vec4(0., 0., 0., 1.);
+    //
+    // if (
+    //   dot(startToEndProjection, startToEnd) > 0.
+    //   && length(startToEndProjection) < length(startToEnd)
+    //   && length(startToEndNormal) < cursorWidth
+    // ) {
+    //   // Cover the start to end segment.
+    //   gl_FragColor = innerColor;
+    // } else if (
+    //   length(previousToStartNormal) < cursorWidth
+    //   && (length(previousToStartProjection) < length(previousToStart) || length(startToEndNormal) < cursorWidth && length(gl_FragCoord.xy - vStartFragment) < cursorWidth)
+    // ) {
+    //   // Cover the previous to start segment.
+    //   gl_FragColor = innerColor;
+    // } else if (
+    //   length(gl_FragCoord.xy - vStartFragment) < cursorWidth
+    //   || length(gl_FragCoord.xy - vEndFragment) < cursorWidth
+    // ) {
+    //   // Cover start and end caps.
+    //   gl_FragColor = innerColor;
+    // } else {
+    //   vec3 red = vec3(1., 0., 0.);
+    //   vec3 blue = vec3(0., 0., 1.);
+    //   gl_FragColor = vec4(mix(red, blue, fragmentLength / totalLength), opacity);
+    // }
 
-    vec4 innerColor = vec4(0., 0., 0., 1.);
-
-    if (
-      dot(startToEndProjection, startToEnd) > 0.
-      && length(startToEndProjection) < length(startToEnd)
-      && length(startToEndNormal) < cursorWidth
-    ) {
-      // Cover the start to end segment.
-      gl_FragColor = innerColor;
-    } else if (
-      length(previousToStartNormal) < cursorWidth
-      && (length(previousToStartProjection) < length(previousToStart) || length(startToEndNormal) < cursorWidth && length(gl_FragCoord.xy - vStartFragment) < cursorWidth)
-    ) {
-      // Cover the previous to start segment.
-      gl_FragColor = innerColor;
-    } else if (
-      length(gl_FragCoord.xy - vStartFragment) < cursorWidth
-      || length(gl_FragCoord.xy - vEndFragment) < cursorWidth
-    ) {
-      // Cover start and end caps.
-      gl_FragColor = innerColor;
-    } else {
-      vec3 red = vec3(1., 0., 0.);
-      vec3 blue = vec3(0., 0., 1.);
-      gl_FragColor = vec4(mix(red, blue, fragmentLength / totalLength), opacity);
-    }
-
-    // gl_FragColor = vec4(color, opacity);
+    gl_FragColor = vec4(color, opacity);
     ${ShaderChunk.fog_fragment}
 }`;
