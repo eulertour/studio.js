@@ -399,12 +399,16 @@ void main() {
     float cursorLength = dashOffset + dashLength;
     float cursorEndLength = dashOffset;
     float fragmentLength = fragmentProportion * totalLength;
-    float modDashOffset = mod(dashOffset, 2. * dashLength);
 
+    float modDashOffset = mod(dashOffset, 2. * dashLength);
     float dashLengthDivision = (fragmentLength - modDashOffset) / dashLength;
     float dashLengthQuotient;
     float dashLengthFraction = modf(dashLengthDivision, dashLengthQuotient);
-    float coveredByDash = 0.;
+
+    float modDashOffset2 = mod(dashOffset, dashLength);
+    float dashLengthDivision2 = (fragmentLength - modDashOffset2) / dashLength;
+    float dashLengthQuotient2;
+    float dashLengthFraction2 = modf(dashLengthDivision2, dashLengthQuotient2);
 
     DashCoversFragmentData dashCoversFragmentData;
     dashCoversFragmentData.totalLength = totalLength;
@@ -419,16 +423,18 @@ void main() {
     dashCoversFragmentData.previousToStartProjection = previousToStartProjection;
     dashCoversFragmentData.endToFrag = endToFrag;
 
-    if (dashLengthDivision < 0.) {
+    float red = 0.;
+    float coveredByDash = 0.;
+    float x = dashCoversFragment(
+      cursorWidth,
+      modDashOffset - dashLength,
+      0.,
+      dashCoversFragmentData
+    );
+    if (x > 0.) {
       // This fragment is near the start of the line.
-      coveredByDash += dashCoversFragment(
-        cursorWidth,
-        modDashOffset - dashLength,
-        0.,
-        dashCoversFragmentData
-      );
-    }
-    if (mod(dashLengthQuotient, 2.) == 0.) {
+      coveredByDash += 1.;
+    } else if (mod(dashLengthQuotient, 2.) == 0.) {
       // This fragment's projection is within a dash.
       coveredByDash += dashCoversFragment(
         cursorWidth,
@@ -436,6 +442,7 @@ void main() {
         modDashOffset + dashLengthQuotient * dashLength,
         dashCoversFragmentData
       );
+      coveredByDash += gt(dashLengthDivision, 0.);
     } else {
       // This fragment's projection is not within a dash, but it
       // may be covered by the next or previous dash's cap.
