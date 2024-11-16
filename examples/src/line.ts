@@ -28,7 +28,8 @@ export default class Example {
 		// scene.add(this.polyline);
 
 		this.square = new Geometry.Square(2, {
-			strokeDashLength: 0.4,
+			dashed: true,
+			strokeDashLength: 0.2,
 			// strokeDashOffset: 0.0,
 		});
 		scene.add(this.square);

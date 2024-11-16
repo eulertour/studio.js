@@ -72,6 +72,7 @@ declare namespace Geometry {
         strokeWidth?: number;
         strokeDashLength?: number;
         strokeDashOffset?: number;
+        dashed?: boolean;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -112,6 +113,7 @@ declare namespace Geometry {
             strokeWidth: number;
             strokeDashLength: number;
             strokeDashOffset: number;
+            dashed: boolean;
         };
         static defaultConfig(): {};
         reshape(...args: any[]): void;
@@ -325,6 +327,7 @@ declare namespace Utils {
         strokeWidth?: number;
         strokeDashLength?: number;
         strokeDashOffset?: number;
+        dashed?: boolean;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -687,6 +690,7 @@ declare namespace Diagram {
         strokeWidth?: number;
         strokeDashLength?: number;
         strokeDashOffset?: number;
+        dashed?: boolean;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -859,6 +863,7 @@ declare namespace Graphing {
         strokeWidth?: number;
         strokeDashLength?: number;
         strokeDashOffset?: number;
+        dashed?: boolean;
     };
     type LineAttributes = {
         start: THREE.Vector3;
@@ -899,6 +904,7 @@ declare namespace Graphing {
             strokeWidth: number;
             strokeDashLength: number;
             strokeDashOffset: number;
+            dashed: boolean;
         };
         static defaultConfig(): {};
         reshape(...args: any[]): void;
@@ -1168,6 +1174,7 @@ declare namespace Text {
         strokeWidth?: number;
         strokeDashLength?: number;
         strokeDashOffset?: number;
+        dashed?: boolean;
     };
     type LineAttributes = {
         start: THREE.Vector3;

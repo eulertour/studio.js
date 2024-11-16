@@ -730,6 +730,7 @@ abstract class Shape extends THREE_2.Group {
         strokeWidth: number;
         strokeDashLength: number;
         strokeDashOffset: number;
+        dashed: boolean;
     };
     // (undocumented)
     dispose(): this;

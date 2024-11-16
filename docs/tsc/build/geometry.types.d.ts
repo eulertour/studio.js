@@ -11,6 +11,7 @@ type Style = {
     strokeWidth?: number;
     strokeDashLength?: number;
     strokeDashOffset?: number;
+    dashed?: boolean;
 };
 type LineAttributes = {
     start: THREE.Vector3;

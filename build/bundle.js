@@ -55508,6 +55508,9 @@ class Shape extends Group {
         if (config.stroke !== false) {
             const strokeGeometry = new MeshLineGeometry(config.arrow);
             strokeGeometry.setPoints(points);
+            if (config.dashed && config.strokeDashLength === 0) {
+                config.strokeDashLength = 0.4;
+            }
             const strokeMaterial = new MeshLineMaterial({
                 color: config.strokeColor,
                 opacity: config.strokeOpacity,
@@ -55531,6 +55534,7 @@ class Shape extends Group {
             strokeWidth: 4,
             strokeDashLength: 0,
             strokeDashOffset: 0,
+            dashed: false,
         };
     }
     static defaultConfig() {

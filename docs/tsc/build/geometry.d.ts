@@ -24,6 +24,7 @@ declare abstract class Shape extends THREE.Group {
         strokeWidth: number;
         strokeDashLength: number;
         strokeDashOffset: number;
+        dashed: boolean;
     };
     static defaultConfig(): {};
     reshape(...args: any[]): void;
