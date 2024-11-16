@@ -338,6 +338,7 @@ void main() {
       vBeforeArrow == 0.
       && vArrow == 0.
       && vNextFragment != vEndFragment
+      && dashLength == 0.
       && segmentCoversFragment(
         halfWidthSquared,
         endToNext,
