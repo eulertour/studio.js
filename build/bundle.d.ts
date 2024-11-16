@@ -62,6 +62,8 @@ declare namespace Geometry {
     class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
         constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
         get points(): THREE.Vector3[];
+        get dashOffset(): number;
+        set dashOffset(dashOffset: number);
     }
     type Transform = {
         position: THREE.Vector3;
@@ -138,8 +140,6 @@ declare namespace Geometry {
         getCloneAttributes(): Array<unknown>;
         getStyle(): Style;
         setStyle(style: Style): void;
-        get dashOffset(): number;
-        set dashOffset(dashOffset: number);
         getTransform(): Transform;
         setTransform(transform: Transform): void;
         dispose(): this;
@@ -863,6 +863,8 @@ declare namespace Graphing {
     class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
         constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
         get points(): THREE.Vector3[];
+        get dashOffset(): number;
+        set dashOffset(dashOffset: number);
     }
     type Transform = {
         position: THREE.Vector3;
@@ -939,8 +941,6 @@ declare namespace Graphing {
         getCloneAttributes(): Array<unknown>;
         getStyle(): Style;
         setStyle(style: Style): void;
-        get dashOffset(): number;
-        set dashOffset(dashOffset: number);
         getTransform(): Transform;
         setTransform(transform: Transform): void;
         dispose(): this;

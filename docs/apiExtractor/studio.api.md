@@ -458,6 +458,9 @@ class Line extends Shape {
 class MeshLine extends THREE_2.Mesh<MeshLineGeometry, MeshLineMaterial> {
     constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
     // (undocumented)
+    get dashOffset(): number;
+    set dashOffset(dashOffset: number);
+    // (undocumented)
     get points(): THREE_2.Vector3[];
 }
 
@@ -719,9 +722,6 @@ abstract class Shape extends THREE_2.Group {
     curve(curveIndex: number, worldTransform?: boolean): THREE_2.Vector3[];
     // (undocumented)
     curveEndIndices: Array<Array<number>>;
-    // (undocumented)
-    get dashOffset(): number;
-    set dashOffset(dashOffset: number);
     // (undocumented)
     static defaultConfig(): {};
     // (undocumented)

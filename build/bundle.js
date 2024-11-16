@@ -55457,6 +55457,12 @@ class MeshLine extends Mesh {
     get points() {
         return this.geometry.points;
     }
+    get dashOffset() {
+        return this.material.uniforms.dashOffset.value;
+    }
+    set dashOffset(dashOffset) {
+        this.material.uniforms.dashOffset.value = dashOffset;
+    }
 }
 
 const PIXELS_TO_COORDS = 8 / 450;
@@ -55640,12 +55646,6 @@ class Shape extends Group {
         if (strokeDashOffset !== undefined) {
             this.stroke.material.dashOffset = strokeDashOffset;
         }
-    }
-    get dashOffset() {
-        return this.stroke.material.uniforms.dashOffset.value;
-    }
-    set dashOffset(dashOffset) {
-        this.stroke.material.uniforms.dashOffset.value = dashOffset;
     }
     getTransform() {
         return {
@@ -98540,9 +98540,9 @@ class Rotate extends Animation {
 }
 class SetScale extends Animation {
     constructor(object, factor, config) {
-        super((elapsedTime, deltaTime) => {
+        super((elapsedTime) => {
             const scale = MathUtils.lerp(this.initialScale, factor, elapsedTime);
-            object.scale.set(scale, scale, scale);
+            object.scale.set(scale, scale);
         }, Object.assign({ object, reveal: true }, config));
     }
     setUp() {

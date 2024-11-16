@@ -195,9 +195,9 @@ class SetScale extends Animation {
 
 	constructor(object, factor, config?) {
 		super(
-			(elapsedTime, deltaTime) => {
+			(elapsedTime) => {
 				const scale = THREE.MathUtils.lerp(this.initialScale, factor, elapsedTime);
-				object.scale.set(scale, scale, scale);
+				object.scale.set(scale, scale);
 			},
 			{ object, reveal: true, ...config },
 		);

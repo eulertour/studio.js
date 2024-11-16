@@ -225,14 +225,6 @@ abstract class Shape extends THREE.Group {
 		}
 	}
 
-	get dashOffset() {
-		return this.stroke.material.uniforms.dashOffset.value;
-	}
-
-	set dashOffset(dashOffset: number) {
-		this.stroke.material.uniforms.dashOffset.value = dashOffset;
-	}
-
 	getTransform(): Transform {
 		return {
 			position: this.position.clone(),

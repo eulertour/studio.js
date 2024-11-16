@@ -45,8 +45,6 @@ declare abstract class Shape extends THREE.Group {
     getCloneAttributes(): Array<unknown>;
     getStyle(): Style;
     setStyle(style: Style): void;
-    get dashOffset(): number;
-    set dashOffset(dashOffset: number);
     getTransform(): Transform;
     setTransform(transform: Transform): void;
     dispose(): this;

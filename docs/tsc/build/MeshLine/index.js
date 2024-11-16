@@ -11,6 +11,12 @@ class MeshLine extends THREE.Mesh {
     get points() {
         return this.geometry.points;
     }
+    get dashOffset() {
+        return this.material.uniforms.dashOffset.value;
+    }
+    set dashOffset(dashOffset) {
+        this.material.uniforms.dashOffset.value = dashOffset;
+    }
 }
 export { MeshLine, MeshLineGeometry, MeshLineMaterial };
 //# sourceMappingURL=index.js.map

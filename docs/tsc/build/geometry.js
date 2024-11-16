@@ -172,12 +172,6 @@ class Shape extends THREE.Group {
             this.stroke.material.dashOffset = strokeDashOffset;
         }
     }
-    get dashOffset() {
-        return this.stroke.material.uniforms.dashOffset.value;
-    }
-    set dashOffset(dashOffset) {
-        this.stroke.material.uniforms.dashOffset.value = dashOffset;
-    }
     getTransform() {
         return {
             position: this.position.clone(),

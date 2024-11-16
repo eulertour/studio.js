@@ -131,9 +131,9 @@ class Rotate extends Animation {
 }
 class SetScale extends Animation {
     constructor(object, factor, config) {
-        super((elapsedTime, deltaTime) => {
+        super((elapsedTime) => {
             const scale = THREE.MathUtils.lerp(this.initialScale, factor, elapsedTime);
-            object.scale.set(scale, scale, scale);
+            object.scale.set(scale, scale);
         }, Object.assign({ object, reveal: true }, config));
     }
     setUp() {
