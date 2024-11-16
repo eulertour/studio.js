@@ -720,6 +720,9 @@ abstract class Shape extends THREE_2.Group {
     // (undocumented)
     curveEndIndices: Array<Array<number>>;
     // (undocumented)
+    get dashOffset(): number;
+    set dashOffset(dashOffset: number);
+    // (undocumented)
     static defaultConfig(): {};
     // (undocumented)
     static defaultStyle(): {

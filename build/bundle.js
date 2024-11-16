@@ -55362,24 +55362,6 @@ class MeshLineMaterial extends ShaderMaterial {
                     this.uniforms.drawRange.value = value;
                 },
             },
-            dashLength: {
-                enumerable: true,
-                get: () => {
-                    return this.uniforms.dashLength.value;
-                },
-                set: (value) => {
-                    this.uniforms.dashLength.value = value;
-                },
-            },
-            dashOffset: {
-                enumerable: true,
-                get: () => {
-                    return this.uniforms.dashOffset.value;
-                },
-                set: (value) => {
-                    this.uniforms.dashOffset.value = value;
-                },
-            },
         });
         parameters.color = new Color().set(parameters.color).convertLinearToSRGB();
         this.setValues(parameters);
@@ -55401,6 +55383,18 @@ class MeshLineMaterial extends ShaderMaterial {
     }
     set totalLength(value) {
         this.uniforms.totalLength.value = value;
+    }
+    get dashLength() {
+        return this.uniforms.dashLength.value;
+    }
+    set dashLength(value) {
+        this.uniforms.dashLength.value = value;
+    }
+    get dashOffset() {
+        return this.uniforms.dashOffset.value;
+    }
+    set dashOffset(value) {
+        this.uniforms.dashOffset.value = value;
     }
 }
 
@@ -55636,6 +55630,22 @@ class Shape extends Group {
         if (strokeWidth !== undefined) {
             this.stroke.material.width = strokeWidth;
         }
+        if (style.dashed === true) {
+            this.stroke.material.dashLength = 0.4;
+        }
+        const { strokeDashLength, strokeDashOffset } = style;
+        if (strokeDashLength !== undefined) {
+            this.stroke.material.dashLength = strokeDashLength;
+        }
+        if (strokeDashOffset !== undefined) {
+            this.stroke.material.dashOffset = strokeDashOffset;
+        }
+    }
+    get dashOffset() {
+        return this.stroke.material.uniforms.dashOffset.value;
+    }
+    set dashOffset(dashOffset) {
+        this.stroke.material.uniforms.dashOffset.value = dashOffset;
     }
     getTransform() {
         return {

@@ -17,4 +17,8 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
     set width(value: number);
     get totalLength(): any;
     set totalLength(value: any);
+    get dashLength(): any;
+    set dashLength(value: any);
+    get dashOffset(): any;
+    set dashOffset(value: any);
 }

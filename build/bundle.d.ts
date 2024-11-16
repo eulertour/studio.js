@@ -54,6 +54,10 @@ declare namespace Geometry {
         set width(value: number);
         get totalLength(): any;
         set totalLength(value: any);
+        get dashLength(): any;
+        set dashLength(value: any);
+        get dashOffset(): any;
+        set dashOffset(value: any);
     }
     class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
         constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
@@ -134,6 +138,8 @@ declare namespace Geometry {
         getCloneAttributes(): Array<unknown>;
         getStyle(): Style;
         setStyle(style: Style): void;
+        get dashOffset(): number;
+        set dashOffset(dashOffset: number);
         getTransform(): Transform;
         setTransform(transform: Transform): void;
         dispose(): this;
@@ -495,6 +501,10 @@ declare class MeshLineMaterial extends THREE.ShaderMaterial {
     set width(value: number);
     get totalLength(): any;
     set totalLength(value: any);
+    get dashLength(): any;
+    set dashLength(value: any);
+    get dashOffset(): any;
+    set dashOffset(value: any);
 }
 declare namespace Animation {
     class Animation {
@@ -845,6 +855,10 @@ declare namespace Graphing {
         set width(value: number);
         get totalLength(): any;
         set totalLength(value: any);
+        get dashLength(): any;
+        set dashLength(value: any);
+        get dashOffset(): any;
+        set dashOffset(value: any);
     }
     class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
         constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
@@ -925,6 +939,8 @@ declare namespace Graphing {
         getCloneAttributes(): Array<unknown>;
         getStyle(): Style;
         setStyle(style: Style): void;
+        get dashOffset(): number;
+        set dashOffset(dashOffset: number);
         getTransform(): Transform;
         setTransform(transform: Transform): void;
         dispose(): this;

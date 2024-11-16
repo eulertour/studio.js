@@ -7019,6 +7019,36 @@
                   "isAbstract": false
                 },
                 {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Geometry.Shape#dashOffset:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "get dashOffset(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";\n\nset dashOffset(dashOffset: number);"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "dashOffset",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
                   "kind": "Method",
                   "canonicalReference": "@eulertour/studio!Geometry.Shape.defaultConfig:member(1)",
                   "docComment": "",

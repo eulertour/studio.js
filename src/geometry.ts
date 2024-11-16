@@ -212,6 +212,25 @@ abstract class Shape extends THREE.Group {
 		if (strokeWidth !== undefined) {
 			this.stroke.material.width = strokeWidth;
 		}
+
+		if (style.dashed === true) {
+			this.stroke.material.dashLength = 0.4;
+		}
+		const { strokeDashLength, strokeDashOffset } = style;
+		if (strokeDashLength !== undefined) {
+			this.stroke.material.dashLength = strokeDashLength;
+		}
+		if (strokeDashOffset !== undefined) {
+			this.stroke.material.dashOffset = strokeDashOffset;
+		}
+	}
+
+	get dashOffset() {
+		return this.stroke.material.uniforms.dashOffset.value;
+	}
+
+	set dashOffset(dashOffset: number) {
+		this.stroke.material.uniforms.dashOffset.value = dashOffset;
 	}
 
 	getTransform(): Transform {
