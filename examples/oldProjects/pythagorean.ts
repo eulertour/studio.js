@@ -1,4 +1,12 @@
-import { Animation, Diagram, Geometry, StudioScene, THREE, Text, Utils } from '@eulertour/studio';
+import {
+	Animation,
+	Diagram,
+	Geometry,
+	type StudioScene,
+	THREE,
+	Text,
+	Utils,
+} from '@eulertour/studio';
 
 export default class Example implements StudioScene {
 	s = 4.8;
@@ -97,13 +105,13 @@ export default class Example implements StudioScene {
 		// this.diagram = new THREE.Group();
 		// this.diagram.add(...this.triangles, this.indicator, indicatorLabel);
 
-		let triangleB = this.triangleLabels[1].children[0].children[0].children[0].children[0];
-		let indicatorB = indicatorLabel.children[0].children[2].children[0];
+		const triangleB = this.triangleLabels[1].children[0].children[0].children[0].children[0];
+		const indicatorB = indicatorLabel.children[0].children[2].children[0];
 
-		let triangleA = this.triangleLabels[2].children[2].children[0].children[0].children[0];
-		let indicatorA = indicatorLabel.children[0].children[0].children[0];
+		const triangleA = this.triangleLabels[2].children[2].children[0].children[0].children[0];
+		const indicatorA = indicatorLabel.children[0].children[0].children[0];
 
-		let indicatorPlus = indicatorLabel.children[0].children[1].children[0];
+		const indicatorPlus = indicatorLabel.children[0].children[1].children[0];
 		this.animations.push(
 			{
 				animations: [

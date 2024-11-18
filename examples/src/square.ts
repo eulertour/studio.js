@@ -1,4 +1,4 @@
-import { Geometry, StudioScene, THREE } from '@eulertour/studio';
+import { Geometry, type StudioScene, type THREE } from '@eulertour/studio';
 
 export default class Example implements StudioScene {
 	constructor(

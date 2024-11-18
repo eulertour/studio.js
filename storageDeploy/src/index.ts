@@ -1,5 +1,5 @@
 import { readdir } from 'node:fs/promises';
-import { basename, dirname, join, relative } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { setTimeout } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import { type AppOptions, initializeApp } from 'firebase-admin/app';
@@ -7,7 +7,7 @@ import { getStorage } from 'firebase-admin/storage';
 
 const MODE = process.argv.join(' ').includes('--production')
 	? 'production'
-	: process.env['FIREBASE_STORAGE_EMULATOR_HOST']
+	: process.env.FIREBASE_STORAGE_EMULATOR_HOST
 		? 'emulator'
 		: 'staging';
 
@@ -15,7 +15,7 @@ let ready = false;
 
 while (MODE === 'emulator' && !ready) {
 	const response = await fetch('http://localhost:9199').catch(() => null);
-	ready = response?.status == 501;
+	ready = response?.status === 501;
 
 	console.log('Waiting for Firebase to come online...');
 	await setTimeout(500);
@@ -24,7 +24,7 @@ while (MODE === 'emulator' && !ready) {
 console.log('Firebase online');
 
 const config: AppOptions =
-	MODE == 'staging' || MODE == 'emulator'
+	MODE === 'staging' || MODE === 'emulator'
 		? {
 				projectId: 'euler-studio-staging',
 				storageBucket: 'euler-studio-staging.appspot.com',

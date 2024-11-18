@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Polyline } from './geometry';
-import { Style } from './geometry.types';
+import type { Style } from './geometry.types';
 
 type CurveAttributes = {
 	equation: () => void;
@@ -19,7 +19,7 @@ export class Curve extends Polyline {
 	}
 
 	static defaultConfig() {
-		return { ...super.defaultConfig() };
+		return { ...Polyline.defaultConfig() };
 	}
 
 	getClassConfig() {

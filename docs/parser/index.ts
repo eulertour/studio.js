@@ -1,15 +1,21 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import {
-	ApiClass,
-	ApiDeclaredItem,
-	ApiDocumentedItem,
+	type ApiClass,
+	type ApiDeclaredItem,
+	type ApiDocumentedItem,
 	ApiItemKind,
 	ApiModel,
 	ApiNamespace,
-	ApiPackage,
-	ApiParameterListMixin,
+	type ApiPackage,
+	type ApiParameterListMixin,
 } from '@microsoft/api-extractor-model';
-import { DocComment, DocExcerpt, DocNode, DocNodeKind, DocSection } from '@microsoft/tsdoc';
+import {
+	type DocComment,
+	DocExcerpt,
+	type DocNode,
+	DocNodeKind,
+	type DocSection,
+} from '@microsoft/tsdoc';
 import colors from 'colors';
 import * as Studio from '../../build/bundle.js';
 
@@ -22,7 +28,7 @@ const outputJsonPath = process.argv[3];
 
 // https://github.com/microsoft/tsdoc/blob/main/api-demo/src/Formatter.ts#L7-L18
 const renderDocNode = (docNode: DocNode): string => {
-	let result: string = '';
+	let result = '';
 	if (docNode) {
 		if (docNode instanceof DocExcerpt) {
 			result += docNode.content.toString();
@@ -40,16 +46,16 @@ const parseDocComment = (docComment: DocComment) => {
 		exampleTags: Array<string>;
 	};
 
-	let parsedComment: ParsedComment = {
+	const parsedComment: ParsedComment = {
 		summary: '',
 		exampleTags: [],
 	};
 
-	for (let child of docComment.getChildNodes()) {
+	for (const child of docComment.getChildNodes()) {
 		if (child.kind === DocNodeKind.Section) {
 			parsedComment.summary = renderDocNode(child);
 		} else if (child.kind === DocNodeKind.Block) {
-			let sectionChild = child.getChildNodes()[1] as DocSection;
+			const sectionChild = child.getChildNodes()[1] as DocSection;
 			const tagContent = renderDocNode(sectionChild);
 			parsedComment.exampleTags.push(tagContent);
 		}
@@ -59,7 +65,7 @@ const parseDocComment = (docComment: DocComment) => {
 };
 
 const dumpTSDocTree = (docNode: DocNode, indent: string): void => {
-	let dumpText: string = '';
+	let dumpText = '';
 	if (docNode instanceof DocExcerpt) {
 		const content: string = docNode.content.toString();
 		dumpText +=
@@ -69,7 +75,7 @@ const dumpTSDocTree = (docNode: DocNode, indent: string): void => {
 	}
 
 	for (const child of docNode.getChildNodes()) {
-		dumpTSDocTree(child, indent + '  ');
+		dumpTSDocTree(child, `${indent}  `);
 	}
 };
 

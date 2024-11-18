@@ -1,4 +1,4 @@
-import { Geometry, StudioScene, THREE, Text, component } from '@eulertour/studio';
+import { Geometry, type StudioScene, type THREE, Text, component } from '@eulertour/studio';
 
 class LabeledSquare extends Geometry.Square {
 	labelScale = 0.65;
