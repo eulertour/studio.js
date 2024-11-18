@@ -398,8 +398,7 @@ void main() {
 
       float modDashOffset2 = mod(dashOffset, 2. * dashLength);
       float dashLengthDivision2 = (fragmentLength + 2. * dashLength - modDashOffset2) / dashLength;
-      float dashLengthQuotient2;
-      float dashLengthFraction2 = modf(dashLengthDivision2, dashLengthQuotient2);
+      float dashLengthQuotient2 = floor(dashLengthDivision2);
       float previousDashEndLength = dashLengthQuotient2 * dashLength - (2. * dashLength - modDashOffset2);
 
       DashCoversFragmentData dashCoversFragmentData;
