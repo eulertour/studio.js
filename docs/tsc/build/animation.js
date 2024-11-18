@@ -1,14 +1,14 @@
 import * as THREE from 'three';
 import { clamp, getBoundingBoxCenter } from './utils';
-let sigmoid = (x) => 1 / (1 + Math.exp(-x));
-let smooth = (t) => {
-    let error = sigmoid(-10 / 2);
+const sigmoid = (x) => 1 / (1 + Math.exp(-x));
+const smooth = (t) => {
+    const error = sigmoid(-10 / 2);
     return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
 };
 const modulate = (t, dt) => {
-    let tSeconds = t;
-    let modulatedDelta = smooth(tSeconds) - smooth(t - dt);
-    let modulatedTime = smooth(tSeconds);
+    const tSeconds = t;
+    const modulatedDelta = smooth(tSeconds) - smooth(t - dt);
+    const modulatedTime = smooth(tSeconds);
     return [modulatedTime, modulatedDelta];
 };
 class Animation {
@@ -41,6 +41,7 @@ class Animation {
         }
     }
     update(worldTime) {
+        var _a, _b;
         if (worldTime <= this.startTime || this.finished) {
             return;
         }
@@ -53,7 +54,7 @@ class Animation {
                 const parent = this.parent;
                 !parent.children.includes(this.object) && parent.add(this.object);
             }
-            this.beforeFunc && this.beforeFunc();
+            (_a = this.beforeFunc) === null || _a === void 0 ? void 0 : _a.call(this);
             this.setUp();
             deltaTime = worldTime - this.startTime;
         }
@@ -69,7 +70,7 @@ class Animation {
         if (worldTime >= this.endTime) {
             this.finished = true;
             this.tearDown();
-            this.afterFunc && this.afterFunc();
+            (_b = this.afterFunc) === null || _b === void 0 ? void 0 : _b.call(this);
         }
     }
     addBefore(before) {

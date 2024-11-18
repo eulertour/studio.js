@@ -49,7 +49,8 @@ THREE.Object3D.prototype.moveBelow = function (target, distance) {
     return Utils.moveBelow(target, this, distance);
 };
 THREE.Object3D.prototype.addComponent = function (name, child) {
-    if (this.components && this.components.has(name)) {
+    var _a;
+    if ((_a = this.components) === null || _a === void 0 ? void 0 : _a.has(name)) {
         throw new Error(`Failed to add component ${name}: Component or attribute already exists`);
     }
     if (!this.components) {
@@ -65,7 +66,7 @@ THREE.Object3D.prototype.addComponent = function (name, child) {
     });
     return this;
 };
-THREE.Object3D.prototype.updateComponent = function (name, child) {
+THREE.Object3D.prototype.updateComponent = (name, child) => {
     throw new Error('Not implemented');
 };
 THREE.Object3D.prototype.removeComponent = function (name) {
@@ -126,11 +127,13 @@ THREE.Object3D.prototype.hideAncestors = function (config) {
     return this;
 };
 THREE.Object3D.prototype.revealComponents = function () {
-    this.components && this.components.forEach((child) => this.add(child));
+    var _a;
+    (_a = this.components) === null || _a === void 0 ? void 0 : _a.forEach((child) => this.add(child));
     return this;
 };
 THREE.Object3D.prototype.hideComponents = function () {
-    this.components && this.components.forEach((child) => this.remove(child));
+    var _a;
+    (_a = this.components) === null || _a === void 0 ? void 0 : _a.forEach((child) => this.remove(child));
     return this;
 };
 THREE.Object3D.prototype.traverseComponents = function (f, config) {
@@ -246,7 +249,7 @@ THREE.Object3D.prototype.recenter = function (globalPosition) {
     });
     return this;
 };
-THREE.Object3D.prototype.reorient = function () { };
+THREE.Object3D.prototype.reorient = () => { };
 import { setCameraDimensions, setCanvasViewport } from './MeshLine/MeshLineMaterial';
 import * as Animation from './animation';
 import * as Constants from './constants';

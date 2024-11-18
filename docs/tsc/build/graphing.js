@@ -10,7 +10,7 @@ export class Curve extends Polyline {
         this.equation = equation;
     }
     static defaultConfig() {
-        return Object.assign({}, super.defaultConfig());
+        return Object.assign({}, Polyline.defaultConfig());
     }
     getClassConfig() {
         return {};

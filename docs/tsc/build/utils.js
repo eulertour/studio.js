@@ -37,7 +37,11 @@ const setupCanvas = (canvas, config = {
     coordinateHeight: 8,
     viewport: undefined,
 }) => {
-    let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
+    let aspectRatio;
+    let pixelWidth;
+    let pixelHeight;
+    let coordinateWidth;
+    let coordinateHeight;
     if (isWidthSetup(config)) {
         aspectRatio = config.aspectRatio;
         pixelWidth = config.pixelWidth;
@@ -108,7 +112,7 @@ const vspace = (group, distanceBetween) => {
     if (group.children.length < 2)
         return group;
     const defaultBuffer = 0.2;
-    let defaultSpacing = -Infinity;
+    let defaultSpacing = Number.NEGATIVE_INFINITY;
     for (let i = 1; i < group.children.length; i++) {
         const previous = group.children[i - 1];
         const previousLowest = furthestInDirection(previous, DOWN);
@@ -146,8 +150,8 @@ const furthestInDirection = (object, direction, exclude = []) => {
     object.updateWorldMatrix(true, true);
     // const unitDirection = convertWorldDirectionToObjectSpace(direction, object);
     const unitDirection = direction.clone().normalize();
-    let maxDot = -Infinity;
-    let maxDotPoint = unitDirection.clone().negate().setLength(Infinity);
+    let maxDot = Number.NEGATIVE_INFINITY;
+    const maxDotPoint = unitDirection.clone().negate().setLength(Number.POSITIVE_INFINITY);
     object.traverse((obj) => {
         var _a, _b;
         let exclusionCheckObj = obj;
@@ -155,7 +159,7 @@ const furthestInDirection = (object, direction, exclude = []) => {
             if (excludeArray.includes(exclusionCheckObj)) {
                 return;
             }
-            else if (exclusionCheckObj === object) {
+            if (exclusionCheckObj === object) {
                 break;
             }
             exclusionCheckObj = exclusionCheckObj.parent;
@@ -243,7 +247,7 @@ const moveNextTo = (target, object, direction, buffer = 0.2) => {
         .subVectors(objectSpaceDirectionFinal, objectSpaceDirectionInitial)
         .negate();
     const objectSpaceFurthestInDirection = furthestInDirection(object, objectSpaceDirection, target);
-    let objectSpaceOffsetInitial = new THREE.Vector3();
+    const objectSpaceOffsetInitial = new THREE.Vector3();
     const objectSpaceOffsetFinalLength = objectSpaceDirection
         .clone()
         .normalize()
@@ -370,7 +374,7 @@ const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
 };
 const intersectionsBetween = (shape1, shape2) => {
     var _a, _b, _c, _d;
-    let intersections = [];
+    const intersections = [];
     shape1.updateMatrixWorld();
     shape2.updateMatrixWorld();
     for (let i = 0; i < shape1.points.length - 1; i++) {
@@ -391,9 +395,7 @@ const positiveAngleTo = (a, b) => {
     if (Math.sign(normal.dot(b)) < 0) {
         return 2 * Math.PI - angle;
     }
-    else {
-        return angle;
-    }
+    return angle;
 };
 class ShapeFromCurves {
     constructor() {
@@ -438,7 +440,7 @@ class ShapeFromCurves {
         }
         const vectorFromPointToIndex = (point, index) => {
             var _a;
-            let endPoint = (_a = shape.points.at(index)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
+            const endPoint = (_a = shape.points.at(index)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
             if (endPoint === undefined) {
                 return new THREE.Vector3();
             }
@@ -531,11 +533,11 @@ class ShapeFromCurves {
                 i += increment;
                 continue;
             }
-            let pointsToCheck = this.points.slice(0, this.points.length - 1);
+            const pointsToCheck = this.points.slice(0, this.points.length - 1);
             if (until !== undefined) {
                 pointsToCheck.push(until);
             }
-            for (let point of pointsToCheck) {
+            for (const point of pointsToCheck) {
                 newSegment.closestPointToPoint(point, true, this.segmentClosestToPoint);
                 const distanceToSegment = this.pointToSegment
                     .subVectors(this.segmentClosestToPoint, point)

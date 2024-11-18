@@ -14,10 +14,7 @@ class Text extends THREE.Group {
             if (match === null) {
                 break;
             }
-            svgString =
-                svgString.slice(0, match.index) +
-                    'd="M0,0"' +
-                    svgString.slice(match.index + emptyPath.length);
+            svgString = `${svgString.slice(0, match.index)}d="M0,0"${svgString.slice(match.index + emptyPath.length)}`;
         }
         const parseData = new SVGLoader().parse(svgString);
         const group = new THREE.Group();
@@ -131,7 +128,7 @@ class Text extends THREE.Group {
         };
     }
     static fromJson(json) {
-        const text = this.fromAttributes(json.attributes);
+        const text = Text.fromAttributes(json.attributes);
         if (json.transform !== undefined) {
             text.setTransform(json.transform);
         }

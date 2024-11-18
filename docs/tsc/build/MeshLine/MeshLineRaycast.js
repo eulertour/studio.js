@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 export default function MeshLineRaycast(raycaster, intersects) {
+    var _a;
     const nextIntersectIndex = intersects.length;
     const inverseMatrix = new THREE.Matrix4();
     const ray = new THREE.Ray();
@@ -16,11 +17,11 @@ export default function MeshLineRaycast(raycaster, intersects) {
         const indices = index.array;
         const positions = attributes.position.array;
         const endPositions = attributes.endPosition.array;
-        let minDistance = Infinity;
+        let minDistance = Number.POSITIVE_INFINITY;
         for (let i = 0; i < positions.length; i += 12) {
             vStart.fromArray(positions, i);
             vEnd.fromArray(endPositions, i);
-            const precision = raycaster.params.Line.threshold;
+            const precision = (_a = raycaster.params.Line) === null || _a === void 0 ? void 0 : _a.threshold;
             const precisionSq = precision * precision;
             const distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment);
             if (distSq > precisionSq)

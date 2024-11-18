@@ -51,7 +51,6 @@ class CongruentLine extends THREE.Group {
         this.position.copy(center);
         const segmentVector = new THREE.Vector3().subVectors(end, start);
         this.rotation.z = Math.atan2(segmentVector.y, segmentVector.x);
-        return this;
     }
 }
 class CongruentAngle extends THREE.Group {

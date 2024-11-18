@@ -99,9 +99,7 @@ class Shape extends THREE.Group {
         if (worldTransform) {
             return curvePoints.map((p) => p.clone().applyMatrix4(this.matrixWorld));
         }
-        else {
-            return curvePoints;
-        }
+        return curvePoints;
     }
     get numCurves() {
         return this.curveEndIndices.length;
@@ -205,7 +203,7 @@ class Shape extends THREE.Group {
         }
         const segment = new THREE.Line3();
         const closestPointOnSegment = new THREE.Vector3();
-        let minDistance = Infinity;
+        let minDistance = Number.POSITIVE_INFINITY;
         for (let i = 0; i < this.points.length - 1; i++) {
             segment.set(this.points[i], this.points[i + 1]);
             const distance = segment
@@ -234,7 +232,7 @@ class Line extends Shape {
         this.curveEndIndices = [[0, 1]];
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { arrow: false });
+        return Object.assign(Object.assign({}, Shape.defaultConfig()), { arrow: false });
     }
     static centeredLine(start, end, config = {}) {
         const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
@@ -298,7 +296,7 @@ class Polyline extends Shape {
         this.copyStrokeFill(new Polyline(points, config));
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { fill: false });
+        return Object.assign(Object.assign({}, Shape.defaultConfig()), { fill: false });
     }
     getClassConfig() {
         return {};
@@ -354,7 +352,7 @@ class Arc extends Shape {
         }
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { closed: false, fill: false });
+        return Object.assign(Object.assign({}, Shape.defaultConfig()), { closed: false, fill: false });
     }
     reshape(radius = 1, angle = Math.PI / 2, config = {}) {
         this.radius = radius;
@@ -413,7 +411,7 @@ class Circle extends Arc {
         this.copyStrokeFill(new Circle(radius, config));
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { fill: true });
+        return Object.assign(Object.assign({}, Arc.defaultConfig()), { fill: true });
     }
     getCloneAttributes() {
         return [this.radius];
@@ -451,7 +449,7 @@ class Point extends Circle {
         this.position.set(position.x, position.y, 0);
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { radius: 0.08 });
+        return Object.assign(Object.assign({}, Circle.defaultConfig()), { radius: 0.08 });
     }
     getAttributes() {
         return {

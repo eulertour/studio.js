@@ -13,7 +13,7 @@ export class SceneController {
         this.fps = 60;
         this.timePrecision = 1e5;
         this.startTime = 0;
-        this.endTime = Infinity;
+        this.endTime = Number.POSITIVE_INFINITY;
         this.loopAnimations = [];
         this.finishedAnimationCount = 0;
         this.three = THREE;
@@ -47,55 +47,55 @@ export class SceneController {
         }
     }
     tick(deltaTime, render = true) {
+        var _a, _b, _c;
         if (this.firstFrame) {
             this.deltaTime = 0;
             this.elapsedTime = 0;
             this.firstFrame = false;
             let currentEndTime = 0;
-            this.userScene.animations &&
-                this.userScene.animations.forEach((o) => {
-                    if (Array.isArray(o)) {
-                        o = { animations: o };
-                    }
-                    if (o instanceof Animation) {
-                        const animation = o;
+            (_a = this.userScene.animations) === null || _a === void 0 ? void 0 : _a.forEach((o) => {
+                if (Array.isArray(o)) {
+                    o = { animations: o };
+                }
+                if (o instanceof Animation) {
+                    const animation = o;
+                    animation.startTime = currentEndTime;
+                    animation.endTime = currentEndTime + animation.runTime;
+                    animation.parent = animation.parent || this.userScene.scene;
+                    animation.before && animation.addBefore(animation.before);
+                    animation.after && animation.addAfter(animation.after);
+                    this.loopAnimations.push(animation);
+                    currentEndTime = animation.endTime;
+                }
+                else if (typeof o === 'object') {
+                    const animationArray = o.animations;
+                    const runTime = o.runTime || 1;
+                    const scale = o.scale || 1;
+                    const before = o.before || (() => { });
+                    const after = o.after || (() => { });
+                    for (let i = 0; i < animationArray.length; i++) {
+                        const animation = animationArray[i];
                         animation.startTime = currentEndTime;
-                        animation.endTime = currentEndTime + animation.runTime;
-                        animation.parent = animation.parent || this.userScene.scene;
+                        animation.endTime = currentEndTime + runTime * scale;
+                        animation.runTime = runTime;
+                        animation.scale = scale;
                         animation.before && animation.addBefore(animation.before);
                         animation.after && animation.addAfter(animation.after);
-                        this.loopAnimations.push(animation);
-                        currentEndTime = animation.endTime;
+                        animation.parent = animation.parent || o.parent || this.userScene.scene;
+                        this.loopAnimations.push(...animationArray);
                     }
-                    else if (typeof o === 'object') {
-                        const animationArray = o.animations;
-                        const runTime = o.runTime || 1;
-                        const scale = o.scale || 1;
-                        const before = o.before || (() => { });
-                        const after = o.after || (() => { });
-                        for (let i = 0; i < animationArray.length; i++) {
-                            const animation = animationArray[i];
-                            animation.startTime = currentEndTime;
-                            animation.endTime = currentEndTime + runTime * scale;
-                            animation.runTime = runTime;
-                            animation.scale = scale;
-                            animation.before && animation.addBefore(animation.before);
-                            animation.after && animation.addAfter(animation.after);
-                            animation.parent = animation.parent || o.parent || this.userScene.scene;
-                            this.loopAnimations.push(...animationArray);
-                        }
-                        animationArray.at(0).addBefore(before);
-                        animationArray.at(-1).addAfter(after);
-                        currentEndTime = animationArray[0].endTime;
-                    }
-                });
+                    animationArray.at(0).addBefore(before);
+                    animationArray.at(-1).addAfter(after);
+                    currentEndTime = animationArray[0].endTime;
+                }
+            });
         }
         else {
             this.deltaTime = deltaTime;
             this.elapsedTime += deltaTime;
         }
         try {
-            this.userScene.update && this.userScene.update(this.deltaTime, this.elapsedTime);
+            (_c = (_b = this.userScene).update) === null || _c === void 0 ? void 0 : _c.call(_b, this.deltaTime, this.elapsedTime);
             const roundedTime = Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
             this.loopAnimations.forEach((animation) => animation.update(roundedTime));
         }

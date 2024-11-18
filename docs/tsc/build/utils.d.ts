@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import * as Geometry from './geometry';
-import { Style } from './geometry.types';
+import type { Style } from './geometry.types';
 declare const BUFFER = 0.5;
 declare const ORIGIN: Readonly<THREE.Vector3>;
 declare const RIGHT: Readonly<THREE.Vector3>;

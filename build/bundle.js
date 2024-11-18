@@ -51917,17 +51917,15 @@ class SVGLoader extends Loader {
 	}
 
 	load(url, onLoad, onProgress, onError) {
-		const scope = this;
-
-		const loader = new FileLoader(scope.manager);
-		loader.setPath(scope.path);
-		loader.setRequestHeader(scope.requestHeader);
-		loader.setWithCredentials(scope.withCredentials);
+		const loader = new FileLoader(this.manager);
+		loader.setPath(this.path);
+		loader.setRequestHeader(this.requestHeader);
+		loader.setWithCredentials(this.withCredentials);
 		loader.load(
 			url,
-			function (text) {
+			(text) => {
 				try {
-					onLoad(scope.parse(text));
+					onLoad(this.parse(text));
 				} catch (e) {
 					if (onError) {
 						onError(e);
@@ -51935,7 +51933,7 @@ class SVGLoader extends Loader {
 						console.error(e);
 					}
 
-					scope.manager.itemError(url);
+					this.manager.itemError(url);
 				}
 			},
 			onProgress,
@@ -52007,7 +52005,7 @@ class SVGLoader extends Loader {
 					isDefsNode = true;
 					break;
 
-				case 'use':
+				case 'use': {
 					style = parseStyle(node, style);
 
 					const href = node.getAttributeNS('http://www.w3.org/1999/xlink', 'href') || '';
@@ -52016,10 +52014,11 @@ class SVGLoader extends Loader {
 					if (usedNode) {
 						parseNode(usedNode, style);
 					} else {
-						console.warn("SVGLoader: 'use node' references non-existent node id: " + usedNodeId);
+						console.warn(`SVGLoader: 'use node' references non-existent node id: ${usedNodeId}`);
 					}
 
 					break;
+				}
 				// console.log( node );
 			}
 
@@ -52236,7 +52235,7 @@ class SVGLoader extends Loader {
 
 						for (let j = 0, jl = numbers.length; j < jl; j += 7) {
 							// skip command if start point == end point
-							if (numbers[j + 5] == point.x && numbers[j + 6] == point.y) continue;
+							if (numbers[j + 5] === point.x && numbers[j + 6] === point.y) continue;
 
 							const start = point.clone();
 							point.x = numbers[j + 5];
@@ -52408,7 +52407,7 @@ class SVGLoader extends Loader {
 
 						for (let j = 0, jl = numbers.length; j < jl; j += 7) {
 							// skip command if no displacement
-							if (numbers[j + 5] == 0 && numbers[j + 6] == 0) continue;
+							if (numbers[j + 5] === 0 && numbers[j + 6] === 0) continue;
 
 							const start = point.clone();
 							point.x += numbers[j + 5];
@@ -52502,7 +52501,7 @@ class SVGLoader extends Loader {
 			start,
 			end,
 		) {
-			if (rx == 0 || ry == 0) {
+			if (rx === 0 || ry === 0) {
 				// draw a line if either of the radii == 0
 				path.lineTo(end.x, end.y);
 				return;
@@ -52737,14 +52736,14 @@ class SVGLoader extends Loader {
 					.map((i) => i.trim());
 
 				for (let i = 0; i < classSelectors.length; i++) {
-					stylesheetStyles = Object.assign(stylesheetStyles, stylesheets['.' + classSelectors[i]]);
+					stylesheetStyles = Object.assign(stylesheetStyles, stylesheets[`.${classSelectors[i]}`]);
 				}
 			}
 
 			if (node.hasAttribute('id')) {
 				stylesheetStyles = Object.assign(
 					stylesheetStyles,
-					stylesheets['#' + node.getAttribute('id')],
+					stylesheets[`#${node.getAttribute('id')}`],
 				);
 			}
 
@@ -52759,7 +52758,7 @@ class SVGLoader extends Loader {
 
 				if (node.hasAttribute(svgName)) style[jsName] = adjustFunction(node.getAttribute(svgName));
 				if (stylesheetStyles[svgName]) style[jsName] = adjustFunction(stylesheetStyles[svgName]);
-				if (node.style && node.style[svgName]) style[jsName] = adjustFunction(node.style[svgName]);
+				if (node.style?.[svgName]) style[jsName] = adjustFunction(node.style[svgName]);
 			}
 
 			function clamp(v) {
@@ -52795,7 +52794,7 @@ class SVGLoader extends Loader {
 
 		function parseFloats(input, flags, stride) {
 			if (typeof input !== 'string') {
-				throw new TypeError('Invalid input: ' + typeof input);
+				throw new TypeError(`Invalid input: ${typeof input}`);
 			}
 
 			// Character groups
@@ -52818,12 +52817,12 @@ class SVGLoader extends Loader {
 
 			let state = SEP;
 			let seenComma = true;
-			let number = '',
-				exponent = '';
+			let number = '';
+			let exponent = '';
 			const result = [];
 
 			function throwSyntaxError(current, i, partial) {
-				const error = new SyntaxError('Unexpected character "' + current + '" at index ' + i + '.');
+				const error = new SyntaxError(`Unexpected character "${current}" at index ${i}.`);
 				error.partial = partial;
 				throw error;
 			}
@@ -52831,7 +52830,7 @@ class SVGLoader extends Loader {
 			function newNumber() {
 				if (number !== '') {
 					if (exponent === '') result.push(Number(number));
-					else result.push(Number(number) * Math.pow(10, Number(exponent)));
+					else result.push(Number(number) * 10 ** Number(exponent));
 				}
 
 				number = '';
@@ -53046,18 +53045,18 @@ class SVGLoader extends Loader {
 			if (theUnit === 'px' && scope.defaultUnit !== 'px') {
 				// Conversion scale from  pixels to inches, then to default units
 
-				scale = unitConversion['in'][scope.defaultUnit] / scope.defaultDPI;
+				scale = unitConversion.in[scope.defaultUnit] / scope.defaultDPI;
 			} else {
 				scale = unitConversion[theUnit][scope.defaultUnit];
 
 				if (scale < 0) {
 					// Conversion scale to pixels
 
-					scale = unitConversion[theUnit]['in'] * scope.defaultDPI;
+					scale = unitConversion[theUnit].in * scope.defaultDPI;
 				}
 			}
 
-			return scale * parseFloat(string);
+			return scale * Number.parseFloat(string);
 		}
 
 		// Transforms
@@ -53406,7 +53405,11 @@ class SVGLoader extends Loader {
 		// Adapted from: https://www.mpi-hd.mpg.de/personalhomes/globes/3x3/index.html
 		// -> Algorithms for real symmetric matrices -> Analytical (2x2 symmetric)
 		function eigenDecomposition(A, B, C) {
-			let rt1, rt2, cs, sn, t;
+			let rt1;
+			let rt2;
+			let cs;
+			let sn;
+			let t;
 			const sm = A + C;
 			const df = A - C;
 			const rt = Math.sqrt(df * df + 4 * B * B);
@@ -53528,17 +53531,19 @@ class SVGLoader extends Loader {
 				//1. lines are parallel or edges don't intersect
 
 				return null;
-			} else if (nom1 === 0 && denom === 0) {
+			}
+			if (nom1 === 0 && denom === 0) {
 				//2. lines are colinear
 
 				//check if endpoints of edge2 (b0-b1) lies on edge1 (a0-a1)
 				for (let i = 0; i < 2; i++) {
 					classifyPoint(i === 0 ? b0 : b1, a0, a1);
 					//find position of this endpoints relatively to edge1
-					if (classifyResult.loc == IntersectionLocationType.ORIGIN) {
+					if (classifyResult.loc === IntersectionLocationType.ORIGIN) {
 						const point = i === 0 ? b0 : b1;
 						return { x: point.x, y: point.y, t: classifyResult.t };
-					} else if (classifyResult.loc == IntersectionLocationType.BETWEEN) {
+					}
+					if (classifyResult.loc === IntersectionLocationType.BETWEEN) {
 						const x = +(x1 + classifyResult.t * (x2 - x1)).toPrecision(10);
 						const y = +(y1 + classifyResult.t * (y2 - y1)).toPrecision(10);
 						return { x: x, y: y, t: classifyResult.t };
@@ -53546,22 +53551,21 @@ class SVGLoader extends Loader {
 				}
 
 				return null;
-			} else {
-				//3. edges intersect
-
-				for (let i = 0; i < 2; i++) {
-					classifyPoint(i === 0 ? b0 : b1, a0, a1);
-
-					if (classifyResult.loc == IntersectionLocationType.ORIGIN) {
-						const point = i === 0 ? b0 : b1;
-						return { x: point.x, y: point.y, t: classifyResult.t };
-					}
-				}
-
-				const x = +(x1 + t1 * (x2 - x1)).toPrecision(10);
-				const y = +(y1 + t1 * (y2 - y1)).toPrecision(10);
-				return { x: x, y: y, t: t1 };
 			}
+			//3. edges intersect
+
+			for (let i = 0; i < 2; i++) {
+				classifyPoint(i === 0 ? b0 : b1, a0, a1);
+
+				if (classifyResult.loc === IntersectionLocationType.ORIGIN) {
+					const point = i === 0 ? b0 : b1;
+					return { x: point.x, y: point.y, t: classifyResult.t };
+				}
+			}
+
+			const x = +(x1 + t1 * (x2 - x1)).toPrecision(10);
+			const y = +(y1 + t1 * (y2 - y1)).toPrecision(10);
+			return { x: x, y: y, t: t1 };
 		}
 
 		function classifyPoint(p, edgeStart, edgeEnd) {
@@ -53729,11 +53733,12 @@ class SVGLoader extends Loader {
 			stack.push(simplePath.identifier);
 
 			if (_fillRule === 'evenodd') {
-				const isHole = stack.length % 2 === 0 ? true : false;
+				const isHole = stack.length % 2 === 0;
 				const isHoleFor = stack[stack.length - 2];
 
 				return { identifier: simplePath.identifier, isHole: isHole, for: isHoleFor };
-			} else if (_fillRule === 'nonzero') {
+			}
+			if (_fillRule === 'nonzero') {
 				// check if path is a hole by counting the amount of paths with alternating rotations it has to cross.
 				let isHole = true;
 				let isHoleFor = null;
@@ -53752,9 +53757,8 @@ class SVGLoader extends Loader {
 				}
 
 				return { identifier: simplePath.identifier, isHole: isHole, for: isHoleFor };
-			} else {
-				console.warn('fill-rule: "' + _fillRule + '" is currently not implemented.');
 			}
+			console.warn(`fill-rule: "${_fillRule}" is currently not implemented.`);
 		}
 
 		// check for self intersecting paths
@@ -53965,8 +53969,8 @@ class SVGLoader extends Loader {
 		const strokeWidth2 = style.strokeWidth / 2;
 
 		const deltaU = 1 / (numPoints - 1);
-		let u0 = 0,
-			u1;
+		let u0 = 0;
+		let u1;
 
 		let innerSideModified;
 		let joinIsOnLeftSide;
@@ -54091,9 +54095,11 @@ class SVGLoader extends Loader {
 
 							break;
 
+						// biome-ignore lint/complexity/noUselessSwitchCase: readability
 						case 'miter':
+						// biome-ignore lint/complexity/noUselessSwitchCase: readability
 						case 'miter-clip':
-						default:
+						default: {
 							const miterFraction = (strokeWidth2 * style.strokeMiterLimit) / miterLength2;
 
 							if (miterFraction < 1) {
@@ -54102,56 +54108,55 @@ class SVGLoader extends Loader {
 								if (style.strokeLineJoin !== 'miter-clip') {
 									makeSegmentWithBevelJoin(joinIsOnLeftSide, innerSideModified, u1);
 									break;
+								}
+								// Segment triangles
+
+								createSegmentTrianglesWithMiddleSection(joinIsOnLeftSide, innerSideModified);
+
+								// Miter-clip join triangles
+
+								if (joinIsOnLeftSide) {
+									tempV2_6
+										.subVectors(outerPoint, currentPointL)
+										.multiplyScalar(miterFraction)
+										.add(currentPointL);
+									tempV2_7
+										.subVectors(outerPoint, nextPointL)
+										.multiplyScalar(miterFraction)
+										.add(nextPointL);
+
+									addVertex(currentPointL, u1, 0);
+									addVertex(tempV2_6, u1, 0);
+									addVertex(currentPoint, u1, 0.5);
+
+									addVertex(currentPoint, u1, 0.5);
+									addVertex(tempV2_6, u1, 0);
+									addVertex(tempV2_7, u1, 0);
+
+									addVertex(currentPoint, u1, 0.5);
+									addVertex(tempV2_7, u1, 0);
+									addVertex(nextPointL, u1, 0);
 								} else {
-									// Segment triangles
+									tempV2_6
+										.subVectors(outerPoint, currentPointR)
+										.multiplyScalar(miterFraction)
+										.add(currentPointR);
+									tempV2_7
+										.subVectors(outerPoint, nextPointR)
+										.multiplyScalar(miterFraction)
+										.add(nextPointR);
 
-									createSegmentTrianglesWithMiddleSection(joinIsOnLeftSide, innerSideModified);
+									addVertex(currentPointR, u1, 1);
+									addVertex(tempV2_6, u1, 1);
+									addVertex(currentPoint, u1, 0.5);
 
-									// Miter-clip join triangles
+									addVertex(currentPoint, u1, 0.5);
+									addVertex(tempV2_6, u1, 1);
+									addVertex(tempV2_7, u1, 1);
 
-									if (joinIsOnLeftSide) {
-										tempV2_6
-											.subVectors(outerPoint, currentPointL)
-											.multiplyScalar(miterFraction)
-											.add(currentPointL);
-										tempV2_7
-											.subVectors(outerPoint, nextPointL)
-											.multiplyScalar(miterFraction)
-											.add(nextPointL);
-
-										addVertex(currentPointL, u1, 0);
-										addVertex(tempV2_6, u1, 0);
-										addVertex(currentPoint, u1, 0.5);
-
-										addVertex(currentPoint, u1, 0.5);
-										addVertex(tempV2_6, u1, 0);
-										addVertex(tempV2_7, u1, 0);
-
-										addVertex(currentPoint, u1, 0.5);
-										addVertex(tempV2_7, u1, 0);
-										addVertex(nextPointL, u1, 0);
-									} else {
-										tempV2_6
-											.subVectors(outerPoint, currentPointR)
-											.multiplyScalar(miterFraction)
-											.add(currentPointR);
-										tempV2_7
-											.subVectors(outerPoint, nextPointR)
-											.multiplyScalar(miterFraction)
-											.add(nextPointR);
-
-										addVertex(currentPointR, u1, 1);
-										addVertex(tempV2_6, u1, 1);
-										addVertex(currentPoint, u1, 0.5);
-
-										addVertex(currentPoint, u1, 0.5);
-										addVertex(tempV2_6, u1, 1);
-										addVertex(tempV2_7, u1, 1);
-
-										addVertex(currentPoint, u1, 0.5);
-										addVertex(tempV2_7, u1, 1);
-										addVertex(nextPointR, u1, 1);
-									}
+									addVertex(currentPoint, u1, 0.5);
+									addVertex(tempV2_7, u1, 1);
+									addVertex(nextPointR, u1, 1);
 								}
 							} else {
 								// Miter join segment triangles
@@ -54208,6 +54213,7 @@ class SVGLoader extends Loader {
 							}
 
 							break;
+						}
 					}
 				} else {
 					// The segment triangles are generated here when two consecutive points are collinear
@@ -54651,7 +54657,7 @@ void main() {
   gl_Position.xy += (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
 
   ${ShaderChunk.logdepthbuf_vertex}
-  ${ShaderChunk.fog_vertex && /*glsl*/ `vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );`}
+  ${ShaderChunk.fog_vertex && /*glsl*/ 'vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );'}
   ${ShaderChunk.fog_vertex}
 }`;
 const MESHLINE_FRAG = /*glsl*/ `
@@ -55069,7 +55075,7 @@ class MeshLineGeometry extends BufferGeometry {
             __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_makeNewBuffers).call(this, pointCount);
         }
         __classPrivateFieldSet(this, _MeshLineGeometry_previousPointCount, pointCount, "f");
-        let lengths = new Float32Array(this.points.length);
+        const lengths = new Float32Array(this.points.length);
         lengths[0] = 0;
         const firstPoint = points.at(0);
         const lastPoint = points.at(-1);
@@ -55398,6 +55404,7 @@ class MeshLineMaterial extends ShaderMaterial {
 }
 
 function MeshLineRaycast(raycaster, intersects) {
+    var _a;
     const nextIntersectIndex = intersects.length;
     const inverseMatrix = new Matrix4();
     const ray = new Ray();
@@ -55414,11 +55421,11 @@ function MeshLineRaycast(raycaster, intersects) {
         index.array;
         const positions = attributes.position.array;
         const endPositions = attributes.endPosition.array;
-        let minDistance = Infinity;
+        let minDistance = Number.POSITIVE_INFINITY;
         for (let i = 0; i < positions.length; i += 12) {
             vStart.fromArray(positions, i);
             vEnd.fromArray(endPositions, i);
-            const precision = raycaster.params.Line.threshold;
+            const precision = (_a = raycaster.params.Line) === null || _a === void 0 ? void 0 : _a.threshold;
             const precisionSq = precision * precision;
             const distSq = ray.distanceSqToSegment(vStart, vEnd, interRay, interSegment);
             if (distSq > precisionSq)
@@ -55573,9 +55580,7 @@ class Shape extends Group {
         if (worldTransform) {
             return curvePoints.map((p) => p.clone().applyMatrix4(this.matrixWorld));
         }
-        else {
-            return curvePoints;
-        }
+        return curvePoints;
     }
     get numCurves() {
         return this.curveEndIndices.length;
@@ -55679,7 +55684,7 @@ class Shape extends Group {
         }
         const segment = new Line3();
         const closestPointOnSegment = new Vector3();
-        let minDistance = Infinity;
+        let minDistance = Number.POSITIVE_INFINITY;
         for (let i = 0; i < this.points.length - 1; i++) {
             segment.set(this.points[i], this.points[i + 1]);
             const distance = segment
@@ -55708,7 +55713,7 @@ class Line extends Shape {
         this.curveEndIndices = [[0, 1]];
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { arrow: false });
+        return Object.assign(Object.assign({}, Shape.defaultConfig()), { arrow: false });
     }
     static centeredLine(start, end, config = {}) {
         const center = new Vector3().addVectors(start, end).divideScalar(2);
@@ -55772,7 +55777,7 @@ class Polyline extends Shape {
         this.copyStrokeFill(new Polyline(points, config));
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { fill: false });
+        return Object.assign(Object.assign({}, Shape.defaultConfig()), { fill: false });
     }
     getClassConfig() {
         return {};
@@ -55828,7 +55833,7 @@ class Arc extends Shape {
         }
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { closed: false, fill: false });
+        return Object.assign(Object.assign({}, Shape.defaultConfig()), { closed: false, fill: false });
     }
     reshape(radius = 1, angle = Math.PI / 2, config = {}) {
         this.radius = radius;
@@ -55887,7 +55892,7 @@ class Circle extends Arc {
         this.copyStrokeFill(new Circle(radius, config));
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { fill: true });
+        return Object.assign(Object.assign({}, Arc.defaultConfig()), { fill: true });
     }
     getCloneAttributes() {
         return [this.radius];
@@ -55925,7 +55930,7 @@ class Point extends Circle {
         this.position.set(position.x, position.y, 0);
     }
     static defaultConfig() {
-        return Object.assign(Object.assign({}, super.defaultConfig()), { radius: 0.08 });
+        return Object.assign(Object.assign({}, Circle.defaultConfig()), { radius: 0.08 });
     }
     getAttributes() {
         return {
@@ -97683,10 +97688,7 @@ class Text extends Group {
             if (match === null) {
                 break;
             }
-            svgString =
-                svgString.slice(0, match.index) +
-                    'd="M0,0"' +
-                    svgString.slice(match.index + emptyPath.length);
+            svgString = `${svgString.slice(0, match.index)}d="M0,0"${svgString.slice(match.index + emptyPath.length)}`;
         }
         const parseData = new SVGLoader().parse(svgString);
         const group = new Group();
@@ -97800,7 +97802,7 @@ class Text extends Group {
         };
     }
     static fromJson(json) {
-        const text = this.fromAttributes(json.attributes);
+        const text = Text.fromAttributes(json.attributes);
         if (json.transform !== undefined) {
             text.setTransform(json.transform);
         }
@@ -97857,7 +97859,11 @@ const setupCanvas = (canvas, config = {
     coordinateHeight: 8,
     viewport: undefined,
 }) => {
-    let aspectRatio, pixelWidth, pixelHeight, coordinateWidth, coordinateHeight;
+    let aspectRatio;
+    let pixelWidth;
+    let pixelHeight;
+    let coordinateWidth;
+    let coordinateHeight;
     if (isWidthSetup(config)) {
         aspectRatio = config.aspectRatio;
         pixelWidth = config.pixelWidth;
@@ -97928,7 +97934,7 @@ const vspace = (group, distanceBetween) => {
     if (group.children.length < 2)
         return group;
     const defaultBuffer = 0.2;
-    let defaultSpacing = -Infinity;
+    let defaultSpacing = Number.NEGATIVE_INFINITY;
     for (let i = 1; i < group.children.length; i++) {
         const previous = group.children[i - 1];
         const previousLowest = furthestInDirection(previous, DOWN);
@@ -97966,8 +97972,8 @@ const furthestInDirection = (object, direction, exclude = []) => {
     object.updateWorldMatrix(true, true);
     // const unitDirection = convertWorldDirectionToObjectSpace(direction, object);
     const unitDirection = direction.clone().normalize();
-    let maxDot = -Infinity;
-    let maxDotPoint = unitDirection.clone().negate().setLength(Infinity);
+    let maxDot = Number.NEGATIVE_INFINITY;
+    const maxDotPoint = unitDirection.clone().negate().setLength(Number.POSITIVE_INFINITY);
     object.traverse((obj) => {
         var _a, _b;
         let exclusionCheckObj = obj;
@@ -97975,7 +97981,7 @@ const furthestInDirection = (object, direction, exclude = []) => {
             if (excludeArray.includes(exclusionCheckObj)) {
                 return;
             }
-            else if (exclusionCheckObj === object) {
+            if (exclusionCheckObj === object) {
                 break;
             }
             exclusionCheckObj = exclusionCheckObj.parent;
@@ -98063,7 +98069,7 @@ const moveNextTo = (target, object, direction, buffer = 0.2) => {
         .subVectors(objectSpaceDirectionFinal, objectSpaceDirectionInitial)
         .negate();
     const objectSpaceFurthestInDirection = furthestInDirection(object, objectSpaceDirection, target);
-    let objectSpaceOffsetInitial = new Vector3();
+    const objectSpaceOffsetInitial = new Vector3();
     const objectSpaceOffsetFinalLength = objectSpaceDirection
         .clone()
         .normalize()
@@ -98190,7 +98196,7 @@ const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
 };
 const intersectionsBetween = (shape1, shape2) => {
     var _a, _b, _c, _d;
-    let intersections = [];
+    const intersections = [];
     shape1.updateMatrixWorld();
     shape2.updateMatrixWorld();
     for (let i = 0; i < shape1.points.length - 1; i++) {
@@ -98211,9 +98217,7 @@ const positiveAngleTo = (a, b) => {
     if (Math.sign(normal.dot(b)) < 0) {
         return 2 * Math.PI - angle;
     }
-    else {
-        return angle;
-    }
+    return angle;
 };
 class ShapeFromCurves {
     constructor() {
@@ -98258,7 +98262,7 @@ class ShapeFromCurves {
         }
         const vectorFromPointToIndex = (point, index) => {
             var _a;
-            let endPoint = (_a = shape.points.at(index)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
+            const endPoint = (_a = shape.points.at(index)) === null || _a === void 0 ? void 0 : _a.clone().applyMatrix4(shape.matrixWorld);
             if (endPoint === undefined) {
                 return new Vector3();
             }
@@ -98351,11 +98355,11 @@ class ShapeFromCurves {
                 i += increment;
                 continue;
             }
-            let pointsToCheck = this.points.slice(0, this.points.length - 1);
+            const pointsToCheck = this.points.slice(0, this.points.length - 1);
             if (until !== undefined) {
                 pointsToCheck.push(until);
             }
-            for (let point of pointsToCheck) {
+            for (const point of pointsToCheck) {
                 newSegment.closestPointToPoint(point, true, this.segmentClosestToPoint);
                 const distanceToSegment = this.pointToSegment
                     .subVectors(this.segmentClosestToPoint, point)
@@ -98408,15 +98412,15 @@ var utils = /*#__PURE__*/Object.freeze({
 	vstack: vstack
 });
 
-let sigmoid = (x) => 1 / (1 + Math.exp(-x));
-let smooth = (t) => {
-    let error = sigmoid(-10 / 2);
+const sigmoid = (x) => 1 / (1 + Math.exp(-x));
+const smooth = (t) => {
+    const error = sigmoid(-10 / 2);
     return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
 };
 const modulate = (t, dt) => {
-    let tSeconds = t;
-    let modulatedDelta = smooth(tSeconds) - smooth(t - dt);
-    let modulatedTime = smooth(tSeconds);
+    const tSeconds = t;
+    const modulatedDelta = smooth(tSeconds) - smooth(t - dt);
+    const modulatedTime = smooth(tSeconds);
     return [modulatedTime, modulatedDelta];
 };
 class Animation {
@@ -98449,6 +98453,7 @@ class Animation {
         }
     }
     update(worldTime) {
+        var _a, _b;
         if (worldTime <= this.startTime || this.finished) {
             return;
         }
@@ -98461,7 +98466,7 @@ class Animation {
                 const parent = this.parent;
                 !parent.children.includes(this.object) && parent.add(this.object);
             }
-            this.beforeFunc && this.beforeFunc();
+            (_a = this.beforeFunc) === null || _a === void 0 ? void 0 : _a.call(this);
             this.setUp();
             deltaTime = worldTime - this.startTime;
         }
@@ -98477,7 +98482,7 @@ class Animation {
         if (worldTime >= this.endTime) {
             this.finished = true;
             this.tearDown();
-            this.afterFunc && this.afterFunc();
+            (_b = this.afterFunc) === null || _b === void 0 ? void 0 : _b.call(this);
         }
     }
     addBefore(before) {
@@ -98774,7 +98779,6 @@ class CongruentLine extends Group {
         this.position.copy(center);
         const segmentVector = new Vector3().subVectors(end, start);
         this.rotation.z = Math.atan2(segmentVector.y, segmentVector.x);
-        return this;
     }
 }
 class CongruentAngle extends Group {
@@ -98883,7 +98887,7 @@ class Curve extends Polyline {
         this.equation = equation;
     }
     static defaultConfig() {
-        return Object.assign({}, super.defaultConfig());
+        return Object.assign({}, Polyline.defaultConfig());
     }
     getClassConfig() {
         return {};
@@ -98906,7 +98910,7 @@ class SceneController {
         this.fps = 60;
         this.timePrecision = 1e5;
         this.startTime = 0;
-        this.endTime = Infinity;
+        this.endTime = Number.POSITIVE_INFINITY;
         this.loopAnimations = [];
         this.finishedAnimationCount = 0;
         this.three = THREE;
@@ -98940,55 +98944,55 @@ class SceneController {
         }
     }
     tick(deltaTime, render = true) {
+        var _a, _b, _c;
         if (this.firstFrame) {
             this.deltaTime = 0;
             this.elapsedTime = 0;
             this.firstFrame = false;
             let currentEndTime = 0;
-            this.userScene.animations &&
-                this.userScene.animations.forEach((o) => {
-                    if (Array.isArray(o)) {
-                        o = { animations: o };
-                    }
-                    if (o instanceof Animation) {
-                        const animation = o;
+            (_a = this.userScene.animations) === null || _a === void 0 ? void 0 : _a.forEach((o) => {
+                if (Array.isArray(o)) {
+                    o = { animations: o };
+                }
+                if (o instanceof Animation) {
+                    const animation = o;
+                    animation.startTime = currentEndTime;
+                    animation.endTime = currentEndTime + animation.runTime;
+                    animation.parent = animation.parent || this.userScene.scene;
+                    animation.before && animation.addBefore(animation.before);
+                    animation.after && animation.addAfter(animation.after);
+                    this.loopAnimations.push(animation);
+                    currentEndTime = animation.endTime;
+                }
+                else if (typeof o === 'object') {
+                    const animationArray = o.animations;
+                    const runTime = o.runTime || 1;
+                    const scale = o.scale || 1;
+                    const before = o.before || (() => { });
+                    const after = o.after || (() => { });
+                    for (let i = 0; i < animationArray.length; i++) {
+                        const animation = animationArray[i];
                         animation.startTime = currentEndTime;
-                        animation.endTime = currentEndTime + animation.runTime;
-                        animation.parent = animation.parent || this.userScene.scene;
+                        animation.endTime = currentEndTime + runTime * scale;
+                        animation.runTime = runTime;
+                        animation.scale = scale;
                         animation.before && animation.addBefore(animation.before);
                         animation.after && animation.addAfter(animation.after);
-                        this.loopAnimations.push(animation);
-                        currentEndTime = animation.endTime;
+                        animation.parent = animation.parent || o.parent || this.userScene.scene;
+                        this.loopAnimations.push(...animationArray);
                     }
-                    else if (typeof o === 'object') {
-                        const animationArray = o.animations;
-                        const runTime = o.runTime || 1;
-                        const scale = o.scale || 1;
-                        const before = o.before || (() => { });
-                        const after = o.after || (() => { });
-                        for (let i = 0; i < animationArray.length; i++) {
-                            const animation = animationArray[i];
-                            animation.startTime = currentEndTime;
-                            animation.endTime = currentEndTime + runTime * scale;
-                            animation.runTime = runTime;
-                            animation.scale = scale;
-                            animation.before && animation.addBefore(animation.before);
-                            animation.after && animation.addAfter(animation.after);
-                            animation.parent = animation.parent || o.parent || this.userScene.scene;
-                            this.loopAnimations.push(...animationArray);
-                        }
-                        animationArray.at(0).addBefore(before);
-                        animationArray.at(-1).addAfter(after);
-                        currentEndTime = animationArray[0].endTime;
-                    }
-                });
+                    animationArray.at(0).addBefore(before);
+                    animationArray.at(-1).addAfter(after);
+                    currentEndTime = animationArray[0].endTime;
+                }
+            });
         }
         else {
             this.deltaTime = deltaTime;
             this.elapsedTime += deltaTime;
         }
         try {
-            this.userScene.update && this.userScene.update(this.deltaTime, this.elapsedTime);
+            (_c = (_b = this.userScene).update) === null || _c === void 0 ? void 0 : _c.call(_b, this.deltaTime, this.elapsedTime);
             const roundedTime = Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
             this.loopAnimations.forEach((animation) => animation.update(roundedTime));
         }
@@ -99090,7 +99094,8 @@ Object3D.prototype.moveBelow = function (target, distance) {
     return moveBelow(target, this, distance);
 };
 Object3D.prototype.addComponent = function (name, child) {
-    if (this.components && this.components.has(name)) {
+    var _a;
+    if ((_a = this.components) === null || _a === void 0 ? void 0 : _a.has(name)) {
         throw new Error(`Failed to add component ${name}: Component or attribute already exists`);
     }
     if (!this.components) {
@@ -99106,7 +99111,7 @@ Object3D.prototype.addComponent = function (name, child) {
     });
     return this;
 };
-Object3D.prototype.updateComponent = function (name, child) {
+Object3D.prototype.updateComponent = (name, child) => {
     throw new Error('Not implemented');
 };
 Object3D.prototype.removeComponent = function (name) {
@@ -99167,11 +99172,13 @@ Object3D.prototype.hideAncestors = function (config) {
     return this;
 };
 Object3D.prototype.revealComponents = function () {
-    this.components && this.components.forEach((child) => this.add(child));
+    var _a;
+    (_a = this.components) === null || _a === void 0 ? void 0 : _a.forEach((child) => this.add(child));
     return this;
 };
 Object3D.prototype.hideComponents = function () {
-    this.components && this.components.forEach((child) => this.remove(child));
+    var _a;
+    (_a = this.components) === null || _a === void 0 ? void 0 : _a.forEach((child) => this.remove(child));
     return this;
 };
 Object3D.prototype.traverseComponents = function (f, config) {
@@ -99287,6 +99294,6 @@ Object3D.prototype.recenter = function (globalPosition) {
     });
     return this;
 };
-Object3D.prototype.reorient = function () { };
+Object3D.prototype.reorient = () => { };
 
 export { animation as Animation, constants as Constants, diagram as Diagram, frame as Frame, geometry as Geometry, graphing as Graphing, SVGLoader, SceneController, THREE, text as Text, utils as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };

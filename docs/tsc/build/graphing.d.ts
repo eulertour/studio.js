@@ -1,5 +1,5 @@
 import { Polyline } from './geometry';
-import { Style } from './geometry.types';
+import type { Style } from './geometry.types';
 /**
  * A curve described by an equation.
  */

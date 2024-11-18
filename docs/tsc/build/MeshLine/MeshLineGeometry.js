@@ -75,7 +75,7 @@ class MeshLineGeometry extends THREE.BufferGeometry {
             __classPrivateFieldGet(this, _MeshLineGeometry_instances, "m", _MeshLineGeometry_makeNewBuffers).call(this, pointCount);
         }
         __classPrivateFieldSet(this, _MeshLineGeometry_previousPointCount, pointCount, "f");
-        let lengths = new Float32Array(this.points.length);
+        const lengths = new Float32Array(this.points.length);
         lengths[0] = 0;
         const firstPoint = points.at(0);
         const lastPoint = points.at(-1);
