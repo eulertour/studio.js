@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Studio Preview</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "@eulertour/studio": "./studio/bundle.js",
+          "scene": "./dist/scene.js"
+        }
+      }
+    </script>
+    <script type="module">
+      import Scene from "scene";
+      import { SceneController } from "@eulertour/studio";
+
+      const canvas = document.getElementById("canvas");
+      const sceneController = new SceneController(Scene, canvas, {
+        aspectRatio: 16 / 9,
+        pixelHeight: 720,
+        coordinateHeight: 8,
+      });
+      sceneController.play();
+    </script>
+  </head>
+  <body style="display: grid; place-items: center">
+    <canvas id="canvas" style="border: 1px solid black; height: 420px"></canvas>
+  </body>
+</html>

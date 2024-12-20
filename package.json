@@ -10,6 +10,7 @@
   "declaration": true,
   "declarationMap": true,
   "scripts": {
+    "preview": "tsc --project preview; OUTPUT_DIR=preview/studio npm run build:source; serve preview",
     "test": "mocha",
     "build": "npm run build:source && npm run buildApi",
     "build:source": "rollup --config rollup.config.ts --configPlugin typescript",

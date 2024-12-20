@@ -4,3 +4,5 @@ build/tsdoc-metadata.json
 examples/build
 examples/dist
 Session.vim
+preview/dist
+preview/studio
