@@ -13,7 +13,7 @@ export default [
     output: {
       file: `${outputDir}/bundle.js`,
       format: "es",
-      // sourcemap: true,
+      sourcemap: true,
     },
     plugins: [
       nodeResolve({ extensions: [".js", ".ts"] }),

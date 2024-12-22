@@ -16,4 +16,3 @@ export class Curve extends Polyline {
         return {};
     }
 }
-//# sourceMappingURL=graphing.js.map

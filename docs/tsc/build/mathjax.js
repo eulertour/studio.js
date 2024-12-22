@@ -14,4 +14,3 @@ const tex2svg = (tex) => {
     return adaptor.innerHTML(node).replaceAll('currentColor', 'black');
 };
 export default tex2svg;
-//# sourceMappingURL=mathjax.js.map

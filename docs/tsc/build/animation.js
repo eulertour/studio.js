@@ -303,4 +303,3 @@ class Wait extends Animation {
     }
 }
 export { Animation, Shift, MoveTo, Rotate, SetScale, Draw, Erase, FadeIn, FadeOut, SetOpacity, Wait, };
-//# sourceMappingURL=animation.js.map

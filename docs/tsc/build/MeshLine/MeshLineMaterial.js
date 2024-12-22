@@ -84,4 +84,3 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
         this.uniforms.dashOffset.value = value;
     }
 }
-//# sourceMappingURL=MeshLineMaterial.js.map

@@ -148,4 +148,3 @@ export class SceneController {
         this.userScene.scene.clear();
     }
 }
-//# sourceMappingURL=scene.js.map

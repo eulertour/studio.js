@@ -445,4 +445,3 @@ void main() {
     gl_FragColor = vec4(color, opacity);
     ${ShaderChunk.fog_fragment}
 }`;
-//# sourceMappingURL=meshline.glsl.js.map

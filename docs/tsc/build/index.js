@@ -261,4 +261,3 @@ import { SceneController } from './scene';
 import * as Text from './text';
 import { setupCanvas } from './utils';
 export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };
-//# sourceMappingURL=index.js.map

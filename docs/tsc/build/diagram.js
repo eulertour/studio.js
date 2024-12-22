@@ -97,4 +97,3 @@ class RightAngle extends Geometry.Polyline {
     }
 }
 export { Indicator, Angle, RightAngle, CongruentLine, CongruentAngle };
-//# sourceMappingURL=diagram.js.map

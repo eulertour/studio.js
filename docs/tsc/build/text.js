@@ -149,4 +149,3 @@ class Text extends THREE.Group {
     }
 }
 export { Text };
-//# sourceMappingURL=text.js.map

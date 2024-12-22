@@ -49,4 +49,3 @@ export default function MeshLineRaycast(raycaster, intersects) {
         }
     }
 }
-//# sourceMappingURL=MeshLineRaycast.js.map

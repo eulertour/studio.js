@@ -12,8 +12,8 @@
 		"paths": {}, // A series of entries which re-map imports to lookup locations relative to the baseUrl
 
 		// Source Map
-		"sourceMap": true, // enables the use of source maps for debuggers and error reporting etc
-		"sourceRoot": "/", // Specify the location where a debugger should locate TypeScript files instead of relative source locations.
+		// "sourceMap": true, // enables the use of source maps for debuggers and error reporting etc
+		// "sourceRoot": "/", // Specify the location where a debugger should locate TypeScript files instead of relative source locations.
 
 		// // Strict Checks
 		// "alwaysStrict": true, // Ensures that your files are parsed in the ECMAScript strict mode, and emit “use strict” for each source file.

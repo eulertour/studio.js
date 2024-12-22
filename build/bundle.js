@@ -99301,3 +99301,4 @@ Object3D.prototype.recenter = function (globalPosition) {
 Object3D.prototype.reorient = () => { };
 
 export { animation as Animation, constants as Constants, diagram as Diagram, frame as Frame, geometry as Geometry, graphing as Graphing, SVGLoader, SceneController, THREE, text as Text, utils as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };
+//# sourceMappingURL=bundle.js.map

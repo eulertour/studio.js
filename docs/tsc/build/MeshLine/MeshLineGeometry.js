@@ -318,4 +318,3 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
     this.setIndex(__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index);
 };
 export default MeshLineGeometry;
-//# sourceMappingURL=MeshLineGeometry.js.map

@@ -19,4 +19,3 @@ class MeshLine extends THREE.Mesh {
     }
 }
 export { MeshLine, MeshLineGeometry, MeshLineMaterial };
-//# sourceMappingURL=index.js.map

@@ -40,4 +40,3 @@ export default {
         },
     },
 };
-//# sourceMappingURL=frame.js.map
