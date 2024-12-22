@@ -11,6 +11,8 @@
   "declarationMap": true,
   "scripts": {
     "preview": "tsc --project preview; OUTPUT_DIR=preview/studio npm run build:source; serve preview",
+    "preview:watch-scene": "nodemon --watch preview/src/scene.ts --exec 'tsc --project preview'",
+    "preview:watch-source": "nodemon --watch src --ext ts --exec 'OUTPUT_DIR=preview/studio npm run build:source'",
     "test": "mocha",
     "build": "npm run build:source && npm run buildApi",
     "build:source": "rollup --config rollup.config.ts --configPlugin typescript",
