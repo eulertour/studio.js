@@ -1,8 +1,8 @@
-import { Utils } from 'src';
-import * as THREE from 'three';
-import { MeshLine, MeshLineGeometry, MeshLineMaterial } from './MeshLine';
-import { ERROR_THRESHOLD } from './constants';
-import { ORIGIN } from './utils';
+import { Utils } from "src";
+import * as THREE from "three";
+import { MeshLine, MeshLineGeometry, MeshLineMaterial } from "./MeshLine";
+import { ERROR_THRESHOLD } from "./constants";
+import { ORIGIN } from "./utils";
 const getFillGeometry = (points) => {
     const shape = new THREE.Shape();
     shape.moveTo(points[0].x, points[0].y);
@@ -66,7 +66,7 @@ class Shape extends THREE.Group {
         return {};
     }
     reshape(...args) {
-        throw new Error('Reshape not implemented.');
+        throw new Error("Reshape not implemented.");
     }
     copyStroke(shape) {
         this.stroke.geometry.dispose();
@@ -334,7 +334,11 @@ class Arc extends Shape {
             points.push(new THREE.Vector3(radius, 0, 0), new THREE.Vector3(radius, 0, 0));
         }
         if (config.closed) {
-            points = [new THREE.Vector3(0, 0, 0), ...points, new THREE.Vector3(0, 0, 0)];
+            points = [
+                new THREE.Vector3(0, 0, 0),
+                ...points,
+                new THREE.Vector3(0, 0, 0),
+            ];
         }
         super(points, config);
         this.radius = radius;
@@ -376,18 +380,18 @@ class Arc extends Shape {
     get attributeData() {
         return [
             {
-                attribute: 'radius',
-                type: 'number',
+                attribute: "radius",
+                type: "number",
                 default: 1,
             },
             {
-                attribute: 'angle',
-                type: 'angle',
+                attribute: "angle",
+                type: "angle",
                 default: 45,
             },
             {
-                attribute: 'closed',
-                type: 'boolean',
+                attribute: "closed",
+                type: "boolean",
                 default: false,
             },
         ];
@@ -430,8 +434,8 @@ class Circle extends Arc {
     get attributeData() {
         return [
             {
-                attribute: 'radius',
-                type: 'number',
+                attribute: "radius",
+                type: "number",
                 default: 1,
             },
         ];
@@ -444,7 +448,7 @@ class Circle extends Arc {
  */
 class Point extends Circle {
     constructor(position = ORIGIN, config = {}) {
-        config = Object.assign(Object.assign({ fillColor: new THREE.Color('black'), fillOpacity: 1 }, Point.defaultConfig()), config);
+        config = Object.assign(Object.assign({ fillColor: new THREE.Color("black"), fillOpacity: 1 }, Point.defaultConfig()), config);
         super(config.radius, config);
         this.position.set(position.x, position.y, 0);
     }
@@ -523,13 +527,13 @@ class Rectangle extends Shape {
     get attributeData() {
         return [
             {
-                attribute: 'width',
-                type: 'number',
+                attribute: "width",
+                type: "number",
                 default: 4,
             },
             {
-                attribute: 'height',
-                type: 'number',
+                attribute: "height",
+                type: "number",
                 default: 2,
             },
         ];
@@ -573,12 +577,12 @@ class Square extends Rectangle {
     get attributeData() {
         return [
             {
-                attribute: 'sideLength',
-                type: 'number',
+                attribute: "sideLength",
+                type: "number",
                 default: 2,
             },
         ];
     }
 }
-export { Shape, Line, Arrow, Point, Circle, Arc, Polygon, Polyline, Rectangle, Square, MeshLine };
+export { Shape, Line, Arrow, Point, Circle, Arc, Polygon, Polyline, Rectangle, Square, MeshLine, };
 //# sourceMappingURL=geometry.js.map

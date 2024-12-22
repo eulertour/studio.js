@@ -1,6 +1,6 @@
-import * as THREE from 'three';
-import { MeshLine } from './MeshLine';
-import type { ArcAttributes, LineAttributes, PolygonAttributes, RectangleAttributes, Style, Transform } from './geometry.types.js';
+import * as THREE from "three";
+import { MeshLine } from "./MeshLine";
+import type { ArcAttributes, LineAttributes, PolygonAttributes, RectangleAttributes, Style, Transform } from "./geometry.types.js";
 type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
 type Stroke = MeshLine;
 /**
@@ -223,4 +223,4 @@ declare class Square extends Rectangle {
         default: number;
     }[];
 }
-export { Shape, Line, Arrow, Point, Circle, Arc, Polygon, Polyline, Rectangle, Square, MeshLine };
+export { Shape, Line, Arrow, Point, Circle, Arc, Polygon, Polyline, Rectangle, Square, MeshLine, };

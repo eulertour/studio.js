@@ -55547,7 +55547,7 @@ class Shape extends Group {
         return {};
     }
     reshape(...args) {
-        throw new Error('Reshape not implemented.');
+        throw new Error("Reshape not implemented.");
     }
     copyStroke(shape) {
         this.stroke.geometry.dispose();
@@ -55815,7 +55815,11 @@ class Arc extends Shape {
             points.push(new Vector3(radius, 0, 0), new Vector3(radius, 0, 0));
         }
         if (config.closed) {
-            points = [new Vector3(0, 0, 0), ...points, new Vector3(0, 0, 0)];
+            points = [
+                new Vector3(0, 0, 0),
+                ...points,
+                new Vector3(0, 0, 0),
+            ];
         }
         super(points, config);
         this.radius = radius;
@@ -55857,18 +55861,18 @@ class Arc extends Shape {
     get attributeData() {
         return [
             {
-                attribute: 'radius',
-                type: 'number',
+                attribute: "radius",
+                type: "number",
                 default: 1,
             },
             {
-                attribute: 'angle',
-                type: 'angle',
+                attribute: "angle",
+                type: "angle",
                 default: 45,
             },
             {
-                attribute: 'closed',
-                type: 'boolean',
+                attribute: "closed",
+                type: "boolean",
                 default: false,
             },
         ];
@@ -55911,8 +55915,8 @@ class Circle extends Arc {
     get attributeData() {
         return [
             {
-                attribute: 'radius',
-                type: 'number',
+                attribute: "radius",
+                type: "number",
                 default: 1,
             },
         ];
@@ -55925,7 +55929,7 @@ class Circle extends Arc {
  */
 class Point extends Circle {
     constructor(position = ORIGIN, config = {}) {
-        config = Object.assign(Object.assign({ fillColor: new Color('black'), fillOpacity: 1 }, Point.defaultConfig()), config);
+        config = Object.assign(Object.assign({ fillColor: new Color("black"), fillOpacity: 1 }, Point.defaultConfig()), config);
         super(config.radius, config);
         this.position.set(position.x, position.y, 0);
     }
@@ -56004,13 +56008,13 @@ class Rectangle extends Shape {
     get attributeData() {
         return [
             {
-                attribute: 'width',
-                type: 'number',
+                attribute: "width",
+                type: "number",
                 default: 4,
             },
             {
-                attribute: 'height',
-                type: 'number',
+                attribute: "height",
+                type: "number",
                 default: 2,
             },
         ];
@@ -56054,8 +56058,8 @@ class Square extends Rectangle {
     get attributeData() {
         return [
             {
-                attribute: 'sideLength',
-                type: 'number',
+                attribute: "sideLength",
+                type: "number",
                 default: 2,
             },
         ];

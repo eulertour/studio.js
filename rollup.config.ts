@@ -1,6 +1,6 @@
 import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
-import ts from "rollup-plugin-ts";
+import typescript from "@rollup/plugin-typescript";
 
 let outputDir = "build";
 if (process.env.OUTPUT_DIR) {
@@ -13,11 +13,11 @@ export default [
     output: {
       file: `${outputDir}/bundle.js`,
       format: "es",
-      importAttributesKey: "with",
+      // sourcemap: true,
     },
     plugins: [
       nodeResolve({ extensions: [".js", ".ts"] }),
-      ts(),
+      typescript(),
       commonjs(),
       // terser(),
     ],
