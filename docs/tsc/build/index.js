@@ -1,6 +1,6 @@
-import * as THREE from 'three';
-import { SVGLoader } from './SVGLoader.js';
-import * as Utils from './utils';
+import * as THREE from "three";
+import { SVGLoader } from "./SVGLoader.js";
+import * as Utils from "./utils";
 THREE.Vector3.prototype.rotate90 = function () {
     return Utils.rotate90(this);
 };
@@ -67,7 +67,7 @@ THREE.Object3D.prototype.addComponent = function (name, child) {
     return this;
 };
 THREE.Object3D.prototype.updateComponent = (name, child) => {
-    throw new Error('Not implemented');
+    throw new Error("Not implemented");
 };
 THREE.Object3D.prototype.removeComponent = function (name) {
     if (!this.components || !this.components.has(name)) {
@@ -82,14 +82,14 @@ THREE.Object3D.prototype.removeComponent = function (name) {
 };
 THREE.Object3D.prototype.reveal = function () {
     if (!this.parentComponent) {
-        throw new Error('Attempt to reveal a component with no parent component');
+        throw new Error("Attempt to reveal a component with no parent component");
     }
     this.parentComponent.add(this);
     return this;
 };
 THREE.Object3D.prototype.hide = function () {
     if (!this.parentComponent) {
-        throw new Error('Attempt to hide a component with no parent component');
+        throw new Error("Attempt to hide a component with no parent component");
     }
     this.parentComponent.remove(this);
     return this;
@@ -100,13 +100,13 @@ THREE.Object3D.prototype.isComponent = function () {
 THREE.Object3D.prototype.isRevealed = function () {
     var _a;
     if (!this.isComponent()) {
-        throw new Error('Attempt to check revealed status of a non-component');
+        throw new Error("Attempt to check revealed status of a non-component");
     }
     return (_a = this.parentComponent.children.includes(this)) !== null && _a !== void 0 ? _a : false;
 };
 THREE.Object3D.prototype.isHidden = function () {
     if (!this.isComponent()) {
-        throw new Error('Attempt to check revealed status of a non-component');
+        throw new Error("Attempt to check revealed status of a non-component");
     }
     return !this.isRevealed();
 };
@@ -250,14 +250,14 @@ THREE.Object3D.prototype.recenter = function (globalPosition) {
     return this;
 };
 THREE.Object3D.prototype.reorient = () => { };
-import { setCameraDimensions, setCanvasViewport } from './MeshLine/MeshLineMaterial';
-import * as Animation from './animation';
-import * as Constants from './constants';
-import * as Diagram from './diagram';
-import Frame from './frame.js';
-import * as Geometry from './geometry';
-import * as Graphing from './graphing';
-import { SceneController } from './scene';
-import * as Text from './text';
-import { setupCanvas } from './utils';
+import { setCameraDimensions, setCanvasViewport, } from "./MeshLine/MeshLineMaterial";
+import * as Animation from "./animation";
+import * as Constants from "./constants";
+import * as Diagram from "./diagram";
+import Frame from "./frame.js";
+import * as Geometry from "./geometry";
+import * as Graphing from "./graphing";
+import { SceneController, } from "./scene";
+import * as Text from "./text";
+import { setupCanvas } from "./utils";
 export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };
