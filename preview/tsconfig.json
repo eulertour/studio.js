@@ -1,16 +1,10 @@
 {
 	"compilerOptions": {
 		"target": "es6",
-		"module": "es6",
+		"module": "es2022",
 		"lib": ["es2017", "es7", "es6", "dom"],
 		"declaration": false,
-		"outDir": "dist",
-		"strict": true,
-		"esModuleInterop": true,
-		"paths": {
-			"@eulertour/studio": ["./build/bundle.js"]
-		}
+		"outDir": "dist"
 	},
-	"include": ["src/**/*.ts"],
-	"exclude": ["dist"]
+	"include": ["index.ts"]
 }
