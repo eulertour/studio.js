@@ -36,7 +36,7 @@ abstract class Shape extends THREE.Group {
 
   constructor(
     points: Array<THREE.Vector3>,
-    config: Style & { arrow?: boolean; stroke?: boolean; fill?: boolean } = {}
+    config: Style & { arrow?: boolean; stroke?: boolean; fill?: boolean } = {},
   ) {
     super();
     config = Object.assign(Shape.defaultStyle(), config);
@@ -129,7 +129,7 @@ abstract class Shape extends THREE.Group {
   segment(index: number) {
     return new THREE.Line3(
       this.points[index].clone(),
-      this.points[index + 1].clone()
+      this.points[index + 1].clone(),
     );
   }
 
@@ -137,7 +137,7 @@ abstract class Shape extends THREE.Group {
     const curveEndIndices = this.curveEndIndices[curveIndex];
     const curvePoints = this.points.slice(
       curveEndIndices[0],
-      curveEndIndices[1] + 1
+      curveEndIndices[1] + 1,
     );
     if (worldTransform) {
       return curvePoints.map((p) => p.clone().applyMatrix4(this.matrixWorld));
@@ -291,7 +291,7 @@ class Line extends Shape {
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
-    config: Style & { arrow?: boolean } = {}
+    config: Style & { arrow?: boolean } = {},
   ) {
     config = { ...Line.defaultConfig(), ...config };
     super([start, end], config);
@@ -306,13 +306,13 @@ class Line extends Shape {
   static centeredLine(
     start: THREE.Vector3,
     end: THREE.Vector3,
-    config: Style = {}
+    config: Style = {},
   ) {
     const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
     const line = new Line(
       new THREE.Vector3().subVectors(start, center),
       new THREE.Vector3().subVectors(end, center),
-      config
+      config,
     );
     line.position.copy(center);
     return line;
@@ -321,7 +321,7 @@ class Line extends Shape {
   reshape(
     start: THREE.Vector3,
     end: THREE.Vector3,
-    config: Style & { arrow?: boolean } = {}
+    config: Style & { arrow?: boolean } = {},
   ) {
     this.start.copy(start);
     this.end.copy(end);
@@ -344,7 +344,7 @@ class Line extends Shape {
     return global
       ? new THREE.Vector3().subVectors(
           new THREE.Vector3().copy(this.end).applyMatrix4(this.matrixWorld),
-          new THREE.Vector3().copy(this.start).applyMatrix4(this.matrixWorld)
+          new THREE.Vector3().copy(this.start).applyMatrix4(this.matrixWorld),
         )
       : new THREE.Vector3().subVectors(this.end, this.start);
   }
@@ -364,7 +364,7 @@ class Arrow extends Line {
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
-    config: Style = {}
+    config: Style = {},
   ) {
     super(start, end, { ...Arrow.defaultConfig(), ...config, arrow: true });
   }
@@ -423,7 +423,7 @@ class Arc extends Shape {
   constructor(
     public radius = 1,
     public angle: number = Math.PI / 2,
-    config: Style & { closed?: boolean } = {}
+    config: Style & { closed?: boolean } = {},
   ) {
     config = { ...Arc.defaultConfig(), ...config };
     let points = [];
@@ -438,14 +438,14 @@ class Arc extends Shape {
           new THREE.Vector3(
             radius * Math.cos(i),
             radius * Math.sin(i) * (negative ? -1 : 1),
-            0
-          )
+            0,
+          ),
         );
       }
     } else {
       points.push(
         new THREE.Vector3(radius, 0, 0),
-        new THREE.Vector3(radius, 0, 0)
+        new THREE.Vector3(radius, 0, 0),
       );
     }
     if (config.closed) {
@@ -475,7 +475,7 @@ class Arc extends Shape {
   reshape(
     radius = 1,
     angle: number = Math.PI / 2,
-    config: Style & { closed?: boolean } = {}
+    config: Style & { closed?: boolean } = {},
   ) {
     this.radius = radius;
     this.angle = angle;
@@ -583,7 +583,7 @@ class Circle extends Arc {
 class Point extends Circle {
   constructor(
     position: THREE.Vector2 | THREE.Vector3 = ORIGIN,
-    config: Style & { radius?: number } = {}
+    config: Style & { radius?: number } = {},
   ) {
     config = {
       fillColor: new THREE.Color("black"),
@@ -651,7 +651,11 @@ class Polygon extends Shape {
  * @example rectangle.ts
  */
 class Rectangle extends Shape {
-  constructor(public width = 4, public height = 2, config: Style = {}) {
+  constructor(
+    public width = 4,
+    public height = 2,
+    config: Style = {},
+  ) {
     super(
       [
         new THREE.Vector3(-width / 2, height / 2, 0),
@@ -660,7 +664,7 @@ class Rectangle extends Shape {
         new THREE.Vector3(-width / 2, -height / 2, 0),
         new THREE.Vector3(-width / 2, height / 2, 0),
       ],
-      { ...Rectangle.defaultConfig(), ...config }
+      { ...Rectangle.defaultConfig(), ...config },
     );
   }
 
@@ -711,7 +715,10 @@ class Rectangle extends Shape {
  * @example square.ts
  */
 class Square extends Rectangle {
-  constructor(public sideLength = 2, config: Style = {}) {
+  constructor(
+    public sideLength = 2,
+    config: Style = {},
+  ) {
     super(sideLength, sideLength, { ...Square.defaultConfig(), ...config });
   }
 
