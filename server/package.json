@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npm run link && vite",
-    "link": "if [ ! -L \"./studio\" ]; then ln -s ../build ./studio; fi"
+    "link": "if [ ! -L \"./studio\" ] || [ ! -e \"./studio\" ]; then rm -f ./studio && ln -s ../build ./studio; fi"
   },
   "devDependencies": {
     "typescript": "~5.6.2",
