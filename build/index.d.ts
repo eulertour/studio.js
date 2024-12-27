@@ -75,3 +75,4 @@ import { type AnimationRepresentation, SceneController, type StudioScene } from 
 import * as Text from "./text";
 import { setupCanvas } from "./utils";
 export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, SVGLoader, type StudioScene, type AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };
+//# sourceMappingURL=index.d.ts.map

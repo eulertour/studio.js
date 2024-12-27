@@ -8,3 +8,4 @@ declare class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
     set dashOffset(dashOffset: number);
 }
 export { MeshLine, MeshLineGeometry, MeshLineMaterial };
+//# sourceMappingURL=index.d.ts.map

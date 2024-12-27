@@ -22,3 +22,4 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
     get dashOffset(): any;
     set dashOffset(value: any);
 }
+//# sourceMappingURL=MeshLineMaterial.d.ts.map

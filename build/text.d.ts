@@ -40,3 +40,4 @@ declare class Text extends THREE.Group {
     setTransform(transform: Transform): void;
 }
 export { Text };
+//# sourceMappingURL=text.d.ts.map

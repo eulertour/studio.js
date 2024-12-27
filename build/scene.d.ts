@@ -47,3 +47,4 @@ export declare class SceneController {
     dispose(): void;
 }
 export {};
+//# sourceMappingURL=scene.d.ts.map

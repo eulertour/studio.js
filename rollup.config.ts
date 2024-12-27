@@ -24,8 +24,9 @@ export default [
       nodeResolve({ extensions: [".js", ".ts"] }),
       typescript({
         declaration: true,
-        declarationDir: outDir,
-        emitDeclarationOnly: true,
+        declarationMap: true,
+        module: "esnext",
+        rootDir: "src",
       }),
       commonjs(),
       // terser(),

@@ -224,3 +224,4 @@ declare class Square extends Rectangle {
     }[];
 }
 export { Shape, Line, Arrow, Point, Circle, Arc, Polygon, Polyline, Rectangle, Square, MeshLine, };
+//# sourceMappingURL=geometry.d.ts.map

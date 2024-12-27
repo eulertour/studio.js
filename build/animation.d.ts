@@ -84,3 +84,4 @@ declare class Wait extends Animation {
     constructor(config?: any);
 }
 export { Animation, Shift, MoveTo, Rotate, SetScale, Draw, Erase, FadeIn, FadeOut, SetOpacity, Wait, };
+//# sourceMappingURL=animation.d.ts.map

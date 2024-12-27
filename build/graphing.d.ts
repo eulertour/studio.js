@@ -11,3 +11,4 @@ export declare class Curve extends Polyline {
     };
     getClassConfig(): {};
 }
+//# sourceMappingURL=graphing.d.ts.map
