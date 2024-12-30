@@ -1,0 +1,45 @@
+{
+  "name": "studio.js",
+  "description": "Graphical code to use in EulerStudio",
+  "author": "@eulertour/studio",
+  "version": "1.0.33",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/studio.es.js",
+  "main": "./dist/studio.umd.js",
+  "exports": {
+    ".": {
+      "import": "./dist/studio.es.js",
+      "require": "./dist/studio.umd.js"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "test": "vitest",
+    "build": "npm run build:source; npm run build:api",
+    "build:source": "tsc",
+    "build:api": "npm run extractApi && npm run parseJson",
+    "extractApi": "api-extractor run --config docs/apiExtractor/api-extractor.json --local --verbose",
+    "parseJson": "node ./docs/parser/index.js docs/apiExtractor/studio.js.api.json ./dist/api.json"
+  },
+  "devDependencies": {
+    "@microsoft/api-extractor": "^7.48.1",
+    "@types/three": "^0.171.0",
+    "ajv": "8",
+    "colors": "^1.4.0",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "serve": "^14.2.4",
+    "typescript": "5.4",
+    "typescript-eslint": "^8.18.2",
+    "vite": "^6.0.5",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "mathjax-full": "^3.2.2",
+    "three": "^0.171.0",
+    "tsup": "^8.3.5"
+  }
+}

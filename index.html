@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + TS</title>
+  </head>
+  <body>
+    <canvas id="canvas" style="border: 1px solid black; height: 420px"></canvas>
+    <script type="module">
+      import { Geometry, Text, THREE, SceneController } from "./src/index";
+
+      class Scene {
+        constructor(scene, camera, renderer) {
+          this.scene = scene;
+          this.camera = camera;
+          this.renderer = renderer;
+
+          const line = new Geometry.Line(
+            new THREE.Vector3(-1, -1, 0),
+            new THREE.Vector3(1, 1, 0),
+            {
+              strokeWidth: 4,
+            },
+          );
+
+          scene.add(line);
+        }
+      }
+
+      const canvas = document.querySelector("#canvas");
+      if (canvas === null) {
+        throw new Error("canvas is null");
+      }
+
+      const sceneController = new SceneController(Scene, canvas, {
+        aspectRatio: 16 / 9,
+        pixelHeight: 720,
+        coordinateHeight: 8,
+      });
+
+      sceneController.play();
+    </script>
+  </body>
+</html>
