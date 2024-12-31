@@ -1,0 +1,23 @@
+{
+  "name": "deploy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "deploy:emulator": "bun run :deploy -- --emulator",
+    "deploy:staging": "bun run :deploy -- --staging",
+    "deploy:production": "bun run :deploy -- --production",
+    ":deploy": "bun src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "types": "./index.d.ts",
+  "dependencies": {
+    "firebase-admin": "^12.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2"
+  }
+}
