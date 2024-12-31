@@ -3,7 +3,7 @@ import {
   getMode,
   waitForFirebase,
   getStorageBucket,
-  uploadDirectory,
+  uploadToStorage,
 } from "./utils.ts";
 
 const mode = getMode();
@@ -15,7 +15,8 @@ if (mode === Mode.EMULATOR) {
 
 console.log("Uploading files...");
 const storage = getStorageBucket(mode);
-await uploadDirectory(storage, "dist", "build");
-await uploadDirectory(storage, "src", "src");
+await uploadToStorage(storage, "dist", "dist");
+await uploadToStorage(storage, "src", "src");
+await uploadToStorage(storage, "package.json", "package.json");
 
 console.log("Done!");

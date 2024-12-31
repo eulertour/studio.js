@@ -4,6 +4,7 @@
   "description": "EulerStudio graphics library",
   "author": "Devin Neal (devin@eulertour.com)",
   "type": "module",
+  "source": "src/index.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",

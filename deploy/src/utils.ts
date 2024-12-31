@@ -1,4 +1,4 @@
-import { readdir } from "node:fs/promises";
+import { readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
@@ -74,10 +74,10 @@ function getStorageBucket(mode: Mode): Storage {
   return getStorage(app);
 }
 
-async function uploadDirectory(
+async function uploadToStorage(
   storage: Storage,
-  localDirectoryPath: string,
-  remoteDirectoryPath: string,
+  localPath: string,
+  remotePath: string,
 ) {
   const currentDirectoryAbsolutePath = path.dirname(
     fileURLToPath(import.meta.url),
@@ -86,36 +86,37 @@ async function uploadDirectory(
     currentDirectoryAbsolutePath,
     CURRENT_DIRECTORY_TO_PROJECT_ROOT,
   );
-  const localDirectoryAbsolutePath = path.join(
-    projectRootAbsolutePath,
-    localDirectoryPath,
-  );
+  const localAbsolutePath = path.join(projectRootAbsolutePath, localPath);
 
-  const files = await readdir(localDirectoryAbsolutePath, {
-    recursive: true,
-    withFileTypes: true,
-  });
+  const stats = await stat(localAbsolutePath);
+  if (stats.isFile()) {
+    const remoteAbsolutePath = path.join(STORAGE_LIBRARY_ROOT, remotePath);
+    await storage.bucket().upload(localAbsolutePath, {
+      destination: remoteAbsolutePath,
+    });
+  } else {
+    const files = await readdir(localAbsolutePath, {
+      recursive: true,
+      withFileTypes: true,
+    });
 
-  for (const file of files) {
-    if (file.isDirectory()) continue;
+    for (const file of files) {
+      if (file.isDirectory()) continue;
 
-    const remoteDirectoryAbsolutePath = path.join(
-      STORAGE_LIBRARY_ROOT,
-      remoteDirectoryPath,
-    );
-    const localFileAbsolutePath = path.join(file.parentPath, file.name);
-    const localFileRelativePath = path.relative(
-      localDirectoryAbsolutePath,
-      localFileAbsolutePath,
-    );
-    const remoteFileAbsolutePath = path.join(
-      remoteDirectoryAbsolutePath,
-      localFileRelativePath,
-    );
-    await storage
-      .bucket()
-      .upload(localFileAbsolutePath, { destination: remoteFileAbsolutePath });
+      const localAbsolutePath = path.join(file.parentPath, file.name);
+      const localRelativePath = path.relative(
+        projectRootAbsolutePath,
+        localAbsolutePath,
+      );
+      const remoteAbsolutePath = path.join(
+        STORAGE_LIBRARY_ROOT,
+        localRelativePath,
+      );
+      await storage
+        .bucket()
+        .upload(localAbsolutePath, { destination: remoteAbsolutePath });
+    }
   }
 }
 
-export { Mode, getMode, waitForFirebase, getStorageBucket, uploadDirectory };
+export { Mode, getMode, waitForFirebase, getStorageBucket, uploadToStorage };

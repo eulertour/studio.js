@@ -16,7 +16,7 @@
 
 		/* Source Map */
 		"sourceMap": true,
-		"sourceRoot": "/",
+		// "sourceRoot": "/",
 
     /* Linting */
     "strict": true,

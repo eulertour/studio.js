@@ -4,13 +4,11 @@
 
 ```ts
 
-import { SVGLoader } from './SVGLoader.js';
-import * as THREE_2 from 'three';
+import * as THREE from 'three';
 
 // @public (undocumented)
 class Angle extends Geometry.Arc {
-    // Warning: (ae-forgotten-export) The symbol "Style" needs to be exported by the entry point index.d.ts
-    constructor(point1: THREE_2.Vector3, point2: THREE_2.Vector3, point3: THREE_2.Vector3, config?: Style & {
+    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Geometry.Style & {
         radius?: number;
         reflex?: boolean;
     });
@@ -36,13 +34,13 @@ export { Animation_2 as Animation }
 // @public (undocumented)
 class Animation_3 {
     constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, family, reveal, hide, }?: {
-        object?: any;
-        parent?: any;
-        before?: any;
-        after?: any;
-        family?: any;
-        reveal?: any;
-        hide?: any;
+        object?: undefined;
+        parent?: undefined;
+        before?: undefined;
+        after?: undefined;
+        family?: undefined;
+        reveal?: undefined;
+        hide?: undefined;
     });
     // (undocumented)
     addAfter(after: any): void;
@@ -97,7 +95,7 @@ export type AnimationRepresentation = Animation_3 | Array<Animation_3> | {
     animations: Array<Animation_3>;
     before?: () => void;
     after?: () => void;
-    parent?: THREE_2.Object3D;
+    parent?: THREE.Object3D;
     runTime?: number;
     scale?: number;
 };
@@ -128,14 +126,12 @@ class Arc extends Shape {
     };
     // (undocumented)
     static fromAttributes(attributes: ArcAttributes): Arc;
-    // Warning: (ae-forgotten-export) The symbol "ArcAttributes" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     getAttributes(): ArcAttributes;
     // (undocumented)
     getCloneAttributes(): (number | boolean)[];
     // (undocumented)
-    getDimensions(): THREE_2.Vector2;
+    getDimensions(): THREE.Vector2;
     // (undocumented)
     radius: number;
     // (undocumented)
@@ -144,15 +140,22 @@ class Arc extends Shape {
     }): void;
 }
 
+// @public (undocumented)
+type ArcAttributes = {
+    radius: number;
+    angle: number;
+    closed: boolean;
+};
+
 // @public
 class Arrow extends Line {
-    constructor(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style);
+    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style);
     // (undocumented)
-    end: THREE_2.Vector3;
+    end: THREE.Vector3;
     // (undocumented)
-    reshape(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style): void;
+    reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
     // (undocumented)
-    start: THREE_2.Vector3;
+    start: THREE.Vector3;
 }
 
 // @public (undocumented)
@@ -190,24 +193,24 @@ const clamp: (num: any, min: any, max: any) => number;
 // Warning: (ae-forgotten-export) The symbol "ComponentParent" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE_2.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE_2.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
+export function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 
 // @public (undocumented)
-class CongruentAngle extends THREE_2.Group {
-    constructor(arcs: number, point1: THREE_2.Vector3, point2: THREE_2.Vector3, point3: THREE_2.Vector3, config?: Style & {
+class CongruentAngle extends THREE.Group {
+    constructor(arcs: number, point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Geometry.Style & {
         minRadius?: number;
         spacing?: number;
     });
     // (undocumented)
-    config: Style & {
+    config: Geometry.Style & {
         minRadius?: number;
         spacing?: number;
     };
 }
 
 // @public (undocumented)
-class CongruentLine extends THREE_2.Group {
-    constructor(ticks: number, start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style & {
+class CongruentLine extends THREE.Group {
+    constructor(ticks: number, start: THREE.Vector3, end: THREE.Vector3, config?: Geometry.Style & {
         tickLength?: number;
         spacing?: number;
     });
@@ -224,7 +227,7 @@ declare namespace Constants {
 export { Constants }
 
 // @public (undocumented)
-const convertWorldDirectionToObjectSpace: (worldDirection: THREE_2.Vector3, object: THREE_2.Object3D) => THREE_2.Vector3;
+const convertWorldDirectionToObjectSpace: (worldDirection: THREE.Vector3, object: THREE.Object3D) => THREE.Vector3;
 
 // @public (undocumented)
 const COORDS_TO_PIXELS: number;
@@ -257,7 +260,7 @@ declare namespace Diagram {
 export { Diagram }
 
 // @public (undocumented)
-const DOWN: Readonly<THREE_2.Vector3>;
+const DOWN: Readonly<THREE.Vector3>;
 
 // @public (undocumented)
 class Draw extends Animation_3 {
@@ -345,7 +348,7 @@ export const Frame: {
 };
 
 // @public (undocumented)
-const furthestInDirection: (object: any, direction: any, exclude?: THREE_2.Object3D | Array<THREE_2.Object3D>) => any;
+const furthestInDirection: (object: any, direction: any, exclude?: THREE.Object3D | Array<THREE.Object3D>) => any;
 
 declare namespace Geometry {
     export {
@@ -359,16 +362,22 @@ declare namespace Geometry {
         Polyline,
         Rectangle,
         Square,
-        MeshLine
+        MeshLine,
+        Transform,
+        Style,
+        PolygonAttributes,
+        LineAttributes,
+        ArcAttributes,
+        RectangleAttributes
     }
 }
 export { Geometry }
 
 // @public (undocumented)
-const getBoundingBoxCenter: (obj: THREE_2.Object3D, target: THREE_2.Vector3) => THREE_2.Vector3;
+const getBoundingBoxCenter: (obj: THREE.Object3D, target: THREE.Vector3) => THREE.Vector3;
 
 // @public (undocumented)
-const getBoundingBoxHelper: (obj: THREE_2.Object3D, color: string) => THREE_2.Box3Helper;
+const getBoundingBoxHelper: (obj: THREE.Object3D, color: string) => THREE.Box3Helper;
 
 // @public (undocumented)
 const getFrameAttributes: (aspectRatio: number, height: number) => {
@@ -394,118 +403,122 @@ type HeightSetupConfig = {
 };
 
 // @public (undocumented)
-const IN: Readonly<THREE_2.Vector3>;
+const IN: Readonly<THREE.Vector3>;
 
 // @public (undocumented)
-class Indicator extends THREE_2.Group {
+class Indicator extends THREE.Group {
     // Warning: (ae-forgotten-export) The symbol "IndicatorConfig" needs to be exported by the entry point index.d.ts
-    constructor(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: IndicatorConfig & Style);
+    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig & Geometry.Style);
     // (undocumented)
-    end: THREE_2.Vector3;
+    end: THREE.Vector3;
     // (undocumented)
     endTick: Geometry.Line;
     // (undocumented)
     grow(config?: any): Animation_3;
     // (undocumented)
-    start: THREE_2.Vector3;
+    start: THREE.Vector3;
     // (undocumented)
     startTick: Geometry.Line;
     // (undocumented)
-    stem: any;
+    stem: Geometry.Line;
 }
 
 // @public (undocumented)
-const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE_2.Vector3>;
+const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
 
 // @public (undocumented)
-const LEFT: Readonly<THREE_2.Vector3>;
+const LEFT: Readonly<THREE.Vector3>;
 
 // @public
 class Line extends Shape {
-    constructor(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style & {
+    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
         arrow?: boolean;
     });
     // (undocumented)
-    static centeredLine(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style): Line;
+    static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
     // (undocumented)
     static defaultConfig(): {
         arrow: boolean;
     };
     // (undocumented)
-    end: THREE_2.Vector3;
+    end: THREE.Vector3;
     // (undocumented)
     static fromAttributes(attributes: LineAttributes): Line;
-    // Warning: (ae-forgotten-export) The symbol "LineAttributes" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     getAttributes(): LineAttributes;
     // (undocumented)
     getClassConfig(): {};
     // (undocumented)
-    getVector(global?: boolean): THREE_2.Vector3;
+    getVector(global?: boolean): THREE.Vector3;
     // (undocumented)
-    reshape(start: THREE_2.Vector3, end: THREE_2.Vector3, config?: Style & {
+    reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
         arrow?: boolean;
     }): void;
     // (undocumented)
-    start: THREE_2.Vector3;
+    start: THREE.Vector3;
 }
+
+// @public (undocumented)
+type LineAttributes = {
+    start: THREE.Vector3;
+    end: THREE.Vector3;
+};
 
 // Warning: (ae-forgotten-export) The symbol "MeshLineGeometry" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "MeshLineMaterial" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-class MeshLine extends THREE_2.Mesh<MeshLineGeometry, MeshLineMaterial> {
+class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
     constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
     // (undocumented)
     get dashOffset(): number;
     set dashOffset(dashOffset: number);
     // (undocumented)
-    get points(): THREE_2.Vector3[];
+    get points(): THREE.Vector3[];
 }
 
 // @public (undocumented)
-const moveAbove: (target: any, object: any, distance?: number) => THREE_2.Object3D<THREE_2.Event>;
+const moveAbove: (target: any, object: any, distance?: number) => THREE.Object3D<THREE.Object3DEventMap>;
 
 // @public (undocumented)
-const moveBelow: (target: any, object: any, distance?: number) => THREE_2.Object3D<THREE_2.Event>;
+const moveBelow: (target: any, object: any, distance?: number) => THREE.Object3D<THREE.Object3DEventMap>;
 
 // @public (undocumented)
-const moveNextTo: (target: THREE_2.Object3D, object: THREE_2.Object3D, direction: THREE_2.Vector3, buffer?: number) => THREE_2.Object3D<THREE_2.Event>;
+const moveNextTo: (target: THREE.Object3D, object: THREE.Object3D, direction: THREE.Vector3, buffer?: number) => THREE.Object3D<THREE.Object3DEventMap>;
 
 // @public (undocumented)
 class MoveTo extends Animation_3 {
-    constructor(target: THREE_2.Object3D, obj: THREE_2.Object3D, config?: any);
+    constructor(target: THREE.Object3D, obj: THREE.Object3D, config?: any);
     // (undocumented)
     displacement: any;
     // (undocumented)
-    obj: THREE_2.Object3D;
+    obj: THREE.Object3D;
     // (undocumented)
     setUp(): void;
     // (undocumented)
     start: any;
     // (undocumented)
-    target: THREE_2.Object3D;
+    target: THREE.Object3D;
 }
 
 // @public (undocumented)
-const moveToLeftOf: (target: any, object: any, distance?: number) => THREE_2.Object3D<THREE_2.Event>;
+const moveToLeftOf: (target: any, object: any, distance?: number) => THREE.Object3D<THREE.Object3DEventMap>;
 
 // @public (undocumented)
-const moveToRightOf: (target: any, object: any, distance?: number) => THREE_2.Object3D<THREE_2.Event>;
+const moveToRightOf: (target: any, object: any, distance?: number) => THREE.Object3D<THREE.Object3DEventMap>;
 
 // @public (undocumented)
-const ORIGIN: Readonly<THREE_2.Vector3>;
+const ORIGIN: Readonly<THREE.Vector3>;
 
 // @public (undocumented)
-const OUT: Readonly<THREE_2.Vector3>;
+const OUT: Readonly<THREE.Vector3>;
 
 // @public (undocumented)
 const PIXELS_TO_COORDS: number;
 
 // @public
 class Point extends Circle {
-    constructor(position?: THREE_2.Vector2 | THREE_2.Vector3, config?: Style & {
+    constructor(position?: THREE.Vector2 | THREE.Vector3, config?: Style & {
         radius?: number;
     });
     // (undocumented)
@@ -521,26 +534,29 @@ class Point extends Circle {
 }
 
 // @public (undocumented)
-const pointAlongCurve: (shape: Geometry.Shape, t: number) => THREE_2.Vector3;
+const pointAlongCurve: (shape: Geometry.Shape, t: number) => THREE.Vector3 | undefined;
 
 // @public
 class Polygon extends Shape {
-    constructor(points: Array<THREE_2.Vector3>, config?: Style);
+    constructor(points: Array<THREE.Vector3>, config?: Style);
     // (undocumented)
-    get attributeData(): any[];
+    get attributeData(): never[];
     // (undocumented)
     static fromAttributes(attributes: PolygonAttributes): Polygon;
-    // Warning: (ae-forgotten-export) The symbol "PolygonAttributes" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     getAttributes(): PolygonAttributes;
     // (undocumented)
     getClassConfig(): {};
 }
 
+// @public (undocumented)
+type PolygonAttributes = {
+    points: Array<THREE.Vector3>;
+};
+
 // @public
 class Polyline extends Shape {
-    constructor(points: Array<THREE_2.Vector3>, config?: Style);
+    constructor(points: Array<THREE.Vector3>, config?: Style);
     // (undocumented)
     static defaultConfig(): {
         fill: boolean;
@@ -552,11 +568,11 @@ class Polyline extends Shape {
     // (undocumented)
     getClassConfig(): {};
     // (undocumented)
-    reshape(points: Array<THREE_2.Vector3>, config?: Style): void;
+    reshape(points: Array<THREE.Vector3>, config?: Style): void;
 }
 
 // @public (undocumented)
-const positiveAngleTo: (a: THREE_2.Vector3, b: THREE_2.Vector3) => number;
+const positiveAngleTo: (a: THREE.Vector3, b: THREE.Vector3) => number;
 
 // @public
 class Rectangle extends Shape {
@@ -569,8 +585,6 @@ class Rectangle extends Shape {
     }[];
     // (undocumented)
     static fromAttributes(attributes: RectangleAttributes): Rectangle;
-    // Warning: (ae-forgotten-export) The symbol "RectangleAttributes" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     getAttributes(): RectangleAttributes;
     // (undocumented)
@@ -584,11 +598,17 @@ class Rectangle extends Shape {
 }
 
 // @public (undocumented)
-const RIGHT: Readonly<THREE_2.Vector3>;
+type RectangleAttributes = {
+    width: number;
+    height: number;
+};
+
+// @public (undocumented)
+const RIGHT: Readonly<THREE.Vector3>;
 
 // @public (undocumented)
 class RightAngle extends Geometry.Polyline {
-    constructor(point1: THREE_2.Vector3, point2: THREE_2.Vector3, point3: THREE_2.Vector3, config?: Style & {
+    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Geometry.Style & {
         sideLength?: number;
     });
 }
@@ -599,25 +619,25 @@ class Rotate extends Animation_3 {
 }
 
 // @public (undocumented)
-const rotate180: (v: THREE_2.Vector3) => THREE_2.Vector3;
+const rotate180: (v: THREE.Vector3) => THREE.Vector3;
 
 // @public (undocumented)
-const rotate270: (v: THREE_2.Vector3) => THREE_2.Vector3;
+const rotate270: (v: THREE.Vector3) => THREE.Vector3;
 
 // @public (undocumented)
-const rotate90: (v: THREE_2.Vector3) => THREE_2.Vector3;
+const rotate90: (v: THREE.Vector3) => THREE.Vector3;
 
 // @public (undocumented)
 export class SceneController {
     constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: (WidthSetupConfig | HeightSetupConfig) & {
-        viewport?: THREE_2.Vector4;
+        viewport?: THREE.Vector4;
     });
     // (undocumented)
     animationIndex: number;
     // (undocumented)
     aspectRatio: number;
     // (undocumented)
-    get camera(): THREE_2.OrthographicCamera;
+    get camera(): THREE.OrthographicCamera;
     // (undocumented)
     deltaTime: number;
     // (undocumented)
@@ -643,13 +663,13 @@ export class SceneController {
     // (undocumented)
     render(): void;
     // (undocumented)
-    get renderer(): THREE_2.WebGLRenderer;
+    get renderer(): THREE.WebGLRenderer;
     // (undocumented)
-    get scene(): THREE_2.Scene;
+    get scene(): THREE.Scene;
     // (undocumented)
     startTime: number;
     // (undocumented)
-    three: typeof THREE_2;
+    three: typeof THREE;
     // (undocumented)
     tick(deltaTime: number, render?: boolean): void;
     // (undocumented)
@@ -661,14 +681,14 @@ export class SceneController {
     // (undocumented)
     userScene: StudioScene;
     // (undocumented)
-    viewport: THREE_2.Vector4;
+    viewport: THREE.Vector4;
 }
 
 // @public (undocumented)
-export const setCameraDimensions: (camera: THREE_2.OrthographicCamera) => void;
+export const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
 
 // @public (undocumented)
-export const setCanvasViewport: (viewport: THREE_2.Vector4) => void;
+export const setCanvasViewport: (viewport: THREE.Vector4) => void;
 
 // @public (undocumented)
 class SetOpacity extends Animation_3 {
@@ -694,12 +714,12 @@ class SetScale extends Animation_3 {
 
 // @public (undocumented)
 export const setupCanvas: (canvas: HTMLCanvasElement, config?: (WidthSetupConfig | HeightSetupConfig) & {
-    viewport?: THREE_2.Vector4;
-}) => [THREE_2.Scene, THREE_2.Camera, THREE_2.WebGLRenderer];
+    viewport?: THREE.Vector4;
+}) => [THREE.Scene, THREE.Camera, THREE.WebGLRenderer];
 
 // @public
-abstract class Shape extends THREE_2.Group {
-    constructor(points: Array<THREE_2.Vector3>, config?: Style & {
+abstract class Shape extends THREE.Group {
+    constructor(points: Array<THREE.Vector3>, config?: Style & {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
@@ -711,7 +731,7 @@ abstract class Shape extends THREE_2.Group {
     // (undocumented)
     clone(recursive?: boolean): this;
     // (undocumented)
-    closestPointToPoint(point: THREE_2.Vector3, target?: THREE_2.Vector3): THREE_2.Vector3;
+    closestPointToPoint(point: THREE.Vector3, target?: THREE.Vector3): THREE.Vector3;
     // (undocumented)
     copyFill(shape: Shape): void;
     // (undocumented)
@@ -719,16 +739,16 @@ abstract class Shape extends THREE_2.Group {
     // (undocumented)
     copyStrokeFill(shape: Shape): void;
     // (undocumented)
-    curve(curveIndex: number, worldTransform?: boolean): THREE_2.Vector3[];
+    curve(curveIndex: number, worldTransform?: boolean): THREE.Vector3[];
     // (undocumented)
     curveEndIndices: Array<Array<number>>;
     // (undocumented)
     static defaultConfig(): {};
     // (undocumented)
     static defaultStyle(): {
-        fillColor: THREE_2.Color;
+        fillColor: THREE.Color;
         fillOpacity: number;
-        strokeColor: THREE_2.Color;
+        strokeColor: THREE.Color;
         strokeOpacity: number;
         strokeWidth: number;
         strokeDashLength: number;
@@ -748,23 +768,21 @@ abstract class Shape extends THREE_2.Group {
     // (undocumented)
     getCloneAttributes(): Array<unknown>;
     // (undocumented)
-    getCurveEndIndices(): any[];
+    getCurveEndIndices(): number[][];
     // (undocumented)
-    getDimensions(): THREE_2.Vector2;
+    getDimensions(): THREE.Vector2;
     // (undocumented)
     getStyle(): Style;
-    // Warning: (ae-forgotten-export) The symbol "Transform" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     getTransform(): Transform;
     // (undocumented)
     get numCurves(): number;
     // (undocumented)
-    get points(): Array<THREE_2.Vector3>;
+    get points(): Array<THREE.Vector3>;
     // (undocumented)
     reshape(...args: any[]): void;
     // (undocumented)
-    segment(index: number): THREE_2.Line3;
+    segment(index: number): THREE.Line3;
     // (undocumented)
     setStyle(style: Style): void;
     // (undocumented)
@@ -774,9 +792,9 @@ abstract class Shape extends THREE_2.Group {
     // (undocumented)
     stroke?: Stroke;
     // (undocumented)
-    transformedPoint(index: number, targetSpace: THREE_2.Object3D): THREE_2.Vector3;
+    transformedPoint(index: number, targetSpace: THREE.Object3D): THREE.Vector3;
     // (undocumented)
-    worldPoint(index: number): THREE_2.Vector3;
+    worldPoint(index: number): THREE.Vector3;
 }
 
 // @public (undocumented)
@@ -784,23 +802,23 @@ class ShapeFromCurves {
     // (undocumented)
     adjacentThreshold: number;
     // (undocumented)
-    extendAlong(shape: Geometry.Shape, direction: THREE_2.Vector3, until?: THREE_2.Vector3 | undefined): this;
+    extendAlong(shape: Geometry.Shape, direction: THREE.Vector3, until?: THREE.Vector3 | undefined): this;
     // (undocumented)
-    extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until?: THREE_2.Vector3 | undefined): void;
+    extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until?: THREE.Vector3 | undefined): void;
     // (undocumented)
     finish(): Geometry.Polygon;
     // (undocumented)
-    points: Array<THREE_2.Vector3>;
+    points: Array<THREE.Vector3>;
     // (undocumented)
-    pointToSegment: THREE_2.Vector3;
+    pointToSegment: THREE.Vector3;
     // (undocumented)
-    segmentClosestToPoint: THREE_2.Vector3;
+    segmentClosestToPoint: THREE.Vector3;
     // (undocumented)
-    startAt(start: THREE_2.Vector3): this;
+    startAt(start: THREE.Vector3): this;
     // (undocumented)
-    style: Style;
+    style: Geometry.Style;
     // (undocumented)
-    withStyle(style: Style): this;
+    withStyle(style: Geometry.Style): this;
 }
 
 // @public (undocumented)
@@ -830,20 +848,30 @@ class Square extends Rectangle {
 }
 
 // @public (undocumented)
-export interface StudioScene<T extends THREE_2.Camera = THREE_2.OrthographicCamera> {
+export interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
     // (undocumented)
     animations?: Array<AnimationRepresentation>;
     // (undocumented)
     camera: T;
     // (undocumented)
-    renderer: THREE_2.WebGLRenderer;
+    renderer: THREE.WebGLRenderer;
     // (undocumented)
-    scene: THREE_2.Scene;
+    scene: THREE.Scene;
     // (undocumented)
     update?: (deltaTime: number, time: number) => void;
 }
 
-export { SVGLoader }
+// @public (undocumented)
+type Style = {
+    fillColor?: THREE.Color;
+    fillOpacity?: number;
+    strokeColor?: THREE.Color;
+    strokeOpacity?: number;
+    strokeWidth?: number;
+    strokeDashLength?: number;
+    strokeDashOffset?: number;
+    dashed?: boolean;
+};
 
 declare namespace Text_2 {
     export {
@@ -853,7 +881,7 @@ declare namespace Text_2 {
 export { Text_2 as Text }
 
 // @public (undocumented)
-class Text_3 extends THREE_2.Group {
+class Text_3 extends THREE.Group {
     // Warning: (ae-forgotten-export) The symbol "TextStyle" needs to be exported by the entry point index.d.ts
     // Warning: (ae-forgotten-export) The symbol "TextConfig" needs to be exported by the entry point index.d.ts
     constructor(text: string, config?: TextStyle & TextConfig);
@@ -880,7 +908,7 @@ class Text_3 extends THREE_2.Group {
     // (undocumented)
     getCloneAttributes(): string[];
     // (undocumented)
-    getDimensions(): THREE_2.Vector2;
+    getDimensions(): THREE.Vector2;
     // (undocumented)
     getTransform(): Transform;
     // (undocumented)
@@ -900,13 +928,20 @@ class Text_3 extends THREE_2.Group {
     };
 }
 
-export { THREE_2 as THREE }
+export { THREE }
 
 // @public (undocumented)
-const transformBetweenSpaces: (from: THREE_2.Object3D, to: THREE_2.Object3D, point: THREE_2.Vector3) => THREE_2.Vector3;
+type Transform = {
+    position: THREE.Vector3;
+    rotation: THREE.Euler;
+    scale: THREE.Vector3;
+};
 
 // @public (undocumented)
-const UP: Readonly<THREE_2.Vector3>;
+const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;
+
+// @public (undocumented)
+const UP: Readonly<THREE.Vector3>;
 
 declare namespace Utils {
     export {
@@ -947,10 +982,10 @@ declare namespace Utils {
 export { Utils }
 
 // @public (undocumented)
-const vspace: (group: THREE_2.Group, distanceBetween?: number) => THREE_2.Group;
+const vspace: (group: THREE.Group, distanceBetween?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;
 
 // @public (undocumented)
-const vstack: (group: THREE_2.Group, buffer?: number) => THREE_2.Group;
+const vstack: (group: THREE.Group, buffer?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;
 
 // @public (undocumented)
 class Wait extends Animation_3 {

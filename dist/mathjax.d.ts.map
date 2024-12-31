@@ -1,1 +1,1 @@
-{"version":3,"file":"mathjax.d.ts","sourceRoot":"/","sources":["mathjax.ts"],"names":[],"mappings":"AAcA,QAAA,MAAM,OAAO,sBAGZ,CAAC;AAEF,eAAe,OAAO,CAAC"}
+{"version":3,"file":"mathjax.d.ts","sourceRoot":"","sources":["../src/mathjax.ts"],"names":[],"mappings":"AAcA,QAAA,MAAM,OAAO,sBAGZ,CAAC;AAEF,eAAe,OAAO,CAAC"}
