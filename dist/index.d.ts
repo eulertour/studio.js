@@ -1,4 +1,4 @@
-import * as THREE from "./three.js";
+import THREE from "./three.js";
 import * as Utils from "./utils.js";
 declare module "three" {
     interface Object3D {

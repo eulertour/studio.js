@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "./three.js";
 import type { Transform } from "./geometry.js";
 type TextStyle = {
     fillColor?: THREE.Color;

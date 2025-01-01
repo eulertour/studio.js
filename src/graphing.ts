@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "./three.js";
 import { Polyline, type Style } from "./geometry.js";
 
 type CurveAttributes = {

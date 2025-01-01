@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "./three.js";
 declare class Animation {
     func: (elapsedTime: number, deltaTime: number) => void;
     scene: any;

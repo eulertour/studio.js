@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import THREE from "../three.js";
 export default function MeshLineRaycast(raycaster, intersects) {
     const nextIntersectIndex = intersects.length;
     const inverseMatrix = new THREE.Matrix4();

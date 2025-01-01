@@ -2593,7 +2593,7 @@
             {
               "kind": "Reference",
               "text": "THREE.Object3D",
-              "canonicalReference": "!THREE.Object3D:type"
+              "canonicalReference": "@types/three!Object3D:class"
             },
             {
               "kind": "Content",
@@ -2624,7 +2624,7 @@
             {
               "kind": "Reference",
               "text": "THREE.Object3D",
-              "canonicalReference": "!THREE.Object3D:type"
+              "canonicalReference": "@types/three!Object3D:class"
             },
             {
               "kind": "Content",
@@ -10514,17 +10514,6 @@
               "implementsTokenRanges": []
             }
           ]
-        },
-        {
-          "kind": "Namespace",
-          "canonicalReference": "@eulertour/studio!THREE:namespace",
-          "docComment": "",
-          "excerptTokens": [],
-          "fileUrlPath": "src/index.ts",
-          "releaseTag": "None",
-          "name": "THREE",
-          "preserveMemberOrder": false,
-          "members": []
         },
         {
           "kind": "Namespace",

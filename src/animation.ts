@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "./three.js";
 import { clamp, getBoundingBoxCenter } from "./utils.js";
 
 const sigmoid = (x) => 1 / (1 + Math.exp(-x));

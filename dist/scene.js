@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "./three.js";
 import { setCameraDimensions, setCanvasViewport, } from "./MeshLine/MeshLineMaterial.js";
 import { Animation } from "./animation.js";
 import { setupCanvas, } from "./utils.js";

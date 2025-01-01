@@ -1,6 +1,6 @@
-import * as THREE from "three";
+import THREE from "./three.js";
 // import { SVGLoader } from './SVGLoader.js';
-import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
+import { SVGLoader } from "./SVGLoader.js";
 import tex2svg from "./mathjax.js";
 class Text extends THREE.Group {
     constructor(text, config = {}) {

@@ -54562,7 +54562,7 @@ class WebGLRenderer {
 
 }
 
-var three_module = /*#__PURE__*/Object.freeze({
+var THREE = /*#__PURE__*/Object.freeze({
 	__proto__: null,
 	ACESFilmicToneMapping: ACESFilmicToneMapping,
 	AddEquation: AddEquation,
@@ -54981,5 +54981,5 @@ var three_module = /*#__PURE__*/Object.freeze({
 	createCanvasElement: createCanvasElement
 });
 
-export { three_module as THREE };
+export { THREE as default };
 //# sourceMappingURL=three.js.map

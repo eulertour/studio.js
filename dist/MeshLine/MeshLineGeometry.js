@@ -10,8 +10,8 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _MeshLineGeometry_instances, _MeshLineGeometry_position, _MeshLineGeometry_endPosition, _MeshLineGeometry_nextPosition, _MeshLineGeometry_previousPosition, _MeshLineGeometry_textureCoords, _MeshLineGeometry_proportion, _MeshLineGeometry_endProportion, _MeshLineGeometry_indices, _MeshLineGeometry_attributes, _MeshLineGeometry_previousPointCount, _MeshLineGeometry_pointCount, _MeshLineGeometry_addSegment, _MeshLineGeometry_makeNewBuffers;
-import * as THREE from 'three';
-import './meshline.glsl.js';
+import THREE from "../three.js";
+import "./meshline.glsl.js";
 class MeshLineGeometry extends THREE.BufferGeometry {
     constructor(arrow = false) {
         super();
@@ -32,7 +32,7 @@ class MeshLineGeometry extends THREE.BufferGeometry {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: 'MeshLineGeometry'
+            value: "MeshLineGeometry"
         });
         _MeshLineGeometry_position.set(this, new Float32Array());
         _MeshLineGeometry_endPosition.set(this, new Float32Array());
@@ -90,7 +90,7 @@ class MeshLineGeometry extends THREE.BufferGeometry {
             }
             else {
                 console.error(points);
-                throw new Error('Error creating arrow from points: No valid solution');
+                throw new Error("Error creating arrow from points: No valid solution");
             }
             points.splice(arrowIndex + 1, points.length - arrowIndex - 1, aVec.clone().add(vVec.clone().multiplyScalar(t)), points.at(-1));
         }
@@ -107,7 +107,7 @@ class MeshLineGeometry extends THREE.BufferGeometry {
         const firstPoint = points.at(0);
         const lastPoint = points.at(-1);
         if (firstPoint === undefined || lastPoint === undefined) {
-            throw new Error('invalid endpoints');
+            throw new Error("invalid endpoints");
         }
         // Handle the case where the first and last points are the same.
         let previousPosition;
@@ -132,7 +132,7 @@ class MeshLineGeometry extends THREE.BufferGeometry {
             endPosition === undefined ||
             nextPosition === undefined ||
             previousLength === undefined) {
-            throw new Error('point missing');
+            throw new Error("point missing");
         }
         lengths[1] =
             previousLength +
@@ -152,7 +152,7 @@ class MeshLineGeometry extends THREE.BufferGeometry {
                 endPosition === undefined ||
                 nextPosition === undefined ||
                 previousLength === undefined) {
-                throw new Error('point missing');
+                throw new Error("point missing");
             }
             lengths[i + 1] =
                 previousLength +
@@ -183,7 +183,7 @@ class MeshLineGeometry extends THREE.BufferGeometry {
             endPosition === undefined ||
             nextPosition === undefined ||
             previousLength === undefined) {
-            throw new Error('point missing');
+            throw new Error("point missing");
         }
         lengths[this.points.length - 1] =
             previousLength +
@@ -204,13 +204,13 @@ class MeshLineGeometry extends THREE.BufferGeometry {
         }
         this.totalLength = lengths.at(-1);
         if (this.totalLength === undefined) {
-            throw new Error('Invalid length');
+            throw new Error("Invalid length");
         }
         for (let i = 0; i < this.points.length - 1; i++) {
             const startLength = lengths[i];
             const endLength = lengths[i + 1];
             if (startLength === undefined || endLength === undefined) {
-                throw new Error('Invalid length');
+                throw new Error("Invalid length");
             }
             const startProportion = startLength / this.totalLength;
             const endProportion = endLength / this.totalLength;
@@ -225,7 +225,7 @@ class MeshLineGeometry extends THREE.BufferGeometry {
             __classPrivateFieldGet(this, _MeshLineGeometry_endProportion, "f")[offset + 3] = endProportion;
         }
         if (!__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f"))
-            throw new Error('missing attributes');
+            throw new Error("missing attributes");
         __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position.needsUpdate = true;
         __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endPosition.needsUpdate = true;
         __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition.needsUpdate = true;
@@ -338,13 +338,13 @@ _MeshLineGeometry_position = new WeakMap(), _MeshLineGeometry_endPosition = new 
         endProportion: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_endProportion, "f"), 1),
         index: new THREE.BufferAttribute(__classPrivateFieldGet(this, _MeshLineGeometry_indices, "f"), 1),
     }, "f");
-    this.setAttribute('position', __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position);
-    this.setAttribute('endPosition', __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endPosition);
-    this.setAttribute('nextPosition', __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition);
-    this.setAttribute('previousPosition', __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").previousPosition);
-    this.setAttribute('textureCoords', __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords);
-    this.setAttribute('proportion', __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion);
-    this.setAttribute('endProportion', __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endProportion);
+    this.setAttribute("position", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").position);
+    this.setAttribute("endPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endPosition);
+    this.setAttribute("nextPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").nextPosition);
+    this.setAttribute("previousPosition", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").previousPosition);
+    this.setAttribute("textureCoords", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").textureCoords);
+    this.setAttribute("proportion", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").proportion);
+    this.setAttribute("endProportion", __classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").endProportion);
     this.setIndex(__classPrivateFieldGet(this, _MeshLineGeometry_attributes, "f").index);
 };
 export default MeshLineGeometry;

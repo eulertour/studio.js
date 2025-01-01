@@ -1,5 +1,5 @@
 import { Utils } from "./index.js";
-import * as THREE from "three";
+import THREE from "./three.js";
 import { MeshLine, MeshLineGeometry, MeshLineMaterial, } from "./MeshLine/index.js";
 import { ERROR_THRESHOLD } from "./constants.js";
 import { ORIGIN } from "./utils.js";

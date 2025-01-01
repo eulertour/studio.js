@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "./three.js";
 import { MeshLine } from "./MeshLine/index.js";
 // import { Camera } from "build/three-types";
 import { setCameraDimensions } from "./MeshLine/MeshLineMaterial.js";

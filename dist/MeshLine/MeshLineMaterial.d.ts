@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import THREE from "../three.js";
 export declare const CameraDimensions: THREE.Vector2;
 export declare const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
 export declare const CanvasViewport: THREE.Vector4;
