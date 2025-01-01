@@ -1,0 +1,11 @@
+{
+	"compilerOptions": {
+		"moduleResolution": "bundler",
+		"module": "esnext",
+		"lib": ["es2021", "es7", "es6", "dom"],
+		"strict": true,
+		"esModuleInterop": true
+	},
+  "include": ["src/three.ts", "rollup.three.ts"],
+  "exclude": ["rollup.three.ts"]
+}
