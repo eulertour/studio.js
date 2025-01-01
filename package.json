@@ -18,8 +18,9 @@
   "scripts": {
     "dev": "vite",
     "test": "vitest",
-    "build": "bun run build:source; bun run build:api",
+    "build": "bun run build:source; bun run build:mathjax; bun run build:api",
     "build:source": "tsc",
+    "build:mathjax": "rollup --config rollup.mathjax.ts --configPlugin typescript",
     "build:api": "bun run :extractApi && bun run :parseJson",
     ":extractApi": "api-extractor run --config docs/apiExtractor/api-extractor.json --local --verbose",
     ":parseJson": "node ./docs/parser/index.js docs/apiExtractor/studio.js.api.json ./dist/api.json",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.48.1",
+    "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@types/three": "^0.171.0",
     "ajv": "8",
