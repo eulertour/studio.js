@@ -1,4 +1,4 @@
-import * as THREE from "./three.js";
+import THREE from "./three.js";
 
 class MeshLine extends THREE.BufferGeometry {
   constructor() {

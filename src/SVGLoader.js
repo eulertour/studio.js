@@ -1,22 +1,8 @@
-import {
-  Box2,
-  BufferGeometry,
-  FileLoader,
-  Float32BufferAttribute,
-  Loader,
-  Matrix3,
-  Path,
-  SRGBColorSpace,
-  Shape,
-  ShapePath,
-  ShapeUtils,
-  Vector2,
-  Vector3,
-} from "./three.js";
+import THREE from "./three.js";
 
-const COLOR_SPACE_SVG = SRGBColorSpace;
+const COLOR_SPACE_SVG = THREE.SRGBColorSpace;
 
-class SVGLoader extends Loader {
+class SVGLoader extends THREE.Loader {
   constructor(manager) {
     super(manager);
 
@@ -28,7 +14,7 @@ class SVGLoader extends Loader {
   }
 
   load(url, onLoad, onProgress, onError) {
-    const loader = new FileLoader(this.manager);
+    const loader = new THREE.FileLoader(this.manager);
     loader.setPath(this.path);
     loader.setRequestHeader(this.requestHeader);
     loader.setWithCredentials(this.withCredentials);
@@ -181,12 +167,12 @@ class SVGLoader extends Loader {
     }
 
     function parsePathNode(node) {
-      const path = new ShapePath();
+      const path = new THREE.ShapePath();
 
-      const point = new Vector2();
-      const control = new Vector2();
+      const point = new THREE.Vector2();
+      const control = new THREE.Vector2();
 
-      const firstPoint = new Vector2();
+      const firstPoint = new THREE.Vector2();
       let isFirstPoint = true;
       let doSetFirstPoint = false;
 
@@ -739,7 +725,7 @@ class SVGLoader extends Loader {
       // https://spencermortensen.com/articles/bezier-circle/
       const bci = 1 - 0.551915024494;
 
-      const path = new ShapePath();
+      const path = new THREE.ShapePath();
 
       // top left
       path.moveTo(x + rx, y);
@@ -809,7 +795,7 @@ class SVGLoader extends Loader {
       const regex =
         /([+-]?\d*\.?\d+(?:e[+-]?\d+)?)(?:,|\s)([+-]?\d*\.?\d+(?:e[+-]?\d+)?)/g;
 
-      const path = new ShapePath();
+      const path = new THREE.ShapePath();
 
       let index = 0;
 
@@ -837,7 +823,7 @@ class SVGLoader extends Loader {
       const regex =
         /([+-]?\d*\.?\d+(?:e[+-]?\d+)?)(?:,|\s)([+-]?\d*\.?\d+(?:e[+-]?\d+)?)/g;
 
-      const path = new ShapePath();
+      const path = new THREE.ShapePath();
 
       let index = 0;
 
@@ -853,10 +839,10 @@ class SVGLoader extends Loader {
       const y = parseFloatWithUnits(node.getAttribute("cy") || 0);
       const r = parseFloatWithUnits(node.getAttribute("r") || 0);
 
-      const subpath = new Path();
+      const subpath = new THREE.Path();
       subpath.absarc(x, y, r, 0, Math.PI * 2);
 
-      const path = new ShapePath();
+      const path = new THREE.ShapePath();
       path.subPaths.push(subpath);
 
       return path;
@@ -868,10 +854,10 @@ class SVGLoader extends Loader {
       const rx = parseFloatWithUnits(node.getAttribute("rx") || 0);
       const ry = parseFloatWithUnits(node.getAttribute("ry") || 0);
 
-      const subpath = new Path();
+      const subpath = new THREE.Path();
       subpath.absellipse(x, y, rx, ry, 0, Math.PI * 2);
 
-      const path = new ShapePath();
+      const path = new THREE.ShapePath();
       path.subPaths.push(subpath);
 
       return path;
@@ -883,7 +869,7 @@ class SVGLoader extends Loader {
       const x2 = parseFloatWithUnits(node.getAttribute("x2") || 0);
       const y2 = parseFloatWithUnits(node.getAttribute("y2") || 0);
 
-      const path = new ShapePath();
+      const path = new THREE.ShapePath();
       path.moveTo(x1, y1);
       path.lineTo(x2, y2);
       path.currentPath.autoClose = false;
@@ -1269,7 +1255,7 @@ class SVGLoader extends Loader {
     }
 
     function parseNodeTransform(node) {
-      const transform = new Matrix3();
+      const transform = new THREE.Matrix3();
       const currentTransform = tempTransform0;
 
       if (
@@ -1437,8 +1423,8 @@ class SVGLoader extends Loader {
         const cosTheta = Math.cos(curve.aRotation);
         const sinTheta = Math.sin(curve.aRotation);
 
-        const v1 = new Vector3(a * cosTheta, a * sinTheta, 0);
-        const v2 = new Vector3(-b * sinTheta, b * cosTheta, 0);
+        const v1 = new THREE.Vector3(a * cosTheta, a * sinTheta, 0);
+        const v2 = new THREE.Vector3(-b * sinTheta, b * cosTheta, 0);
 
         const f1 = v1.applyMatrix3(m);
         const f2 = v2.applyMatrix3(m);
@@ -1493,7 +1479,7 @@ class SVGLoader extends Loader {
           const mDRF = mDsqrt.multiply(mRT).multiply(mF);
 
           const transformAngle = (phi) => {
-            const { x: cosR, y: sinR } = new Vector3(
+            const { x: cosR, y: sinR } = new THREE.Vector3(
               Math.cos(phi),
               Math.sin(phi),
               0,
@@ -1681,14 +1667,14 @@ class SVGLoader extends Loader {
 
     const transformStack = [];
 
-    const tempTransform0 = new Matrix3();
-    const tempTransform1 = new Matrix3();
-    const tempTransform2 = new Matrix3();
-    const tempTransform3 = new Matrix3();
-    const tempV2 = new Vector2();
-    const tempV3 = new Vector3();
+    const tempTransform0 = new THREE.Matrix3();
+    const tempTransform1 = new THREE.Matrix3();
+    const tempTransform2 = new THREE.Matrix3();
+    const tempTransform3 = new THREE.Matrix3();
+    const tempV2 = new THREE.Vector2();
+    const tempV3 = new THREE.Vector3();
 
-    const currentTransform = new Matrix3();
+    const currentTransform = new THREE.Matrix3();
 
     const xml = new DOMParser().parseFromString(text, "image/svg+xml"); // application/xml
 
@@ -1870,7 +1856,9 @@ class SVGLoader extends Loader {
             ) === undefined
           ) {
             intersectionsRaw.push(intersection);
-            intersections.push(new Vector2(intersection.x, intersection.y));
+            intersections.push(
+              new THREE.Vector2(intersection.x, intersection.y),
+            );
           }
         }
       }
@@ -1879,7 +1867,7 @@ class SVGLoader extends Loader {
     }
 
     function getScanlineIntersections(scanline, boundingBox, paths) {
-      const center = new Vector2();
+      const center = new THREE.Vector2();
       boundingBox.getCenter(center);
 
       const allIntersections = [];
@@ -1919,12 +1907,12 @@ class SVGLoader extends Loader {
         _fillRule = "nonzero";
       }
 
-      const centerBoundingBox = new Vector2();
+      const centerBoundingBox = new THREE.Vector2();
       simplePath.boundingBox.getCenter(centerBoundingBox);
 
       const scanline = [
-        new Vector2(scanlineMinX, centerBoundingBox.y),
-        new Vector2(scanlineMaxX, centerBoundingBox.y),
+        new THREE.Vector2(scanlineMinX, centerBoundingBox.y),
+        new THREE.Vector2(scanlineMaxX, centerBoundingBox.y),
       ];
 
       const scanlineIntersections = getScanlineIntersections(
@@ -2060,9 +2048,12 @@ class SVGLoader extends Loader {
       return {
         curves: p.curves,
         points: points,
-        isCW: ShapeUtils.isClockWise(points),
+        isCW: THREE.ShapeUtils.isClockWise(points),
         identifier: -1,
-        boundingBox: new Box2(new Vector2(minX, minY), new Vector2(maxX, maxY)),
+        boundingBox: new THREE.Box2(
+          new THREE.Vector2(minX, minY),
+          new THREE.Vector2(maxX, maxY),
+        ),
       };
     });
 
@@ -2088,12 +2079,12 @@ class SVGLoader extends Loader {
       const amIAHole = isAHole[p.identifier];
 
       if (!amIAHole.isHole) {
-        const shape = new Shape();
+        const shape = new THREE.Shape();
         shape.curves = p.curves;
         const holes = isAHole.filter((h) => h.isHole && h.for === p.identifier);
         holes.forEach((h) => {
           const hole = simplePaths[h.identifier];
-          const path = new Path();
+          const path = new THREE.Path();
           path.curves = hole.curves;
           shape.holes.push(path);
         });
@@ -2154,10 +2145,16 @@ class SVGLoader extends Loader {
       return null;
     }
 
-    const geometry = new BufferGeometry();
-    geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
-    geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
-    geometry.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(vertices, 3),
+    );
+    geometry.setAttribute(
+      "normal",
+      new THREE.Float32BufferAttribute(normals, 3),
+    );
+    geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
 
     return geometry;
   }
@@ -2179,23 +2176,23 @@ class SVGLoader extends Loader {
     // if 'vertices' parameter is undefined no triangles will be generated, but the returned vertices count will still be valid (useful to preallocate the buffers)
     // 'normals' and 'uvs' buffers are optional
 
-    const tempV2_1 = new Vector2();
-    const tempV2_2 = new Vector2();
-    const tempV2_3 = new Vector2();
-    const tempV2_4 = new Vector2();
-    const tempV2_5 = new Vector2();
-    const tempV2_6 = new Vector2();
-    const tempV2_7 = new Vector2();
-    const lastPointL = new Vector2();
-    const lastPointR = new Vector2();
-    const point0L = new Vector2();
-    const point0R = new Vector2();
-    const currentPointL = new Vector2();
-    const currentPointR = new Vector2();
-    const nextPointL = new Vector2();
-    const nextPointR = new Vector2();
-    const innerPoint = new Vector2();
-    const outerPoint = new Vector2();
+    const tempV2_1 = new THREE.Vector2();
+    const tempV2_2 = new THREE.Vector2();
+    const tempV2_3 = new THREE.Vector2();
+    const tempV2_4 = new THREE.Vector2();
+    const tempV2_5 = new THREE.Vector2();
+    const tempV2_6 = new THREE.Vector2();
+    const tempV2_7 = new THREE.Vector2();
+    const lastPointL = new THREE.Vector2();
+    const lastPointR = new THREE.Vector2();
+    const point0L = new THREE.Vector2();
+    const point0R = new THREE.Vector2();
+    const currentPointL = new THREE.Vector2();
+    const currentPointR = new THREE.Vector2();
+    const nextPointL = new THREE.Vector2();
+    const nextPointR = new THREE.Vector2();
+    const innerPoint = new THREE.Vector2();
+    const outerPoint = new THREE.Vector2();
 
     arcDivisions = arcDivisions !== undefined ? arcDivisions : 12;
     minDistance = minDistance !== undefined ? minDistance : 0.001;
