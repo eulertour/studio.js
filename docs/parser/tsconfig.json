@@ -1,13 +1,12 @@
 {
 	"compilerOptions": {
-		"target": "ES6",
-		"module": "NodeNext",
+		"target": "es6",
+		"module": "nodenext",
 		"lib": ["es2017", "es7", "es6", "dom"],
 		"declaration": true,
 		"outDir": ".",
 		"strict": true,
 		"esModuleInterop": true,
-		"moduleResolution": "NodeNext"
-	},
-	"exclude": ["node_modules", "dist", "tsc"]
+		"moduleResolution": "nodenext"
+	}
 }
