@@ -25,11 +25,6 @@ type Style = {
   dashed?: boolean;
 };
 
-type LineAttributes = {
-  start: THREE.Vector3;
-  end: THREE.Vector3;
-};
-
 type ArcAttributes = {
   radius: number;
   angle: number;
@@ -315,99 +310,9 @@ abstract class Shape extends THREE.Group {
   }
 }
 
-/**
- * A segment between two points.
- *
- * @example line.ts
- */
-class Line extends Shape {
-  constructor(
-    public start: THREE.Vector3,
-    public end: THREE.Vector3,
-    config: Style & { arrow?: boolean } = {},
-  ) {
-    config = { ...Line.defaultConfig(), ...config };
-    super([start, end], config);
-    this.arrow = config.arrow;
-    this.curveEndIndices = [[0, 1]];
-  }
 
-  static defaultConfig() {
-    return { ...Shape.defaultConfig(), arrow: false };
-  }
 
-  static centeredLine(
-    start: THREE.Vector3,
-    end: THREE.Vector3,
-    config: Style = {},
-  ) {
-    const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
-    const line = new Line(
-      new THREE.Vector3().subVectors(start, center),
-      new THREE.Vector3().subVectors(end, center),
-      config,
-    );
-    line.position.copy(center);
-    return line;
-  }
 
-  reshape(
-    start: THREE.Vector3,
-    end: THREE.Vector3,
-    config: Style & { arrow?: boolean } = {},
-  ) {
-    this.start.copy(start);
-    this.end.copy(end);
-    this.copyStrokeFill(new Line(start, end, config));
-  }
-
-  getClassConfig() {
-    return {};
-  }
-
-  getAttributes(): LineAttributes {
-    return {
-      start: this.start,
-      end: this.end,
-    };
-  }
-
-  getVector(global = false) {
-    this.updateWorldMatrix(true, false);
-    return global
-      ? new THREE.Vector3().subVectors(
-          new THREE.Vector3().copy(this.end).applyMatrix4(this.matrixWorld),
-          new THREE.Vector3().copy(this.start).applyMatrix4(this.matrixWorld),
-        )
-      : new THREE.Vector3().subVectors(this.end, this.start);
-  }
-
-  static fromAttributes(attributes: LineAttributes): Line {
-    const { start, end } = attributes;
-    return new Line(start, end);
-  }
-}
-
-/**
- * An arrow derived from a line.
- *
- * @example arrow.ts
- */
-class Arrow extends Line {
-  constructor(
-    public start: THREE.Vector3,
-    public end: THREE.Vector3,
-    config: Style = {},
-  ) {
-    super(start, end, { ...Arrow.defaultConfig(), ...config, arrow: true });
-  }
-
-  reshape(start: THREE.Vector3, end: THREE.Vector3, config: Style = {}) {
-    this.start.copy(start);
-    this.end.copy(end);
-    this.copyStrokeFill(new Arrow(start, end, config));
-  }
-}
 
 /**
  * A series of connected line segments.
@@ -789,8 +694,6 @@ class Square extends Rectangle {
 
 export {
   Shape,
-  Line,
-  Arrow,
   Point,
   Circle,
   Arc,
@@ -805,7 +708,6 @@ export type {
   Transform,
   Style,
   PolygonAttributes,
-  LineAttributes,
   ArcAttributes,
   RectangleAttributes,
 };
