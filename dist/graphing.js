@@ -1,4 +1,4 @@
-import THREE from "./three.js";
+import * as THREE from "three";
 import { Polyline } from "./geometry.js";
 /**
  * A curve described by an equation.

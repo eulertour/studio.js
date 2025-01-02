@@ -1,4 +1,4 @@
-import THREE from "./three.js";
+import * as THREE from "three";
 import * as Utils from "./utils.js";
 THREE.Vector3.prototype.rotate90 = function () {
     return Utils.rotate90(this);

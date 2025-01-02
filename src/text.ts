@@ -1,4 +1,4 @@
-import THREE from "./three.js";
+import * as THREE from "three";
 // import { SVGLoader } from './SVGLoader.js';
 import { SVGLoader } from "./SVGLoader.js";
 import type { Transform } from "./geometry.js";

@@ -1,4 +1,4 @@
-import THREE from "../three.js";
+import * as THREE from "three";
 import { MESHLINE_FRAG, MESHLINE_VERT } from "./meshline.glsl.js";
 export const CameraDimensions = new THREE.Vector2();
 export const setCameraDimensions = (camera) => {

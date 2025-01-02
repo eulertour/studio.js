@@ -1,4 +1,4 @@
-import THREE from "./three.js";
+import * as THREE from "three";
 import { MeshLine } from "./MeshLine/index.js";
 type Transform = {
     position: THREE.Vector3;

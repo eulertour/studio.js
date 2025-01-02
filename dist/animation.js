@@ -1,4 +1,4 @@
-import THREE from "./three.js";
+import * as THREE from "three";
 import { clamp, getBoundingBoxCenter } from "./utils.js";
 const sigmoid = (x) => 1 / (1 + Math.exp(-x));
 const smooth = (t) => {

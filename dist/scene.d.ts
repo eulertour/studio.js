@@ -1,4 +1,4 @@
-import THREE from "./three.js";
+import * as THREE from "three";
 import { Animation } from "./animation.js";
 import { type HeightSetupConfig, type WidthSetupConfig } from "./utils.js";
 type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;

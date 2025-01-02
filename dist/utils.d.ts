@@ -1,4 +1,4 @@
-import THREE from "./three.js";
+import * as THREE from "three";
 import * as Geometry from "./geometry.js";
 declare const BUFFER = 0.5;
 declare const ORIGIN: Readonly<THREE.Vector3>;

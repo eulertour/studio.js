@@ -1,4 +1,4 @@
-import THREE from "./three.js";
+import * as THREE from "three";
 declare class SVGLoader extends THREE.Loader {
     constructor(manager: any);
     load(url: any, onLoad: any, onProgress: any, onError: any): void;

@@ -1,4 +1,4 @@
-import THREE from "../three.js";
+import * as THREE from "three";
 import type MeshLineMaterial from "./MeshLineMaterial.js";
 
 export default function MeshLineRaycast(

@@ -1,4 +1,4 @@
-import THREE from "../three.js";
+import * as THREE from "three";
 
 export const MESHLINE_VERT = /*glsl*/ `
 ${THREE.ShaderChunk.logdepthbuf_pars_vertex}

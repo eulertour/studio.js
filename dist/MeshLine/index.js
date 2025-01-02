@@ -1,4 +1,4 @@
-import THREE from "../three.js";
+import * as THREE from "three";
 import MeshLineGeometry from "./MeshLineGeometry.js";
 import MeshLineMaterial from "./MeshLineMaterial.js";
 import MeshLineRaycast from "./MeshLineRaycast.js";

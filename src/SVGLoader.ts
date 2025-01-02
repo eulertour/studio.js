@@ -1,4 +1,4 @@
-import THREE from "./three.js";
+import * as THREE from "three";
 
 const COLOR_SPACE_SVG = THREE.SRGBColorSpace;
 
