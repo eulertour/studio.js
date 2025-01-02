@@ -436,6 +436,33 @@ class Wait extends Animation {
   }
 }
 
+class Emphasize extends Animation {
+  constructor(object, config?) {
+    let scale = 1.1;
+    
+    if (config && config.scale) {
+      scale = config.scale;
+    }
+
+    const startScale = object.scale.x;
+    super(
+      (t) => {
+        const keyframe = 0.9;
+        let interpolatedScale;
+        if (t <= keyframe) {
+          const t0 = t / keyframe;
+          interpolatedScale = (1 - t0) * startScale + t0 * scale;
+        } else {
+          const t0 = (t - keyframe) / (1 - keyframe);
+          interpolatedScale = (1 - t0) * scale + t0 * startScale;
+        }
+        object.setScale(interpolatedScale);
+      },
+      { object, ...config },
+    );
+  }
+}
+
 export {
   Animation,
   Shift,
@@ -448,4 +475,5 @@ export {
   FadeOut,
   SetOpacity,
   Wait,
+  Emphasize,
 };
