@@ -422,12 +422,10 @@ import {
 import * as Text from "./text.js";
 import { setupCanvas } from "./utils.js";
 
-import { Line, Arrow } from "./line.js";
-const GeometryExport = { ...Geometry, Line, Arrow };
 
 export {
   component,
-  GeometryExport as Geometry,
+  Geometry,
   Animation,
   Text,
   SceneController,
