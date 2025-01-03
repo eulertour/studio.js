@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-		"outDir": "build/studio",
+		"outDir": "build/studio/dist",
     "target": "es2020",
     "useDefineForClassFields": true,
     "module": "nodenext",

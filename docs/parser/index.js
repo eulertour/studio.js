@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { ApiItemKind, ApiModel, ApiNamespace, } from "@microsoft/api-extractor-model";
 import { DocExcerpt, DocNodeKind, } from "@microsoft/tsdoc";
 import colors from "colors";
-import * as Studio from "../../build/studio/index.js";
+import * as Studio from "../../build/studio/dist/index.js";
 if (process.argv.length < 3) {
     console.error("Usage: node index.js <path to studio.api.json> <output json path>");
     process.exit(1);

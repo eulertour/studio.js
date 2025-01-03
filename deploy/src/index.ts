@@ -15,8 +15,12 @@ if (mode === Mode.EMULATOR) {
 
 console.log("Uploading files...");
 const storage = getStorageBucket(mode);
-await uploadToStorage(storage, "dist", "dist");
-await uploadToStorage(storage, "src", "src");
-await uploadToStorage(storage, "package.json", "package.json");
+await uploadToStorage(storage, "build/studio", "share/lib/studio");
+await uploadToStorage(storage, "build/three", "share/lib/three");
+await uploadToStorage(
+  storage,
+  "build/studio.api.json",
+  "share/studio.api.json",
+);
 
 console.log("Done!");

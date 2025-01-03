@@ -4,10 +4,8 @@ import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { type AppOptions, initializeApp } from "firebase-admin/app";
 import { getStorage, Storage } from "firebase-admin/storage";
-import {
-  CURRENT_DIRECTORY_TO_PROJECT_ROOT,
-  STORAGE_LIBRARY_ROOT,
-} from "./config.ts";
+
+const CURRENT_DIRECTORY_TO_PROJECT_ROOT = "../..";
 
 enum Mode {
   EMULATOR = "EMULATOR",
@@ -90,7 +88,7 @@ async function uploadToStorage(
 
   const stats = await stat(localAbsolutePath);
   if (stats.isFile()) {
-    const remoteAbsolutePath = path.join(STORAGE_LIBRARY_ROOT, remotePath);
+    const remoteAbsolutePath = path.join(remotePath);
     await storage.bucket().upload(localAbsolutePath, {
       destination: remoteAbsolutePath,
     });
@@ -102,19 +100,15 @@ async function uploadToStorage(
 
     for (const file of files) {
       if (file.isDirectory()) continue;
-
-      const localAbsolutePath = path.join(file.parentPath, file.name);
-      const localRelativePath = path.relative(
-        projectRootAbsolutePath,
+      const localFileAbsolutePath = path.join(file.parentPath, file.name);
+      const localFileRelativePath = path.relative(
         localAbsolutePath,
+        localFileAbsolutePath,
       );
-      const remoteAbsolutePath = path.join(
-        STORAGE_LIBRARY_ROOT,
-        localRelativePath,
-      );
+      const remoteAbsolutePath = path.join(remotePath, localFileRelativePath);
       await storage
         .bucket()
-        .upload(localAbsolutePath, { destination: remoteAbsolutePath });
+        .upload(localFileAbsolutePath, { destination: remoteAbsolutePath });
     }
   }
 }

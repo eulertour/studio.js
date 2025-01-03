@@ -17,7 +17,7 @@ import {
   type DocSection,
 } from "@microsoft/tsdoc";
 import colors from "colors";
-import * as Studio from "../../build/studio/index.js";
+import * as Studio from "../../build/studio/dist/index.js";
 
 if (process.argv.length < 3) {
   console.error(

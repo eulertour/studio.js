@@ -45,6 +45,6 @@ export default tseslint.config(
   // NOTE: Exclude rollup.three.ts because project service
   // settings don't seem to work properly
   {
-    ignores: ["build/", "node_modules/", "rollup.three.ts"],
+    ignores: ["build/", "node_modules/", "rollup.*.ts"],
   },
 );

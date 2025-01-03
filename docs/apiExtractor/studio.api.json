@@ -3664,7 +3664,7 @@
               "text": "{\n    readonly horizontal: {\n        readonly nhd: {\n            readonly aspectRatio: number;\n            readonly coordinateHeight: 8;\n            readonly pixelHeight: 360;\n            readonly frameRate: 30;\n        };\n        readonly hd: {\n            readonly aspectRatio: number;\n            readonly coordinateHeight: 8;\n            readonly pixelHeight: 720;\n            readonly frameRate: 30;\n        };\n        readonly fhd: {\n            readonly aspectRatio: number;\n            readonly coordinateHeight: 8;\n            readonly pixelHeight: 1080;\n            readonly frameRate: 60;\n        };\n    };\n    readonly vertical: {\n        readonly nhd: {\n            readonly aspectRatio: number;\n            readonly coordinateWidth: 8;\n            readonly pixelWidth: 360;\n            readonly frameRate: 30;\n        };\n        readonly hd: {\n            readonly aspectRatio: number;\n            readonly coordinateWidth: 8;\n            readonly pixelWidth: 720;\n            readonly frameRate: 30;\n        };\n        readonly fhd: {\n            readonly aspectRatio: number;\n            readonly coordinateWidth: 8;\n            readonly pixelWidth: 1080;\n            readonly frameRate: 60;\n        };\n    };\n}"
             }
           ],
-          "fileUrlPath": "build/studio/frame.d.ts",
+          "fileUrlPath": "build/studio/dist/frame.d.ts",
           "isReadonly": true,
           "releaseTag": "Public",
           "name": "Frame",
