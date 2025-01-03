@@ -25,7 +25,6 @@ export default tseslint.config(
       parserOptions: {
         tsconfigRootDir: import.meta.dirname,
         projectService: true,
-        project: "./tsconfig.json",
       },
     },
     plugins: {
@@ -43,7 +42,9 @@ export default tseslint.config(
   prettier,
 
   // Global ignore rules
+  // NOTE: Exclude rollup.three.ts because project service
+  // settings don't seem to work properly
   {
-    ignores: ["build/", "node_modules/"],
+    ignores: ["build/", "node_modules/", "rollup.three.ts"],
   },
 );

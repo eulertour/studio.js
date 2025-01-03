@@ -5,7 +5,7 @@ import commonjs from "@rollup/plugin-commonjs";
 export default {
   input: "src/mathjax.ts",
   output: {
-    file: "dist/mathjax.js",
+    file: "build/studio/mathjax.js",
     format: "es",
     sourcemap: true,
   },
@@ -13,9 +13,9 @@ export default {
     nodeResolve(),
     typescript({
       declaration: true,
-      declarationDir: "./dist",
+      declarationDir: "./build/studio",
       declarationMap: true,
-      tsconfig: "./tsconfig.mathjax.json",
+      // tsconfig: "./tsconfig.mathjax.json",
     }),
     commonjs(),
   ],

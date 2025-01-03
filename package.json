@@ -7,12 +7,12 @@
   "source": "src/index.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "dist/index.d.ts"
+      "import": "./build/studio/index.js",
+      "types": "./build/studio/index.d.ts"
     }
   },
   "files": [
-    "dist",
+    "build/studio",
     "src"
   ],
   "scripts": {
@@ -24,7 +24,7 @@
     "build:three": "rollup --config rollup.three.ts --configPlugin typescript",
     "build:api": "bun run :extractApi && bun run :parseJson",
     ":extractApi": "api-extractor run --config docs/apiExtractor/api-extractor.json --local --verbose",
-    ":parseJson": "node ./docs/parser/index.js docs/apiExtractor/studio.js.api.json ./dist/api.json",
+    ":parseJson": "node ./docs/parser/index.js docs/apiExtractor/studio.js.api.json ./build/studio.api.json",
     "deploy:emulator": "bun run :deploy -- --emulator",
     "deploy:staging": "bun run :deploy -- --staging",
     "deploy:production": "bun run :deploy -- --production",
@@ -48,6 +48,7 @@
   "dependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
     "mathjax-full": "^3.2.2",
+    "rollup-plugin-dts": "^6.1.1",
     "three": "^0.171.0",
     "tslib": "^2.8.1"
   }

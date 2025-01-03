@@ -1,22 +1,10 @@
-import { nodeResolve } from "@rollup/plugin-node-resolve";
-import typescript from "@rollup/plugin-typescript";
-import commonjs from "@rollup/plugin-commonjs";
+import { dts } from "rollup-plugin-dts";
 
 export default {
-  input: "src/three.ts",
+  input: "node_modules/@types/three/index.d.ts",
   output: {
-    file: "dist/three.js",
+    file: "build/three/index.d.ts",
     format: "es",
-    sourcemap: true,
   },
-  plugins: [
-    nodeResolve(),
-    typescript({
-      declaration: true,
-      declarationDir: "./dist",
-      declarationMap: true,
-      tsconfig: "./tsconfig.three.json",
-    }),
-    commonjs(),
-  ],
+  plugins: [dts({ respectExternal: true })],
 };
