@@ -1,7 +1,7 @@
-import { Shape, Style } from "./geometry.js";
+import { Style } from "./geometry.js";
 import { THREE } from "./index.js";
 import { ERROR_THRESHOLD } from "./utils.js";
-
+import Shape from "./shape.js";
 /**
  * A part of a circle's circumference.
  *

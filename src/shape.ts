@@ -1,4 +1,4 @@
-import { THREE } from "./index.js";
+import * as THREE from "three";
 import { Style } from "./geometry.js";
 import {
     MeshLine,
@@ -10,6 +10,20 @@ import { Utils } from "./utils.js";
 /**
  * An abstract class representing a generalized shape.
  */
+
+const getFillGeometry = (points: Array<THREE.Vector3>) => {
+    const shape = new THREE.Shape();
+    shape.moveTo(points[0].x, points[0].y);
+    for (const point of points.slice(1)) {
+      shape.lineTo(point.x, point.y);
+    }
+    shape.closePath();
+    return new THREE.ShapeGeometry(shape);
+  };
+  
+  type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
+  type Stroke = MeshLine;
+
 export default abstract class Shape extends THREE.Group {
     fill?: Fill;
     stroke?: Stroke;

@@ -1,5 +1,6 @@
 import THREE from "./three.js";
-import { Shape, Style } from "./geometry.js";
+import { Style } from "./geometry.js";
+import Shape from "./shape.js";
 
 type LineAttributes = {
   start: THREE.Vector3;

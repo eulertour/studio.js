@@ -1,6 +1,6 @@
-import { Shape, Style } from "./geometry.js";
+import { Style } from "./geometry.js";
 import { THREE } from "./index.js";
-
+import Shape from "./shape.js";
 /**
  * A series of connected line segments.
  *
