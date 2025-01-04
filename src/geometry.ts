@@ -28,7 +28,6 @@ type Style = {
   dashed?: boolean;
 };
 
-
 export {
   Shape,
   Line,
@@ -46,6 +45,4 @@ export {
 export type {
   Transform,
   Style,
-  ArcAttributes,
-  RectangleAttributes,
 };

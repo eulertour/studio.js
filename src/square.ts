@@ -2,6 +2,7 @@ import { Style } from "./geometry.js";
 import Rectangle from "./rectangle.js";
 import RectangleAttributes from "./rectangle.js";
 
+
 /**
  * A shape with four sides of equal length and four right angles.
  *
