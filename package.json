@@ -18,13 +18,12 @@
   "scripts": {
     "dev": "vite",
     "test": "vitest",
-    "build": "bun run build:source; bun run build:mathjax; bun run build:three; bun run build:api; bun run copy:examples",
+    "build": "rm -rf build; bun run build:source; bun run build:mathjax; bun run build:three; bun run build:api; bun run copy:examples",
     "build:source": "tsc; rollup --config rollup.studio.ts --configPlugin typescript",
     "build:mathjax": "rollup --config rollup.mathjax.ts --configPlugin typescript",
     "build:three": "bun run :bundleThreeTypes && bun run :copyThreeBundle",
     ":bundleThreeTypes": "rollup --config rollup.three-types.ts --configPlugin typescript",
-    ":copyThreeBundle": "cp node_modules/three/build/three.{module,core}.js build/three",
-    ":copyThreePackageJson": "cp node_modules/three/build/three.{module,core}.js build/three",
+    ":copyThreeBundle": "cp node_modules/three/build/three.module.js build/three",
     "build:api": "bun run :extractApi && bun run :parseJson",
     ":extractApi": "api-extractor run --config docs/apiExtractor/api-extractor.json --local --verbose",
     ":parseJson": "node ./docs/parser/index.js docs/apiExtractor/studio.js.api.json ./build/studio.api.json",
@@ -38,22 +37,22 @@
     "@microsoft/api-extractor": "^7.48.1",
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-node-resolve": "^16.0.0",
-    "@types/three": "^0.171.0",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/three": "^0.162",
     "ajv": "8",
     "colors": "^1.4.0",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
+    "mathjax-full": "^3.2.2",
+    "rollup-plugin-dts": "^6.1.1",
     "serve": "^14.2.4",
+    "tslib": "^2.8.1",
     "typescript": "5.4",
     "typescript-eslint": "^8.18.2",
     "vite": "^6.0.5",
     "vitest": "^2.1.8"
   },
   "dependencies": {
-    "@rollup/plugin-typescript": "^12.1.2",
-    "mathjax-full": "^3.2.2",
-    "rollup-plugin-dts": "^6.1.1",
-    "three": "^0.171.0",
-    "tslib": "^2.8.1"
+    "three": "^0.162"
   }
 }
