@@ -6,6 +6,7 @@ import Shape from "./shape.js";
 import Arrow from "./arrow.js";
 import Line from "./line.js";
 import Polygon from "./polygon.js";
+import Polyline from "./polyline.js";
 
 type Transform = {
   position: THREE.Vector3;
@@ -24,8 +25,6 @@ type Style = {
   dashed?: boolean;
 };
 
-
-
 type ArcAttributes = {
   radius: number;
   angle: number;
@@ -36,8 +35,6 @@ type RectangleAttributes = {
   width: number;
   height: number;
 };
-
-
 
 const getFillGeometry = (points: Array<THREE.Vector3>) => {
   const shape = new THREE.Shape();
@@ -53,41 +50,6 @@ type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
 type Stroke = MeshLine;
 
 
-/**
- * A series of connected line segments.
- *
- * @example polyline.ts
- */
-class Polyline extends Shape {
-  constructor(points: Array<THREE.Vector3>, config: Style = {}) {
-    super(points, { ...Polyline.defaultConfig(), ...config, fillOpacity: 0 });
-
-    this.curveEndIndices = [[0, 1]];
-  }
-
-  reshape(points: Array<THREE.Vector3>, config: Style = {}) {
-    this.copyStrokeFill(new Polyline(points, config));
-  }
-
-  static defaultConfig() {
-    return { ...Shape.defaultConfig(), fill: false };
-  }
-
-  getClassConfig() {
-    return {};
-  }
-
-  getAttributes(): PolygonAttributes {
-    return {
-      points: this.points,
-    };
-  }
-
-  static fromAttributes(attributes: PolygonAttributes): Polyline {
-    const { points } = attributes;
-    return new Polyline(points);
-  }
-}
 
 /**
  * A part of a circle's circumference.
