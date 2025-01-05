@@ -1,10 +1,11 @@
+/// <reference types="@xmldom/xmldom" />
 import * as THREE from "three";
 declare class SVGLoader extends THREE.Loader {
     constructor(manager: any);
     load(url: any, onLoad: any, onProgress: any, onError: any): void;
     parse(text: any): {
         paths: any[];
-        xml: HTMLElement;
+        xml: import("@xmldom/xmldom").Element | null;
     };
     static createShapes(shapePath: any): any[];
     static getStrokeStyle(width: any, color: any, lineJoin: any, lineCap: any, miterLimit: any): {

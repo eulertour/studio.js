@@ -39,6 +39,7 @@
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-typescript": "^12.1.2",
     "@types/three": "^0.162",
+    "@xmldom/xmldom": "^0.9.6",
     "ajv": "8",
     "colors": "^1.4.0",
     "eslint": "^9.17.0",
