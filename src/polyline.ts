@@ -1,6 +1,7 @@
 import { Style } from "./geometry.js";
 import { THREE } from "./index.js";
 import Shape from "./shape.js";
+import PolygonAttributes from "./polygon.js";
 /**
  * A series of connected line segments.
  *
