@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { MeshLine } from "./MeshLine/index.js";
-import { ORIGIN } from "./utils.js";
 import Shape, { type Style, type Transform } from "./shape.js";
 import Line, { LineAttributes } from "./line.js";
 import Arrow from "./arrow.js";
@@ -8,48 +7,12 @@ import Polygon, { PolygonAttributes } from "./polygon.js";
 import Polyline from "./polyline.js";
 import Arc, { ArcAttributes } from "./arc.js";
 import Circle from "./circle.js";
+import Point from "./point.js";
 
 type RectangleAttributes = {
   width: number;
   height: number;
 };
-
-/**
- * A small circle representing a precise location in space.
- *
- * @example point.ts
- */
-class Point extends Circle {
-  constructor(
-    position: THREE.Vector2 | THREE.Vector3 = ORIGIN,
-    config: Style & { radius?: number } = {},
-  ) {
-    config = {
-      fillColor: new THREE.Color("black"),
-      fillOpacity: 1,
-      ...Point.defaultConfig(),
-      ...config,
-    };
-    super(config.radius, config);
-    this.position.set(position.x, position.y, 0);
-  }
-
-  static defaultConfig() {
-    return { ...Circle.defaultConfig(), radius: 0.08 };
-  }
-
-  getAttributes(): ArcAttributes {
-    return {
-      radius: this.radius,
-      angle: 2 * Math.PI,
-      closed: false,
-    };
-  }
-
-  static fromAttributes(): Point {
-    return new Point(new THREE.Vector3());
-  }
-}
 
 /**
  * A shape with four sides and four right angles.

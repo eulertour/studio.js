@@ -1551,6 +1551,7 @@ class Point extends Circle {
         return new Point(new THREE.Vector3());
     }
 }
+
 /**
  * A shape with four sides and four right angles.
  *

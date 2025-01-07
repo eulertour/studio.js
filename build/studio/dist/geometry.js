@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { MeshLine } from "./MeshLine/index.js";
-import { ORIGIN } from "./utils.js";
 import Shape from "./shape.js";
 import Line from "./line.js";
 import Arrow from "./arrow.js";
@@ -8,36 +7,7 @@ import Polygon from "./polygon.js";
 import Polyline from "./polyline.js";
 import Arc from "./arc.js";
 import Circle from "./circle.js";
-/**
- * A small circle representing a precise location in space.
- *
- * @example point.ts
- */
-class Point extends Circle {
-    constructor(position = ORIGIN, config = {}) {
-        config = {
-            fillColor: new THREE.Color("black"),
-            fillOpacity: 1,
-            ...Point.defaultConfig(),
-            ...config,
-        };
-        super(config.radius, config);
-        this.position.set(position.x, position.y, 0);
-    }
-    static defaultConfig() {
-        return { ...Circle.defaultConfig(), radius: 0.08 };
-    }
-    getAttributes() {
-        return {
-            radius: this.radius,
-            angle: 2 * Math.PI,
-            closed: false,
-        };
-    }
-    static fromAttributes() {
-        return new Point(new THREE.Vector3());
-    }
-}
+import Point from "./point.js";
 /**
  * A shape with four sides and four right angles.
  *

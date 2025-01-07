@@ -5507,7 +5507,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class Point extends "
+                  "text": "export default class Point extends "
                 },
                 {
                   "kind": "Reference",
@@ -5519,7 +5519,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/point.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "Point",

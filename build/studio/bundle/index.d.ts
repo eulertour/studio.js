@@ -252,10 +252,6 @@ declare class Circle extends Arc {
     }[];
 }
 
-type RectangleAttributes = {
-    width: number;
-    height: number;
-};
 /**
  * A small circle representing a precise location in space.
  *
@@ -273,6 +269,11 @@ declare class Point extends Circle {
     getAttributes(): ArcAttributes;
     static fromAttributes(): Point;
 }
+
+type RectangleAttributes = {
+    width: number;
+    height: number;
+};
 /**
  * A shape with four sides and four right angles.
  *
