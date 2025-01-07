@@ -312,6 +312,7 @@ declare class Square extends Rectangle {
         default: number;
     }[];
 }
+
 //# sourceMappingURL=geometry.d.ts.map
 
 type geometry_d_Arc = Arc;
