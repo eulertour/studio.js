@@ -31,9 +31,3 @@ export default class Animation implements StudioScene {
   update(deltaTime: number, time: number) {}
 }
 ```
-
-TODO run the animation
-
-## Examples
-
-TODO
