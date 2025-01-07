@@ -65,22 +65,6 @@ type Style = {
     strokeDashOffset?: number;
     dashed?: boolean;
 };
-type LineAttributes = {
-    start: THREE.Vector3;
-    end: THREE.Vector3;
-};
-type ArcAttributes = {
-    radius: number;
-    angle: number;
-    closed: boolean;
-};
-type RectangleAttributes = {
-    width: number;
-    height: number;
-};
-type PolygonAttributes = {
-    points: Array<THREE.Vector3>;
-};
 type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
 type Stroke = MeshLine;
 /**
@@ -131,6 +115,23 @@ declare abstract class Shape extends THREE.Group {
     getDimensions(): THREE.Vector2;
     closestPointToPoint(point: THREE.Vector3, target?: THREE.Vector3): THREE.Vector3;
 }
+
+type LineAttributes = {
+    start: THREE.Vector3;
+    end: THREE.Vector3;
+};
+type ArcAttributes = {
+    radius: number;
+    angle: number;
+    closed: boolean;
+};
+type RectangleAttributes = {
+    width: number;
+    height: number;
+};
+type PolygonAttributes = {
+    points: Array<THREE.Vector3>;
+};
 /**
  * A segment between two points.
  *

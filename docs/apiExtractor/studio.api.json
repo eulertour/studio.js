@@ -6668,7 +6668,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare abstract class Shape extends "
+                  "text": "export default abstract class Shape extends "
                 },
                 {
                   "kind": "Reference",
@@ -6680,7 +6680,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/shape.ts",
               "releaseTag": "Public",
               "isAbstract": true,
               "name": "Shape",
@@ -8303,7 +8303,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "type Style = "
+                  "text": "export type Style = "
                 },
                 {
                   "kind": "Content",
@@ -8332,7 +8332,7 @@
                   "text": ";"
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/shape.ts",
               "releaseTag": "Public",
               "name": "Style",
               "typeTokenRange": {
@@ -8347,7 +8347,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "type Transform = "
+                  "text": "export type Transform = "
                 },
                 {
                   "kind": "Content",
@@ -8385,7 +8385,7 @@
                   "text": ";"
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/shape.ts",
               "releaseTag": "Public",
               "name": "Transform",
               "typeTokenRange": {

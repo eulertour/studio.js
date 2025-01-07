@@ -1228,6 +1228,7 @@ class Shape extends THREE.Group {
         return target;
     }
 }
+
 /**
  * A segment between two points.
  *
