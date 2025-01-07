@@ -4,6 +4,7 @@ import { ERROR_THRESHOLD } from "./constants.js";
 import { ORIGIN } from "./utils.js";
 import Shape, { type Style, type Transform } from "./shape.js";
 import Line, { LineAttributes } from "./line.js";
+import Arrow from "./arrow.js";
 
 type ArcAttributes = {
   radius: number;
@@ -19,27 +20,6 @@ type RectangleAttributes = {
 type PolygonAttributes = {
   points: Array<THREE.Vector3>;
 };
-
-/**
- * An arrow derived from a line.
- *
- * @example arrow.ts
- */
-class Arrow extends Line {
-  constructor(
-    public start: THREE.Vector3,
-    public end: THREE.Vector3,
-    config: Style = {},
-  ) {
-    super(start, end, { ...Arrow.defaultConfig(), ...config, arrow: true });
-  }
-
-  reshape(start: THREE.Vector3, end: THREE.Vector3, config: Style = {}) {
-    this.start.copy(start);
-    this.end.copy(end);
-    this.copyStrokeFill(new Arrow(start, end, config));
-  }
-}
 
 /**
  * A series of connected line segments.

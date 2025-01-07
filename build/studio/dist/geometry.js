@@ -4,33 +4,7 @@ import { ERROR_THRESHOLD } from "./constants.js";
 import { ORIGIN } from "./utils.js";
 import Shape from "./shape.js";
 import Line from "./line.js";
-/**
- * An arrow derived from a line.
- *
- * @example arrow.ts
- */
-class Arrow extends Line {
-    constructor(start, end, config = {}) {
-        super(start, end, { ...Arrow.defaultConfig(), ...config, arrow: true });
-        Object.defineProperty(this, "start", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: start
-        });
-        Object.defineProperty(this, "end", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: end
-        });
-    }
-    reshape(start, end, config = {}) {
-        this.start.copy(start);
-        this.end.copy(end);
-        this.copyStrokeFill(new Arrow(start, end, config));
-    }
-}
+import Arrow from "./arrow.js";
 /**
  * A series of connected line segments.
  *

@@ -4198,7 +4198,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class Arrow extends "
+                  "text": "export default class Arrow extends "
                 },
                 {
                   "kind": "Reference",
@@ -4210,7 +4210,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/arrow.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "Arrow",

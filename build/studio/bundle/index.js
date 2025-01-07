@@ -1315,6 +1315,7 @@ class Arrow extends Line {
         this.copyStrokeFill(new Arrow(start, end, config));
     }
 }
+
 /**
  * A series of connected line segments.
  *
