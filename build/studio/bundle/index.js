@@ -1317,6 +1317,35 @@ class Arrow extends Line {
 }
 
 /**
+ * A shape made up of line segments connected
+ * to form a (usually) closed shape.
+ *
+ * @example polygon.ts
+ */
+class Polygon extends Shape {
+    constructor(points, config = {}) {
+        super(points, { ...Polygon.defaultConfig(), ...config });
+        this.curveEndIndices = [];
+        for (let i = 0; i < points.length - 1; i++) {
+            this.curveEndIndices.push([i, i + 1]);
+        }
+    }
+    getClassConfig() {
+        return {};
+    }
+    getAttributes() {
+        return { points: this.points };
+    }
+    static fromAttributes(attributes) {
+        const { points } = attributes;
+        return new Polygon(points);
+    }
+    get attributeData() {
+        return [];
+    }
+}
+
+/**
  * A series of connected line segments.
  *
  * @example polyline.ts
@@ -1522,34 +1551,6 @@ class Point extends Circle {
     }
     static fromAttributes() {
         return new Point(new THREE.Vector3());
-    }
-}
-/**
- * A shape made up of line segments connected
- * to form a (usually) closed shape.
- *
- * @example polygon.ts
- */
-class Polygon extends Shape {
-    constructor(points, config = {}) {
-        super(points, { ...Polygon.defaultConfig(), ...config });
-        this.curveEndIndices = [];
-        for (let i = 0; i < points.length - 1; i++) {
-            this.curveEndIndices.push([i, i + 1]);
-        }
-    }
-    getClassConfig() {
-        return {};
-    }
-    getAttributes() {
-        return { points: this.points };
-    }
-    static fromAttributes(attributes) {
-        const { points } = attributes;
-        return new Polygon(points);
-    }
-    get attributeData() {
-        return [];
     }
 }
 /**

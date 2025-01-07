@@ -5,6 +5,7 @@ import { ORIGIN } from "./utils.js";
 import Shape, { type Style, type Transform } from "./shape.js";
 import Line, { LineAttributes } from "./line.js";
 import Arrow from "./arrow.js";
+import Polygon, { PolygonAttributes } from "./polygon.js";
 
 type ArcAttributes = {
   radius: number;
@@ -15,10 +16,6 @@ type ArcAttributes = {
 type RectangleAttributes = {
   width: number;
   height: number;
-};
-
-type PolygonAttributes = {
-  points: Array<THREE.Vector3>;
 };
 
 /**
@@ -254,39 +251,6 @@ class Point extends Circle {
 
   static fromAttributes(): Point {
     return new Point(new THREE.Vector3());
-  }
-}
-
-/**
- * A shape made up of line segments connected
- * to form a (usually) closed shape.
- *
- * @example polygon.ts
- */
-class Polygon extends Shape {
-  constructor(points: Array<THREE.Vector3>, config: Style = {}) {
-    super(points, { ...Polygon.defaultConfig(), ...config });
-    this.curveEndIndices = [];
-    for (let i = 0; i < points.length - 1; i++) {
-      this.curveEndIndices.push([i, i + 1]);
-    }
-  }
-
-  getClassConfig() {
-    return {};
-  }
-
-  getAttributes(): PolygonAttributes {
-    return { points: this.points };
-  }
-
-  static fromAttributes(attributes: PolygonAttributes): Polygon {
-    const { points } = attributes;
-    return new Polygon(points);
-  }
-
-  get attributeData() {
-    return [];
   }
 }
 

@@ -5697,7 +5697,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class Polygon extends "
+                  "text": "export default class Polygon extends "
                 },
                 {
                   "kind": "Reference",
@@ -5709,7 +5709,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/polygon.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "Polygon",
@@ -5935,7 +5935,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "type PolygonAttributes = "
+                  "text": "export type PolygonAttributes = "
                 },
                 {
                   "kind": "Content",
@@ -5964,7 +5964,7 @@
                   "text": ";"
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/polygon.ts",
               "releaseTag": "Public",
               "name": "PolygonAttributes",
               "typeTokenRange": {

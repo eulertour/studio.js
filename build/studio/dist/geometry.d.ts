@@ -3,6 +3,7 @@ import { MeshLine } from "./MeshLine/index.js";
 import Shape, { type Style, type Transform } from "./shape.js";
 import Line, { LineAttributes } from "./line.js";
 import Arrow from "./arrow.js";
+import Polygon, { PolygonAttributes } from "./polygon.js";
 type ArcAttributes = {
     radius: number;
     angle: number;
@@ -11,9 +12,6 @@ type ArcAttributes = {
 type RectangleAttributes = {
     width: number;
     height: number;
-};
-type PolygonAttributes = {
-    points: Array<THREE.Vector3>;
 };
 /**
  * A series of connected line segments.
@@ -102,19 +100,6 @@ declare class Point extends Circle {
     };
     getAttributes(): ArcAttributes;
     static fromAttributes(): Point;
-}
-/**
- * A shape made up of line segments connected
- * to form a (usually) closed shape.
- *
- * @example polygon.ts
- */
-declare class Polygon extends Shape {
-    constructor(points: Array<THREE.Vector3>, config?: Style);
-    getClassConfig(): {};
-    getAttributes(): PolygonAttributes;
-    static fromAttributes(attributes: PolygonAttributes): Polygon;
-    get attributeData(): never[];
 }
 /**
  * A shape with four sides and four right angles.
