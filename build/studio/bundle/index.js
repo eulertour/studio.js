@@ -1659,7 +1659,7 @@ class Square extends Rectangle {
     }
 }
 
-var geometry = /*#__PURE__*/Object.freeze({
+var index = /*#__PURE__*/Object.freeze({
     __proto__: null,
     Arc: Arc,
     Arrow: Arrow,
@@ -57323,4 +57323,4 @@ THREE.Object3D.prototype.recenter = function (globalPosition) {
 };
 THREE.Object3D.prototype.reorient = () => { };
 
-export { animation as Animation, constants as Constants, diagram as Diagram, frame as Frame, geometry as Geometry, graphing as Graphing, SceneController, text as Text, utils as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };
+export { animation as Animation, constants as Constants, diagram as Diagram, frame as Frame, index as Geometry, graphing as Graphing, SceneController, text as Text, utils as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };

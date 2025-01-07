@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { Animation } from "./animation.js";
-import * as Geometry from "./geometry/geometry.js";
+import * as Geometry from "./geometry/index.js";
 import * as Utils from "./utils.js";
 
 interface IndicatorConfig {

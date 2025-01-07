@@ -10,4 +10,4 @@ import Point from "./point.js";
 import Rectangle from "./rectangle.js";
 import Square from "./square.js";
 export { Shape, Line, Arrow, Point, Circle, Arc, Polygon, Polyline, Rectangle, Square, MeshLine, };
-//# sourceMappingURL=geometry.d.ts.map
+//# sourceMappingURL=index.d.ts.map

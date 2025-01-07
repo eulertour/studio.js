@@ -1,10 +1,9 @@
 import * as THREE from "three";
 import { MeshLine } from "./geometry/MeshLine/index.js";
-// import { Camera } from "build/three-types";
 import { setCameraDimensions } from "./geometry/MeshLine/MeshLineMaterial.js";
 import { CanvasViewport } from "./geometry/MeshLine/MeshLineMaterial.js";
 import { DEFAULT_BACKGROUND_HEX, PIXELS_TO_COORDS } from "./constants.js";
-import * as Geometry from "./geometry/geometry.js";
+import * as Geometry from "./geometry/index.js";
 import * as Text from "./text.js";
 const BUFFER = 0.5;
 const ORIGIN = Object.freeze(new THREE.Vector3(0, 0, 0));

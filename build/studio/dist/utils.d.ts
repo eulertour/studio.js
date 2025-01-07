@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import * as Geometry from "./geometry/geometry.js";
+import * as Geometry from "./geometry/index.js";
 declare const BUFFER = 0.5;
 declare const ORIGIN: Readonly<THREE.Vector3>;
 declare const RIGHT: Readonly<THREE.Vector3>;

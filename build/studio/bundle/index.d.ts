@@ -313,32 +313,32 @@ declare class Square extends Rectangle {
     }[];
 }
 
-//# sourceMappingURL=geometry.d.ts.map
+//# sourceMappingURL=index.d.ts.map
 
-type geometry_d_Arc = Arc;
-declare const geometry_d_Arc: typeof Arc;
-type geometry_d_Arrow = Arrow;
-declare const geometry_d_Arrow: typeof Arrow;
-type geometry_d_Circle = Circle;
-declare const geometry_d_Circle: typeof Circle;
-type geometry_d_Line = Line;
-declare const geometry_d_Line: typeof Line;
-type geometry_d_MeshLine = MeshLine;
-declare const geometry_d_MeshLine: typeof MeshLine;
-type geometry_d_Point = Point;
-declare const geometry_d_Point: typeof Point;
-type geometry_d_Polygon = Polygon;
-declare const geometry_d_Polygon: typeof Polygon;
-type geometry_d_Polyline = Polyline;
-declare const geometry_d_Polyline: typeof Polyline;
-type geometry_d_Rectangle = Rectangle;
-declare const geometry_d_Rectangle: typeof Rectangle;
-type geometry_d_Shape = Shape;
-declare const geometry_d_Shape: typeof Shape;
-type geometry_d_Square = Square;
-declare const geometry_d_Square: typeof Square;
-declare namespace geometry_d {
-  export { geometry_d_Arc as Arc, geometry_d_Arrow as Arrow, geometry_d_Circle as Circle, geometry_d_Line as Line, geometry_d_MeshLine as MeshLine, geometry_d_Point as Point, geometry_d_Polygon as Polygon, geometry_d_Polyline as Polyline, geometry_d_Rectangle as Rectangle, geometry_d_Shape as Shape, geometry_d_Square as Square };
+type index_d_Arc = Arc;
+declare const index_d_Arc: typeof Arc;
+type index_d_Arrow = Arrow;
+declare const index_d_Arrow: typeof Arrow;
+type index_d_Circle = Circle;
+declare const index_d_Circle: typeof Circle;
+type index_d_Line = Line;
+declare const index_d_Line: typeof Line;
+type index_d_MeshLine = MeshLine;
+declare const index_d_MeshLine: typeof MeshLine;
+type index_d_Point = Point;
+declare const index_d_Point: typeof Point;
+type index_d_Polygon = Polygon;
+declare const index_d_Polygon: typeof Polygon;
+type index_d_Polyline = Polyline;
+declare const index_d_Polyline: typeof Polyline;
+type index_d_Rectangle = Rectangle;
+declare const index_d_Rectangle: typeof Rectangle;
+type index_d_Shape = Shape;
+declare const index_d_Shape: typeof Shape;
+type index_d_Square = Square;
+declare const index_d_Square: typeof Square;
+declare namespace index_d {
+  export { index_d_Arc as Arc, index_d_Arrow as Arrow, index_d_Circle as Circle, index_d_Line as Line, index_d_MeshLine as MeshLine, index_d_Point as Point, index_d_Polygon as Polygon, index_d_Polyline as Polyline, index_d_Rectangle as Rectangle, index_d_Shape as Shape, index_d_Square as Square };
 }
 
 declare const BUFFER = 0.5;
@@ -839,4 +839,4 @@ type ComponentParent = THREE.Object3D & {
 declare function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 //# sourceMappingURL=index.d.ts.map
 
-export { animation_d as Animation, type AnimationRepresentation, constants_d as Constants, diagram_d as Diagram, _default as Frame, geometry_d as Geometry, graphing_d as Graphing, SceneController, type StudioScene, text_d as Text, utils_d as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };
+export { animation_d as Animation, type AnimationRepresentation, constants_d as Constants, diagram_d as Diagram, _default as Frame, index_d as Geometry, graphing_d as Graphing, SceneController, type StudioScene, text_d as Text, utils_d as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };
