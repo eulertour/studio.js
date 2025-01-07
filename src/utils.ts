@@ -1,10 +1,10 @@
 import * as THREE from "three";
-import { MeshLine } from "./MeshLine/index.js";
+import { MeshLine } from "./geometry/MeshLine/index.js";
 // import { Camera } from "build/three-types";
-import { setCameraDimensions } from "./MeshLine/MeshLineMaterial.js";
-import { CanvasViewport } from "./MeshLine/MeshLineMaterial.js";
+import { setCameraDimensions } from "./geometry/MeshLine/MeshLineMaterial.js";
+import { CanvasViewport } from "./geometry/MeshLine/MeshLineMaterial.js";
 import { DEFAULT_BACKGROUND_HEX, PIXELS_TO_COORDS } from "./constants.js";
-import * as Geometry from "./geometry.js";
+import * as Geometry from "./geometry/geometry.js";
 import * as Text from "./text.js";
 
 const BUFFER = 0.5;

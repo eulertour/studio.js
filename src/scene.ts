@@ -2,7 +2,7 @@ import * as THREE from "three";
 import {
   setCameraDimensions,
   setCanvasViewport,
-} from "./MeshLine/MeshLineMaterial.js";
+} from "./geometry/MeshLine/MeshLineMaterial.js";
 import { Animation } from "./animation.js";
 import {
   type HeightSetupConfig,

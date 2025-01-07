@@ -1,5 +1,5 @@
 import { describe, it, assert } from "vitest";
-import { MeshLine } from "../src/MeshLine/index.js";
+import { MeshLine } from "../src/geometry/MeshLine/index.js";
 import { Geometry, THREE } from "../src/index.js";
 
 describe("Arrow", () => {

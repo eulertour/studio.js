@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { SVGLoader } from "./SVGLoader.js";
-import type { Transform } from "./shape.js";
+import type { Transform } from "./geometry/shape.js";
 import tex2svg from "./mathjax.js";
 
 type TextStyle = {

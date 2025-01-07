@@ -407,12 +407,12 @@ THREE.Object3D.prototype.reorient = (): void => {};
 import {
   setCameraDimensions,
   setCanvasViewport,
-} from "./MeshLine/MeshLineMaterial.js";
+} from "./geometry/MeshLine/MeshLineMaterial.js";
 import * as Animation from "./animation.js";
 import * as Constants from "./constants.js";
 import * as Diagram from "./diagram.js";
 import Frame from "./frame.js";
-import * as Geometry from "./geometry.js";
+import * as Geometry from "./geometry/geometry.js";
 import * as Graphing from "./graphing.js";
 import {
   type AnimationRepresentation,
