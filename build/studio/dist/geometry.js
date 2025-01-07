@@ -6,35 +6,7 @@ import Shape from "./shape.js";
 import Line from "./line.js";
 import Arrow from "./arrow.js";
 import Polygon from "./polygon.js";
-/**
- * A series of connected line segments.
- *
- * @example polyline.ts
- */
-class Polyline extends Shape {
-    constructor(points, config = {}) {
-        super(points, { ...Polyline.defaultConfig(), ...config, fillOpacity: 0 });
-        this.curveEndIndices = [[0, 1]];
-    }
-    reshape(points, config = {}) {
-        this.copyStrokeFill(new Polyline(points, config));
-    }
-    static defaultConfig() {
-        return { ...Shape.defaultConfig(), fill: false };
-    }
-    getClassConfig() {
-        return {};
-    }
-    getAttributes() {
-        return {
-            points: this.points,
-        };
-    }
-    static fromAttributes(attributes) {
-        const { points } = attributes;
-        return new Polyline(points);
-    }
-}
+import Polyline from "./polyline.js";
 /**
  * A part of a circle's circumference.
  *

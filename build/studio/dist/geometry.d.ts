@@ -4,6 +4,7 @@ import Shape, { type Style, type Transform } from "./shape.js";
 import Line, { LineAttributes } from "./line.js";
 import Arrow from "./arrow.js";
 import Polygon, { PolygonAttributes } from "./polygon.js";
+import Polyline from "./polyline.js";
 type ArcAttributes = {
     radius: number;
     angle: number;
@@ -13,21 +14,6 @@ type RectangleAttributes = {
     width: number;
     height: number;
 };
-/**
- * A series of connected line segments.
- *
- * @example polyline.ts
- */
-declare class Polyline extends Shape {
-    constructor(points: Array<THREE.Vector3>, config?: Style);
-    reshape(points: Array<THREE.Vector3>, config?: Style): void;
-    static defaultConfig(): {
-        fill: boolean;
-    };
-    getClassConfig(): {};
-    getAttributes(): PolygonAttributes;
-    static fromAttributes(attributes: PolygonAttributes): Polyline;
-}
 /**
  * A part of a circle's circumference.
  *

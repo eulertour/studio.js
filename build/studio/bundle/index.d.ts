@@ -173,15 +173,6 @@ declare class Polygon extends Shape {
     get attributeData(): never[];
 }
 
-type ArcAttributes = {
-    radius: number;
-    angle: number;
-    closed: boolean;
-};
-type RectangleAttributes = {
-    width: number;
-    height: number;
-};
 /**
  * A series of connected line segments.
  *
@@ -197,6 +188,16 @@ declare class Polyline extends Shape {
     getAttributes(): PolygonAttributes;
     static fromAttributes(attributes: PolygonAttributes): Polyline;
 }
+
+type ArcAttributes = {
+    radius: number;
+    angle: number;
+    closed: boolean;
+};
+type RectangleAttributes = {
+    width: number;
+    height: number;
+};
 /**
  * A part of a circle's circumference.
  *

@@ -1374,6 +1374,7 @@ class Polyline extends Shape {
         return new Polyline(points);
     }
 }
+
 /**
  * A part of a circle's circumference.
  *

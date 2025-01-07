@@ -5979,7 +5979,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class Polyline extends "
+                  "text": "export default class Polyline extends "
                 },
                 {
                   "kind": "Reference",
@@ -5991,7 +5991,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/polyline.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "Polyline",
