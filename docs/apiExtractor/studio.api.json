@@ -2870,7 +2870,7 @@
                     {
                       "kind": "Reference",
                       "text": "Geometry.Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "!Geometry.Style:type"
                     },
                     {
                       "kind": "Content",
@@ -2998,7 +2998,7 @@
                     {
                       "kind": "Reference",
                       "text": "Geometry.Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "!Geometry.Style:type"
                     },
                     {
                       "kind": "Content",
@@ -3067,7 +3067,7 @@
                     {
                       "kind": "Reference",
                       "text": "Geometry.Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "!Geometry.Style:type"
                     },
                     {
                       "kind": "Content",
@@ -3160,7 +3160,7 @@
                     {
                       "kind": "Reference",
                       "text": "Geometry.Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "!Geometry.Style:type"
                     },
                     {
                       "kind": "Content",
@@ -3280,7 +3280,7 @@
                     {
                       "kind": "Reference",
                       "text": "Geometry.Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "!Geometry.Style:type"
                     },
                     {
                       "kind": "Content",
@@ -3592,7 +3592,7 @@
                     {
                       "kind": "Reference",
                       "text": "Geometry.Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "!Geometry.Style:type"
                     },
                     {
                       "kind": "Content",
@@ -3736,7 +3736,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -3910,7 +3910,7 @@
                     {
                       "kind": "Reference",
                       "text": "ArcAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.ArcAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~ArcAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -3960,7 +3960,7 @@
                     {
                       "kind": "Reference",
                       "text": "ArcAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.ArcAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~ArcAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -4101,7 +4101,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -4166,32 +4166,6 @@
               "implementsTokenRanges": []
             },
             {
-              "kind": "TypeAlias",
-              "canonicalReference": "@eulertour/studio!Geometry.ArcAttributes:type",
-              "docComment": "/**\n * A part of a circle's circumference.\n *\n * @example\n *\n * arc.ts\n */\n",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "export type ArcAttributes = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "{\n    radius: number;\n    angle: number;\n    closed: boolean;\n}"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "fileUrlPath": "src/arc.ts",
-              "releaseTag": "Public",
-              "name": "ArcAttributes",
-              "typeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
               "kind": "Class",
               "canonicalReference": "@eulertour/studio!Geometry.Arrow:class",
               "docComment": "/**\n * An arrow derived from a line.\n *\n * @example\n *\n * arrow.ts\n */\n",
@@ -4246,7 +4220,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -4344,7 +4318,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -4480,7 +4454,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -4586,7 +4560,7 @@
                     {
                       "kind": "Reference",
                       "text": "ArcAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.ArcAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~ArcAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -4636,7 +4610,7 @@
                     {
                       "kind": "Reference",
                       "text": "ArcAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.ArcAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~ArcAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -4813,7 +4787,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -4884,7 +4858,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -5012,7 +4986,7 @@
                     {
                       "kind": "Reference",
                       "text": "LineAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.LineAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~LineAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -5062,7 +5036,7 @@
                     {
                       "kind": "Reference",
                       "text": "LineAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.LineAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~LineAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -5192,7 +5166,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -5286,50 +5260,6 @@
                 "endIndex": 2
               },
               "implementsTokenRanges": []
-            },
-            {
-              "kind": "TypeAlias",
-              "canonicalReference": "@eulertour/studio!Geometry.LineAttributes:type",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "export type LineAttributes = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "{\n    start: "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "THREE.Vector3",
-                  "canonicalReference": "@types/three!Vector3:class"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";\n    end: "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "THREE.Vector3",
-                  "canonicalReference": "@types/three!Vector3:class"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";\n}"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "fileUrlPath": "src/line.ts",
-              "releaseTag": "Public",
-              "name": "LineAttributes",
-              "typeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 6
-              }
             },
             {
               "kind": "Class",
@@ -5555,7 +5485,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -5663,7 +5593,7 @@
                     {
                       "kind": "Reference",
                       "text": "ArcAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.ArcAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~ArcAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -5749,7 +5679,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -5820,7 +5750,7 @@
                     {
                       "kind": "Reference",
                       "text": "PolygonAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.PolygonAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~PolygonAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -5870,7 +5800,7 @@
                     {
                       "kind": "Reference",
                       "text": "PolygonAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.PolygonAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~PolygonAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -5927,50 +5857,6 @@
                 "endIndex": 2
               },
               "implementsTokenRanges": []
-            },
-            {
-              "kind": "TypeAlias",
-              "canonicalReference": "@eulertour/studio!Geometry.PolygonAttributes:type",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "export type PolygonAttributes = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "{\n    points: "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "Array",
-                  "canonicalReference": "!Array:interface"
-                },
-                {
-                  "kind": "Content",
-                  "text": "<"
-                },
-                {
-                  "kind": "Reference",
-                  "text": "THREE.Vector3",
-                  "canonicalReference": "@types/three!Vector3:class"
-                },
-                {
-                  "kind": "Content",
-                  "text": ">;\n}"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "fileUrlPath": "src/polygon.ts",
-              "releaseTag": "Public",
-              "name": "PolygonAttributes",
-              "typeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 6
-              }
             },
             {
               "kind": "Class",
@@ -6031,7 +5917,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -6103,7 +5989,7 @@
                     {
                       "kind": "Reference",
                       "text": "PolygonAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.PolygonAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~PolygonAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -6153,7 +6039,7 @@
                     {
                       "kind": "Reference",
                       "text": "PolygonAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.PolygonAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~PolygonAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -6238,7 +6124,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -6343,7 +6229,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -6422,7 +6308,7 @@
                     {
                       "kind": "Reference",
                       "text": "RectangleAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.RectangleAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~RectangleAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -6472,7 +6358,7 @@
                     {
                       "kind": "Reference",
                       "text": "RectangleAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.RectangleAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~RectangleAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -6636,32 +6522,6 @@
               "implementsTokenRanges": []
             },
             {
-              "kind": "TypeAlias",
-              "canonicalReference": "@eulertour/studio!Geometry.RectangleAttributes:type",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "export type RectangleAttributes = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "{\n    width: number;\n    height: number;\n}"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "fileUrlPath": "src/rectangle.ts",
-              "releaseTag": "Public",
-              "name": "RectangleAttributes",
-              "typeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              }
-            },
-            {
               "kind": "Class",
               "canonicalReference": "@eulertour/studio!Geometry.Shape:class",
               "docComment": "/**\n * An abstract class representing a generalized shape.\n */\n",
@@ -6720,7 +6580,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -7504,7 +7364,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -7536,7 +7396,7 @@
                     {
                       "kind": "Reference",
                       "text": "Transform",
-                      "canonicalReference": "@eulertour/studio!Geometry.Transform:type"
+                      "canonicalReference": "@eulertour/studio!~Transform:type"
                     },
                     {
                       "kind": "Content",
@@ -7739,7 +7599,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -7788,7 +7648,7 @@
                     {
                       "kind": "Reference",
                       "text": "Transform",
-                      "canonicalReference": "@eulertour/studio!Geometry.Transform:type"
+                      "canonicalReference": "@eulertour/studio!~Transform:type"
                     },
                     {
                       "kind": "Content",
@@ -8023,7 +7883,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -8094,7 +7954,7 @@
                     {
                       "kind": "Reference",
                       "text": "RectangleAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.RectangleAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~RectangleAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -8144,7 +8004,7 @@
                     {
                       "kind": "Reference",
                       "text": "RectangleAttributes",
-                      "canonicalReference": "@eulertour/studio!Geometry.RectangleAttributes:type"
+                      "canonicalReference": "@eulertour/studio!~RectangleAttributes:type"
                     },
                     {
                       "kind": "Content",
@@ -8295,103 +8155,6 @@
                 "endIndex": 2
               },
               "implementsTokenRanges": []
-            },
-            {
-              "kind": "TypeAlias",
-              "canonicalReference": "@eulertour/studio!Geometry.Style:type",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "export type Style = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "{\n    fillColor?: "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "THREE.Color",
-                  "canonicalReference": "@types/three!Color:class"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";\n    fillOpacity?: number;\n    strokeColor?: "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "THREE.Color",
-                  "canonicalReference": "@types/three!Color:class"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";\n    strokeOpacity?: number;\n    strokeWidth?: number;\n    strokeDashLength?: number;\n    strokeDashOffset?: number;\n    dashed?: boolean;\n}"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "fileUrlPath": "src/shape.ts",
-              "releaseTag": "Public",
-              "name": "Style",
-              "typeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 6
-              }
-            },
-            {
-              "kind": "TypeAlias",
-              "canonicalReference": "@eulertour/studio!Geometry.Transform:type",
-              "docComment": "",
-              "excerptTokens": [
-                {
-                  "kind": "Content",
-                  "text": "export type Transform = "
-                },
-                {
-                  "kind": "Content",
-                  "text": "{\n    position: "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "THREE.Vector3",
-                  "canonicalReference": "@types/three!Vector3:class"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";\n    rotation: "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "THREE.Euler",
-                  "canonicalReference": "@types/three!Euler:class"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";\n    scale: "
-                },
-                {
-                  "kind": "Reference",
-                  "text": "THREE.Vector3",
-                  "canonicalReference": "@types/three!Vector3:class"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";\n}"
-                },
-                {
-                  "kind": "Content",
-                  "text": ";"
-                }
-              ],
-              "fileUrlPath": "src/shape.ts",
-              "releaseTag": "Public",
-              "name": "Transform",
-              "typeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 8
-              }
             }
           ]
         },
@@ -8450,7 +8213,7 @@
                     {
                       "kind": "Reference",
                       "text": "Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "@eulertour/studio!~Style:type"
                     },
                     {
                       "kind": "Content",
@@ -10367,7 +10130,7 @@
                     {
                       "kind": "Reference",
                       "text": "Transform",
-                      "canonicalReference": "@eulertour/studio!Geometry.Transform:type"
+                      "canonicalReference": "@eulertour/studio!~Transform:type"
                     },
                     {
                       "kind": "Content",
@@ -10399,7 +10162,7 @@
                     {
                       "kind": "Reference",
                       "text": "Transform",
-                      "canonicalReference": "@eulertour/studio!Geometry.Transform:type"
+                      "canonicalReference": "@eulertour/studio!~Transform:type"
                     },
                     {
                       "kind": "Content",
@@ -10482,7 +10245,7 @@
                     {
                       "kind": "Reference",
                       "text": "Transform",
-                      "canonicalReference": "@eulertour/studio!Geometry.Transform:type"
+                      "canonicalReference": "@eulertour/studio!~Transform:type"
                     },
                     {
                       "kind": "Content",
@@ -12529,7 +12292,7 @@
                     {
                       "kind": "Reference",
                       "text": "Geometry.Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "!Geometry.Style:type"
                     },
                     {
                       "kind": "Content",
@@ -12560,7 +12323,7 @@
                     {
                       "kind": "Reference",
                       "text": "Geometry.Style",
-                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                      "canonicalReference": "!Geometry.Style:type"
                     },
                     {
                       "kind": "Content",

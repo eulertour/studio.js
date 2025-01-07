@@ -317,34 +317,28 @@ declare class Square extends Rectangle {
 
 type geometry_d_Arc = Arc;
 declare const geometry_d_Arc: typeof Arc;
-type geometry_d_ArcAttributes = ArcAttributes;
 type geometry_d_Arrow = Arrow;
 declare const geometry_d_Arrow: typeof Arrow;
 type geometry_d_Circle = Circle;
 declare const geometry_d_Circle: typeof Circle;
 type geometry_d_Line = Line;
 declare const geometry_d_Line: typeof Line;
-type geometry_d_LineAttributes = LineAttributes;
 type geometry_d_MeshLine = MeshLine;
 declare const geometry_d_MeshLine: typeof MeshLine;
 type geometry_d_Point = Point;
 declare const geometry_d_Point: typeof Point;
 type geometry_d_Polygon = Polygon;
 declare const geometry_d_Polygon: typeof Polygon;
-type geometry_d_PolygonAttributes = PolygonAttributes;
 type geometry_d_Polyline = Polyline;
 declare const geometry_d_Polyline: typeof Polyline;
 type geometry_d_Rectangle = Rectangle;
 declare const geometry_d_Rectangle: typeof Rectangle;
-type geometry_d_RectangleAttributes = RectangleAttributes;
 type geometry_d_Shape = Shape;
 declare const geometry_d_Shape: typeof Shape;
 type geometry_d_Square = Square;
 declare const geometry_d_Square: typeof Square;
-type geometry_d_Style = Style;
-type geometry_d_Transform = Transform;
 declare namespace geometry_d {
-  export { geometry_d_Arc as Arc, type geometry_d_ArcAttributes as ArcAttributes, geometry_d_Arrow as Arrow, geometry_d_Circle as Circle, geometry_d_Line as Line, type geometry_d_LineAttributes as LineAttributes, geometry_d_MeshLine as MeshLine, geometry_d_Point as Point, geometry_d_Polygon as Polygon, type geometry_d_PolygonAttributes as PolygonAttributes, geometry_d_Polyline as Polyline, geometry_d_Rectangle as Rectangle, type geometry_d_RectangleAttributes as RectangleAttributes, geometry_d_Shape as Shape, geometry_d_Square as Square, type geometry_d_Style as Style, type geometry_d_Transform as Transform };
+  export { geometry_d_Arc as Arc, geometry_d_Arrow as Arrow, geometry_d_Circle as Circle, geometry_d_Line as Line, geometry_d_MeshLine as MeshLine, geometry_d_Point as Point, geometry_d_Polygon as Polygon, geometry_d_Polyline as Polyline, geometry_d_Rectangle as Rectangle, geometry_d_Shape as Shape, geometry_d_Square as Square };
 }
 
 declare const BUFFER = 0.5;
@@ -399,8 +393,8 @@ declare class ShapeFromCurves {
     segmentClosestToPoint: THREE.Vector3;
     pointToSegment: THREE.Vector3;
     points: Array<THREE.Vector3>;
-    style: Style;
-    withStyle(style: Style): this;
+    style: undefined;
+    withStyle(style: undefined): this;
     startAt(start: THREE.Vector3): this;
     extendAlong(shape: Shape, direction: THREE.Vector3, until?: THREE.Vector3 | undefined): this;
     extendCurve(shape: Shape, initialPointIndex: number, forward: boolean, until?: THREE.Vector3 | undefined): void;
@@ -579,33 +573,33 @@ declare class Indicator extends THREE.Group {
     startTick: Line;
     endTick: Line;
     stem: Line;
-    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig & Style);
+    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig & undefined);
     grow(config?: any): Animation;
 }
 declare class CongruentLine extends THREE.Group {
-    constructor(ticks: number, start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
+    constructor(ticks: number, start: THREE.Vector3, end: THREE.Vector3, config?: undefined & {
         tickLength?: number;
         spacing?: number;
     });
 }
 declare class CongruentAngle extends THREE.Group {
-    config: Style & {
+    config: undefined & {
         minRadius?: number;
         spacing?: number;
     };
-    constructor(arcs: number, point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+    constructor(arcs: number, point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: undefined & {
         minRadius?: number;
         spacing?: number;
     });
 }
 declare class Angle extends Arc {
-    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: undefined & {
         radius?: number;
         reflex?: boolean;
     });
 }
 declare class RightAngle extends Polyline {
-    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: undefined & {
         sideLength?: number;
     });
 }

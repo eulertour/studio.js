@@ -102,6 +102,7 @@ export type AnimationRepresentation = Animation_3 | Array<Animation_3> | {
 
 // @public (undocumented)
 class Arc extends Shape {
+    // Warning: (ae-forgotten-export) The symbol "Style" needs to be exported by the entry point index.d.ts
     constructor(radius?: number, angle?: number, config?: Style & {
         closed?: boolean;
     });
@@ -126,6 +127,8 @@ class Arc extends Shape {
     };
     // (undocumented)
     static fromAttributes(attributes: ArcAttributes): Arc;
+    // Warning: (ae-forgotten-export) The symbol "ArcAttributes" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     getAttributes(): ArcAttributes;
     // (undocumented)
@@ -139,13 +142,6 @@ class Arc extends Shape {
         closed?: boolean;
     }): void;
 }
-
-// @public
-type ArcAttributes = {
-    radius: number;
-    angle: number;
-    closed: boolean;
-};
 
 // @public
 class Arrow extends Line {
@@ -362,13 +358,7 @@ declare namespace Geometry {
         Polyline,
         Rectangle,
         Square,
-        MeshLine,
-        Transform,
-        Style,
-        PolygonAttributes,
-        LineAttributes,
-        ArcAttributes,
-        RectangleAttributes
+        MeshLine
     }
 }
 export { Geometry }
@@ -444,6 +434,8 @@ class Line extends Shape {
     end: THREE.Vector3;
     // (undocumented)
     static fromAttributes(attributes: LineAttributes): Line;
+    // Warning: (ae-forgotten-export) The symbol "LineAttributes" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     getAttributes(): LineAttributes;
     // (undocumented)
@@ -457,12 +449,6 @@ class Line extends Shape {
     // (undocumented)
     start: THREE.Vector3;
 }
-
-// @public (undocumented)
-type LineAttributes = {
-    start: THREE.Vector3;
-    end: THREE.Vector3;
-};
 
 // Warning: (ae-forgotten-export) The symbol "MeshLineGeometry" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "MeshLineMaterial" needs to be exported by the entry point index.d.ts
@@ -543,16 +529,13 @@ class Polygon extends Shape {
     get attributeData(): never[];
     // (undocumented)
     static fromAttributes(attributes: PolygonAttributes): Polygon;
+    // Warning: (ae-forgotten-export) The symbol "PolygonAttributes" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     getAttributes(): PolygonAttributes;
     // (undocumented)
     getClassConfig(): {};
 }
-
-// @public (undocumented)
-type PolygonAttributes = {
-    points: Array<THREE.Vector3>;
-};
 
 // @public
 class Polyline extends Shape {
@@ -585,6 +568,8 @@ class Rectangle extends Shape {
     }[];
     // (undocumented)
     static fromAttributes(attributes: RectangleAttributes): Rectangle;
+    // Warning: (ae-forgotten-export) The symbol "RectangleAttributes" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     getAttributes(): RectangleAttributes;
     // (undocumented)
@@ -596,12 +581,6 @@ class Rectangle extends Shape {
     // (undocumented)
     width: number;
 }
-
-// @public (undocumented)
-type RectangleAttributes = {
-    width: number;
-    height: number;
-};
 
 // @public (undocumented)
 const RIGHT: Readonly<THREE.Vector3>;
@@ -773,6 +752,8 @@ abstract class Shape extends THREE.Group {
     getDimensions(): THREE.Vector2;
     // (undocumented)
     getStyle(): Style;
+    // Warning: (ae-forgotten-export) The symbol "Transform" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     getTransform(): Transform;
     // (undocumented)
@@ -861,18 +842,6 @@ export interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> 
     update?: (deltaTime: number, time: number) => void;
 }
 
-// @public (undocumented)
-type Style = {
-    fillColor?: THREE.Color;
-    fillOpacity?: number;
-    strokeColor?: THREE.Color;
-    strokeOpacity?: number;
-    strokeWidth?: number;
-    strokeDashLength?: number;
-    strokeDashOffset?: number;
-    dashed?: boolean;
-};
-
 declare namespace Text_2 {
     export {
         Text_3 as Text
@@ -929,13 +898,6 @@ class Text_3 extends THREE.Group {
 }
 
 export { THREE }
-
-// @public (undocumented)
-type Transform = {
-    position: THREE.Vector3;
-    rotation: THREE.Euler;
-    scale: THREE.Vector3;
-};
 
 // @public (undocumented)
 const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;

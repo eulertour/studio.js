@@ -1,13 +1,13 @@
 import { MeshLine } from "./MeshLine/index.js";
-import Shape, { type Style, type Transform } from "./shape.js";
-import Line, { LineAttributes } from "./line.js";
+import Shape from "./shape.js";
+import Line from "./line.js";
 import Arrow from "./arrow.js";
-import Polygon, { PolygonAttributes } from "./polygon.js";
+import Polygon from "./polygon.js";
 import Polyline from "./polyline.js";
-import Arc, { ArcAttributes } from "./arc.js";
+import Arc from "./arc.js";
 import Circle from "./circle.js";
 import Point from "./point.js";
-import Rectangle, { RectangleAttributes } from "./rectangle.js";
+import Rectangle from "./rectangle.js";
 import Square from "./square.js";
 
 export {
@@ -22,13 +22,4 @@ export {
   Rectangle,
   Square,
   MeshLine,
-};
-
-export type {
-  Transform,
-  Style,
-  PolygonAttributes,
-  LineAttributes,
-  ArcAttributes,
-  RectangleAttributes,
 };

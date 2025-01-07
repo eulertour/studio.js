@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Polyline } from "./geometry.js";
+import Polyline from "./polyline.js";
 /**
  * A curve described by an equation.
  */

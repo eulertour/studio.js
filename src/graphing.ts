@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import { Polyline, type Style } from "./geometry.js";
+import Polyline from "./polyline.js";
+import { type Style } from "./shape.js";
 
 type CurveAttributes = {
   equation: () => void;
