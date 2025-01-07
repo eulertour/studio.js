@@ -189,20 +189,16 @@ declare class Polyline extends Shape {
     static fromAttributes(attributes: PolygonAttributes): Polyline;
 }
 
-type ArcAttributes = {
-    radius: number;
-    angle: number;
-    closed: boolean;
-};
-type RectangleAttributes = {
-    width: number;
-    height: number;
-};
 /**
  * A part of a circle's circumference.
  *
  * @example arc.ts
  */
+type ArcAttributes = {
+    radius: number;
+    angle: number;
+    closed: boolean;
+};
 declare class Arc extends Shape {
     radius: number;
     angle: number;
@@ -231,6 +227,11 @@ declare class Arc extends Shape {
     })[];
     getDimensions(): THREE.Vector2;
 }
+
+type RectangleAttributes = {
+    width: number;
+    height: number;
+};
 /**
  * A shape consisting of all points at a fixed distance from a given center.
  *

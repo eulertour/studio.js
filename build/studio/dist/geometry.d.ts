@@ -5,48 +5,11 @@ import Line, { LineAttributes } from "./line.js";
 import Arrow from "./arrow.js";
 import Polygon, { PolygonAttributes } from "./polygon.js";
 import Polyline from "./polyline.js";
-type ArcAttributes = {
-    radius: number;
-    angle: number;
-    closed: boolean;
-};
+import Arc, { ArcAttributes } from "./arc.js";
 type RectangleAttributes = {
     width: number;
     height: number;
 };
-/**
- * A part of a circle's circumference.
- *
- * @example arc.ts
- */
-declare class Arc extends Shape {
-    radius: number;
-    angle: number;
-    closed: boolean;
-    constructor(radius?: number, angle?: number, config?: Style & {
-        closed?: boolean;
-    });
-    static defaultConfig(): {
-        closed: boolean;
-        fill: boolean;
-    };
-    reshape(radius?: number, angle?: number, config?: Style & {
-        closed?: boolean;
-    }): void;
-    getCloneAttributes(): (number | boolean)[];
-    getAttributes(): ArcAttributes;
-    static fromAttributes(attributes: ArcAttributes): Arc;
-    get attributeData(): ({
-        attribute: string;
-        type: string;
-        default: number;
-    } | {
-        attribute: string;
-        type: string;
-        default: boolean;
-    })[];
-    getDimensions(): THREE.Vector2;
-}
 /**
  * A shape consisting of all points at a fixed distance from a given center.
  *

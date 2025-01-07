@@ -100,7 +100,7 @@ export type AnimationRepresentation = Animation_3 | Array<Animation_3> | {
     scale?: number;
 };
 
-// @public
+// @public (undocumented)
 class Arc extends Shape {
     constructor(radius?: number, angle?: number, config?: Style & {
         closed?: boolean;
@@ -140,7 +140,7 @@ class Arc extends Shape {
     }): void;
 }
 
-// @public (undocumented)
+// @public
 type ArcAttributes = {
     radius: number;
     angle: number;

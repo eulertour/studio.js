@@ -3686,11 +3686,11 @@
             {
               "kind": "Class",
               "canonicalReference": "@eulertour/studio!Geometry.Arc:class",
-              "docComment": "/**\n * A part of a circle's circumference.\n *\n * @example\n *\n * arc.ts\n */\n",
+              "docComment": "",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class Arc extends "
+                  "text": "export default class Arc extends "
                 },
                 {
                   "kind": "Reference",
@@ -3702,7 +3702,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/arc.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "Arc",
@@ -4168,11 +4168,11 @@
             {
               "kind": "TypeAlias",
               "canonicalReference": "@eulertour/studio!Geometry.ArcAttributes:type",
-              "docComment": "",
+              "docComment": "/**\n * A part of a circle's circumference.\n *\n * @example\n *\n * arc.ts\n */\n",
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "type ArcAttributes = "
+                  "text": "export type ArcAttributes = "
                 },
                 {
                   "kind": "Content",
@@ -4183,7 +4183,7 @@
                   "text": ";"
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/arc.ts",
               "releaseTag": "Public",
               "name": "ArcAttributes",
               "typeTokenRange": {

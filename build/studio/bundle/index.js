@@ -1375,11 +1375,6 @@ class Polyline extends Shape {
     }
 }
 
-/**
- * A part of a circle's circumference.
- *
- * @example arc.ts
- */
 class Arc extends Shape {
     constructor(radius = 1, angle = Math.PI / 2, config = {}) {
         config = { ...Arc.defaultConfig(), ...config };
@@ -1481,6 +1476,7 @@ class Arc extends Shape {
         return new THREE.Vector2(worldDiameter, worldDiameter);
     }
 }
+
 /**
  * A shape consisting of all points at a fixed distance from a given center.
  *
