@@ -2,7 +2,7 @@ import * as THREE from "three";
 import MeshLineGeometry from "./MeshLineGeometry.js";
 import MeshLineMaterial from "./MeshLineMaterial.js";
 import MeshLineRaycast from "./MeshLineRaycast.js";
-class MeshLine extends THREE.Mesh {
+export default class MeshLine extends THREE.Mesh {
     constructor(geometry, material) {
         super(geometry, material);
         material.totalLength = geometry.totalLength;
@@ -18,5 +18,5 @@ class MeshLine extends THREE.Mesh {
         this.material.uniforms.dashOffset.value = dashOffset;
     }
 }
-export { MeshLine, MeshLineGeometry, MeshLineMaterial };
+export { MeshLineGeometry, MeshLineMaterial };
 //# sourceMappingURL=index.js.map

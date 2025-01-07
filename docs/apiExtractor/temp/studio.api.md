@@ -348,17 +348,17 @@ const furthestInDirection: (object: any, direction: any, exclude?: THREE.Object3
 
 declare namespace Geometry {
     export {
+        MeshLine,
         Shape,
         Line,
         Arrow,
-        Point,
-        Circle,
-        Arc,
         Polygon,
         Polyline,
+        Arc,
+        Circle,
+        Point,
         Rectangle,
-        Square,
-        MeshLine
+        Square
     }
 }
 export { Geometry }

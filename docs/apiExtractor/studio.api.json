@@ -5268,7 +5268,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class MeshLine extends "
+                  "text": "export default class MeshLine extends "
                 },
                 {
                   "kind": "Reference",

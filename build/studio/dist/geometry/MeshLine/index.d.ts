@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import MeshLineGeometry from "./MeshLineGeometry.js";
 import MeshLineMaterial from "./MeshLineMaterial.js";
-declare class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
+export default class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
     constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
     get points(): THREE.Vector3[];
     get dashOffset(): number;
     set dashOffset(dashOffset: number);
 }
-export { MeshLine, MeshLineGeometry, MeshLineMaterial };
+export { MeshLineGeometry, MeshLineMaterial };
 //# sourceMappingURL=index.d.ts.map

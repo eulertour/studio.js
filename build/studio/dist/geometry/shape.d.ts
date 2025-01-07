@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { MeshLine } from "./MeshLine/index.js";
+import MeshLine from "./MeshLine/index.js";
 export type Transform = {
     position: THREE.Vector3;
     rotation: THREE.Euler;

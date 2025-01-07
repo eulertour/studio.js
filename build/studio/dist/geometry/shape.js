@@ -1,6 +1,6 @@
 import { Utils } from "../index.js";
 import * as THREE from "three";
-import { MeshLine, MeshLineGeometry, MeshLineMaterial, } from "./MeshLine/index.js";
+import MeshLine, { MeshLineGeometry, MeshLineMaterial, } from "./MeshLine/index.js";
 const getFillGeometry = (points) => {
     const shape = new THREE.Shape();
     shape.moveTo(points[0].x, points[0].y);

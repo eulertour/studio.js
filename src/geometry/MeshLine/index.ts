@@ -3,7 +3,10 @@ import MeshLineGeometry from "./MeshLineGeometry.js";
 import MeshLineMaterial from "./MeshLineMaterial.js";
 import MeshLineRaycast from "./MeshLineRaycast.js";
 
-class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
+export default class MeshLine extends THREE.Mesh<
+  MeshLineGeometry,
+  MeshLineMaterial
+> {
   constructor(geometry: MeshLineGeometry, material: MeshLineMaterial) {
     super(geometry, material);
     material.totalLength = geometry.totalLength;
@@ -23,4 +26,4 @@ class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
   }
 }
 
-export { MeshLine, MeshLineGeometry, MeshLineMaterial };
+export { MeshLineGeometry, MeshLineMaterial };

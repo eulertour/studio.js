@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { MeshLine } from "./geometry/MeshLine/index.js";
+import MeshLine from "./geometry/MeshLine/index.js";
 import { setCameraDimensions } from "./geometry/MeshLine/MeshLineMaterial.js";
 import { CanvasViewport } from "./geometry/MeshLine/MeshLineMaterial.js";
 import { DEFAULT_BACKGROUND_HEX, PIXELS_TO_COORDS } from "./constants.js";

@@ -1,25 +1,11 @@
-import { MeshLine } from "./MeshLine/index.js";
-import Shape from "./shape.js";
-import Line from "./line.js";
-import Arrow from "./arrow.js";
-import Polygon from "./polygon.js";
-import Polyline from "./polyline.js";
-import Arc from "./arc.js";
-import Circle from "./circle.js";
-import Point from "./point.js";
-import Rectangle from "./rectangle.js";
-import Square from "./square.js";
-
-export {
-  Shape,
-  Line,
-  Arrow,
-  Point,
-  Circle,
-  Arc,
-  Polygon,
-  Polyline,
-  Rectangle,
-  Square,
-  MeshLine,
-};
+export { default as MeshLine } from "./MeshLine/index.js";
+export { default as Shape } from "./shape.js";
+export { default as Line } from "./line.js";
+export { default as Arrow } from "./arrow.js";
+export { default as Polygon } from "./polygon.js";
+export { default as Polyline } from "./polyline.js";
+export { default as Arc } from "./arc.js";
+export { default as Circle } from "./circle.js";
+export { default as Point } from "./point.js";
+export { default as Rectangle } from "./rectangle.js";
+export { default as Square } from "./square.js";

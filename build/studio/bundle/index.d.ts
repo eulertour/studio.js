@@ -48,7 +48,6 @@ declare class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
     get dashOffset(): number;
     set dashOffset(dashOffset: number);
 }
-//# sourceMappingURL=index.d.ts.map
 
 type Transform = {
     position: THREE.Vector3;
