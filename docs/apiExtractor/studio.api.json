@@ -6297,7 +6297,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class Rectangle extends "
+                  "text": "export default class Rectangle extends "
                 },
                 {
                   "kind": "Reference",
@@ -6309,7 +6309,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/rectangle.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "Rectangle",
@@ -6642,7 +6642,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "type RectangleAttributes = "
+                  "text": "export type RectangleAttributes = "
                 },
                 {
                   "kind": "Content",
@@ -6653,7 +6653,7 @@
                   "text": ";"
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/rectangle.ts",
               "releaseTag": "Public",
               "name": "RectangleAttributes",
               "typeTokenRange": {

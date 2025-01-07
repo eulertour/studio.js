@@ -293,6 +293,7 @@ declare class Rectangle extends Shape {
     }[];
     getCurveEndIndices(): Array<Array<number>>;
 }
+
 /**
  * A shape with four sides of equal length and four right angles.
  *

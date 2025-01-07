@@ -1615,6 +1615,7 @@ class Rectangle extends Shape {
         ];
     }
 }
+
 /**
  * A shape with four sides of equal length and four right angles.
  *
