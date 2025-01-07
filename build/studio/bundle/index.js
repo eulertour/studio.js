@@ -1520,6 +1520,7 @@ class Circle extends Arc {
         ];
     }
 }
+
 /**
  * A small circle representing a precise location in space.
  *

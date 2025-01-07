@@ -6,33 +6,11 @@ import Arrow from "./arrow.js";
 import Polygon, { PolygonAttributes } from "./polygon.js";
 import Polyline from "./polyline.js";
 import Arc, { ArcAttributes } from "./arc.js";
+import Circle from "./circle.js";
 type RectangleAttributes = {
     width: number;
     height: number;
 };
-/**
- * A shape consisting of all points at a fixed distance from a given center.
- *
- * @example circle.ts
- */
-declare class Circle extends Arc {
-    constructor(radius?: number, config?: Style & {
-        fill?: boolean;
-    });
-    reshape(radius: number, config?: {}): void;
-    static defaultConfig(): {
-        fill: boolean;
-        closed: boolean;
-    };
-    getCloneAttributes(): number[];
-    getAttributes(): ArcAttributes;
-    static fromAttributes(attributes: ArcAttributes): Circle;
-    get attributeData(): {
-        attribute: string;
-        type: string;
-        default: number;
-    }[];
-}
 /**
  * A small circle representing a precise location in space.
  *

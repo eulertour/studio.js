@@ -228,10 +228,6 @@ declare class Arc extends Shape {
     getDimensions(): THREE.Vector2;
 }
 
-type RectangleAttributes = {
-    width: number;
-    height: number;
-};
 /**
  * A shape consisting of all points at a fixed distance from a given center.
  *
@@ -255,6 +251,11 @@ declare class Circle extends Arc {
         default: number;
     }[];
 }
+
+type RectangleAttributes = {
+    width: number;
+    height: number;
+};
 /**
  * A small circle representing a precise location in space.
  *
