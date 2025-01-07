@@ -1,10 +1,7 @@
 import * as THREE from "three";
 import { MeshLine } from "./MeshLine/index.js";
 import Shape, { type Style, type Transform } from "./shape.js";
-type LineAttributes = {
-    start: THREE.Vector3;
-    end: THREE.Vector3;
-};
+import Line, { LineAttributes } from "./line.js";
 type ArcAttributes = {
     radius: number;
     angle: number;
@@ -17,29 +14,6 @@ type RectangleAttributes = {
 type PolygonAttributes = {
     points: Array<THREE.Vector3>;
 };
-/**
- * A segment between two points.
- *
- * @example line.ts
- */
-declare class Line extends Shape {
-    start: THREE.Vector3;
-    end: THREE.Vector3;
-    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
-        arrow?: boolean;
-    });
-    static defaultConfig(): {
-        arrow: boolean;
-    };
-    static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
-    reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
-        arrow?: boolean;
-    }): void;
-    getClassConfig(): {};
-    getAttributes(): LineAttributes;
-    getVector(global?: boolean): THREE.Vector3;
-    static fromAttributes(attributes: LineAttributes): Line;
-}
 /**
  * An arrow derived from a line.
  *

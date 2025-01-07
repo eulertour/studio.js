@@ -4765,7 +4765,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class Line extends "
+                  "text": "export default class Line extends "
                 },
                 {
                   "kind": "Reference",
@@ -4777,7 +4777,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/line.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "Line",
@@ -5294,7 +5294,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "type LineAttributes = "
+                  "text": "export type LineAttributes = "
                 },
                 {
                   "kind": "Content",
@@ -5323,7 +5323,7 @@
                   "text": ";"
                 }
               ],
-              "fileUrlPath": "src/geometry.ts",
+              "fileUrlPath": "src/line.ts",
               "releaseTag": "Public",
               "name": "LineAttributes",
               "typeTokenRange": {

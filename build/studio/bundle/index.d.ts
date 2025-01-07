@@ -120,18 +120,6 @@ type LineAttributes = {
     start: THREE.Vector3;
     end: THREE.Vector3;
 };
-type ArcAttributes = {
-    radius: number;
-    angle: number;
-    closed: boolean;
-};
-type RectangleAttributes = {
-    width: number;
-    height: number;
-};
-type PolygonAttributes = {
-    points: Array<THREE.Vector3>;
-};
 /**
  * A segment between two points.
  *
@@ -155,6 +143,19 @@ declare class Line extends Shape {
     getVector(global?: boolean): THREE.Vector3;
     static fromAttributes(attributes: LineAttributes): Line;
 }
+
+type ArcAttributes = {
+    radius: number;
+    angle: number;
+    closed: boolean;
+};
+type RectangleAttributes = {
+    width: number;
+    height: number;
+};
+type PolygonAttributes = {
+    points: Array<THREE.Vector3>;
+};
 /**
  * An arrow derived from a line.
  *

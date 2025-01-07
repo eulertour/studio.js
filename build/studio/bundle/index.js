@@ -1287,6 +1287,7 @@ class Line extends Shape {
         return new Line(start, end);
     }
 }
+
 /**
  * An arrow derived from a line.
  *
