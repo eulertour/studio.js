@@ -31,7 +31,6 @@ describe("Arrow", () => {
     assert.instanceOf(arrow.fill, THREE.Mesh);
     assert.instanceOf(arrow.stroke, MeshLine);
     assert.isArray(arrow.curveEndIndices);
-    assert.isBoolean(arrow.arrow);
   });
 });
 

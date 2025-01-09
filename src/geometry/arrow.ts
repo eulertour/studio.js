@@ -1,25 +1,36 @@
 import * as THREE from "three";
-import { type Style } from "./shape.js";
-import Line from "./line.js";
+import Shape, { type Style } from "./shape.js";
+
+export type ArrowAttributes = {
+  start: THREE.Vector3;
+  end: THREE.Vector3;
+};
 
 /**
- * An arrow derived from a line.
+ * An arrow.
  *
  * @example arrow.ts
  */
-export default class Arrow extends Line {
+export default class Arrow extends Shape {
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
     config: Style = {},
   ) {
-    super(start, end, { ...Arrow.defaultConfig(), ...config, arrow: true });
+    super([start, end], { ...Arrow.defaultConfig(), ...config, arrow: true });
   }
 
   reshape(start: THREE.Vector3, end: THREE.Vector3, config: Style = {}) {
     this.start.copy(start);
     this.end.copy(end);
     this.copyStrokeFill(new Arrow(start, end, config));
+  }
+
+  getAttributes(): ArrowAttributes {
+    return {
+      start: this.start,
+      end: this.end,
+    };
   }
 }
 
