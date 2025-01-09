@@ -15,16 +15,15 @@ export default class Line extends Shape {
   constructor(
     public start: THREE.Vector3,
     public end: THREE.Vector3,
-    config: Style & { arrow?: boolean } = {},
+    config: Style = {},
   ) {
     config = { ...Line.defaultConfig(), ...config };
     super([start, end], config);
-    this.arrow = config.arrow;
     this.curveEndIndices = [[0, 1]];
   }
 
   static defaultConfig() {
-    return { ...Shape.defaultConfig(), arrow: false };
+    return { ...Shape.defaultConfig() };
   }
 
   static centeredLine(
@@ -45,7 +44,7 @@ export default class Line extends Shape {
   reshape(
     start: THREE.Vector3,
     end: THREE.Vector3,
-    config: Style & { arrow?: boolean } = {},
+    config: Style = {},
   ) {
     this.start.copy(start);
     this.end.copy(end);

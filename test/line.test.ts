@@ -31,7 +31,6 @@ describe("Line", () => {
     assert.instanceOf(line.fill, THREE.Mesh);
     assert.instanceOf(line.stroke, MeshLine);
     assert.isArray(line.curveEndIndices);
-    assert.isBoolean(line.arrow);
   });
 });
 
@@ -47,12 +46,6 @@ describe("Shape", () => {
   function getTestPoints() {
     return [new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 1)];
   }
-
-  describe("sets default config", () => {
-    it.skip("arrow", () => {
-      assert.isFalse(shape.arrow);
-    });
-  });
 
   describe("sets default style", () => {
     it("fillColor", () => {
