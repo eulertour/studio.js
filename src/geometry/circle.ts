@@ -1,14 +1,31 @@
-import Arc, { ArcAttributes } from "./arc.js";
-import { Style } from "./shape.js";
+import { ERROR_THRESHOLD } from "../constants.js";
+import Shape, { Style } from "./shape.js";
+import * as THREE from "three";
+
+export type CircleAttributes = {
+  radius: number;
+};
 
 /**
  * A shape consisting of all points at a fixed distance from a given center.
  *
  * @example circle.ts
  */
-export default class Circle extends Arc {
-  constructor(radius = 1, config: Style & { fill?: boolean } = {}) {
-    super(radius, 2 * Math.PI, {
+export default class Circle extends Shape {
+  constructor(public radius = 1, config: Style = {}) {
+    const angle = 2 * Math.PI;
+    let points = [];
+    for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
+      points.push(
+        new THREE.Vector3(
+          radius * Math.cos(i),
+          radius * Math.sin(i),
+          0,
+        ),
+      );
+    }
+    
+    super(points, {
       ...Circle.defaultConfig(),
       ...config,
     });
@@ -19,23 +36,17 @@ export default class Circle extends Arc {
     this.copyStrokeFill(new Circle(radius, config));
   }
 
-  static defaultConfig() {
-    return { ...Arc.defaultConfig(), fill: true };
-  }
-
   getCloneAttributes() {
     return [this.radius];
   }
 
-  getAttributes(): ArcAttributes {
+  getAttributes(): CircleAttributes {
     return {
       radius: this.radius,
-      angle: 2 * Math.PI,
-      closed: false,
     };
   }
 
-  static fromAttributes(attributes: ArcAttributes): Circle {
+  static fromAttributes(attributes: CircleAttributes): Circle {
     const { radius } = attributes;
     return new Circle(radius);
   }
