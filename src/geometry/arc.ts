@@ -1,4 +1,4 @@
-import Shape, { Style } from "./shape.js";
+import Shape, { Style } from "./Shape.js";
 import { THREE } from "../index.js";
 import { ERROR_THRESHOLD } from "../constants.js";
 

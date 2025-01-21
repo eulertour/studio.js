@@ -412,7 +412,7 @@ import * as Animation from "./animations/Animation.js";
 import * as Constants from "./constants.js";
 import * as Diagram from "./diagram.js";
 import Frame from "./frame.js";
-import * as Geometry from "./geometry/index.js";
+import * as Geometry from "./geometry/Index.js";
 import * as Graphing from "./graphing.js";
 import {
   type AnimationRepresentation,

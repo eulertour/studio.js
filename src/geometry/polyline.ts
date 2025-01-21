@@ -1,6 +1,6 @@
-import Shape, { Style } from "./shape.js";
+import Shape, { Style } from "./Shape.js";
 import { THREE } from "../index.js";
-import { PolygonAttributes } from "./polygon.js";
+import { PolygonAttributes } from "./Polygon.js";
 
 /**
  * A series of connected line segments.

@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import Shape, { type Style } from "./shape.js";
+import Shape, { type Style } from "./Shape.js";
 
 export type LineAttributes = {
   start: THREE.Vector3;

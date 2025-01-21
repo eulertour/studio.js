@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import Shape, { Style } from "./shape.js";
+import Shape, { Style } from "./Shape.js";
 
 export type RectangleAttributes = {
   width: number;
