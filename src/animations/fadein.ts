@@ -1,4 +1,4 @@
-import { Animation } from "./animation.js";
+import { Animation } from "./Animation.js";
 import * as THREE from "three";
 
 

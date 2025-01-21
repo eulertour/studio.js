@@ -11,6 +11,7 @@ import FadeOut from "./fadeout.js";
 import Wait from "./wait.js";
 const sigmoid = (x) => 1 / (1 + Math.exp(-x));
 const smooth = (t) => {
+
   const error = sigmoid(-10 / 2);
   return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
 };

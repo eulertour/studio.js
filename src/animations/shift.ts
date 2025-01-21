@@ -1,4 +1,4 @@
-import { Animation } from "./animation.js";
+import { Animation } from "./Animation.js";
 
 export default class Shift extends Animation {
     constructor(object, offset, config?) {

@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Animation } from "./animations/animation.js";
+import { Animation } from "./animations/Animation.js";
 import * as Geometry from "./geometry/index.js";
 import * as Utils from "./utils.js";
 

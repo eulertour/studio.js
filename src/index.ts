@@ -408,7 +408,7 @@ import {
   setCameraDimensions,
   setCanvasViewport,
 } from "./geometry/MeshLine/MeshLineMaterial.js";
-import * as Animation from "./animations/animation.js";
+import * as Animation from "./animations/Animation.js";
 import * as Constants from "./constants.js";
 import * as Diagram from "./diagram.js";
 import Frame from "./frame.js";
