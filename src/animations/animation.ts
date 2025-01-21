@@ -8,7 +8,7 @@ import SetScale from "./setscale.js";
 import FadeIn from "./fadein.js";
 import SetOpacity from "./setopacity.js";
 import FadeOut from "./fadeout.js";
-
+import Wait from "./wait.js";
 const sigmoid = (x) => 1 / (1 + Math.exp(-x));
 const smooth = (t) => {
   const error = sigmoid(-10 / 2);
@@ -148,13 +148,6 @@ class Animation {
     } else {
       this.afterFunc = after;
     }
-  }
-}
-
-
-class Wait extends Animation {
-  constructor(config?) {
-    super(() => {}, config);
   }
 }
 
