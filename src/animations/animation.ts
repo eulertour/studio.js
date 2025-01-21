@@ -6,7 +6,7 @@ import Rotate from "./rotate.js";
 import Draw from "./draw.js";
 import Erase from "./erase.js";
 import SetScale from "./setscale.js";
-
+import FadeIn from "./fadein.js";
 
 const sigmoid = (x) => 1 / (1 + Math.exp(-x));
 const smooth = (t) => {
@@ -152,52 +152,6 @@ class Animation {
 
 
 
-
-class FadeIn extends Animation {
-  public initialOpacity = new Map();
-
-  constructor(object, config?) {
-    let family = true;
-    if (config && config.family === false) {
-      family = false;
-    }
-
-    super(
-      (elapsedTime, _deltaTime) => {
-        if (family) {
-          this.object.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-              child.material.opacity = THREE.MathUtils.lerp(
-                0,
-                config?.preserveOpacity ? this.initialOpacity.get(child) : 1,
-                elapsedTime,
-              );
-            }
-          });
-        } else {
-          [this.object.stroke, this.object.fill].forEach((mesh) => {
-            if (!mesh) return;
-            mesh.material.opacity = THREE.MathUtils.lerp(
-              0,
-              config?.preserveOpacity ? this.initialOpacity.get(mesh) : 1,
-              elapsedTime,
-            );
-          });
-        }
-      },
-      { object, reveal: true, ...config },
-    );
-  }
-
-  setUp() {
-    super.setUp();
-    this.object.traverse((child: THREE.Object3D) => {
-      if (child instanceof THREE.Mesh) {
-        this.initialOpacity.set(child, child.material.opacity);
-      }
-    });
-  }
-}
 
 class FadeOut extends Animation {
   initialOpacity = new Map();
