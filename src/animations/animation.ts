@@ -1,5 +1,7 @@
 import * as THREE from "three";
-import { clamp, getBoundingBoxCenter } from "./utils.js";
+import { clamp, getBoundingBoxCenter } from "../utils.js";
+import Shift from "./shift.js";
+import MoveTo from "./Moveto.js";
 
 const sigmoid = (x) => 1 / (1 + Math.exp(-x));
 const smooth = (t) => {
@@ -143,51 +145,6 @@ class Animation {
   }
 }
 
-class Shift extends Animation {
-  constructor(object, offset, config?) {
-    super(
-      (_elapsedTime, deltaTime) => {
-        object.position.add(offset.clone().multiplyScalar(deltaTime));
-      },
-      {
-        object,
-        reveal: true,
-        ...config,
-      },
-    );
-  }
-}
-
-class MoveTo extends Animation {
-  public start;
-  public displacement;
-
-  constructor(
-    public target: THREE.Object3D,
-    public obj: THREE.Object3D,
-    config?,
-  ) {
-    super(
-      (elapsedTime) => {
-        obj.position
-          .copy(this.start)
-          .addScaledVector(this.displacement, elapsedTime);
-      },
-      { obj, reveal: true, ...config },
-    );
-  }
-
-  setUp() {
-    super.setUp();
-    this.start = this.obj.position.clone();
-
-    const final = new THREE.Vector3();
-    const initial = new THREE.Vector3();
-    this.obj.parent.worldToLocal(getBoundingBoxCenter(this.target, final));
-    this.obj.parent.worldToLocal(getBoundingBoxCenter(this.obj, initial));
-    this.displacement = new THREE.Vector3().subVectors(final, initial);
-  }
-}
 
 class Rotate extends Animation {
   constructor(object, angle, config?) {
