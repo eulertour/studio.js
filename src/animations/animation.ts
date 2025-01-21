@@ -1,7 +1,12 @@
 import * as THREE from "three";
-import { clamp, getBoundingBoxCenter } from "../utils.js";
+import { clamp } from "../utils.js";
 import Shift from "./shift.js";
 import MoveTo from "./Moveto.js";
+import Rotate from "./rotate.js";
+import Draw from "./draw.js";
+import Erase from "./erase.js";
+import SetScale from "./setscale.js";
+
 
 const sigmoid = (x) => 1 / (1 + Math.exp(-x));
 const smooth = (t) => {
@@ -146,78 +151,7 @@ class Animation {
 }
 
 
-class Rotate extends Animation {
-  constructor(object, angle, config?) {
-    super(
-      (_elapsedTime, deltaTime) => {
-        object.rotation.z += angle * deltaTime;
-      },
-      { object, reveal: true, ...config },
-    );
-  }
-}
 
-class SetScale extends Animation {
-  initialScale: number;
-
-  constructor(object, factor, config?) {
-    super(
-      (elapsedTime) => {
-        const scale = THREE.MathUtils.lerp(
-          this.initialScale,
-          factor,
-          elapsedTime,
-        );
-        object.scale.set(scale, scale);
-      },
-      { object, reveal: true, ...config },
-    );
-  }
-
-  setUp() {
-    super.setUp();
-    this.initialScale = this.object.scale.x;
-  }
-}
-
-class Draw extends Animation {
-  constructor(object, config?) {
-    super(
-      (elapsedTime) => {
-        this.object.traverse((child) => {
-          if (child.stroke) {
-            child.stroke.material.uniforms.drawRange.value.y = elapsedTime;
-          }
-        });
-      },
-      { object, reveal: true, ...config },
-    );
-  }
-}
-
-class Erase extends Animation {
-  constructor(
-    public object,
-    public config?,
-  ) {
-    super(
-      (elapsedTime) => {
-        object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
-      },
-      { object, hide: true, ...config },
-    );
-  }
-
-  tearDown() {
-    if (this.config?.remove) {
-      this.object.parent.remove(this.object);
-    }
-    if (this.config?.restore) {
-      this.object.stroke.material.uniforms.drawRange.value.y = 1;
-    }
-    super.tearDown();
-  }
-}
 
 class FadeIn extends Animation {
   public initialOpacity = new Map();
