@@ -1250,11 +1250,10 @@ class Line extends Shape {
             writable: true,
             value: end
         });
-        this.arrow = config.arrow;
         this.curveEndIndices = [[0, 1]];
     }
     static defaultConfig() {
-        return { ...Shape.defaultConfig(), arrow: false };
+        return { ...Shape.defaultConfig() };
     }
     static centeredLine(start, end, config = {}) {
         const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
@@ -1289,13 +1288,13 @@ class Line extends Shape {
 }
 
 /**
- * An arrow derived from a line.
+ * An arrow.
  *
  * @example arrow.ts
  */
-class Arrow extends Line {
+class Arrow extends Shape {
     constructor(start, end, config = {}) {
-        super(start, end, { ...Arrow.defaultConfig(), ...config, arrow: true });
+        super([start, end], { ...Arrow.defaultConfig(), ...config, arrow: true });
         Object.defineProperty(this, "start", {
             enumerable: true,
             configurable: true,
@@ -1313,6 +1312,12 @@ class Arrow extends Line {
         this.start.copy(start);
         this.end.copy(end);
         this.copyStrokeFill(new Arrow(start, end, config));
+    }
+    getAttributes() {
+        return {
+            start: this.start,
+            end: this.end,
+        };
     }
 }
 

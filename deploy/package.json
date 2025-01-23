@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "deploy:emulator": "bun run :deploy -- --emulator",
+    "deploy:development": "bun run :deploy -- --development",
     "deploy:staging": "bun run :deploy -- --staging",
     "deploy:production": "bun run :deploy -- --production",
     ":deploy": "bun src/index.ts",

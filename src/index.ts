@@ -420,7 +420,7 @@ import {
   type StudioScene,
 } from "./scene.js";
 import * as Text from "./text.js";
-import { setupCanvas } from "./utils.js";
+import { setupCanvas, SceneCanvasConfig } from "./utils.js";
 
 export {
   component,
@@ -432,6 +432,7 @@ export {
   setupCanvas,
   THREE,
   type StudioScene,
+  type SceneCanvasConfig,
   type AnimationRepresentation,
   Utils,
   Diagram,

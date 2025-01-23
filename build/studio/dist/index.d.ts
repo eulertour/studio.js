@@ -72,6 +72,6 @@ import * as Geometry from "./geometry/index.js";
 import * as Graphing from "./graphing.js";
 import { type AnimationRepresentation, SceneController, type StudioScene } from "./scene.js";
 import * as Text from "./text.js";
-import { setupCanvas } from "./utils.js";
-export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, type StudioScene, type AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };
+import { setupCanvas, SceneCanvasConfig } from "./utils.js";
+export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, type StudioScene, type SceneCanvasConfig, type AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };
 //# sourceMappingURL=index.d.ts.map

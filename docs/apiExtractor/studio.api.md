@@ -144,10 +144,14 @@ class Arc extends Shape {
 }
 
 // @public
-class Arrow extends Line {
+class Arrow extends Shape {
     constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style);
     // (undocumented)
     end: THREE.Vector3;
+    // Warning: (ae-forgotten-export) The symbol "ArrowAttributes" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    getAttributes(): ArrowAttributes;
     // (undocumented)
     reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
     // (undocumented)
@@ -421,15 +425,11 @@ const LEFT: Readonly<THREE.Vector3>;
 
 // @public
 class Line extends Shape {
-    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
-        arrow?: boolean;
-    });
+    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style);
     // (undocumented)
     static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
     // (undocumented)
-    static defaultConfig(): {
-        arrow: boolean;
-    };
+    static defaultConfig(): {};
     // (undocumented)
     end: THREE.Vector3;
     // (undocumented)
@@ -443,9 +443,7 @@ class Line extends Shape {
     // (undocumented)
     getVector(global?: boolean): THREE.Vector3;
     // (undocumented)
-    reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
-        arrow?: boolean;
-    }): void;
+    reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
     // (undocumented)
     start: THREE.Vector3;
 }
@@ -607,10 +605,13 @@ const rotate270: (v: THREE.Vector3) => THREE.Vector3;
 const rotate90: (v: THREE.Vector3) => THREE.Vector3;
 
 // @public (undocumented)
+export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
+    viewport?: THREE.Vector4;
+};
+
+// @public (undocumented)
 export class SceneController {
-    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: (WidthSetupConfig | HeightSetupConfig) & {
-        viewport?: THREE.Vector4;
-    });
+    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
     // (undocumented)
     animationIndex: number;
     // (undocumented)
@@ -692,9 +693,7 @@ class SetScale extends Animation_3 {
 }
 
 // @public (undocumented)
-export const setupCanvas: (canvas: HTMLCanvasElement, config?: (WidthSetupConfig | HeightSetupConfig) & {
-    viewport?: THREE.Vector4;
-}) => [THREE.Scene, THREE.Camera, THREE.WebGLRenderer];
+export const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [THREE.Scene, THREE.Camera, THREE.WebGLRenderer];
 
 // @public
 abstract class Shape extends THREE.Group {
@@ -909,6 +908,7 @@ declare namespace Utils {
     export {
         WidthSetupConfig,
         HeightSetupConfig,
+        SceneCanvasConfig,
         getFrameAttributes,
         setupCanvas,
         clamp,
