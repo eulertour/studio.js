@@ -1,18 +1,17 @@
 import Shape, { Style } from "./shape.js";
 import { THREE } from "../index.js";
 import { ERROR_THRESHOLD } from "../constants.js";
-/**
- * A part of a circle's circumference.
- *
- * @example arc.ts
- */
 
 export type ArcAttributes = {
   radius: number;
   angle: number;
   closed: boolean;
 };
-
+/**
+ * An arc.
+ *
+ * @example arc.ts
+ */
 export default class Arc extends Shape {
   public closed: boolean;
 
@@ -52,7 +51,7 @@ export default class Arc extends Shape {
       ];
     }
     super(points, config);
-    this.closed = config.closed;
+    this.closed = config.closed ?? false;
     if (this.closed) {
       this.curveEndIndices = [
         [0, 1],
@@ -62,10 +61,6 @@ export default class Arc extends Shape {
     } else {
       this.curveEndIndices = [[0, points.length - 1]];
     }
-  }
-
-  static defaultConfig() {
-    return { ...Shape.defaultConfig(), closed: false, fill: false };
   }
 
   reshape(
