@@ -1,16 +1,7 @@
 import { clamp } from "../utils.js";
-import Shift from "./shift.js";
-import MoveTo from "./Moveto.js";
-import Rotate from "./rotate.js";
-import Draw from "./draw.js";
-import Erase from "./erase.js";
-import SetScale from "./setscale.js";
-import FadeIn from "./fadein.js";
-import SetOpacity from "./setopacity.js";
-import FadeOut from "./fadeout.js";
-import Wait from "./wait.js";
-const sigmoid = (x) => 1 / (1 + Math.exp(-x));
-const smooth = (t) => {
+
+const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
+const smooth = (t: number) => {
 
   const error = sigmoid(-10 / 2);
   return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
@@ -154,14 +145,4 @@ class Animation {
 
 export {
   Animation,
-  Shift,
-  MoveTo,
-  Rotate,
-  SetScale,
-  Draw,
-  Erase,
-  FadeIn,
-  FadeOut,
-  SetOpacity,
-  Wait,
 };
