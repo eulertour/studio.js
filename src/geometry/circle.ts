@@ -1,5 +1,5 @@
 import { ERROR_THRESHOLD } from "../constants.js";
-import Shape, { Style } from "./shape.js";
+import Shape, { Style } from "./Shape.js";
 import * as THREE from "three";
 
 export type CircleAttributes = {

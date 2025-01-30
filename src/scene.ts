@@ -3,7 +3,7 @@ import {
   setCameraDimensions,
   setCanvasViewport,
 } from "./geometry/MeshLine/MeshLineMaterial.js";
-import { Animation } from "./animations/animation.js";
+import { Animation } from "./animation/index.js";
 import { SceneCanvasConfig, setupCanvas } from "./utils.js";
 
 type Class<T> = new (

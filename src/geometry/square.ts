@@ -1,5 +1,5 @@
-import { Style } from "./shape.js";
-import Rectangle, { RectangleAttributes } from "./rectangle.js";
+import { Style } from "./Shape.js";
+import Rectangle, { RectangleAttributes } from "./Rectangle.js";
 
 /**
  * A shape with four sides of equal length and four right angles.

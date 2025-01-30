@@ -1,14 +1,12 @@
-import { Animation } from "./animation.js";
+import { Animation } from "./Animation.js";
 import * as THREE from "three";
 
-export default class SetOpacity extends Animation {
-    initialOpacity = new Map();
+
+
+export default class FadeIn extends Animation {
+    public initialOpacity = new Map();
   
-    constructor(
-      objectOrFunc,
-      public targetOpacity,
-      public config?,
-    ) {
+    constructor(object, config?) {
       let family = true;
       if (config && config.family === false) {
         family = false;
@@ -19,12 +17,9 @@ export default class SetOpacity extends Animation {
           if (family) {
             this.object.traverse((child) => {
               if (child instanceof THREE.Mesh) {
-                if (!this.initialOpacity.has(child)) {
-                  console.error("Unknown child");
-                }
                 child.material.opacity = THREE.MathUtils.lerp(
-                  this.initialOpacity.get(child),
-                  this.targetOpacity,
+                  0,
+                  config?.preserveOpacity ? this.initialOpacity.get(child) : 1,
                   elapsedTime,
                 );
               }
@@ -33,14 +28,14 @@ export default class SetOpacity extends Animation {
             [this.object.stroke, this.object.fill].forEach((mesh) => {
               if (!mesh) return;
               mesh.material.opacity = THREE.MathUtils.lerp(
-                this.initialOpacity.get(mesh),
-                this.targetOpacity,
+                0,
+                config?.preserveOpacity ? this.initialOpacity.get(mesh) : 1,
                 elapsedTime,
               );
             });
           }
         },
-        { object: objectOrFunc, ...config },
+        { object, reveal: true, ...config },
       );
     }
   

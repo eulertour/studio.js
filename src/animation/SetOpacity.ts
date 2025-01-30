@@ -1,12 +1,12 @@
-import { Animation } from "./animation.js";
+import { Animation } from "./Animation.js";
 import * as THREE from "three";
 
-
-export default class FadeOut extends Animation {
+export default class SetOpacity extends Animation {
     initialOpacity = new Map();
   
     constructor(
       objectOrFunc,
+      public targetOpacity,
       public config?,
     ) {
       let family = true;
@@ -24,7 +24,7 @@ export default class FadeOut extends Animation {
                 }
                 child.material.opacity = THREE.MathUtils.lerp(
                   this.initialOpacity.get(child),
-                  0,
+                  this.targetOpacity,
                   elapsedTime,
                 );
               }
@@ -34,13 +34,13 @@ export default class FadeOut extends Animation {
               if (!mesh) return;
               mesh.material.opacity = THREE.MathUtils.lerp(
                 this.initialOpacity.get(mesh),
-                0,
+                this.targetOpacity,
                 elapsedTime,
               );
             });
           }
         },
-        { object: objectOrFunc, hide: true, ...config },
+        { object: objectOrFunc, ...config },
       );
     }
   
@@ -51,23 +51,6 @@ export default class FadeOut extends Animation {
           this.initialOpacity.set(child, child.material.opacity);
         }
       });
-    }
-  
-    tearDown() {
-      if (this.config?.remove) {
-        this.object.parent.remove(this.object);
-      }
-      if (this.config?.restore) {
-        this.object.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            if (!this.initialOpacity.has(child)) {
-              console.error("Unknown child");
-            }
-            child.material.opacity = this.initialOpacity.get(child);
-          }
-        });
-      }
-      super.tearDown();
     }
   }
   
