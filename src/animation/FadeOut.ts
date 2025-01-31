@@ -6,8 +6,8 @@ export default class FadeOut extends Animation {
     initialOpacity = new Map();
   
     constructor(
-      objectOrFunc,
-      public config?,
+      objectOrFunc: THREE.Object3D | (() => THREE.Object3D),
+      public config?: any,
     ) {
       let family = true;
       if (config && config.family === false) {
@@ -17,7 +17,7 @@ export default class FadeOut extends Animation {
       super(
         (elapsedTime, _deltaTime) => {
           if (family) {
-            this.object.traverse((child) => {
+            this.object.traverse((child: THREE.Object3D) => {
               if (child instanceof THREE.Mesh) {
                 if (!this.initialOpacity.has(child)) {
                   console.error("Unknown child");
@@ -58,7 +58,7 @@ export default class FadeOut extends Animation {
         this.object.parent.remove(this.object);
       }
       if (this.config?.restore) {
-        this.object.traverse((child) => {
+        this.object.traverse((child: THREE.Object3D) => {
           if (child instanceof THREE.Mesh) {
             if (!this.initialOpacity.has(child)) {
               console.error("Unknown child");
