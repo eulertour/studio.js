@@ -9,15 +9,15 @@ declare module "three" {
     moveNextTo(
       target: THREE.Object3D,
       direction: THREE.Vector3,
-      distance?,
+      distance?: number,
     ): void;
-    moveToRightOf(target: THREE.Object3D, distance?): void;
-    moveToLeftOf(target: THREE.Object3D, distance?): void;
-    moveAbove(target: THREE.Object3D, distance?): void;
-    moveBelow(target: THREE.Object3D, distance?): void;
-    setOpacity(opacity: number): THREE.Object3D;
-    setInvisible(): THREE.Object3D;
-    setVisible(config?): THREE.Object3D;
+    moveToRightOf(target: THREE.Object3D, distance?: number): void;
+    moveToLeftOf(target: THREE.Object3D, distance?: number): void;
+    moveAbove(target: THREE.Object3D, distance?: number): void;
+    moveBelow(target: THREE.Object3D, distance?: number): void;
+    setOpacity(opacity: number, config?: Record<string, any>): THREE.Object3D;
+    setInvisible(config?: Record<string, any>): THREE.Object3D;
+    setVisible(config?: Record<string, any>): THREE.Object3D;
     setUpright(): THREE.Object3D;
     recenter(center: THREE.Vector3): THREE.Object3D;
     reorient(zRotation: number): void;
@@ -113,35 +113,35 @@ THREE.Object3D.prototype.pointAlongCurve = function (t: number) {
 THREE.Object3D.prototype.moveNextTo = function (
   target: THREE.Object3D,
   direction: THREE.Vector3,
-  distance?,
+  distance?: number,
 ) {
   return Utils.moveNextTo(target, this, direction, distance);
 };
 
 THREE.Object3D.prototype.moveToRightOf = function (
   target: THREE.Object3D,
-  distance?,
+  distance?: number,
 ) {
   return Utils.moveToRightOf(target, this, distance);
 };
 
 THREE.Object3D.prototype.moveToLeftOf = function (
   target: THREE.Object3D,
-  distance?,
+  distance?: number,
 ) {
   return Utils.moveToLeftOf(target, this, distance);
 };
 
 THREE.Object3D.prototype.moveAbove = function (
   target: THREE.Object3D,
-  distance?,
+  distance?: number,
 ) {
   return Utils.moveAbove(target, this, distance);
 };
 
 THREE.Object3D.prototype.moveBelow = function (
   target: THREE.Object3D,
-  distance?,
+  distance?: number,
 ) {
   return Utils.moveBelow(target, this, distance);
 };
@@ -322,8 +322,12 @@ function component(
 
 THREE.Object3D.prototype.setOpacity = function (
   opacity: number,
-  config?,
+  config?: Record<string, any>,
 ): THREE.Object3D {
+  if (typeof opacity !== 'number') {
+    throw new TypeError('Opacity must be a number');
+  }
+
   let family = true;
   if (config && config.family === false) {
     family = false;
@@ -344,7 +348,9 @@ THREE.Object3D.prototype.setOpacity = function (
   return this;
 };
 
-THREE.Object3D.prototype.setInvisible = function (config?): THREE.Object3D {
+THREE.Object3D.prototype.setInvisible = function (
+  config?: Record<string, any>,
+): THREE.Object3D {
   let family = true;
   if (config && config.family === false) {
     family = false;
@@ -353,7 +359,9 @@ THREE.Object3D.prototype.setInvisible = function (config?): THREE.Object3D {
   return this.setOpacity(0, { family });
 };
 
-THREE.Object3D.prototype.setVisible = function (config?): THREE.Object3D {
+THREE.Object3D.prototype.setVisible = function (
+  config?: Record<string, any>,
+): THREE.Object3D {
   let family = true;
   if (config && config.family === false) {
     family = false;
