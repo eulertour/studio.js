@@ -6,7 +6,7 @@ import * as THREE from "three";
 export default class FadeIn extends Animation {
     public initialOpacity = new Map();
   
-    constructor(object, config?) {
+    constructor(object: THREE.Object3D, config?: any) {
       let family = true;
       if (config && config.family === false) {
         family = false;
@@ -15,7 +15,7 @@ export default class FadeIn extends Animation {
       super(
         (elapsedTime, _deltaTime) => {
           if (family) {
-            this.object.traverse((child) => {
+            this.object.traverse((child: THREE.Object3D) => {
               if (child instanceof THREE.Mesh) {
                 child.material.opacity = THREE.MathUtils.lerp(
                   0,
