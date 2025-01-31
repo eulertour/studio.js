@@ -9,7 +9,7 @@ export default class MoveTo extends Animation {
   constructor(
     public target: THREE.Object3D,
     public obj: THREE.Object3D,
-    config?,
+    config?: any,
   ) {
     super(
       (elapsedTime) => {
