@@ -381,7 +381,14 @@ THREE.Object3D.prototype.setUpright = function (): THREE.Object3D {
   return this;
 };
 
+interface CustomObject3D extends THREE.Object3D {
+  points: THREE.Vector3[];
+  stroke?: { geometry: { setPoints: (points: THREE.Vector3[]) => void } };
+  fill?: { geometry: { attributes: { position: { array: number[] } } } };
+}
+
 THREE.Object3D.prototype.recenter = function (
+  this: CustomObject3D,
   globalPosition: THREE.Vector3,
 ): THREE.Object3D {
   const localPosition = globalPosition.clone();
@@ -390,7 +397,6 @@ THREE.Object3D.prototype.recenter = function (
   this.position.add(offset);
 
   if (this.points) {
-    // Update stroke and fill geometries.
     const newPoints = this.points.map((point) => point.clone().sub(offset));
     if (this.stroke) {
       this.stroke.geometry.setPoints(newPoints);
