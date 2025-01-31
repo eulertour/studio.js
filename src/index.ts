@@ -181,6 +181,9 @@ THREE.Object3D.prototype.removeComponent = function (name: string) {
     throw new Error(`Failed to remove component ${name}: No such component`);
   }
   const child = this.components.get(name);
+  if (!child) {
+    throw new Error(`Component ${name} is not defined`);
+  }
   this.components.delete(name);
   child.parentComponent = undefined;
   this.remove(child);
