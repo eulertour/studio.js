@@ -17,9 +17,3 @@ export default class Shake extends Animation {
     );
   }
 }
-
-
-
-
-
-

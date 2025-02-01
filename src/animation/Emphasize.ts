@@ -28,7 +28,3 @@ export default class Emphasize extends Animation {
       this.initialScale = this.object.scale.x;
     }
   }
-
-
-  
-  

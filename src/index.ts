@@ -15,9 +15,9 @@ declare module "three" {
     moveToLeftOf(target: THREE.Object3D, distance?: number): void;
     moveAbove(target: THREE.Object3D, distance?: number): void;
     moveBelow(target: THREE.Object3D, distance?: number): void;
-    setOpacity(opacity: number, config?: Record<string, any>): THREE.Object3D;
-    setInvisible(config?: Record<string, any>): THREE.Object3D;
-    setVisible(config?: Record<string, any>): THREE.Object3D;
+    setOpacity(opacity: number, config?: any): THREE.Object3D;
+    setInvisible(config?: any): THREE.Object3D;
+    setVisible(config?: any): THREE.Object3D;
     setUpright(): THREE.Object3D;
     recenter(center: THREE.Vector3): THREE.Object3D;
     reorient(zRotation: number): void;
@@ -325,12 +325,8 @@ function component(
 
 THREE.Object3D.prototype.setOpacity = function (
   opacity: number,
-  config?: Record<string, any>,
+  config?: any,
 ): THREE.Object3D {
-  if (typeof opacity !== 'number') {
-    throw new TypeError('Opacity must be a number');
-  }
-
   let family = true;
   if (config && config.family === false) {
     family = false;
@@ -352,7 +348,7 @@ THREE.Object3D.prototype.setOpacity = function (
 };
 
 THREE.Object3D.prototype.setInvisible = function (
-  config?: Record<string, any>,
+  config?: any,
 ): THREE.Object3D {
   let family = true;
   if (config && config.family === false) {
@@ -363,7 +359,7 @@ THREE.Object3D.prototype.setInvisible = function (
 };
 
 THREE.Object3D.prototype.setVisible = function (
-  config?: Record<string, any>,
+  config?: any,
 ): THREE.Object3D {
   let family = true;
   if (config && config.family === false) {
@@ -381,14 +377,7 @@ THREE.Object3D.prototype.setUpright = function (): THREE.Object3D {
   return this;
 };
 
-interface CustomObject3D extends THREE.Object3D {
-  points: THREE.Vector3[];
-  stroke?: { geometry: { setPoints: (points: THREE.Vector3[]) => void } };
-  fill?: { geometry: { attributes: { position: { array: number[] } } } };
-}
-
 THREE.Object3D.prototype.recenter = function (
-  this: CustomObject3D,
   globalPosition: THREE.Vector3,
 ): THREE.Object3D {
   const localPosition = globalPosition.clone();
@@ -397,6 +386,7 @@ THREE.Object3D.prototype.recenter = function (
   this.position.add(offset);
 
   if (this.points) {
+    // Update stroke and fill geometries.
     const newPoints = this.points.map((point) => point.clone().sub(offset));
     if (this.stroke) {
       this.stroke.geometry.setPoints(newPoints);
@@ -438,6 +428,7 @@ import {
 } from "./scene.js";
 import * as Text from "./text.js";
 import { setupCanvas } from "./utils.js";
+import { Circle, Polygon } from "./geometry/index.js";
 
 export {
   component,

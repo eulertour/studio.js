@@ -2,7 +2,7 @@ import { Animation } from "./Animation.js";
 import * as THREE from "three";
 
 export default class SetScale extends Animation {
-    initialScale!: number;
+    initialScale: number;
   
     constructor(object: THREE.Object3D, factor: number, config?: any) {
       super(
@@ -12,7 +12,7 @@ export default class SetScale extends Animation {
             factor,
             elapsedTime,
           );
-          object.scale.set(scale, scale, scale);
+          object.scale.set(scale, scale);
         },
         { object, reveal: true, ...config },
       );
