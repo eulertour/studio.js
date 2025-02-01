@@ -4,7 +4,7 @@ import * as THREE from "three";
 export default class SetScale extends Animation {
     initialScale: number;
   
-    constructor(object, factor, config?) {
+    constructor(object: THREE.Object3D, factor: number, config?: any) {
       super(
         (elapsedTime) => {
           const scale = THREE.MathUtils.lerp(

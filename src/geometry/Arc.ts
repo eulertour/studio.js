@@ -1,6 +1,7 @@
 import Shape, { Style } from "./Shape.js";
 import { THREE } from "../index.js";
 import { ERROR_THRESHOLD } from "../constants.js";
+import { getArcPoints } from "./geometryUtils.js";
 
 export type ArcAttributes = {
   radius: number;
@@ -21,36 +22,10 @@ export default class Arc extends Shape {
     config: Style & { closed?: boolean } = {},
   ) {
     config = { ...Arc.defaultConfig(), ...config };
-    let points = [];
-    let negative = false;
-    if (angle < 0) {
-      negative = true;
-      angle *= -1;
-    }
-    if (angle > 0) {
-      for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
-        points.push(
-          new THREE.Vector3(
-            radius * Math.cos(i),
-            radius * Math.sin(i) * (negative ? -1 : 1),
-            0,
-          ),
-        );
-      }
-    } else {
-      points.push(
-        new THREE.Vector3(radius, 0, 0),
-        new THREE.Vector3(radius, 0, 0),
-      );
-    }
-    if (config.closed) {
-      points = [
-        new THREE.Vector3(0, 0, 0),
-        ...points,
-        new THREE.Vector3(0, 0, 0),
-      ];
-    }
+    let points = getArcPoints(radius, angle, { closed: config.closed });
+    
     super(points, config);
+
     this.closed = config.closed ?? false;
     if (this.closed) {
       this.curveEndIndices = [

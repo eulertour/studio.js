@@ -9,3 +9,5 @@ export { default as FadeIn } from "./FadeIn.js";
 export { default as SetOpacity } from "./SetOpacity.js";
 export { default as FadeOut } from "./FadeOut.js";
 export { default as Wait } from "./Wait.js";
+export { default as Emphasize } from "./Emphasize.js";
+export { default as Shake } from "./Shake.js";
