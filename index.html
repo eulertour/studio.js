@@ -9,7 +9,7 @@
   <body>
     <canvas id="canvas" style="border: 1px solid black; height: 420px"></canvas>
     <script type="module">
-      import { Geometry, THREE, SceneController } from "./src/index";
+      import { Geometry, Animation, THREE, SceneController } from "./src/index";
 
       class Scene {
         constructor(scene, camera, renderer) {
@@ -25,6 +25,8 @@
             },
           );
           scene.add(line);
+
+          this.animations = [];
         }
       }
 
