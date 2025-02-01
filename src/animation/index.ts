@@ -11,3 +11,4 @@ export { default as FadeOut } from "./FadeOut.js";
 export { default as Wait } from "./Wait.js";
 export { default as Emphasize } from "./Emphasize.js";
 export { default as Shake } from "./Shake.js";
+export { default as Flash } from "./Flash.js";
