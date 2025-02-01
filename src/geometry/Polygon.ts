@@ -14,6 +14,11 @@ export type PolygonAttributes = {
 
 export default class Polygon extends Shape {
   constructor(points: Array<THREE.Vector3>, config: Style = {}) {
+    // Ensure the polygon is closed by adding the first point to the end
+    if (points.length > 0 && !points[0].equals(points[points.length - 1])) {
+      points.push(points[0]);
+    }
+
     super(points, { ...Polygon.defaultConfig(), ...config });
     this.curveEndIndices = [];
     for (let i = 0; i < points.length - 1; i++) {
