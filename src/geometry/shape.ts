@@ -46,13 +46,19 @@ export default abstract class Shape extends THREE.Group {
 
   constructor(
     points: Array<THREE.Vector3>,
-    config: Style & { arrow?: boolean; stroke?: boolean; fill?: boolean } = {},
+    config: Style & {
+      arrow?: boolean;
+      stroke?: boolean;
+      fill?: boolean;
+      closed?: boolean;
+      fillPoints?: Array<THREE.Vector3>;
+    } = {},
   ) {
     super();
     config = Object.assign(Shape.defaultStyle(), config);
 
     if (config.fill !== false) {
-      const fillGeometry = getFillGeometry(points);
+      const fillGeometry = getFillGeometry(config.fillPoints ?? points);
       const fillMaterial = new THREE.MeshBasicMaterial({
         color: config.fillColor,
         opacity: config.fillOpacity,
