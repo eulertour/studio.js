@@ -1,12 +1,12 @@
-import Line from "./line.js";
+import Shape from "./shape.js";
 /**
- * An arrow derived from a line.
+ * An arrow.
  *
  * @example arrow.ts
  */
-export default class Arrow extends Line {
+export default class Arrow extends Shape {
     constructor(start, end, config = {}) {
-        super(start, end, { ...Arrow.defaultConfig(), ...config, arrow: true });
+        super([start, end], { ...Arrow.defaultConfig(), ...config, arrow: true });
         Object.defineProperty(this, "start", {
             enumerable: true,
             configurable: true,
@@ -24,6 +24,12 @@ export default class Arrow extends Line {
         this.start.copy(start);
         this.end.copy(end);
         this.copyStrokeFill(new Arrow(start, end, config));
+    }
+    getAttributes() {
+        return {
+            start: this.start,
+            end: this.end,
+        };
     }
 }
 //# sourceMappingURL=arrow.js.map

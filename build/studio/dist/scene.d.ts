@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { Animation } from "./animation.js";
-import { type HeightSetupConfig, type WidthSetupConfig } from "./utils.js";
+import { SceneCanvasConfig } from "./utils.js";
 type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
 export type AnimationRepresentation = Animation | Array<Animation> | {
     animations: Array<Animation>;
@@ -34,9 +34,7 @@ export declare class SceneController {
     three: typeof THREE;
     viewport: THREE.Vector4;
     aspectRatio: number;
-    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: (WidthSetupConfig | HeightSetupConfig) & {
-        viewport?: THREE.Vector4;
-    });
+    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
     get scene(): THREE.Scene;
     get camera(): THREE.OrthographicCamera;
     get renderer(): THREE.WebGLRenderer;

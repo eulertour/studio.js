@@ -127,32 +127,31 @@ type LineAttributes = {
 declare class Line extends Shape {
     start: THREE.Vector3;
     end: THREE.Vector3;
-    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
-        arrow?: boolean;
-    });
-    static defaultConfig(): {
-        arrow: boolean;
-    };
+    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style);
+    static defaultConfig(): {};
     static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
-    reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
-        arrow?: boolean;
-    }): void;
+    reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
     getClassConfig(): {};
     getAttributes(): LineAttributes;
     getVector(global?: boolean): THREE.Vector3;
     static fromAttributes(attributes: LineAttributes): Line;
 }
 
+type ArrowAttributes = {
+    start: THREE.Vector3;
+    end: THREE.Vector3;
+};
 /**
- * An arrow derived from a line.
+ * An arrow.
  *
  * @example arrow.ts
  */
-declare class Arrow extends Line {
+declare class Arrow extends Shape {
     start: THREE.Vector3;
     end: THREE.Vector3;
     constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style);
     reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
+    getAttributes(): ArrowAttributes;
 }
 
 type PolygonAttributes = {
@@ -366,9 +365,10 @@ type HeightSetupConfig = {
     pixelHeight: number;
     coordinateHeight: number;
 };
-declare const setupCanvas: (canvas: HTMLCanvasElement, config?: (WidthSetupConfig | HeightSetupConfig) & {
+type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
     viewport?: THREE.Vector4;
-}) => [THREE.Scene, THREE.Camera, THREE.WebGLRenderer];
+};
+declare const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [THREE.Scene, THREE.Camera, THREE.WebGLRenderer];
 declare const convertWorldDirectionToObjectSpace: (worldDirection: THREE.Vector3, object: THREE.Object3D) => THREE.Vector3;
 declare const vstack: (group: THREE.Group, buffer?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;
 declare const vspace: (group: THREE.Group, distanceBetween?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;
@@ -408,6 +408,7 @@ declare const utils_d_LEFT: typeof LEFT;
 declare const utils_d_ORIGIN: typeof ORIGIN;
 declare const utils_d_OUT: typeof OUT;
 declare const utils_d_RIGHT: typeof RIGHT;
+type utils_d_SceneCanvasConfig = SceneCanvasConfig;
 type utils_d_ShapeFromCurves = ShapeFromCurves;
 declare const utils_d_ShapeFromCurves: typeof ShapeFromCurves;
 declare const utils_d_UP: typeof UP;
@@ -434,7 +435,7 @@ declare const utils_d_transformBetweenSpaces: typeof transformBetweenSpaces;
 declare const utils_d_vspace: typeof vspace;
 declare const utils_d_vstack: typeof vstack;
 declare namespace utils_d {
-  export { utils_d_BUFFER as BUFFER, utils_d_DOWN as DOWN, type utils_d_HeightSetupConfig as HeightSetupConfig, utils_d_IN as IN, utils_d_LEFT as LEFT, utils_d_ORIGIN as ORIGIN, utils_d_OUT as OUT, utils_d_RIGHT as RIGHT, utils_d_ShapeFromCurves as ShapeFromCurves, utils_d_UP as UP, type utils_d_WidthSetupConfig as WidthSetupConfig, utils_d_clamp as clamp, utils_d_convertWorldDirectionToObjectSpace as convertWorldDirectionToObjectSpace, utils_d_furthestInDirection as furthestInDirection, utils_d_getBoundingBoxCenter as getBoundingBoxCenter, utils_d_getBoundingBoxHelper as getBoundingBoxHelper, utils_d_getFrameAttributes as getFrameAttributes, utils_d_intersectionsBetween as intersectionsBetween, utils_d_moveAbove as moveAbove, utils_d_moveBelow as moveBelow, utils_d_moveNextTo as moveNextTo, utils_d_moveToLeftOf as moveToLeftOf, utils_d_moveToRightOf as moveToRightOf, utils_d_pointAlongCurve as pointAlongCurve, utils_d_positiveAngleTo as positiveAngleTo, utils_d_rotate180 as rotate180, utils_d_rotate270 as rotate270, utils_d_rotate90 as rotate90, utils_d_setupCanvas as setupCanvas, utils_d_transformBetweenSpaces as transformBetweenSpaces, utils_d_vspace as vspace, utils_d_vstack as vstack };
+  export { utils_d_BUFFER as BUFFER, utils_d_DOWN as DOWN, type utils_d_HeightSetupConfig as HeightSetupConfig, utils_d_IN as IN, utils_d_LEFT as LEFT, utils_d_ORIGIN as ORIGIN, utils_d_OUT as OUT, utils_d_RIGHT as RIGHT, type utils_d_SceneCanvasConfig as SceneCanvasConfig, utils_d_ShapeFromCurves as ShapeFromCurves, utils_d_UP as UP, type utils_d_WidthSetupConfig as WidthSetupConfig, utils_d_clamp as clamp, utils_d_convertWorldDirectionToObjectSpace as convertWorldDirectionToObjectSpace, utils_d_furthestInDirection as furthestInDirection, utils_d_getBoundingBoxCenter as getBoundingBoxCenter, utils_d_getBoundingBoxHelper as getBoundingBoxHelper, utils_d_getFrameAttributes as getFrameAttributes, utils_d_intersectionsBetween as intersectionsBetween, utils_d_moveAbove as moveAbove, utils_d_moveBelow as moveBelow, utils_d_moveNextTo as moveNextTo, utils_d_moveToLeftOf as moveToLeftOf, utils_d_moveToRightOf as moveToRightOf, utils_d_pointAlongCurve as pointAlongCurve, utils_d_positiveAngleTo as positiveAngleTo, utils_d_rotate180 as rotate180, utils_d_rotate270 as rotate270, utils_d_rotate90 as rotate90, utils_d_setupCanvas as setupCanvas, utils_d_transformBetweenSpaces as transformBetweenSpaces, utils_d_vspace as vspace, utils_d_vstack as vstack };
 }
 
 declare class Animation {
@@ -713,9 +714,7 @@ declare class SceneController {
     three: typeof THREE;
     viewport: THREE.Vector4;
     aspectRatio: number;
-    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: (WidthSetupConfig | HeightSetupConfig) & {
-        viewport?: THREE.Vector4;
-    });
+    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
     get scene(): THREE.Scene;
     get camera(): THREE.OrthographicCamera;
     get renderer(): THREE.WebGLRenderer;
@@ -838,4 +837,4 @@ type ComponentParent = THREE.Object3D & {
 declare function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 //# sourceMappingURL=index.d.ts.map
 
-export { animation_d as Animation, type AnimationRepresentation, constants_d as Constants, diagram_d as Diagram, _default as Frame, index_d as Geometry, graphing_d as Graphing, SceneController, type StudioScene, text_d as Text, utils_d as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };
+export { animation_d as Animation, type AnimationRepresentation, constants_d as Constants, diagram_d as Diagram, _default as Frame, index_d as Geometry, graphing_d as Graphing, type SceneCanvasConfig, SceneController, type StudioScene, text_d as Text, utils_d as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };

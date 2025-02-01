@@ -8,7 +8,7 @@ import { getStorage, Storage } from "firebase-admin/storage";
 const CURRENT_DIRECTORY_TO_PROJECT_ROOT = "../..";
 
 enum Mode {
-  EMULATOR = "EMULATOR",
+  DEVELOPMENT = "DEVELOPMENT",
   STAGING = "STAGING",
   PRODUCTION = "PRODUCTION",
 }
@@ -16,17 +16,17 @@ enum Mode {
 function getMode(): Mode {
   const modes = process.argv.filter(
     (arg) =>
-      arg === "--emulator" || arg === "--staging" || arg === "--production",
+      arg === "--development" || arg === "--staging" || arg === "--production",
   );
 
   if (modes.length !== 1) {
     throw new Error(
-      "Please specify exactly one of: --emulator, --staging, --production",
+      "Please specify exactly one of: --development, --staging, --production",
     );
   }
 
-  if (modes.includes("--emulator")) {
-    return Mode.EMULATOR;
+  if (modes.includes("--development")) {
+    return Mode.DEVELOPMENT;
   }
   if (modes.includes("--staging")) {
     return Mode.STAGING;
@@ -35,7 +35,7 @@ function getMode(): Mode {
     return Mode.PRODUCTION;
   }
 
-  return Mode.EMULATOR;
+  return Mode.DEVELOPMENT;
 }
 
 async function waitForFirebase() {
@@ -58,7 +58,7 @@ async function waitForFirebase() {
 
 function getStorageBucket(mode: Mode): Storage {
   const config: AppOptions =
-    mode === Mode.EMULATOR || mode === Mode.STAGING
+    mode === Mode.DEVELOPMENT || mode === Mode.STAGING
       ? {
           projectId: "euler-studio-staging",
           storageBucket: "euler-studio-staging.appspot.com",

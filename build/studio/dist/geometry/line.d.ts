@@ -12,16 +12,10 @@ export type LineAttributes = {
 export default class Line extends Shape {
     start: THREE.Vector3;
     end: THREE.Vector3;
-    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
-        arrow?: boolean;
-    });
-    static defaultConfig(): {
-        arrow: boolean;
-    };
+    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: Style);
+    static defaultConfig(): {};
     static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
-    reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
-        arrow?: boolean;
-    }): void;
+    reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
     getClassConfig(): {};
     getAttributes(): LineAttributes;
     getVector(global?: boolean): THREE.Vector3;

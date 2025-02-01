@@ -56,11 +56,13 @@ const isHeightSetup = (config: object): config is HeightSetupConfig => {
   );
 };
 
+export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
+  viewport?: THREE.Vector4;
+};
+
 const setupCanvas = (
   canvas: HTMLCanvasElement,
-  config: (WidthSetupConfig | HeightSetupConfig) & {
-    viewport?: THREE.Vector4;
-  } = {
+  config: SceneCanvasConfig = {
     aspectRatio: 16 / 9,
     pixelHeight: 720,
     coordinateHeight: 8,

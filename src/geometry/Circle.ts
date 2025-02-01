@@ -61,4 +61,3 @@ export default class Circle extends Shape {
     ];
   }
 }
-

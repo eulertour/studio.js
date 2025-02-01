@@ -3,12 +3,8 @@ import {
   setCameraDimensions,
   setCanvasViewport,
 } from "./geometry/MeshLine/MeshLineMaterial.js";
-import { Animation } from "./animation/Animation.js";
-import {
-  type HeightSetupConfig,
-  type WidthSetupConfig,
-  setupCanvas,
-} from "./utils.js";
+import { Animation } from "./animation/index.js";
+import { SceneCanvasConfig, setupCanvas } from "./utils.js";
 
 type Class<T> = new (
   scene: THREE.Scene,
@@ -58,9 +54,7 @@ export class SceneController {
   constructor(
     public UserScene: Class<StudioScene>,
     canvasRef: HTMLCanvasElement,
-    config: (WidthSetupConfig | HeightSetupConfig) & {
-      viewport?: THREE.Vector4;
-    },
+    config: SceneCanvasConfig,
   ) {
     this.viewport = config.viewport;
     this.aspectRatio = config.aspectRatio;
