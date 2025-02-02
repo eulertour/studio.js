@@ -28,14 +28,14 @@ describe("Polygon", () => {
         const testPoint = points[i];
         const polygonPoint = polygon.points[i];
         const difference = testPoint.sub(polygonPoint).length();
-        assert.isAtMost(difference, ERROR_THRESHOLD);  
+        assert.isAtMost(difference, ERROR_THRESHOLD);
       }
     });
   });
 
   describe("automatic closing", () => {
     describe("should automatically close the polygon if the first and last points are not the same", () => {
-      it("should automatically close the polygon", () => {  
+      it("should automatically close the polygon", () => {
         assert.equal(polygon.points.length, 4);
         assertPolygonIsClosed(polygon);
       });
