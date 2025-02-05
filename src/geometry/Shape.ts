@@ -222,7 +222,7 @@ export default abstract class Shape extends THREE.Group {
     };
   }
 
-  setStyle(style: Style): void {
+  restyle(style: Style): void {
     const { fillColor, fillOpacity } = style;
     if (fillColor !== undefined) {
       this.fill.material.color = fillColor;
