@@ -111,7 +111,11 @@ export default abstract class Shape extends THREE.Group {
   }
 
   reshape(...args: any[]) {
-    throw new Error("Reshape not implemented.");
+    const newShape = new (this.constructor as any)(...args);
+    this.copyStrokeFill(newShape);
+    this.copyStyle(newShape);
+    const newAttributes = newShape.getAttributes();
+    Object.assign(this, newAttributes);
   }
 
   copyStroke(shape: Shape) {
@@ -131,6 +135,10 @@ export default abstract class Shape extends THREE.Group {
 
   get points(): Array<THREE.Vector3> {
     return this.stroke.geometry.points;
+  }
+
+  set points(newPoints: THREE.Vector3[]) {
+    this.stroke.geometry.points = newPoints;
   }
 
   worldPoint(index: number) {
@@ -244,6 +252,10 @@ export default abstract class Shape extends THREE.Group {
     if (strokeDashOffset !== undefined) {
       this.stroke.material.dashOffset = strokeDashOffset;
     }
+  }
+
+  copyStyle(shape: Shape) {
+    this.setStyle(shape.getStyle());
   }
 
   getTransform(): Transform {
