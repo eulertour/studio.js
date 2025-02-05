@@ -255,7 +255,7 @@ export default abstract class Shape extends THREE.Group {
   }
 
   copyStyle(shape: Shape) {
-    this.setStyle(shape.getStyle());
+    this.restyle(shape.getStyle());
   }
 
   getTransform(): Transform {

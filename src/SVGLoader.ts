@@ -127,7 +127,7 @@ class SVGLoader extends THREE.Loader {
 
       if (path) {
         if (style.fill !== undefined && style.fill !== "none") {
-          path.color.setStyle(style.fill, COLOR_SPACE_SVG);
+          path.color.restyle(style.fill, COLOR_SPACE_SVG);
         }
 
         transformPath(path, currentTransform);
