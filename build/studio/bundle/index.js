@@ -1028,7 +1028,7 @@ class Shape extends THREE.Group {
         });
         config = Object.assign(Shape.defaultStyle(), config);
         if (config.fill !== false) {
-            const fillGeometry = getFillGeometry(points);
+            const fillGeometry = getFillGeometry(config.fillPoints ?? points);
             const fillMaterial = new THREE.MeshBasicMaterial({
                 color: config.fillColor,
                 opacity: config.fillOpacity,
@@ -1074,7 +1074,11 @@ class Shape extends THREE.Group {
         return {};
     }
     reshape(...args) {
-        throw new Error("Reshape not implemented.");
+        const newShape = new this.constructor(...args);
+        this.copyStrokeFill(newShape);
+        this.copyStyle(newShape);
+        const newAttributes = newShape.getAttributes();
+        Object.assign(this, newAttributes);
     }
     copyStroke(shape) {
         this.stroke.geometry.dispose();
@@ -1090,6 +1094,9 @@ class Shape extends THREE.Group {
     }
     get points() {
         return this.stroke.geometry.points;
+    }
+    set points(newPoints) {
+        this.stroke.geometry.points = newPoints;
     }
     worldPoint(index) {
         return this.localToWorld(this.points[index].clone());
@@ -1152,7 +1159,7 @@ class Shape extends THREE.Group {
             strokeWidth: this.stroke.material.width,
         };
     }
-    setStyle(style) {
+    restyle(style) {
         const { fillColor, fillOpacity } = style;
         if (fillColor !== undefined) {
             this.fill.material.color = fillColor;
@@ -1180,6 +1187,9 @@ class Shape extends THREE.Group {
         if (strokeDashOffset !== undefined) {
             this.stroke.material.dashOffset = strokeDashOffset;
         }
+    }
+    copyStyle(shape) {
+        this.restyle(shape.getStyle());
     }
     getTransform() {
         return {
@@ -1328,7 +1338,22 @@ class Arrow extends Shape {
  * @example polygon.ts
  */
 class Polygon extends Shape {
-    constructor(points, config = {}) {
+    constructor(inputPoints, config = {}) {
+        let points = [...inputPoints];
+        if (points.length < 3) {
+            throw new Error("Polygon must be called with at least three points");
+        }
+        // Ensure the polygon is closed by adding the first point to
+        // the end if necessary.
+        const firstPoint = points[0];
+        const lastPoint = points[points.length - 1];
+        if (firstPoint === undefined || lastPoint === undefined) {
+            throw new Error("firstPoint or lastPoint is undefined");
+        }
+        const firstToLastDistance = firstPoint.distanceTo(lastPoint);
+        if (firstToLastDistance > ERROR_THRESHOLD) {
+            points.push(firstPoint.clone());
+        }
         super(points, { ...Polygon.defaultConfig(), ...config });
         this.curveEndIndices = [];
         for (let i = 0; i < points.length - 1; i++) {
@@ -1380,30 +1405,40 @@ class Polyline extends Shape {
     }
 }
 
+const getArcPoints = (radius, angle, config = {}) => {
+    let points = [];
+    let negative = false;
+    if (angle < 0) {
+        negative = true;
+        angle *= -1;
+    }
+    if (angle > 0) {
+        for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
+            points.push(new THREE.Vector3(radius * Math.cos(i), radius * Math.sin(i) * (negative ? -1 : 1), 0));
+        }
+    }
+    else {
+        points.push(new THREE.Vector3(radius, 0, 0), new THREE.Vector3(radius, 0, 0));
+    }
+    if (config.closed) {
+        points = [
+            new THREE.Vector3(0, 0, 0),
+            ...points,
+            new THREE.Vector3(0, 0, 0),
+        ];
+    }
+    return points;
+};
+
+/**
+ * An arc.
+ *
+ * @example arc.ts
+ */
 class Arc extends Shape {
     constructor(radius = 1, angle = Math.PI / 2, config = {}) {
         config = { ...Arc.defaultConfig(), ...config };
-        let points = [];
-        let negative = false;
-        if (angle < 0) {
-            negative = true;
-            angle *= -1;
-        }
-        if (angle > 0) {
-            for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
-                points.push(new THREE.Vector3(radius * Math.cos(i), radius * Math.sin(i) * (negative ? -1 : 1), 0));
-            }
-        }
-        else {
-            points.push(new THREE.Vector3(radius, 0, 0), new THREE.Vector3(radius, 0, 0));
-        }
-        if (config.closed) {
-            points = [
-                new THREE.Vector3(0, 0, 0),
-                ...points,
-                new THREE.Vector3(0, 0, 0),
-            ];
-        }
+        let points = getArcPoints(radius, angle, { closed: config.closed });
         super(points, config);
         Object.defineProperty(this, "radius", {
             enumerable: true,
@@ -1423,7 +1458,7 @@ class Arc extends Shape {
             writable: true,
             value: void 0
         });
-        this.closed = config.closed;
+        this.closed = config.closed ?? false;
         if (this.closed) {
             this.curveEndIndices = [
                 [0, 1],
@@ -1434,9 +1469,6 @@ class Arc extends Shape {
         else {
             this.curveEndIndices = [[0, points.length - 1]];
         }
-    }
-    static defaultConfig() {
-        return { ...Shape.defaultConfig(), closed: false, fill: false };
     }
     reshape(radius = 1, angle = Math.PI / 2, config = {}) {
         this.radius = radius;
@@ -1487,19 +1519,27 @@ class Arc extends Shape {
  *
  * @example circle.ts
  */
-class Circle extends Arc {
+class Circle extends Shape {
     constructor(radius = 1, config = {}) {
-        super(radius, 2 * Math.PI, {
+        const angle = 2 * Math.PI;
+        let points = [];
+        for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
+            points.push(new THREE.Vector3(radius * Math.cos(i), radius * Math.sin(i), 0));
+        }
+        super(points, {
             ...Circle.defaultConfig(),
             ...config,
+        });
+        Object.defineProperty(this, "radius", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: radius
         });
     }
     reshape(radius, config = {}) {
         this.radius = radius;
         this.copyStrokeFill(new Circle(radius, config));
-    }
-    static defaultConfig() {
-        return { ...Arc.defaultConfig(), fill: true };
     }
     getCloneAttributes() {
         return [this.radius];
@@ -1507,8 +1547,6 @@ class Circle extends Arc {
     getAttributes() {
         return {
             radius: this.radius,
-            angle: 2 * Math.PI,
-            closed: false,
         };
     }
     static fromAttributes(attributes) {
@@ -1664,7 +1702,7 @@ class Square extends Rectangle {
     }
 }
 
-var index = /*#__PURE__*/Object.freeze({
+var index$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     Arc: Arc,
     Arrow: Arrow,
@@ -56342,6 +56380,7 @@ class Animation {
         }
     }
 }
+
 class Shift extends Animation {
     constructor(object, offset, config) {
         super((_elapsedTime, deltaTime) => {
@@ -56353,6 +56392,7 @@ class Shift extends Animation {
         });
     }
 }
+
 class MoveTo extends Animation {
     constructor(target, obj, config) {
         super((elapsedTime) => {
@@ -56395,6 +56435,7 @@ class MoveTo extends Animation {
         this.displacement = new THREE.Vector3().subVectors(final, initial);
     }
 }
+
 class Rotate extends Animation {
     constructor(object, angle, config) {
         super((_elapsedTime, deltaTime) => {
@@ -56402,24 +56443,7 @@ class Rotate extends Animation {
         }, { object, reveal: true, ...config });
     }
 }
-class SetScale extends Animation {
-    constructor(object, factor, config) {
-        super((elapsedTime) => {
-            const scale = THREE.MathUtils.lerp(this.initialScale, factor, elapsedTime);
-            object.scale.set(scale, scale);
-        }, { object, reveal: true, ...config });
-        Object.defineProperty(this, "initialScale", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-    }
-    setUp() {
-        super.setUp();
-        this.initialScale = this.object.scale.x;
-    }
-}
+
 class Draw extends Animation {
     constructor(object, config) {
         super((elapsedTime) => {
@@ -56431,6 +56455,7 @@ class Draw extends Animation {
         }, { object, reveal: true, ...config });
     }
 }
+
 class Erase extends Animation {
     constructor(object, config) {
         super((elapsedTime) => {
@@ -56459,6 +56484,26 @@ class Erase extends Animation {
         super.tearDown();
     }
 }
+
+class SetScale extends Animation {
+    constructor(object, factor, config) {
+        super((elapsedTime) => {
+            const scale = THREE.MathUtils.lerp(this.initialScale, factor, elapsedTime);
+            object.scale.set(scale, scale);
+        }, { object, reveal: true, ...config });
+        Object.defineProperty(this, "initialScale", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+    }
+    setUp() {
+        super.setUp();
+        this.initialScale = this.object.scale.x;
+    }
+}
+
 class FadeIn extends Animation {
     constructor(object, config) {
         let family = true;
@@ -56497,6 +56542,61 @@ class FadeIn extends Animation {
         });
     }
 }
+
+class SetOpacity extends Animation {
+    constructor(objectOrFunc, targetOpacity, config) {
+        let family = true;
+        if (config && config.family === false) {
+            family = false;
+        }
+        super((elapsedTime, _deltaTime) => {
+            if (family) {
+                this.object.traverse((child) => {
+                    if (child instanceof THREE.Mesh) {
+                        if (!this.initialOpacity.has(child)) {
+                            console.error("Unknown child");
+                        }
+                        child.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), this.targetOpacity, elapsedTime);
+                    }
+                });
+            }
+            else {
+                [this.object.stroke, this.object.fill].forEach((mesh) => {
+                    if (!mesh)
+                        return;
+                    mesh.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), this.targetOpacity, elapsedTime);
+                });
+            }
+        }, { object: objectOrFunc, ...config });
+        Object.defineProperty(this, "targetOpacity", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: targetOpacity
+        });
+        Object.defineProperty(this, "config", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: config
+        });
+        Object.defineProperty(this, "initialOpacity", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: new Map()
+        });
+    }
+    setUp() {
+        super.setUp();
+        this.object.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                this.initialOpacity.set(child, child.material.opacity);
+            }
+        });
+    }
+}
+
 class FadeOut extends Animation {
     constructor(objectOrFunc, config) {
         let family = true;
@@ -56560,69 +56660,68 @@ class FadeOut extends Animation {
         super.tearDown();
     }
 }
-class SetOpacity extends Animation {
-    constructor(objectOrFunc, targetOpacity, config) {
-        let family = true;
-        if (config && config.family === false) {
-            family = false;
-        }
-        super((elapsedTime, _deltaTime) => {
-            if (family) {
-                this.object.traverse((child) => {
-                    if (child instanceof THREE.Mesh) {
-                        if (!this.initialOpacity.has(child)) {
-                            console.error("Unknown child");
-                        }
-                        child.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), this.targetOpacity, elapsedTime);
-                    }
-                });
-            }
-            else {
-                [this.object.stroke, this.object.fill].forEach((mesh) => {
-                    if (!mesh)
-                        return;
-                    mesh.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), this.targetOpacity, elapsedTime);
-                });
-            }
-        }, { object: objectOrFunc, ...config });
-        Object.defineProperty(this, "targetOpacity", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: targetOpacity
-        });
-        Object.defineProperty(this, "config", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: config
-        });
-        Object.defineProperty(this, "initialOpacity", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: new Map()
-        });
-    }
-    setUp() {
-        super.setUp();
-        this.object.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-                this.initialOpacity.set(child, child.material.opacity);
-            }
-        });
-    }
-}
+
 class Wait extends Animation {
     constructor(config) {
         super(() => { }, config);
     }
 }
 
-var animation = /*#__PURE__*/Object.freeze({
+class Emphasize extends Animation {
+    constructor(object, largeScale = 1.1, config) {
+        super((elapsedTime) => {
+            let scale;
+            if (elapsedTime <= this.keyframe) {
+                const t0 = elapsedTime / this.keyframe;
+                scale = (1 - t0) * this.initialScale + t0 * this.largeScale;
+            }
+            else {
+                const t0 = (elapsedTime - this.keyframe) / (1 - this.keyframe);
+                scale = (1 - t0) * this.largeScale + t0 * this.initialScale;
+            }
+            this.object.scale.setScalar(scale);
+        }, { object, reveal: true, ...config });
+        Object.defineProperty(this, "initialScale", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "largeScale", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "keyframe", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 0.9
+        });
+        this.largeScale = largeScale;
+    }
+    setUp() {
+        super.setUp();
+        this.initialScale = this.object.scale.x;
+    }
+}
+
+class Shake extends Animation {
+    constructor(object, config = {}) {
+        const { maxRotation = 0.05, frequency = 4 } = config;
+        super((_elapsedTime) => {
+            const sine = maxRotation * Math.sin(frequency * Math.PI * _elapsedTime);
+            object.rotation.z = sine;
+        }, { object, reveal: true, ...config });
+    }
+}
+
+var index = /*#__PURE__*/Object.freeze({
     __proto__: null,
     Animation: Animation,
     Draw: Draw,
+    Emphasize: Emphasize,
     Erase: Erase,
     FadeIn: FadeIn,
     FadeOut: FadeOut,
@@ -56630,9 +56729,58 @@ var animation = /*#__PURE__*/Object.freeze({
     Rotate: Rotate,
     SetOpacity: SetOpacity,
     SetScale: SetScale,
+    Shake: Shake,
     Shift: Shift,
     Wait: Wait
 });
+
+// TODO: Handle reflex angles.
+class Angle extends Shape {
+    constructor(point1, point2, point3, config = {}) {
+        config = { radius: 0.4, reflex: false, ...config };
+        const vector21 = new THREE.Vector3().subVectors(point1, point2);
+        const vector23 = new THREE.Vector3().subVectors(point3, point2);
+        const arcAngle = vector21.angleTo(vector23);
+        let arcRotation;
+        // TODO: Handle 180 degree angles
+        if (vector21.positiveAngleTo(vector23) < Math.PI) {
+            arcRotation = RIGHT.positiveAngleTo(vector21);
+        }
+        else {
+            arcRotation = RIGHT.positiveAngleTo(vector23);
+        }
+        const points = getArcPoints(config.radius, arcAngle);
+        config.fillPoints = [...points, new THREE.Vector3(0, 0, 0)];
+        super(points, config);
+        Object.defineProperty(this, "point1", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point1
+        });
+        Object.defineProperty(this, "point2", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point2
+        });
+        Object.defineProperty(this, "point3", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point3
+        });
+        this.position.copy(point2);
+        this.rotateZ(arcRotation);
+    }
+    getAttributes() {
+        return {
+            point1: this.point1,
+            point2: this.point2,
+            point3: this.point3,
+        };
+    }
+}
 
 class Indicator extends THREE.Group {
     constructor(start, end, config = {}) {
@@ -56734,26 +56882,6 @@ class CongruentAngle extends THREE.Group {
             });
             this.add(arc);
         }
-    }
-}
-// TODO: Handle reflex angles.
-class Angle extends Arc {
-    constructor(point1, point2, point3, config = {}) {
-        config = { radius: 0.4, reflex: false, ...config };
-        const vector21 = new THREE.Vector3().subVectors(point1, point2);
-        const vector23 = new THREE.Vector3().subVectors(point3, point2);
-        const arcAngle = vector21.angleTo(vector23);
-        let arcRotation;
-        // TODO: Handle 180 degree angles
-        if (vector21.positiveAngleTo(vector23) < Math.PI) {
-            arcRotation = RIGHT.positiveAngleTo(vector21);
-        }
-        else {
-            arcRotation = RIGHT.positiveAngleTo(vector23);
-        }
-        super(config.radius, arcAngle, config);
-        this.position.copy(point2);
-        this.rotateZ(arcRotation);
     }
 }
 class RightAngle extends Polyline {
@@ -57154,6 +57282,9 @@ THREE.Object3D.prototype.removeComponent = function (name) {
         throw new Error(`Failed to remove component ${name}: No such component`);
     }
     const child = this.components.get(name);
+    if (!child) {
+        throw new Error(`Component ${name} is not defined`);
+    }
     this.components.delete(name);
     child.parentComponent = undefined;
     this.remove(child);
@@ -57328,4 +57459,4 @@ THREE.Object3D.prototype.recenter = function (globalPosition) {
 };
 THREE.Object3D.prototype.reorient = () => { };
 
-export { animation as Animation, constants as Constants, diagram as Diagram, frame as Frame, index as Geometry, graphing as Graphing, SceneController, text as Text, utils as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };
+export { index as Animation, constants as Constants, diagram as Diagram, frame as Frame, index$1 as Geometry, graphing as Graphing, SceneController, text as Text, utils as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };

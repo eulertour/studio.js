@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import Shape, { type Style } from "./shape.js";
+import Shape, { type Style } from "./Shape.js";
 export type ArrowAttributes = {
     start: THREE.Vector3;
     end: THREE.Vector3;
@@ -16,4 +16,4 @@ export default class Arrow extends Shape {
     reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
     getAttributes(): ArrowAttributes;
 }
-//# sourceMappingURL=arrow.d.ts.map
+//# sourceMappingURL=Arrow.d.ts.map

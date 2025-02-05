@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import Shape from "./shape.js";
+import Shape from "./Shape.js";
 /**
  * A segment between two points.
  *
@@ -57,4 +57,4 @@ export default class Line extends Shape {
         return new Line(start, end);
     }
 }
-//# sourceMappingURL=line.js.map
+//# sourceMappingURL=Line.js.map

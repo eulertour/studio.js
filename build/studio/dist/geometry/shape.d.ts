@@ -29,6 +29,8 @@ export default abstract class Shape extends THREE.Group {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
+        closed?: boolean;
+        fillPoints?: Array<THREE.Vector3>;
     });
     static defaultStyle(): {
         fillColor: THREE.Color;
@@ -46,6 +48,7 @@ export default abstract class Shape extends THREE.Group {
     copyFill(shape: Shape): void;
     copyStrokeFill(shape: Shape): void;
     get points(): Array<THREE.Vector3>;
+    set points(newPoints: THREE.Vector3[]);
     worldPoint(index: number): THREE.Vector3;
     transformedPoint(index: number, targetSpace: THREE.Object3D): THREE.Vector3;
     segment(index: number): THREE.Line3;
@@ -58,7 +61,8 @@ export default abstract class Shape extends THREE.Group {
     abstract getAttributes(): object;
     getCloneAttributes(): Array<unknown>;
     getStyle(): Style;
-    setStyle(style: Style): void;
+    restyle(style: Style): void;
+    copyStyle(shape: Shape): void;
     getTransform(): Transform;
     setTransform(transform: Transform): void;
     dispose(): this;
@@ -66,4 +70,4 @@ export default abstract class Shape extends THREE.Group {
     closestPointToPoint(point: THREE.Vector3, target?: THREE.Vector3): THREE.Vector3;
 }
 export {};
-//# sourceMappingURL=shape.d.ts.map
+//# sourceMappingURL=Shape.d.ts.map

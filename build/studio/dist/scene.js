@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { setCameraDimensions, setCanvasViewport, } from "./geometry/MeshLine/MeshLineMaterial.js";
-import { Animation } from "./animation.js";
+import { Animation } from "./animation/index.js";
 import { setupCanvas } from "./utils.js";
 export class SceneController {
     constructor(UserScene, canvasRef, config) {

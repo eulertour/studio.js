@@ -1,22 +1,32 @@
-import Arc from "./arc.js";
+import { ERROR_THRESHOLD } from "../constants.js";
+import Shape from "./Shape.js";
+import * as THREE from "three";
 /**
  * A shape consisting of all points at a fixed distance from a given center.
  *
  * @example circle.ts
  */
-export default class Circle extends Arc {
+export default class Circle extends Shape {
     constructor(radius = 1, config = {}) {
-        super(radius, 2 * Math.PI, {
+        const angle = 2 * Math.PI;
+        let points = [];
+        for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
+            points.push(new THREE.Vector3(radius * Math.cos(i), radius * Math.sin(i), 0));
+        }
+        super(points, {
             ...Circle.defaultConfig(),
             ...config,
+        });
+        Object.defineProperty(this, "radius", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: radius
         });
     }
     reshape(radius, config = {}) {
         this.radius = radius;
         this.copyStrokeFill(new Circle(radius, config));
-    }
-    static defaultConfig() {
-        return { ...Arc.defaultConfig(), fill: true };
     }
     getCloneAttributes() {
         return [this.radius];
@@ -24,8 +34,6 @@ export default class Circle extends Arc {
     getAttributes() {
         return {
             radius: this.radius,
-            angle: 2 * Math.PI,
-            closed: false,
         };
     }
     static fromAttributes(attributes) {
@@ -42,4 +50,4 @@ export default class Circle extends Arc {
         ];
     }
 }
-//# sourceMappingURL=circle.js.map
+//# sourceMappingURL=Circle.js.map

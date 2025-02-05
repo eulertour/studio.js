@@ -1,4 +1,4 @@
-import Rectangle from "./rectangle.js";
+import Rectangle from "./Rectangle.js";
 /**
  * A shape with four sides of equal length and four right angles.
  *
@@ -41,4 +41,4 @@ export default class Square extends Rectangle {
         ];
     }
 }
-//# sourceMappingURL=square.js.map
+//# sourceMappingURL=Square.js.map

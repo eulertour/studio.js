@@ -42,7 +42,7 @@ export default class Shape extends THREE.Group {
         });
         config = Object.assign(Shape.defaultStyle(), config);
         if (config.fill !== false) {
-            const fillGeometry = getFillGeometry(points);
+            const fillGeometry = getFillGeometry(config.fillPoints ?? points);
             const fillMaterial = new THREE.MeshBasicMaterial({
                 color: config.fillColor,
                 opacity: config.fillOpacity,
@@ -88,7 +88,11 @@ export default class Shape extends THREE.Group {
         return {};
     }
     reshape(...args) {
-        throw new Error("Reshape not implemented.");
+        const newShape = new this.constructor(...args);
+        this.copyStrokeFill(newShape);
+        this.copyStyle(newShape);
+        const newAttributes = newShape.getAttributes();
+        Object.assign(this, newAttributes);
     }
     copyStroke(shape) {
         this.stroke.geometry.dispose();
@@ -104,6 +108,9 @@ export default class Shape extends THREE.Group {
     }
     get points() {
         return this.stroke.geometry.points;
+    }
+    set points(newPoints) {
+        this.stroke.geometry.points = newPoints;
     }
     worldPoint(index) {
         return this.localToWorld(this.points[index].clone());
@@ -166,7 +173,7 @@ export default class Shape extends THREE.Group {
             strokeWidth: this.stroke.material.width,
         };
     }
-    setStyle(style) {
+    restyle(style) {
         const { fillColor, fillOpacity } = style;
         if (fillColor !== undefined) {
             this.fill.material.color = fillColor;
@@ -194,6 +201,9 @@ export default class Shape extends THREE.Group {
         if (strokeDashOffset !== undefined) {
             this.stroke.material.dashOffset = strokeDashOffset;
         }
+    }
+    copyStyle(shape) {
+        this.restyle(shape.getStyle());
     }
     getTransform() {
         return {
@@ -242,4 +252,4 @@ export default class Shape extends THREE.Group {
         return target;
     }
 }
-//# sourceMappingURL=shape.js.map
+//# sourceMappingURL=Shape.js.map

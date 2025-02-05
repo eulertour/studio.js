@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { Transform } from "./geometry/shape.js";
+import type { Transform } from "./geometry/Shape.js";
 type TextStyle = {
     fillColor?: THREE.Color;
     fillOpacity?: number;

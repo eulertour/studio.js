@@ -78,6 +78,8 @@ declare abstract class Shape extends THREE.Group {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
+        closed?: boolean;
+        fillPoints?: Array<THREE.Vector3>;
     });
     static defaultStyle(): {
         fillColor: THREE.Color;
@@ -95,6 +97,7 @@ declare abstract class Shape extends THREE.Group {
     copyFill(shape: Shape): void;
     copyStrokeFill(shape: Shape): void;
     get points(): Array<THREE.Vector3>;
+    set points(newPoints: THREE.Vector3[]);
     worldPoint(index: number): THREE.Vector3;
     transformedPoint(index: number, targetSpace: THREE.Object3D): THREE.Vector3;
     segment(index: number): THREE.Line3;
@@ -107,7 +110,8 @@ declare abstract class Shape extends THREE.Group {
     abstract getAttributes(): object;
     getCloneAttributes(): Array<unknown>;
     getStyle(): Style;
-    setStyle(style: Style): void;
+    restyle(style: Style): void;
+    copyStyle(shape: Shape): void;
     getTransform(): Transform;
     setTransform(transform: Transform): void;
     dispose(): this;
@@ -164,7 +168,7 @@ type PolygonAttributes = {
  * @example polygon.ts
  */
 declare class Polygon extends Shape {
-    constructor(points: Array<THREE.Vector3>, config?: Style);
+    constructor(inputPoints: Array<THREE.Vector3>, config?: Style);
     getClassConfig(): {};
     getAttributes(): PolygonAttributes;
     static fromAttributes(attributes: PolygonAttributes): Polygon;
@@ -187,16 +191,16 @@ declare class Polyline extends Shape {
     static fromAttributes(attributes: PolygonAttributes): Polyline;
 }
 
-/**
- * A part of a circle's circumference.
- *
- * @example arc.ts
- */
 type ArcAttributes = {
     radius: number;
     angle: number;
     closed: boolean;
 };
+/**
+ * An arc.
+ *
+ * @example arc.ts
+ */
 declare class Arc extends Shape {
     radius: number;
     angle: number;
@@ -204,10 +208,6 @@ declare class Arc extends Shape {
     constructor(radius?: number, angle?: number, config?: Style & {
         closed?: boolean;
     });
-    static defaultConfig(): {
-        closed: boolean;
-        fill: boolean;
-    };
     reshape(radius?: number, angle?: number, config?: Style & {
         closed?: boolean;
     }): void;
@@ -226,23 +226,21 @@ declare class Arc extends Shape {
     getDimensions(): THREE.Vector2;
 }
 
+type CircleAttributes = {
+    radius: number;
+};
 /**
  * A shape consisting of all points at a fixed distance from a given center.
  *
  * @example circle.ts
  */
-declare class Circle extends Arc {
-    constructor(radius?: number, config?: Style & {
-        fill?: boolean;
-    });
+declare class Circle extends Shape {
+    radius: number;
+    constructor(radius?: number, config?: Style);
     reshape(radius: number, config?: {}): void;
-    static defaultConfig(): {
-        fill: boolean;
-        closed: boolean;
-    };
     getCloneAttributes(): number[];
-    getAttributes(): ArcAttributes;
-    static fromAttributes(attributes: ArcAttributes): Circle;
+    getAttributes(): CircleAttributes;
+    static fromAttributes(attributes: CircleAttributes): Circle;
     get attributeData(): {
         attribute: string;
         type: string;
@@ -261,8 +259,6 @@ declare class Point extends Circle {
     });
     static defaultConfig(): {
         radius: number;
-        fill: boolean;
-        closed: boolean;
     };
     getAttributes(): ArcAttributes;
     static fromAttributes(): Point;
@@ -313,30 +309,30 @@ declare class Square extends Rectangle {
 
 //# sourceMappingURL=index.d.ts.map
 
-type index_d_Arc = Arc;
-declare const index_d_Arc: typeof Arc;
-type index_d_Arrow = Arrow;
-declare const index_d_Arrow: typeof Arrow;
-type index_d_Circle = Circle;
-declare const index_d_Circle: typeof Circle;
-type index_d_Line = Line;
-declare const index_d_Line: typeof Line;
-type index_d_MeshLine = MeshLine;
-declare const index_d_MeshLine: typeof MeshLine;
-type index_d_Point = Point;
-declare const index_d_Point: typeof Point;
-type index_d_Polygon = Polygon;
-declare const index_d_Polygon: typeof Polygon;
-type index_d_Polyline = Polyline;
-declare const index_d_Polyline: typeof Polyline;
-type index_d_Rectangle = Rectangle;
-declare const index_d_Rectangle: typeof Rectangle;
-type index_d_Shape = Shape;
-declare const index_d_Shape: typeof Shape;
-type index_d_Square = Square;
-declare const index_d_Square: typeof Square;
-declare namespace index_d {
-  export { index_d_Arc as Arc, index_d_Arrow as Arrow, index_d_Circle as Circle, index_d_Line as Line, index_d_MeshLine as MeshLine, index_d_Point as Point, index_d_Polygon as Polygon, index_d_Polyline as Polyline, index_d_Rectangle as Rectangle, index_d_Shape as Shape, index_d_Square as Square };
+type index_d$1_Arc = Arc;
+declare const index_d$1_Arc: typeof Arc;
+type index_d$1_Arrow = Arrow;
+declare const index_d$1_Arrow: typeof Arrow;
+type index_d$1_Circle = Circle;
+declare const index_d$1_Circle: typeof Circle;
+type index_d$1_Line = Line;
+declare const index_d$1_Line: typeof Line;
+type index_d$1_MeshLine = MeshLine;
+declare const index_d$1_MeshLine: typeof MeshLine;
+type index_d$1_Point = Point;
+declare const index_d$1_Point: typeof Point;
+type index_d$1_Polygon = Polygon;
+declare const index_d$1_Polygon: typeof Polygon;
+type index_d$1_Polyline = Polyline;
+declare const index_d$1_Polyline: typeof Polyline;
+type index_d$1_Rectangle = Rectangle;
+declare const index_d$1_Rectangle: typeof Rectangle;
+type index_d$1_Shape = Shape;
+declare const index_d$1_Shape: typeof Shape;
+type index_d$1_Square = Square;
+declare const index_d$1_Square: typeof Square;
+declare namespace index_d$1 {
+  export { index_d$1_Arc as Arc, index_d$1_Arrow as Arrow, index_d$1_Circle as Circle, index_d$1_Line as Line, index_d$1_MeshLine as MeshLine, index_d$1_Point as Point, index_d$1_Polygon as Polygon, index_d$1_Polyline as Polyline, index_d$1_Rectangle as Rectangle, index_d$1_Shape as Shape, index_d$1_Square as Square };
 }
 
 declare const BUFFER = 0.5;
@@ -472,9 +468,12 @@ declare class Animation {
     addBefore(before: any): void;
     addAfter(after: any): void;
 }
+//# sourceMappingURL=Animation.d.ts.map
+
 declare class Shift extends Animation {
-    constructor(object: any, offset: any, config?: any);
+    constructor(object: THREE.Object3D, offset: THREE.Vector3, config?: any);
 }
+
 declare class MoveTo extends Animation {
     target: THREE.Object3D;
     obj: THREE.Object3D;
@@ -483,35 +482,34 @@ declare class MoveTo extends Animation {
     constructor(target: THREE.Object3D, obj: THREE.Object3D, config?: any);
     setUp(): void;
 }
+
 declare class Rotate extends Animation {
-    constructor(object: any, angle: any, config?: any);
+    constructor(object: THREE.Object3D, angle: number, config?: any);
 }
-declare class SetScale extends Animation {
-    initialScale: number;
-    constructor(object: any, factor: any, config?: any);
-    setUp(): void;
-}
+
 declare class Draw extends Animation {
-    constructor(object: any, config?: any);
+    constructor(object: THREE.Object3D, config?: any);
 }
+
 declare class Erase extends Animation {
     object: any;
     config?: any;
     constructor(object: any, config?: any);
     tearDown(): void;
 }
+
+declare class SetScale extends Animation {
+    initialScale: number;
+    constructor(object: THREE.Object3D, factor: number, config?: any);
+    setUp(): void;
+}
+
 declare class FadeIn extends Animation {
     initialOpacity: Map<any, any>;
-    constructor(object: any, config?: any);
+    constructor(object: THREE.Object3D, config?: any);
     setUp(): void;
 }
-declare class FadeOut extends Animation {
-    config?: any;
-    initialOpacity: Map<any, any>;
-    constructor(objectOrFunc: any, config?: any);
-    setUp(): void;
-    tearDown(): void;
-}
+
 declare class SetOpacity extends Animation {
     targetOpacity: any;
     config?: any;
@@ -519,35 +517,64 @@ declare class SetOpacity extends Animation {
     constructor(objectOrFunc: any, targetOpacity: any, config?: any);
     setUp(): void;
 }
+
+declare class FadeOut extends Animation {
+    config?: any;
+    initialOpacity: Map<any, any>;
+    constructor(objectOrFunc: THREE.Object3D | (() => THREE.Object3D), config?: any);
+    setUp(): void;
+    tearDown(): void;
+}
+
 declare class Wait extends Animation {
     constructor(config?: any);
 }
-//# sourceMappingURL=animation.d.ts.map
 
-type animation_d_Animation = Animation;
-declare const animation_d_Animation: typeof Animation;
-type animation_d_Draw = Draw;
-declare const animation_d_Draw: typeof Draw;
-type animation_d_Erase = Erase;
-declare const animation_d_Erase: typeof Erase;
-type animation_d_FadeIn = FadeIn;
-declare const animation_d_FadeIn: typeof FadeIn;
-type animation_d_FadeOut = FadeOut;
-declare const animation_d_FadeOut: typeof FadeOut;
-type animation_d_MoveTo = MoveTo;
-declare const animation_d_MoveTo: typeof MoveTo;
-type animation_d_Rotate = Rotate;
-declare const animation_d_Rotate: typeof Rotate;
-type animation_d_SetOpacity = SetOpacity;
-declare const animation_d_SetOpacity: typeof SetOpacity;
-type animation_d_SetScale = SetScale;
-declare const animation_d_SetScale: typeof SetScale;
-type animation_d_Shift = Shift;
-declare const animation_d_Shift: typeof Shift;
-type animation_d_Wait = Wait;
-declare const animation_d_Wait: typeof Wait;
-declare namespace animation_d {
-  export { animation_d_Animation as Animation, animation_d_Draw as Draw, animation_d_Erase as Erase, animation_d_FadeIn as FadeIn, animation_d_FadeOut as FadeOut, animation_d_MoveTo as MoveTo, animation_d_Rotate as Rotate, animation_d_SetOpacity as SetOpacity, animation_d_SetScale as SetScale, animation_d_Shift as Shift, animation_d_Wait as Wait };
+declare class Emphasize extends Animation {
+    initialScale: number;
+    largeScale: number;
+    keyframe: number;
+    constructor(object: THREE.Object3D, largeScale?: number, config?: any);
+    setUp(): void;
+}
+
+declare class Shake extends Animation {
+    constructor(object: THREE.Object3D, config?: {
+        maxRotation?: number;
+        frequency?: number;
+    });
+}
+
+//# sourceMappingURL=index.d.ts.map
+
+type index_d_Animation = Animation;
+declare const index_d_Animation: typeof Animation;
+type index_d_Draw = Draw;
+declare const index_d_Draw: typeof Draw;
+type index_d_Emphasize = Emphasize;
+declare const index_d_Emphasize: typeof Emphasize;
+type index_d_Erase = Erase;
+declare const index_d_Erase: typeof Erase;
+type index_d_FadeIn = FadeIn;
+declare const index_d_FadeIn: typeof FadeIn;
+type index_d_FadeOut = FadeOut;
+declare const index_d_FadeOut: typeof FadeOut;
+type index_d_MoveTo = MoveTo;
+declare const index_d_MoveTo: typeof MoveTo;
+type index_d_Rotate = Rotate;
+declare const index_d_Rotate: typeof Rotate;
+type index_d_SetOpacity = SetOpacity;
+declare const index_d_SetOpacity: typeof SetOpacity;
+type index_d_SetScale = SetScale;
+declare const index_d_SetScale: typeof SetScale;
+type index_d_Shake = Shake;
+declare const index_d_Shake: typeof Shake;
+type index_d_Shift = Shift;
+declare const index_d_Shift: typeof Shift;
+type index_d_Wait = Wait;
+declare const index_d_Wait: typeof Wait;
+declare namespace index_d {
+  export { index_d_Animation as Animation, index_d_Draw as Draw, index_d_Emphasize as Emphasize, index_d_Erase as Erase, index_d_FadeIn as FadeIn, index_d_FadeOut as FadeOut, index_d_MoveTo as MoveTo, index_d_Rotate as Rotate, index_d_SetOpacity as SetOpacity, index_d_SetScale as SetScale, index_d_Shake as Shake, index_d_Shift as Shift, index_d_Wait as Wait };
 }
 
 declare const PIXELS_TO_COORDS: number;
@@ -562,6 +589,21 @@ declare const constants_d_ERROR_THRESHOLD: typeof ERROR_THRESHOLD;
 declare const constants_d_PIXELS_TO_COORDS: typeof PIXELS_TO_COORDS;
 declare namespace constants_d {
   export { constants_d_COORDS_TO_PIXELS as COORDS_TO_PIXELS, constants_d_DEFAULT_BACKGROUND_HEX as DEFAULT_BACKGROUND_HEX, constants_d_ERROR_THRESHOLD as ERROR_THRESHOLD, constants_d_PIXELS_TO_COORDS as PIXELS_TO_COORDS };
+}
+
+declare class Angle extends Shape {
+    point1: THREE.Vector3;
+    point2: THREE.Vector3;
+    point3: THREE.Vector3;
+    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+        radius?: number;
+        reflex?: boolean;
+    });
+    getAttributes(): {
+        point1: THREE.Vector3;
+        point2: THREE.Vector3;
+        point3: THREE.Vector3;
+    };
 }
 
 interface IndicatorConfig {
@@ -590,12 +632,6 @@ declare class CongruentAngle extends THREE.Group {
     constructor(arcs: number, point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: undefined & {
         minRadius?: number;
         spacing?: number;
-    });
-}
-declare class Angle extends Arc {
-    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: undefined & {
-        radius?: number;
-        reflex?: boolean;
     });
 }
 declare class RightAngle extends Polyline {
@@ -777,13 +813,13 @@ declare module "three" {
         vstack(buffer?: number): THREE.Object3D;
         vspace(distanceBetween?: number): THREE.Object3D;
         setScale(factor: number): THREE.Object3D;
-        moveNextTo(target: THREE.Object3D, direction: THREE.Vector3, distance?: any): void;
-        moveToRightOf(target: THREE.Object3D, distance?: any): void;
-        moveToLeftOf(target: THREE.Object3D, distance?: any): void;
-        moveAbove(target: THREE.Object3D, distance?: any): void;
-        moveBelow(target: THREE.Object3D, distance?: any): void;
-        setOpacity(opacity: number): THREE.Object3D;
-        setInvisible(): THREE.Object3D;
+        moveNextTo(target: THREE.Object3D, direction: THREE.Vector3, distance?: number): void;
+        moveToRightOf(target: THREE.Object3D, distance?: number): void;
+        moveToLeftOf(target: THREE.Object3D, distance?: number): void;
+        moveAbove(target: THREE.Object3D, distance?: number): void;
+        moveBelow(target: THREE.Object3D, distance?: number): void;
+        setOpacity(opacity: number, config?: any): THREE.Object3D;
+        setInvisible(config?: any): THREE.Object3D;
         setVisible(config?: any): THREE.Object3D;
         setUpright(): THREE.Object3D;
         recenter(center: THREE.Vector3): THREE.Object3D;
@@ -837,4 +873,4 @@ type ComponentParent = THREE.Object3D & {
 declare function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 //# sourceMappingURL=index.d.ts.map
 
-export { animation_d as Animation, type AnimationRepresentation, constants_d as Constants, diagram_d as Diagram, _default as Frame, index_d as Geometry, graphing_d as Graphing, type SceneCanvasConfig, SceneController, type StudioScene, text_d as Text, utils_d as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };
+export { index_d as Animation, type AnimationRepresentation, constants_d as Constants, diagram_d as Diagram, _default as Frame, index_d$1 as Geometry, graphing_d as Graphing, type SceneCanvasConfig, SceneController, type StudioScene, text_d as Text, utils_d as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };

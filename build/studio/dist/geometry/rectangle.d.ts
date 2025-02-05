@@ -1,4 +1,4 @@
-import Shape, { Style } from "./shape.js";
+import Shape, { Style } from "./Shape.js";
 export type RectangleAttributes = {
     width: number;
     height: number;
@@ -22,4 +22,4 @@ export default class Rectangle extends Shape {
     }[];
     getCurveEndIndices(): Array<Array<number>>;
 }
-//# sourceMappingURL=rectangle.d.ts.map
+//# sourceMappingURL=Rectangle.d.ts.map

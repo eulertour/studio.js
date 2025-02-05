@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Animation } from "./animation.js";
+import { Animation } from "./animation/index.js";
 import { SceneCanvasConfig } from "./utils.js";
 type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
 export type AnimationRepresentation = Animation | Array<Animation> | {

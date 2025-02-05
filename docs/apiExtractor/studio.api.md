@@ -7,11 +7,24 @@
 import * as THREE from 'three';
 
 // @public (undocumented)
-class Angle extends Geometry.Arc {
-    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Geometry.Style & {
+class Angle extends Shape {
+    // Warning: (ae-forgotten-export) The symbol "Style" needs to be exported by the entry point index.d.ts
+    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
         radius?: number;
         reflex?: boolean;
     });
+    // (undocumented)
+    getAttributes(): {
+        point1: THREE.Vector3;
+        point2: THREE.Vector3;
+        point3: THREE.Vector3;
+    };
+    // (undocumented)
+    point1: THREE.Vector3;
+    // (undocumented)
+    point2: THREE.Vector3;
+    // (undocumented)
+    point3: THREE.Vector3;
 }
 
 declare namespace Animation_2 {
@@ -20,13 +33,15 @@ declare namespace Animation_2 {
         Shift,
         MoveTo,
         Rotate,
-        SetScale,
         Draw,
         Erase,
+        SetScale,
         FadeIn,
-        FadeOut,
         SetOpacity,
-        Wait
+        FadeOut,
+        Wait,
+        Emphasize,
+        Shake
     }
 }
 export { Animation_2 as Animation }
@@ -100,9 +115,8 @@ export type AnimationRepresentation = Animation_3 | Array<Animation_3> | {
     scale?: number;
 };
 
-// @public (undocumented)
+// @public
 class Arc extends Shape {
-    // Warning: (ae-forgotten-export) The symbol "Style" needs to be exported by the entry point index.d.ts
     constructor(radius?: number, angle?: number, config?: Style & {
         closed?: boolean;
     });
@@ -120,11 +134,6 @@ class Arc extends Shape {
     })[];
     // (undocumented)
     closed: boolean;
-    // (undocumented)
-    static defaultConfig(): {
-        closed: boolean;
-        fill: boolean;
-    };
     // (undocumented)
     static fromAttributes(attributes: ArcAttributes): Arc;
     // Warning: (ae-forgotten-export) The symbol "ArcAttributes" needs to be exported by the entry point index.d.ts
@@ -162,10 +171,8 @@ class Arrow extends Shape {
 const BUFFER = 0.5;
 
 // @public
-class Circle extends Arc {
-    constructor(radius?: number, config?: Style & {
-        fill?: boolean;
-    });
+class Circle extends Shape {
+    constructor(radius?: number, config?: Style);
     // (undocumented)
     get attributeData(): {
         attribute: string;
@@ -173,16 +180,15 @@ class Circle extends Arc {
         default: number;
     }[];
     // (undocumented)
-    static defaultConfig(): {
-        fill: boolean;
-        closed: boolean;
-    };
+    static fromAttributes(attributes: CircleAttributes): Circle;
+    // Warning: (ae-forgotten-export) The symbol "CircleAttributes" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
-    static fromAttributes(attributes: ArcAttributes): Circle;
-    // (undocumented)
-    getAttributes(): ArcAttributes;
+    getAttributes(): CircleAttributes;
     // (undocumented)
     getCloneAttributes(): number[];
+    // (undocumented)
+    radius: number;
     // (undocumented)
     reshape(radius: number, config?: {}): void;
 }
@@ -264,7 +270,20 @@ const DOWN: Readonly<THREE.Vector3>;
 
 // @public (undocumented)
 class Draw extends Animation_3 {
-    constructor(object: any, config?: any);
+    constructor(object: THREE.Object3D, config?: any);
+}
+
+// @public (undocumented)
+class Emphasize extends Animation_3 {
+    constructor(object: THREE.Object3D, largeScale?: number, config?: any);
+    // (undocumented)
+    initialScale: number;
+    // (undocumented)
+    keyframe: number;
+    // (undocumented)
+    largeScale: number;
+    // (undocumented)
+    setUp(): void;
 }
 
 // @public (undocumented)
@@ -283,7 +302,7 @@ const ERROR_THRESHOLD = 0.001;
 
 // @public (undocumented)
 class FadeIn extends Animation_3 {
-    constructor(object: any, config?: any);
+    constructor(object: THREE.Object3D, config?: any);
     // (undocumented)
     initialOpacity: Map<any, any>;
     // (undocumented)
@@ -292,7 +311,7 @@ class FadeIn extends Animation_3 {
 
 // @public (undocumented)
 class FadeOut extends Animation_3 {
-    constructor(objectOrFunc: any, config?: any);
+    constructor(objectOrFunc: THREE.Object3D | (() => THREE.Object3D), config?: any);
     // (undocumented)
     config?: any;
     // (undocumented)
@@ -508,8 +527,6 @@ class Point extends Circle {
     // (undocumented)
     static defaultConfig(): {
         radius: number;
-        fill: boolean;
-        closed: boolean;
     };
     // (undocumented)
     static fromAttributes(): Point;
@@ -522,7 +539,7 @@ const pointAlongCurve: (shape: Geometry.Shape, t: number) => THREE.Vector3 | und
 
 // @public
 class Polygon extends Shape {
-    constructor(points: Array<THREE.Vector3>, config?: Style);
+    constructor(inputPoints: Array<THREE.Vector3>, config?: Style);
     // (undocumented)
     get attributeData(): never[];
     // (undocumented)
@@ -592,7 +609,7 @@ class RightAngle extends Geometry.Polyline {
 
 // @public (undocumented)
 class Rotate extends Animation_3 {
-    constructor(object: any, angle: any, config?: any);
+    constructor(object: THREE.Object3D, angle: number, config?: any);
 }
 
 // @public (undocumented)
@@ -685,7 +702,7 @@ class SetOpacity extends Animation_3 {
 
 // @public (undocumented)
 class SetScale extends Animation_3 {
-    constructor(object: any, factor: any, config?: any);
+    constructor(object: THREE.Object3D, factor: number, config?: any);
     // (undocumented)
     initialScale: number;
     // (undocumented)
@@ -695,12 +712,22 @@ class SetScale extends Animation_3 {
 // @public (undocumented)
 export const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [THREE.Scene, THREE.Camera, THREE.WebGLRenderer];
 
+// @public (undocumented)
+class Shake extends Animation_3 {
+    constructor(object: THREE.Object3D, config?: {
+        maxRotation?: number;
+        frequency?: number;
+    });
+}
+
 // @public
 abstract class Shape extends THREE.Group {
     constructor(points: Array<THREE.Vector3>, config?: Style & {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
+        closed?: boolean;
+        fillPoints?: Array<THREE.Vector3>;
     });
     // (undocumented)
     arrow: boolean;
@@ -716,6 +743,8 @@ abstract class Shape extends THREE.Group {
     copyStroke(shape: Shape): void;
     // (undocumented)
     copyStrokeFill(shape: Shape): void;
+    // (undocumented)
+    copyStyle(shape: Shape): void;
     // (undocumented)
     curve(curveIndex: number, worldTransform?: boolean): THREE.Vector3[];
     // (undocumented)
@@ -759,12 +788,13 @@ abstract class Shape extends THREE.Group {
     get numCurves(): number;
     // (undocumented)
     get points(): Array<THREE.Vector3>;
+    set points(newPoints: THREE.Vector3[]);
     // (undocumented)
     reshape(...args: any[]): void;
     // (undocumented)
-    segment(index: number): THREE.Line3;
+    restyle(style: Style): void;
     // (undocumented)
-    setStyle(style: Style): void;
+    segment(index: number): THREE.Line3;
     // (undocumented)
     setTransform(transform: Transform): void;
     // Warning: (ae-forgotten-export) The symbol "Stroke" needs to be exported by the entry point index.d.ts
@@ -803,7 +833,7 @@ class ShapeFromCurves {
 
 // @public (undocumented)
 class Shift extends Animation_3 {
-    constructor(object: any, offset: any, config?: any);
+    constructor(object: THREE.Object3D, offset: THREE.Vector3, config?: any);
 }
 
 // @public

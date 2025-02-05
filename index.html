@@ -17,16 +17,32 @@
           this.camera = camera;
           this.renderer = renderer;
 
-          const line = new Geometry.Line(
-            new THREE.Vector3(-1, -1, 0),
-            new THREE.Vector3(1, 1, 0),
-            {
-              strokeWidth: 4,
-            },
+          const triangle = new Geometry.Polygon(
+            [
+              new THREE.Vector3(-1, -1, 0),
+              new THREE.Vector3(1, 1, 0),
+              new THREE.Vector3(1, -1, 0),
+            ],
+            { strokeWidth: 4 },
           );
-          scene.add(line);
+          scene.add(triangle);
 
-          this.animations = [];
+          this.animations = [
+            new Animation.Wait(),
+
+            new Animation.Animation((t, dt) => {
+              triangle.reshape(
+                [
+                  new THREE.Vector3(-1, -1, 0),
+                  new THREE.Vector3(1 + t, 1, 0),
+                  new THREE.Vector3(1, -1, 0),
+                ],
+                {
+                  fillColor: new THREE.Color("blue"),
+                },
+              );
+            }),
+          ];
         }
       }
 

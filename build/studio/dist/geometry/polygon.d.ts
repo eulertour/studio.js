@@ -1,4 +1,4 @@
-import Shape, { Style } from "./shape.js";
+import Shape, { Style } from "./Shape.js";
 import { THREE } from "../index.js";
 export type PolygonAttributes = {
     points: Array<THREE.Vector3>;
@@ -10,10 +10,10 @@ export type PolygonAttributes = {
  * @example polygon.ts
  */
 export default class Polygon extends Shape {
-    constructor(points: Array<THREE.Vector3>, config?: Style);
+    constructor(inputPoints: Array<THREE.Vector3>, config?: Style);
     getClassConfig(): {};
     getAttributes(): PolygonAttributes;
     static fromAttributes(attributes: PolygonAttributes): Polygon;
     get attributeData(): never[];
 }
-//# sourceMappingURL=polygon.d.ts.map
+//# sourceMappingURL=Polygon.d.ts.map

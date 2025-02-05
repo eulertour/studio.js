@@ -1,4 +1,4 @@
-import Shape from "./shape.js";
+import Shape from "./Shape.js";
 /**
  * An arrow.
  *
@@ -32,4 +32,4 @@ export default class Arrow extends Shape {
         };
     }
 }
-//# sourceMappingURL=arrow.js.map
+//# sourceMappingURL=Arrow.js.map

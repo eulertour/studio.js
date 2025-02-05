@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import Shape, { type Style } from "./shape.js";
+import Shape, { type Style } from "./Shape.js";
 export type LineAttributes = {
     start: THREE.Vector3;
     end: THREE.Vector3;
@@ -21,4 +21,4 @@ export default class Line extends Shape {
     getVector(global?: boolean): THREE.Vector3;
     static fromAttributes(attributes: LineAttributes): Line;
 }
-//# sourceMappingURL=line.d.ts.map
+//# sourceMappingURL=Line.d.ts.map

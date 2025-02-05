@@ -1,7 +1,8 @@
 import * as THREE from "three";
-import { Animation } from "./animation.js";
+import { Animation } from "./animation/Animation.js";
 import * as Geometry from "./geometry/index.js";
 import * as Utils from "./utils.js";
+import Angle from "./angle.js";
 class Indicator extends THREE.Group {
     constructor(start, end, config = {}) {
         const { tickLength = 0.4 } = config;
@@ -102,26 +103,6 @@ class CongruentAngle extends THREE.Group {
             });
             this.add(arc);
         }
-    }
-}
-// TODO: Handle reflex angles.
-class Angle extends Geometry.Arc {
-    constructor(point1, point2, point3, config = {}) {
-        config = { radius: 0.4, reflex: false, ...config };
-        const vector21 = new THREE.Vector3().subVectors(point1, point2);
-        const vector23 = new THREE.Vector3().subVectors(point3, point2);
-        const arcAngle = vector21.angleTo(vector23);
-        let arcRotation;
-        // TODO: Handle 180 degree angles
-        if (vector21.positiveAngleTo(vector23) < Math.PI) {
-            arcRotation = Utils.RIGHT.positiveAngleTo(vector21);
-        }
-        else {
-            arcRotation = Utils.RIGHT.positiveAngleTo(vector23);
-        }
-        super(config.radius, arcAngle, config);
-        this.position.copy(point2);
-        this.rotateZ(arcRotation);
     }
 }
 class RightAngle extends Geometry.Polyline {

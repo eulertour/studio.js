@@ -1,30 +1,15 @@
-import Shape from "./shape.js";
+import Shape from "./Shape.js";
 import { THREE } from "../index.js";
-import { ERROR_THRESHOLD } from "../constants.js";
+import { getArcPoints } from "./geometryUtils.js";
+/**
+ * An arc.
+ *
+ * @example arc.ts
+ */
 export default class Arc extends Shape {
     constructor(radius = 1, angle = Math.PI / 2, config = {}) {
         config = { ...Arc.defaultConfig(), ...config };
-        let points = [];
-        let negative = false;
-        if (angle < 0) {
-            negative = true;
-            angle *= -1;
-        }
-        if (angle > 0) {
-            for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
-                points.push(new THREE.Vector3(radius * Math.cos(i), radius * Math.sin(i) * (negative ? -1 : 1), 0));
-            }
-        }
-        else {
-            points.push(new THREE.Vector3(radius, 0, 0), new THREE.Vector3(radius, 0, 0));
-        }
-        if (config.closed) {
-            points = [
-                new THREE.Vector3(0, 0, 0),
-                ...points,
-                new THREE.Vector3(0, 0, 0),
-            ];
-        }
+        let points = getArcPoints(radius, angle, { closed: config.closed });
         super(points, config);
         Object.defineProperty(this, "radius", {
             enumerable: true,
@@ -44,7 +29,7 @@ export default class Arc extends Shape {
             writable: true,
             value: void 0
         });
-        this.closed = config.closed;
+        this.closed = config.closed ?? false;
         if (this.closed) {
             this.curveEndIndices = [
                 [0, 1],
@@ -55,9 +40,6 @@ export default class Arc extends Shape {
         else {
             this.curveEndIndices = [[0, points.length - 1]];
         }
-    }
-    static defaultConfig() {
-        return { ...Shape.defaultConfig(), closed: false, fill: false };
     }
     reshape(radius = 1, angle = Math.PI / 2, config = {}) {
         this.radius = radius;
@@ -102,4 +84,4 @@ export default class Arc extends Shape {
         return new THREE.Vector2(worldDiameter, worldDiameter);
     }
 }
-//# sourceMappingURL=arc.js.map
+//# sourceMappingURL=Arc.js.map

@@ -1,6 +1,6 @@
-import Shape, { Style } from "./shape.js";
+import Shape, { Style } from "./Shape.js";
 import { THREE } from "../index.js";
-import { PolygonAttributes } from "./polygon.js";
+import { PolygonAttributes } from "./Polygon.js";
 /**
  * A series of connected line segments.
  *
@@ -16,4 +16,4 @@ export default class Polyline extends Shape {
     getAttributes(): PolygonAttributes;
     static fromAttributes(attributes: PolygonAttributes): Polyline;
 }
-//# sourceMappingURL=polyline.d.ts.map
+//# sourceMappingURL=Polyline.d.ts.map

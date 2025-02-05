@@ -1,5 +1,5 @@
-import { Style } from "./shape.js";
-import Rectangle, { RectangleAttributes } from "./rectangle.js";
+import { Style } from "./Shape.js";
+import Rectangle, { RectangleAttributes } from "./Rectangle.js";
 /**
  * A shape with four sides of equal length and four right angles.
  *
@@ -18,4 +18,4 @@ export default class Square extends Rectangle {
         default: number;
     }[];
 }
-//# sourceMappingURL=square.d.ts.map
+//# sourceMappingURL=Square.d.ts.map

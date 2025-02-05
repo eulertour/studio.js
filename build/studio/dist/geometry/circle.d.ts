@@ -1,26 +1,23 @@
-import Arc, { ArcAttributes } from "./arc.js";
-import { Style } from "./shape.js";
+import Shape, { Style } from "./Shape.js";
+export type CircleAttributes = {
+    radius: number;
+};
 /**
  * A shape consisting of all points at a fixed distance from a given center.
  *
  * @example circle.ts
  */
-export default class Circle extends Arc {
-    constructor(radius?: number, config?: Style & {
-        fill?: boolean;
-    });
+export default class Circle extends Shape {
+    radius: number;
+    constructor(radius?: number, config?: Style);
     reshape(radius: number, config?: {}): void;
-    static defaultConfig(): {
-        fill: boolean;
-        closed: boolean;
-    };
     getCloneAttributes(): number[];
-    getAttributes(): ArcAttributes;
-    static fromAttributes(attributes: ArcAttributes): Circle;
+    getAttributes(): CircleAttributes;
+    static fromAttributes(attributes: CircleAttributes): Circle;
     get attributeData(): {
         attribute: string;
         type: string;
         default: number;
     }[];
 }
-//# sourceMappingURL=circle.d.ts.map
+//# sourceMappingURL=Circle.d.ts.map

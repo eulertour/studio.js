@@ -1,4 +1,4 @@
-import Circle from "./circle.js";
+import Circle from "./Circle.js";
 import { THREE } from "../index.js";
 import { ORIGIN } from "../utils.js";
 /**
@@ -31,4 +31,4 @@ export default class Point extends Circle {
         return new Point(new THREE.Vector3());
     }
 }
-//# sourceMappingURL=point.js.map
+//# sourceMappingURL=Point.js.map

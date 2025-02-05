@@ -1,4 +1,4 @@
-import Shape from "./shape.js";
+import Shape from "./Shape.js";
 /**
  * A series of connected line segments.
  *
@@ -28,4 +28,4 @@ export default class Polyline extends Shape {
         return new Polyline(points);
     }
 }
-//# sourceMappingURL=polyline.js.map
+//# sourceMappingURL=Polyline.js.map

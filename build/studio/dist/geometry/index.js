@@ -1,12 +1,12 @@
 export { default as MeshLine } from "./MeshLine/index.js";
-export { default as Shape } from "./shape.js";
-export { default as Line } from "./line.js";
-export { default as Arrow } from "./arrow.js";
-export { default as Polygon } from "./polygon.js";
-export { default as Polyline } from "./polyline.js";
-export { default as Arc } from "./arc.js";
-export { default as Circle } from "./circle.js";
-export { default as Point } from "./point.js";
-export { default as Rectangle } from "./rectangle.js";
-export { default as Square } from "./square.js";
+export { default as Shape } from "./Shape.js";
+export { default as Line } from "./Line.js";
+export { default as Arrow } from "./Arrow.js";
+export { default as Polygon } from "./Polygon.js";
+export { default as Polyline } from "./Polyline.js";
+export { default as Arc } from "./Arc.js";
+export { default as Circle } from "./Circle.js";
+export { default as Point } from "./Point.js";
+export { default as Rectangle } from "./Rectangle.js";
+export { default as Square } from "./Square.js";
 //# sourceMappingURL=index.js.map

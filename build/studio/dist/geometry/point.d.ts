@@ -1,6 +1,6 @@
-import Circle from "./circle.js";
-import { Style } from "./shape.js";
-import { ArcAttributes } from "./arc.js";
+import Circle from "./Circle.js";
+import { Style } from "./Shape.js";
+import { ArcAttributes } from "./Arc.js";
 import { THREE } from "../index.js";
 /**
  * A small circle representing a precise location in space.
@@ -13,10 +13,8 @@ export default class Point extends Circle {
     });
     static defaultConfig(): {
         radius: number;
-        fill: boolean;
-        closed: boolean;
     };
     getAttributes(): ArcAttributes;
     static fromAttributes(): Point;
 }
-//# sourceMappingURL=point.d.ts.map
+//# sourceMappingURL=Point.d.ts.map

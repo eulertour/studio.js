@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import Shape from "./shape.js";
+import Shape from "./Shape.js";
 /**
  * A shape with four sides and four right angles.
  *
@@ -63,4 +63,4 @@ export default class Rectangle extends Shape {
         ];
     }
 }
-//# sourceMappingURL=rectangle.js.map
+//# sourceMappingURL=Rectangle.js.map

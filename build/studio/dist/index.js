@@ -72,6 +72,9 @@ THREE.Object3D.prototype.removeComponent = function (name) {
         throw new Error(`Failed to remove component ${name}: No such component`);
     }
     const child = this.components.get(name);
+    if (!child) {
+        throw new Error(`Component ${name} is not defined`);
+    }
     this.components.delete(name);
     child.parentComponent = undefined;
     this.remove(child);
@@ -246,7 +249,7 @@ THREE.Object3D.prototype.recenter = function (globalPosition) {
 };
 THREE.Object3D.prototype.reorient = () => { };
 import { setCameraDimensions, setCanvasViewport, } from "./geometry/MeshLine/MeshLineMaterial.js";
-import * as Animation from "./animation.js";
+import * as Animation from "./animation/index.js";
 import * as Constants from "./constants.js";
 import * as Diagram from "./diagram.js";
 import Frame from "./frame.js";

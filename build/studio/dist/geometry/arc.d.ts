@@ -1,15 +1,15 @@
-import Shape, { Style } from "./shape.js";
+import Shape, { Style } from "./Shape.js";
 import { THREE } from "../index.js";
-/**
- * A part of a circle's circumference.
- *
- * @example arc.ts
- */
 export type ArcAttributes = {
     radius: number;
     angle: number;
     closed: boolean;
 };
+/**
+ * An arc.
+ *
+ * @example arc.ts
+ */
 export default class Arc extends Shape {
     radius: number;
     angle: number;
@@ -17,10 +17,6 @@ export default class Arc extends Shape {
     constructor(radius?: number, angle?: number, config?: Style & {
         closed?: boolean;
     });
-    static defaultConfig(): {
-        closed: boolean;
-        fill: boolean;
-    };
     reshape(radius?: number, angle?: number, config?: Style & {
         closed?: boolean;
     }): void;
@@ -38,4 +34,4 @@ export default class Arc extends Shape {
     })[];
     getDimensions(): THREE.Vector2;
 }
-//# sourceMappingURL=arc.d.ts.map
+//# sourceMappingURL=Arc.d.ts.map
