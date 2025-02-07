@@ -93,6 +93,26 @@ export default abstract class Shape extends THREE.Group {
     this.curveEndIndices = this.getCurveEndIndices();
   }
 
+  forwardEvent = (e) => this.dispatchEvent(e);
+
+  add(...objects: THREE.Object3D[]) {
+    super.add(...objects);
+    objects.forEach((object) => {
+      object.addEventListener("childadded", this.forwardEvent);
+      object.addEventListener("childremoved", this.forwardEvent);
+    });
+    return this;
+  }
+
+  remove(...objects: THREE.Object3D[]) {
+    super.remove(...objects);
+    objects.forEach((object) => {
+      object.removeEventListener("childadded", this.forwardEvent);
+      object.removeEventListener("childremoved", this.forwardEvent);
+    });
+    return this;
+  }
+
   static defaultStyle() {
     return {
       fillColor: new THREE.Color(0xfffaf0),
