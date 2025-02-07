@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { Scene as BaseScene } from "three";
 import MeshLine from "./geometry/MeshLine/index.js";
 import { setCameraDimensions } from "./geometry/MeshLine/MeshLineMaterial.js";
 import { CanvasViewport } from "./geometry/MeshLine/MeshLineMaterial.js";
@@ -60,6 +61,28 @@ export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
   viewport?: THREE.Vector4;
 };
 
+class Scene extends BaseScene {
+  forwardEvent = (e) => this.dispatchEvent(e);
+
+  add(...objects: THREE.Object3D[]) {
+    super.add(...objects);
+    objects.forEach((object) => {
+      object.addEventListener("childadded", this.forwardEvent);
+      object.addEventListener("childremoved", this.forwardEvent);
+    });
+    return this;
+  }
+
+  remove(...objects: THREE.Object3D[]) {
+    super.remove(...objects);
+    objects.forEach((object) => {
+      object.removeEventListener("childadded", this.forwardEvent);
+      object.removeEventListener("childremoved", this.forwardEvent);
+    });
+    return this;
+  }
+}
+
 const setupCanvas = (
   canvas: HTMLCanvasElement,
   config: SceneCanvasConfig = {
@@ -68,7 +91,7 @@ const setupCanvas = (
     coordinateHeight: 8,
     viewport: undefined,
   },
-): [THREE.Scene, THREE.Camera, THREE.WebGLRenderer] => {
+): [Scene, THREE.Camera, THREE.WebGLRenderer] => {
   let aspectRatio;
   let pixelWidth;
   let pixelHeight;
@@ -118,7 +141,7 @@ const setupCanvas = (
     renderer.setPixelRatio(window.devicePixelRatio);
     CanvasViewport.multiplyScalar(window.devicePixelRatio);
   }
-  return [new THREE.Scene(), camera, renderer];
+  return [new Scene(), camera, renderer];
 };
 
 const convertWorldDirectionToObjectSpace = (
