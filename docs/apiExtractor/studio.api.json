@@ -7090,6 +7090,59 @@
                   ]
                 },
                 {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Shape#add:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "add(...objects: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Object3D",
+                      "canonicalReference": "@types/three!Object3D:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "[]"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "this"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 4,
+                    "endIndex": 5
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "objects",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 3
+                      },
+                      "isOptional": false
+                    }
+                  ],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "add"
+                },
+                {
                   "kind": "Property",
                   "canonicalReference": "@eulertour/studio!Geometry.Shape#arrow:member",
                   "docComment": "",
@@ -7717,6 +7770,36 @@
                   "isAbstract": false
                 },
                 {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Geometry.Shape#forwardEvent:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "forwardEvent: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "(e: any) => void"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "forwardEvent",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
                   "kind": "Method",
                   "canonicalReference": "@eulertour/studio!Geometry.Shape#getAttributes:member(1)",
                   "docComment": "",
@@ -8023,6 +8106,59 @@
                   "isStatic": false,
                   "isProtected": false,
                   "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Shape#remove:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "remove(...objects: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Object3D",
+                      "canonicalReference": "@types/three!Object3D:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "[]"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "this"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 4,
+                    "endIndex": 5
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "objects",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 3
+                      },
+                      "isOptional": false
+                    }
+                  ],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "remove"
                 },
                 {
                   "kind": "Method",
@@ -9942,8 +10078,8 @@
             },
             {
               "kind": "Reference",
-              "text": "THREE.Scene",
-              "canonicalReference": "@types/three!Scene:class"
+              "text": "Scene",
+              "canonicalReference": "@eulertour/studio!~Scene:class"
             },
             {
               "kind": "Content",
@@ -12367,8 +12503,8 @@
                 },
                 {
                   "kind": "Reference",
-                  "text": "THREE.Scene",
-                  "canonicalReference": "@types/three!Scene:class"
+                  "text": "Scene",
+                  "canonicalReference": "@eulertour/studio!~Scene:class"
                 },
                 {
                   "kind": "Content",

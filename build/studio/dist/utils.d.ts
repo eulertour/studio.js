@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { Scene as BaseScene } from "three";
 import * as Geometry from "./geometry/index.js";
 declare const BUFFER = 0.5;
 declare const ORIGIN: Readonly<THREE.Vector3>;
@@ -29,7 +30,12 @@ export type HeightSetupConfig = {
 export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
     viewport?: THREE.Vector4;
 };
-declare const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [THREE.Scene, THREE.Camera, THREE.WebGLRenderer];
+declare class Scene extends BaseScene {
+    forwardEvent: (e: any) => void;
+    add(...objects: THREE.Object3D[]): this;
+    remove(...objects: THREE.Object3D[]): this;
+}
+declare const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [Scene, THREE.Camera, THREE.WebGLRenderer];
 declare const convertWorldDirectionToObjectSpace: (worldDirection: THREE.Vector3, object: THREE.Object3D) => THREE.Vector3;
 declare const vstack: (group: THREE.Group, buffer?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;
 declare const vspace: (group: THREE.Group, distanceBetween?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;

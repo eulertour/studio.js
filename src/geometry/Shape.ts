@@ -131,7 +131,22 @@ export default abstract class Shape extends THREE.Group {
   }
 
   reshape(...args: any[]) {
-    const newShape = new (this.constructor as any)(...args);
+    const numRequiredArguments = this.constructor.length;
+
+    let requiredArgs;
+    let config;
+    if (args.length === numRequiredArguments) {
+      requiredArgs = args;
+      config = {};
+    } else {
+      requiredArgs = args.slice(0, args.length - 1);
+      config = args[args.length - 1];
+    }
+
+    const newShape = new (this.constructor as any)(...requiredArgs, {
+      ...this.getStyle(),
+      ...config,
+    });
     this.copyStrokeFill(newShape);
     this.copyStyle(newShape);
     const newAttributes = newShape.getAttributes();

@@ -32,6 +32,9 @@ export default abstract class Shape extends THREE.Group {
         closed?: boolean;
         fillPoints?: Array<THREE.Vector3>;
     });
+    forwardEvent: (e: any) => void;
+    add(...objects: THREE.Object3D[]): this;
+    remove(...objects: THREE.Object3D[]): this;
     static defaultStyle(): {
         fillColor: THREE.Color;
         fillOpacity: number;

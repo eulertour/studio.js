@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Scene as Scene$1 } from 'three';
 export { THREE };
 
 declare class MeshLineGeometry extends THREE.BufferGeometry {
@@ -81,6 +82,9 @@ declare abstract class Shape extends THREE.Group {
         closed?: boolean;
         fillPoints?: Array<THREE.Vector3>;
     });
+    forwardEvent: (e: any) => void;
+    add(...objects: THREE.Object3D[]): this;
+    remove(...objects: THREE.Object3D[]): this;
     static defaultStyle(): {
         fillColor: THREE.Color;
         fillOpacity: number;
@@ -364,7 +368,12 @@ type HeightSetupConfig = {
 type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
     viewport?: THREE.Vector4;
 };
-declare const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [THREE.Scene, THREE.Camera, THREE.WebGLRenderer];
+declare class Scene extends Scene$1 {
+    forwardEvent: (e: any) => void;
+    add(...objects: THREE.Object3D[]): this;
+    remove(...objects: THREE.Object3D[]): this;
+}
+declare const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [Scene, THREE.Camera, THREE.WebGLRenderer];
 declare const convertWorldDirectionToObjectSpace: (worldDirection: THREE.Vector3, object: THREE.Object3D) => THREE.Vector3;
 declare const vstack: (group: THREE.Group, buffer?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;
 declare const vspace: (group: THREE.Group, distanceBetween?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;

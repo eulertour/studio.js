@@ -4,6 +4,7 @@
 
 ```ts
 
+import { Scene as Scene_2 } from 'three';
 import * as THREE from 'three';
 
 // @public (undocumented)
@@ -709,8 +710,10 @@ class SetScale extends Animation_3 {
     setUp(): void;
 }
 
+// Warning: (ae-forgotten-export) The symbol "Scene" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
-export const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [THREE.Scene, THREE.Camera, THREE.WebGLRenderer];
+export const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [Scene, THREE.Camera, THREE.WebGLRenderer];
 
 // @public (undocumented)
 class Shake extends Animation_3 {
@@ -729,6 +732,8 @@ abstract class Shape extends THREE.Group {
         closed?: boolean;
         fillPoints?: Array<THREE.Vector3>;
     });
+    // (undocumented)
+    add(...objects: THREE.Object3D[]): this;
     // (undocumented)
     arrow: boolean;
     // (undocumented)
@@ -769,6 +774,8 @@ abstract class Shape extends THREE.Group {
     // (undocumented)
     fill?: Fill;
     // (undocumented)
+    forwardEvent: (e: any) => void;
+    // (undocumented)
     abstract getAttributes(): object;
     // (undocumented)
     getClassConfig(): {};
@@ -789,6 +796,8 @@ abstract class Shape extends THREE.Group {
     // (undocumented)
     get points(): Array<THREE.Vector3>;
     set points(newPoints: THREE.Vector3[]);
+    // (undocumented)
+    remove(...objects: THREE.Object3D[]): this;
     // (undocumented)
     reshape(...args: any[]): void;
     // (undocumented)

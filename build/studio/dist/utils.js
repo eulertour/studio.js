@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { Scene as BaseScene } from "three";
 import MeshLine from "./geometry/MeshLine/index.js";
 import { setCameraDimensions } from "./geometry/MeshLine/MeshLineMaterial.js";
 import { CanvasViewport } from "./geometry/MeshLine/MeshLineMaterial.js";
@@ -34,6 +35,33 @@ const isHeightSetup = (config) => {
         "pixelHeight" in config &&
         "coordinateHeight" in config);
 };
+class Scene extends BaseScene {
+    constructor() {
+        super(...arguments);
+        Object.defineProperty(this, "forwardEvent", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: (e) => this.dispatchEvent(e)
+        });
+    }
+    add(...objects) {
+        super.add(...objects);
+        objects.forEach((object) => {
+            object.addEventListener("childadded", this.forwardEvent);
+            object.addEventListener("childremoved", this.forwardEvent);
+        });
+        return this;
+    }
+    remove(...objects) {
+        super.remove(...objects);
+        objects.forEach((object) => {
+            object.removeEventListener("childadded", this.forwardEvent);
+            object.removeEventListener("childremoved", this.forwardEvent);
+        });
+        return this;
+    }
+}
 const setupCanvas = (canvas, config = {
     aspectRatio: 16 / 9,
     pixelHeight: 720,
@@ -83,7 +111,7 @@ const setupCanvas = (canvas, config = {
         renderer.setPixelRatio(window.devicePixelRatio);
         CanvasViewport.multiplyScalar(window.devicePixelRatio);
     }
-    return [new THREE.Scene(), camera, renderer];
+    return [new Scene(), camera, renderer];
 };
 const convertWorldDirectionToObjectSpace = (worldDirection, object) => {
     const worldQuaternion = new THREE.Quaternion();

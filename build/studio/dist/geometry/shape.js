@@ -40,6 +40,12 @@ export default class Shape extends THREE.Group {
             writable: true,
             value: void 0
         });
+        Object.defineProperty(this, "forwardEvent", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: (e) => this.dispatchEvent(e)
+        });
         config = Object.assign(Shape.defaultStyle(), config);
         if (config.fill !== false) {
             const fillGeometry = getFillGeometry(config.fillPoints ?? points);
@@ -71,6 +77,22 @@ export default class Shape extends THREE.Group {
             this.add(this.stroke);
         }
         this.curveEndIndices = this.getCurveEndIndices();
+    }
+    add(...objects) {
+        super.add(...objects);
+        objects.forEach((object) => {
+            object.addEventListener("childadded", this.forwardEvent);
+            object.addEventListener("childremoved", this.forwardEvent);
+        });
+        return this;
+    }
+    remove(...objects) {
+        super.remove(...objects);
+        objects.forEach((object) => {
+            object.removeEventListener("childadded", this.forwardEvent);
+            object.removeEventListener("childremoved", this.forwardEvent);
+        });
+        return this;
     }
     static defaultStyle() {
         return {
