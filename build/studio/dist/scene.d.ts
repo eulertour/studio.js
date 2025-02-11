@@ -23,15 +23,11 @@ export declare class SceneController {
     deltaTime: number;
     elapsedTime: number;
     firstFrame: boolean;
-    paused: boolean;
     fps: number;
     timePrecision: number;
-    startTime: number;
-    endTime: number;
     loopAnimations: Array<Animation>;
     finishedAnimationCount: number;
     userScene: StudioScene;
-    three: typeof THREE;
     viewport: THREE.Vector4;
     aspectRatio: number;
     constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
@@ -41,8 +37,6 @@ export declare class SceneController {
     render(): void;
     tick(deltaTime: number, render?: boolean): void;
     play(): void;
-    pause(): void;
-    dispose(): void;
 }
 export {};
 //# sourceMappingURL=scene.d.ts.map

@@ -39,15 +39,11 @@ export class SceneController {
   deltaTime = 0;
   elapsedTime = 0;
   firstFrame = true;
-  paused = true;
   fps = 60;
   timePrecision = 1e5;
-  startTime = 0;
-  endTime = Number.POSITIVE_INFINITY;
   loopAnimations: Array<Animation> = [];
   finishedAnimationCount = 0;
   userScene: StudioScene;
-  three = THREE;
   viewport: THREE.Vector4;
   aspectRatio: number;
 
@@ -163,43 +159,12 @@ export class SceneController {
   }
 
   play() {
-    this.paused = false;
-    this.userScene.renderer.setAnimationLoop((initialTime) => {
-      let lastTime = initialTime;
-      this.userScene.renderer.setAnimationLoop((time) => {
-        const elapsedSinceLastFrame = (time - lastTime) / 1000;
-        const lastFrameToEndInterval = this.endTime - this.elapsedTime;
-        if (elapsedSinceLastFrame < lastFrameToEndInterval) {
-          this.tick(elapsedSinceLastFrame);
-          lastTime = time;
-        } else {
-          this.tick(lastFrameToEndInterval);
-          this.pause();
-        }
-      });
+    let lastTime: number;
+    this.userScene.renderer.setAnimationLoop((time) => {
+      const elapsedSinceLastFrame =
+        lastTime !== undefined ? (time - lastTime) / 1000 : 0;
+      this.tick(elapsedSinceLastFrame);
+      lastTime = time;
     });
-  }
-
-  pause() {
-    this.paused = true;
-    this.userScene.renderer.setAnimationLoop(null);
-  }
-
-  dispose() {
-    this.userScene.scene.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.geometry.dispose();
-        child.material.dispose();
-      } else if (
-        !(
-          child instanceof THREE.Scene ||
-          child instanceof THREE.Group ||
-          child instanceof THREE.Mesh
-        )
-      ) {
-        console.warn("Can't dispose of object:", child);
-      }
-    });
-    this.userScene.scene.clear();
   }
 }

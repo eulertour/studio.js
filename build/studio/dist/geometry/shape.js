@@ -110,7 +110,21 @@ export default class Shape extends THREE.Group {
         return {};
     }
     reshape(...args) {
-        const newShape = new this.constructor(...args);
+        const numRequiredArguments = this.constructor.length;
+        let requiredArgs;
+        let config;
+        if (args.length === numRequiredArguments) {
+            requiredArgs = args;
+            config = {};
+        }
+        else {
+            requiredArgs = args.slice(0, args.length - 1);
+            config = args[args.length - 1];
+        }
+        const newShape = new this.constructor(...requiredArgs, {
+            ...this.getStyle(),
+            ...config,
+        });
         this.copyStrokeFill(newShape);
         this.copyStyle(newShape);
         const newAttributes = newShape.getAttributes();

@@ -639,11 +639,7 @@ export class SceneController {
     // (undocumented)
     deltaTime: number;
     // (undocumented)
-    dispose(): void;
-    // (undocumented)
     elapsedTime: number;
-    // (undocumented)
-    endTime: number;
     // (undocumented)
     finishedAnimationCount: number;
     // (undocumented)
@@ -653,10 +649,6 @@ export class SceneController {
     // (undocumented)
     loopAnimations: Array<Animation_3>;
     // (undocumented)
-    pause(): void;
-    // (undocumented)
-    paused: boolean;
-    // (undocumented)
     play(): void;
     // (undocumented)
     render(): void;
@@ -664,10 +656,6 @@ export class SceneController {
     get renderer(): THREE.WebGLRenderer;
     // (undocumented)
     get scene(): THREE.Scene;
-    // (undocumented)
-    startTime: number;
-    // (undocumented)
-    three: typeof THREE;
     // (undocumented)
     tick(deltaTime: number, render?: boolean): void;
     // (undocumented)

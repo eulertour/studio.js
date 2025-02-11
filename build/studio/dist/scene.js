@@ -1,4 +1,3 @@
-import * as THREE from "three";
 import { setCameraDimensions, setCanvasViewport, } from "./geometry/MeshLine/MeshLineMaterial.js";
 import { Animation } from "./animation/index.js";
 import { setupCanvas } from "./utils.js";
@@ -34,12 +33,6 @@ export class SceneController {
             writable: true,
             value: true
         });
-        Object.defineProperty(this, "paused", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: true
-        });
         Object.defineProperty(this, "fps", {
             enumerable: true,
             configurable: true,
@@ -51,18 +44,6 @@ export class SceneController {
             configurable: true,
             writable: true,
             value: 1e5
-        });
-        Object.defineProperty(this, "startTime", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: 0
-        });
-        Object.defineProperty(this, "endTime", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: Number.POSITIVE_INFINITY
         });
         Object.defineProperty(this, "loopAnimations", {
             enumerable: true,
@@ -81,12 +62,6 @@ export class SceneController {
             configurable: true,
             writable: true,
             value: void 0
-        });
-        Object.defineProperty(this, "three", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: THREE
         });
         Object.defineProperty(this, "viewport", {
             enumerable: true,
@@ -195,40 +170,12 @@ export class SceneController {
         }
     }
     play() {
-        this.paused = false;
-        this.userScene.renderer.setAnimationLoop((initialTime) => {
-            let lastTime = initialTime;
-            this.userScene.renderer.setAnimationLoop((time) => {
-                const elapsedSinceLastFrame = (time - lastTime) / 1000;
-                const lastFrameToEndInterval = this.endTime - this.elapsedTime;
-                if (elapsedSinceLastFrame < lastFrameToEndInterval) {
-                    this.tick(elapsedSinceLastFrame);
-                    lastTime = time;
-                }
-                else {
-                    this.tick(lastFrameToEndInterval);
-                    this.pause();
-                }
-            });
+        let lastTime;
+        this.userScene.renderer.setAnimationLoop((time) => {
+            const elapsedSinceLastFrame = lastTime !== undefined ? (time - lastTime) / 1000 : 0;
+            this.tick(elapsedSinceLastFrame);
+            lastTime = time;
         });
-    }
-    pause() {
-        this.paused = true;
-        this.userScene.renderer.setAnimationLoop(null);
-    }
-    dispose() {
-        this.userScene.scene.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-                child.geometry.dispose();
-                child.material.dispose();
-            }
-            else if (!(child instanceof THREE.Scene ||
-                child instanceof THREE.Group ||
-                child instanceof THREE.Mesh)) {
-                console.warn("Can't dispose of object:", child);
-            }
-        });
-        this.userScene.scene.clear();
     }
 }
 //# sourceMappingURL=scene.js.map
