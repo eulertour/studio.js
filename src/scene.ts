@@ -6,12 +6,6 @@ import {
 import { Animation } from "./animation/index.js";
 import { SceneCanvasConfig, setupCanvas } from "./utils.js";
 
-type Class<T> = new (
-  scene: THREE.Scene,
-  camera: THREE.Camera,
-  renderer: THREE.WebGLRenderer,
-) => T;
-
 export type AnimationRepresentation =
   | Animation
   | Array<Animation>
@@ -24,6 +18,12 @@ export type AnimationRepresentation =
       scale?: number;
     };
 
+type Class<T> = new (
+  scene: THREE.Scene,
+  camera: THREE.Camera,
+  renderer: THREE.WebGLRenderer,
+) => T;
+
 export interface StudioScene<
   T extends THREE.Camera = THREE.OrthographicCamera,
 > {
@@ -33,6 +33,8 @@ export interface StudioScene<
   animations?: Array<AnimationRepresentation>;
   update?: (deltaTime: number, time: number) => void;
 }
+
+export type StudioSceneClass = Class<StudioScene>;
 
 export class SceneController {
   animationIndex = 0;
@@ -48,7 +50,7 @@ export class SceneController {
   aspectRatio: number;
 
   constructor(
-    public UserScene: Class<StudioScene>,
+    public UserScene: StudioSceneClass,
     canvasRef: HTMLCanvasElement,
     config: SceneCanvasConfig,
   ) {
