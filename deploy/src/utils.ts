@@ -39,7 +39,7 @@ function getMode(): Mode {
 }
 
 async function waitForFirebase() {
-  const MAX_WAIT_TIME_MS = 10000;
+  const MAX_WAIT_TIME_MS = 20000;
   const WAIT_INTERVAL_MS = 1000;
   let waitTimeMs = 0;
   let ready = false;
