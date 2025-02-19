@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { Animation } from "./animation/index.js";
 import { SceneCanvasConfig } from "./utils.js";
-type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
 export type AnimationRepresentation = Animation | Array<Animation> | {
     animations: Array<Animation>;
     before?: () => void;
@@ -10,6 +9,7 @@ export type AnimationRepresentation = Animation | Array<Animation> | {
     runTime?: number;
     scale?: number;
 };
+type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
 export interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
     scene: THREE.Scene;
     camera: T;
@@ -17,8 +17,9 @@ export interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> 
     animations?: Array<AnimationRepresentation>;
     update?: (deltaTime: number, time: number) => void;
 }
+export type StudioSceneClass = Class<StudioScene>;
 export declare class SceneController {
-    UserScene: Class<StudioScene>;
+    UserScene: StudioSceneClass;
     animationIndex: number;
     deltaTime: number;
     elapsedTime: number;
@@ -30,7 +31,7 @@ export declare class SceneController {
     userScene: StudioScene;
     viewport: THREE.Vector4;
     aspectRatio: number;
-    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
+    constructor(UserScene: StudioSceneClass, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
     get scene(): THREE.Scene;
     get camera(): THREE.OrthographicCamera;
     get renderer(): THREE.WebGLRenderer;

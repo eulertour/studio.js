@@ -335,8 +335,9 @@ type index_d$1_Shape = Shape;
 declare const index_d$1_Shape: typeof Shape;
 type index_d$1_Square = Square;
 declare const index_d$1_Square: typeof Square;
+type index_d$1_Style = Style;
 declare namespace index_d$1 {
-  export { index_d$1_Arc as Arc, index_d$1_Arrow as Arrow, index_d$1_Circle as Circle, index_d$1_Line as Line, index_d$1_MeshLine as MeshLine, index_d$1_Point as Point, index_d$1_Polygon as Polygon, index_d$1_Polyline as Polyline, index_d$1_Rectangle as Rectangle, index_d$1_Shape as Shape, index_d$1_Square as Square };
+  export { index_d$1_Arc as Arc, index_d$1_Arrow as Arrow, index_d$1_Circle as Circle, index_d$1_Line as Line, index_d$1_MeshLine as MeshLine, index_d$1_Point as Point, index_d$1_Polygon as Polygon, index_d$1_Polyline as Polyline, index_d$1_Rectangle as Rectangle, index_d$1_Shape as Shape, index_d$1_Square as Square, type index_d$1_Style as Style };
 }
 
 declare const BUFFER = 0.5;
@@ -397,8 +398,8 @@ declare class ShapeFromCurves {
     segmentClosestToPoint: THREE.Vector3;
     pointToSegment: THREE.Vector3;
     points: Array<THREE.Vector3>;
-    style: undefined;
-    withStyle(style: undefined): this;
+    style: Style;
+    withStyle(style: Style): this;
     startAt(start: THREE.Vector3): this;
     extendAlong(shape: Shape, direction: THREE.Vector3, until?: THREE.Vector3 | undefined): this;
     extendCurve(shape: Shape, initialPointIndex: number, forward: boolean, until?: THREE.Vector3 | undefined): void;
@@ -624,27 +625,27 @@ declare class Indicator extends THREE.Group {
     startTick: Line;
     endTick: Line;
     stem: Line;
-    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig & undefined);
+    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig & Style);
     grow(config?: any): Animation;
 }
 declare class CongruentLine extends THREE.Group {
-    constructor(ticks: number, start: THREE.Vector3, end: THREE.Vector3, config?: undefined & {
+    constructor(ticks: number, start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
         tickLength?: number;
         spacing?: number;
     });
 }
 declare class CongruentAngle extends THREE.Group {
-    config: undefined & {
+    config: Style & {
         minRadius?: number;
         spacing?: number;
     };
-    constructor(arcs: number, point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: undefined & {
+    constructor(arcs: number, point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
         minRadius?: number;
         spacing?: number;
     });
 }
 declare class RightAngle extends Polyline {
-    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: undefined & {
+    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
         sideLength?: number;
     });
 }
@@ -726,7 +727,6 @@ declare namespace graphing_d {
   export { graphing_d_Curve as Curve };
 }
 
-type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
 type AnimationRepresentation = Animation | Array<Animation> | {
     animations: Array<Animation>;
     before?: () => void;
@@ -735,6 +735,7 @@ type AnimationRepresentation = Animation | Array<Animation> | {
     runTime?: number;
     scale?: number;
 };
+type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
 interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
     scene: THREE.Scene;
     camera: T;
@@ -742,8 +743,9 @@ interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
     animations?: Array<AnimationRepresentation>;
     update?: (deltaTime: number, time: number) => void;
 }
+type StudioSceneClass = Class<StudioScene>;
 declare class SceneController {
-    UserScene: Class<StudioScene>;
+    UserScene: StudioSceneClass;
     animationIndex: number;
     deltaTime: number;
     elapsedTime: number;
@@ -755,7 +757,7 @@ declare class SceneController {
     userScene: StudioScene;
     viewport: THREE.Vector4;
     aspectRatio: number;
-    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
+    constructor(UserScene: StudioSceneClass, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
     get scene(): THREE.Scene;
     get camera(): THREE.OrthographicCamera;
     get renderer(): THREE.WebGLRenderer;

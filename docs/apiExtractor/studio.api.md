@@ -9,7 +9,6 @@ import * as THREE from 'three';
 
 // @public (undocumented)
 class Angle extends Shape {
-    // Warning: (ae-forgotten-export) The symbol "Style" needs to be exported by the entry point index.d.ts
     constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
         radius?: number;
         reflex?: boolean;
@@ -374,6 +373,7 @@ declare namespace Geometry {
     export {
         MeshLine,
         Shape,
+        Style,
         Line,
         Arrow,
         Polygon,
@@ -629,7 +629,7 @@ export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
 
 // @public (undocumented)
 export class SceneController {
-    constructor(UserScene: Class<StudioScene>, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
+    constructor(UserScene: StudioSceneClass, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
     // (undocumented)
     animationIndex: number;
     // (undocumented)
@@ -660,10 +660,10 @@ export class SceneController {
     tick(deltaTime: number, render?: boolean): void;
     // (undocumented)
     timePrecision: number;
-    // Warning: (ae-forgotten-export) The symbol "Class" needs to be exported by the entry point index.d.ts
+    // Warning: (ae-forgotten-export) The symbol "StudioSceneClass" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    UserScene: Class<StudioScene>;
+    UserScene: StudioSceneClass;
     // (undocumented)
     userScene: StudioScene;
     // (undocumented)
@@ -867,6 +867,18 @@ export interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> 
     // (undocumented)
     update?: (deltaTime: number, time: number) => void;
 }
+
+// @public (undocumented)
+type Style = {
+    fillColor?: THREE.Color;
+    fillOpacity?: number;
+    strokeColor?: THREE.Color;
+    strokeOpacity?: number;
+    strokeWidth?: number;
+    strokeDashLength?: number;
+    strokeDashOffset?: number;
+    dashed?: boolean;
+};
 
 declare namespace Text_2 {
     export {
