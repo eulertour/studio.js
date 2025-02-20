@@ -46,7 +46,7 @@ export class SceneController {
   loopAnimations: Array<Animation> = [];
   finishedAnimationCount = 0;
   userScene: StudioScene;
-  viewport: THREE.Vector4;
+  viewport: THREE.Vector4 | undefined;
   aspectRatio: number;
 
   constructor(
