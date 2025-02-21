@@ -155,6 +155,7 @@ class Number extends THREE.Group {
                 center: new THREE.Vector3(),
                 box: new THREE.Box3(),
                 offset: new THREE.Vector3(),
+                worldPosition: new THREE.Vector3(),
             }
         });
         this.material.color = new THREE.Color(fullConfig.color);
@@ -198,12 +199,12 @@ class Number extends THREE.Group {
             const currentChild = this.children[i];
             currentChild.moveNextTo(previousChild, Utils.RIGHT, 0.025);
         }
-        const box = this.centerData.box;
-        box.setFromObject(this);
-        box.getCenter(this.centerData.center);
+        this.centerData.worldPosition.copy(this.position);
+        this.localToWorld(this.centerData.worldPosition);
+        this.centerData.box.setFromObject(this).getCenter(this.centerData.center);
         this.centerData.center.y *= -1;
         this.centerData.offset
-            .subVectors(this.position, this.centerData.center)
+            .subVectors(this.centerData.worldPosition, this.centerData.center)
             .multiplyScalar(1 / 0.0008);
         this.children.forEach((child) => child.position.add(this.centerData.offset));
     }

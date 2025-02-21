@@ -705,6 +705,7 @@ declare class Number extends THREE.Group {
         center: THREE.Vector3;
         box: THREE.Box3;
         offset: THREE.Vector3;
+        worldPosition: THREE.Vector3;
     };
     constructor(value?: number, config?: {
         color?: THREE.ColorRepresentation;

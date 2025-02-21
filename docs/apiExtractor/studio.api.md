@@ -523,6 +523,7 @@ class Number_2 extends THREE.Group {
         center: THREE.Vector3;
         box: THREE.Box3;
         offset: THREE.Vector3;
+        worldPosition: THREE.Vector3;
     };
     // (undocumented)
     decimals: number;
