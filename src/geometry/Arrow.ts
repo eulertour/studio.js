@@ -23,7 +23,7 @@ export default class Arrow extends Shape {
   reshape(start: THREE.Vector3, end: THREE.Vector3, config: Style = {}) {
     this.start.copy(start);
     this.end.copy(end);
-    this.copyStrokeFill(new Arrow(start, end, config));
+    this.copyStrokeAndFill(new Arrow(start, end, config));
   }
 
   getAttributes(): ArrowAttributes {
@@ -33,4 +33,3 @@ export default class Arrow extends Shape {
     };
   }
 }
-

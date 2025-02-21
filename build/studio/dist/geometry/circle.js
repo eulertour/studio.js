@@ -26,7 +26,7 @@ export default class Circle extends Shape {
     }
     reshape(radius, config = {}) {
         this.radius = radius;
-        this.copyStrokeFill(new Circle(radius, config));
+        this.copyStrokeAndFill(new Circle(radius, config));
     }
     getCloneAttributes() {
         return [this.radius];

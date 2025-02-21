@@ -23,7 +23,7 @@ export default class Arrow extends Shape {
     reshape(start, end, config = {}) {
         this.start.copy(start);
         this.end.copy(end);
-        this.copyStrokeFill(new Arrow(start, end, config));
+        this.copyStrokeAndFill(new Arrow(start, end, config));
     }
     getAttributes() {
         return {

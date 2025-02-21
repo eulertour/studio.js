@@ -35,7 +35,7 @@ export default class Line extends Shape {
     reshape(start, end, config = {}) {
         this.start.copy(start);
         this.end.copy(end);
-        this.copyStrokeFill(new Line(start, end, config));
+        this.copyStrokeAndFill(new Line(start, end, config));
     }
     getClassConfig() {
         return {};

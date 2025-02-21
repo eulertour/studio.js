@@ -1311,7 +1311,7 @@ class Line extends Shape {
     reshape(start, end, config = {}) {
         this.start.copy(start);
         this.end.copy(end);
-        this.copyStrokeFill(new Line(start, end, config));
+        this.copyStrokeAndFill(new Line(start, end, config));
     }
     getClassConfig() {
         return {};
@@ -1358,7 +1358,7 @@ class Arrow extends Shape {
     reshape(start, end, config = {}) {
         this.start.copy(start);
         this.end.copy(end);
-        this.copyStrokeFill(new Arrow(start, end, config));
+        this.copyStrokeAndFill(new Arrow(start, end, config));
     }
     getAttributes() {
         return {
@@ -1423,7 +1423,7 @@ class Polyline extends Shape {
         this.curveEndIndices = [[0, 1]];
     }
     reshape(points, config = {}) {
-        this.copyStrokeFill(new Polyline(points, config));
+        this.copyStrokeAndFill(new Polyline(points, config));
     }
     static defaultConfig() {
         return { ...Shape.defaultConfig(), fill: false };
@@ -1510,7 +1510,7 @@ class Arc extends Shape {
     reshape(radius = 1, angle = Math.PI / 2, config = {}) {
         this.radius = radius;
         this.angle = angle;
-        this.copyStrokeFill(new Arc(radius, angle, config));
+        this.copyStrokeAndFill(new Arc(radius, angle, config));
     }
     getCloneAttributes() {
         return [this.radius, this.angle, this.closed];
@@ -1576,7 +1576,7 @@ class Circle extends Shape {
     }
     reshape(radius, config = {}) {
         this.radius = radius;
-        this.copyStrokeFill(new Circle(radius, config));
+        this.copyStrokeAndFill(new Circle(radius, config));
     }
     getCloneAttributes() {
         return [this.radius];
@@ -1713,7 +1713,7 @@ class Square extends Rectangle {
     }
     reshape(sideLength, config = {}) {
         this.sideLength = sideLength;
-        this.copyStrokeFill(new Square(sideLength, config));
+        this.copyStrokeAndFill(new Square(sideLength, config));
     }
     getCloneAttributes() {
         return [this.sideLength];

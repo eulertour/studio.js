@@ -41,14 +41,10 @@ export default class Line extends Shape {
     return line;
   }
 
-  reshape(
-    start: THREE.Vector3,
-    end: THREE.Vector3,
-    config: Style = {},
-  ) {
+  reshape(start: THREE.Vector3, end: THREE.Vector3, config: Style = {}) {
     this.start.copy(start);
     this.end.copy(end);
-    this.copyStrokeFill(new Line(start, end, config));
+    this.copyStrokeAndFill(new Line(start, end, config));
   }
 
   getClassConfig() {
@@ -77,4 +73,3 @@ export default class Line extends Shape {
     return new Line(start, end);
   }
 }
-

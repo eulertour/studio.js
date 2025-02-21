@@ -44,7 +44,7 @@ export default class Arc extends Shape {
     reshape(radius = 1, angle = Math.PI / 2, config = {}) {
         this.radius = radius;
         this.angle = angle;
-        this.copyStrokeFill(new Arc(radius, angle, config));
+        this.copyStrokeAndFill(new Arc(radius, angle, config));
     }
     getCloneAttributes() {
         return [this.radius, this.angle, this.closed];

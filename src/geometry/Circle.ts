@@ -12,19 +12,18 @@ export type CircleAttributes = {
  * @example circle.ts
  */
 export default class Circle extends Shape {
-  constructor(public radius = 1, config: Style = {}) {
+  constructor(
+    public radius = 1,
+    config: Style = {},
+  ) {
     const angle = 2 * Math.PI;
     let points = [];
     for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
       points.push(
-        new THREE.Vector3(
-          radius * Math.cos(i),
-          radius * Math.sin(i),
-          0,
-        ),
+        new THREE.Vector3(radius * Math.cos(i), radius * Math.sin(i), 0),
       );
     }
-    
+
     super(points, {
       ...Circle.defaultConfig(),
       ...config,
@@ -33,7 +32,7 @@ export default class Circle extends Shape {
 
   reshape(radius: number, config = {}) {
     this.radius = radius;
-    this.copyStrokeFill(new Circle(radius, config));
+    this.copyStrokeAndFill(new Circle(radius, config));
   }
 
   getCloneAttributes() {

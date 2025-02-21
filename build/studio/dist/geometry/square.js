@@ -16,7 +16,7 @@ export default class Square extends Rectangle {
     }
     reshape(sideLength, config = {}) {
         this.sideLength = sideLength;
-        this.copyStrokeFill(new Square(sideLength, config));
+        this.copyStrokeAndFill(new Square(sideLength, config));
     }
     getCloneAttributes() {
         return [this.sideLength];

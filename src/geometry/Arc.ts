@@ -23,7 +23,7 @@ export default class Arc extends Shape {
   ) {
     config = { ...Arc.defaultConfig(), ...config };
     let points = getArcPoints(radius, angle, { closed: config.closed });
-    
+
     super(points, config);
 
     this.closed = config.closed ?? false;
@@ -45,7 +45,7 @@ export default class Arc extends Shape {
   ) {
     this.radius = radius;
     this.angle = angle;
-    this.copyStrokeFill(new Arc(radius, angle, config));
+    this.copyStrokeAndFill(new Arc(radius, angle, config));
   }
 
   getCloneAttributes() {
