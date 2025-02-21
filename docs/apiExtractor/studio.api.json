@@ -4109,6 +4109,15 @@
                     },
                     {
                       "kind": "Content",
+                      "text": ";\n        offset: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Vector3",
+                      "canonicalReference": "@types/three!Vector3:class"
+                    },
+                    {
+                      "kind": "Content",
                       "text": ";\n    }"
                     },
                     {
@@ -4122,7 +4131,7 @@
                   "name": "centerData",
                   "propertyTypeTokenRange": {
                     "startIndex": 1,
-                    "endIndex": 6
+                    "endIndex": 8
                   },
                   "isStatic": false,
                   "isProtected": false,
@@ -4323,6 +4332,41 @@
                   "propertyTypeTokenRange": {
                     "startIndex": 1,
                     "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Diagram.Number#meshes:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "meshes: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Mesh",
+                      "canonicalReference": "@types/three!Mesh:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "[]"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "meshes",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 3
                   },
                   "isStatic": false,
                   "isProtected": false,

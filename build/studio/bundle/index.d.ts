@@ -698,11 +698,13 @@ declare class RightAngle extends Polyline {
 }
 declare class Number extends THREE.Group {
     static geometries: Map<string, THREE.ShapeGeometry>;
+    meshes: THREE.Mesh[];
     material: THREE.MeshBasicMaterial;
     decimals: number;
     centerData: {
         center: THREE.Vector3;
         box: THREE.Box3;
+        offset: THREE.Vector3;
     };
     constructor(value?: number, config?: {
         color?: THREE.ColorRepresentation;

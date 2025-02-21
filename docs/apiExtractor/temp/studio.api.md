@@ -522,6 +522,7 @@ class Number_2 extends THREE.Group {
     centerData: {
         center: THREE.Vector3;
         box: THREE.Box3;
+        offset: THREE.Vector3;
     };
     // (undocumented)
     decimals: number;
@@ -533,6 +534,8 @@ class Number_2 extends THREE.Group {
     static initializeGeometries(): Map<string, THREE.ShapeGeometry>;
     // (undocumented)
     material: THREE.MeshBasicMaterial;
+    // (undocumented)
+    meshes: THREE.Mesh[];
     // (undocumented)
     reshape(value: number, config?: {
         color?: THREE.ColorRepresentation;
