@@ -49,7 +49,7 @@ export default abstract class Shape extends THREE.Group {
     reshape(...args: any[]): void;
     copyStroke(shape: Shape): void;
     copyFill(shape: Shape): void;
-    copyStrokeFill(shape: Shape): void;
+    copyStrokeAndFill(shape: Shape): void;
     get points(): Array<THREE.Vector3>;
     set points(newPoints: THREE.Vector3[]);
     worldPoint(index: number): THREE.Vector3;

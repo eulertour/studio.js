@@ -4000,6 +4000,464 @@
             },
             {
               "kind": "Class",
+              "canonicalReference": "@eulertour/studio!Diagram.Number:class",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "declare class Number extends "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Group",
+                  "canonicalReference": "@types/three!Group:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": " "
+                }
+              ],
+              "fileUrlPath": "src/diagram.ts",
+              "releaseTag": "Public",
+              "isAbstract": false,
+              "name": "Number",
+              "preserveMemberOrder": false,
+              "members": [
+                {
+                  "kind": "Constructor",
+                  "canonicalReference": "@eulertour/studio!Diagram.Number:constructor(1)",
+                  "docComment": "/**\n * Constructs a new instance of the `Number` class\n */\n",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "constructor(value?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", config?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{\n        color?: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.ColorRepresentation",
+                      "canonicalReference": "@types/three!ColorRepresentation:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";\n        decimals?: number;\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ");"
+                    }
+                  ],
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "value",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": true
+                    },
+                    {
+                      "parameterName": "config",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 3,
+                        "endIndex": 6
+                      },
+                      "isOptional": true
+                    }
+                  ]
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Diagram.Number#centerData:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "centerData: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{\n        center: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Vector3",
+                      "canonicalReference": "@types/three!Vector3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";\n        box: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Box3",
+                      "canonicalReference": "@types/three!Box3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "centerData",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 6
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Diagram.Number#decimals:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "decimals: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "decimals",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Diagram.Number.extractGeometry:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static extractGeometry(textShape: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Text.Text",
+                      "canonicalReference": "@eulertour/studio!Text_2.Text_3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "): "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.ShapeGeometry",
+                      "canonicalReference": "@types/three!ShapeGeometry:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": true,
+                  "returnTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "textShape",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": false
+                    }
+                  ],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "extractGeometry"
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Diagram.Number.geometries:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static geometries: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Map",
+                      "canonicalReference": "!Map:interface"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "<string, "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.ShapeGeometry",
+                      "canonicalReference": "@types/three!ShapeGeometry:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ">"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "geometries",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 5
+                  },
+                  "isStatic": true,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Diagram.Number.initializeGeometries:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static initializeGeometries(): "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Map",
+                      "canonicalReference": "!Map:interface"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "<string, "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.ShapeGeometry",
+                      "canonicalReference": "@types/three!ShapeGeometry:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ">"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": true,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 5
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "initializeGeometries"
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Diagram.Number#material:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "material: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.MeshBasicMaterial",
+                      "canonicalReference": "@types/three!MeshBasicMaterial:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "material",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Diagram.Number#reshape:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "reshape(value: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", config?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{\n        color?: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.ColorRepresentation",
+                      "canonicalReference": "@types/three!ColorRepresentation:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";\n        decimals?: number;\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "void"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 7,
+                    "endIndex": 8
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "value",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": false
+                    },
+                    {
+                      "parameterName": "config",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 3,
+                        "endIndex": 6
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "reshape"
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Diagram.Number#updateFromValue:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "updateFromValue(value: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "void"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "value",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": false
+                    }
+                  ],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "updateFromValue"
+                }
+              ],
+              "extendsTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "implementsTokenRanges": []
+            },
+            {
+              "kind": "Class",
               "canonicalReference": "@eulertour/studio!Diagram.RightAngle:class",
               "docComment": "",
               "excerptTokens": [
@@ -7418,12 +7876,12 @@
                 },
                 {
                   "kind": "Method",
-                  "canonicalReference": "@eulertour/studio!Geometry.Shape#copyStrokeFill:member(1)",
+                  "canonicalReference": "@eulertour/studio!Geometry.Shape#copyStrokeAndFill:member(1)",
                   "docComment": "",
                   "excerptTokens": [
                     {
                       "kind": "Content",
-                      "text": "copyStrokeFill(shape: "
+                      "text": "copyStrokeAndFill(shape: "
                     },
                     {
                       "kind": "Reference",
@@ -7463,7 +7921,7 @@
                   ],
                   "isOptional": false,
                   "isAbstract": false,
-                  "name": "copyStrokeFill"
+                  "name": "copyStrokeAndFill"
                 },
                 {
                   "kind": "Method",
@@ -9774,6 +10232,10 @@
                 },
                 {
                   "kind": "Content",
+                  "text": " | undefined"
+                },
+                {
+                  "kind": "Content",
                   "text": ";"
                 }
               ],
@@ -9783,7 +10245,7 @@
               "name": "viewport",
               "propertyTypeTokenRange": {
                 "startIndex": 1,
-                "endIndex": 2
+                "endIndex": 3
               },
               "isStatic": false,
               "isProtected": false,

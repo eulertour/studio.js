@@ -260,7 +260,8 @@ declare namespace Diagram {
         Angle,
         RightAngle,
         CongruentLine,
-        CongruentAngle
+        CongruentAngle,
+        Number_2 as Number
     }
 }
 export { Diagram }
@@ -512,6 +513,36 @@ const moveToLeftOf: (target: any, object: any, distance?: number) => THREE.Objec
 const moveToRightOf: (target: any, object: any, distance?: number) => THREE.Object3D<THREE.Object3DEventMap>;
 
 // @public (undocumented)
+class Number_2 extends THREE.Group {
+    constructor(value?: number, config?: {
+        color?: THREE.ColorRepresentation;
+        decimals?: number;
+    });
+    // (undocumented)
+    centerData: {
+        center: THREE.Vector3;
+        box: THREE.Box3;
+    };
+    // (undocumented)
+    decimals: number;
+    // (undocumented)
+    static extractGeometry(textShape: Text_2.Text): THREE.ShapeGeometry;
+    // (undocumented)
+    static geometries: Map<string, THREE.ShapeGeometry>;
+    // (undocumented)
+    static initializeGeometries(): Map<string, THREE.ShapeGeometry>;
+    // (undocumented)
+    material: THREE.MeshBasicMaterial;
+    // (undocumented)
+    reshape(value: number, config?: {
+        color?: THREE.ColorRepresentation;
+        decimals?: number;
+    }): void;
+    // (undocumented)
+    updateFromValue(value: number): void;
+}
+
+// @public (undocumented)
 const ORIGIN: Readonly<THREE.Vector3>;
 
 // @public (undocumented)
@@ -667,7 +698,7 @@ export class SceneController {
     // (undocumented)
     userScene: StudioScene;
     // (undocumented)
-    viewport: THREE.Vector4;
+    viewport: THREE.Vector4 | undefined;
 }
 
 // @public (undocumented)
@@ -735,7 +766,7 @@ abstract class Shape extends THREE.Group {
     // (undocumented)
     copyStroke(shape: Shape): void;
     // (undocumented)
-    copyStrokeFill(shape: Shape): void;
+    copyStrokeAndFill(shape: Shape): void;
     // (undocumented)
     copyStyle(shape: Shape): void;
     // (undocumented)

@@ -1,6 +1,7 @@
 import * as THREE from "three";
-import { Animation } from "./animation/Animation.js";
+import { Animation } from "./animation/index.js";
 import * as Geometry from "./geometry/index.js";
+import * as Text from "./text.js";
 import Angle from "./angle.js";
 interface IndicatorConfig {
     tickLength?: number;
@@ -35,5 +36,25 @@ declare class RightAngle extends Geometry.Polyline {
         sideLength?: number;
     });
 }
-export { Indicator, Angle, RightAngle, CongruentLine, CongruentAngle };
+declare class Number extends THREE.Group {
+    static geometries: Map<string, THREE.ShapeGeometry>;
+    material: THREE.MeshBasicMaterial;
+    decimals: number;
+    centerData: {
+        center: THREE.Vector3;
+        box: THREE.Box3;
+    };
+    constructor(value?: number, config?: {
+        color?: THREE.ColorRepresentation;
+        decimals?: number;
+    });
+    reshape(value: number, config?: {
+        color?: THREE.ColorRepresentation;
+        decimals?: number;
+    }): void;
+    updateFromValue(value: number): void;
+    static extractGeometry(textShape: Text.Text): THREE.ShapeGeometry;
+    static initializeGeometries(): Map<string, THREE.ShapeGeometry>;
+}
+export { Indicator, Angle, RightAngle, CongruentLine, CongruentAngle, Number };
 //# sourceMappingURL=diagram.d.ts.map

@@ -99,7 +99,7 @@ declare abstract class Shape extends THREE.Group {
     reshape(...args: any[]): void;
     copyStroke(shape: Shape): void;
     copyFill(shape: Shape): void;
-    copyStrokeFill(shape: Shape): void;
+    copyStrokeAndFill(shape: Shape): void;
     get points(): Array<THREE.Vector3>;
     set points(newPoints: THREE.Vector3[]);
     worldPoint(index: number): THREE.Vector3;
@@ -601,6 +601,53 @@ declare namespace constants_d {
   export { constants_d_COORDS_TO_PIXELS as COORDS_TO_PIXELS, constants_d_DEFAULT_BACKGROUND_HEX as DEFAULT_BACKGROUND_HEX, constants_d_ERROR_THRESHOLD as ERROR_THRESHOLD, constants_d_PIXELS_TO_COORDS as PIXELS_TO_COORDS };
 }
 
+type TextStyle = {
+    fillColor?: THREE.Color;
+    fillOpacity?: number;
+};
+type TextConfig = {
+    groupColoring?: Array<[number, string?]>;
+    batchMaterials?: boolean;
+};
+declare class Text extends THREE.Group {
+    text: string;
+    constructor(text: string, config?: TextStyle & TextConfig);
+    dispose(): void;
+    clone(recursive: boolean): this;
+    copy(source: this, recursive: boolean): this;
+    getDimensions(): THREE.Vector2;
+    getCloneAttributes(): string[];
+    getAttributes(): {
+        text: string;
+    };
+    static fromAttributes(attributes: any): Text;
+    get attributeData(): {
+        attribute: string;
+        type: string;
+        default: string;
+    }[];
+    toJson(): {
+        className: string;
+        attributes: {
+            text: string;
+        };
+        transform: Transform;
+        style: {
+            fillColor: number[];
+        };
+    };
+    static fromJson(json: any): Text;
+    getTransform(): Transform;
+    setTransform(transform: Transform): void;
+}
+//# sourceMappingURL=text.d.ts.map
+
+type text_d_Text = Text;
+declare const text_d_Text: typeof Text;
+declare namespace text_d {
+  export { text_d_Text as Text };
+}
+
 declare class Angle extends Shape {
     point1: THREE.Vector3;
     point2: THREE.Vector3;
@@ -649,6 +696,26 @@ declare class RightAngle extends Polyline {
         sideLength?: number;
     });
 }
+declare class Number extends THREE.Group {
+    static geometries: Map<string, THREE.ShapeGeometry>;
+    material: THREE.MeshBasicMaterial;
+    decimals: number;
+    centerData: {
+        center: THREE.Vector3;
+        box: THREE.Box3;
+    };
+    constructor(value?: number, config?: {
+        color?: THREE.ColorRepresentation;
+        decimals?: number;
+    });
+    reshape(value: number, config?: {
+        color?: THREE.ColorRepresentation;
+        decimals?: number;
+    }): void;
+    updateFromValue(value: number): void;
+    static extractGeometry(textShape: Text): THREE.ShapeGeometry;
+    static initializeGeometries(): Map<string, THREE.ShapeGeometry>;
+}
 //# sourceMappingURL=diagram.d.ts.map
 
 type diagram_d_Angle = Angle;
@@ -659,10 +726,12 @@ type diagram_d_CongruentLine = CongruentLine;
 declare const diagram_d_CongruentLine: typeof CongruentLine;
 type diagram_d_Indicator = Indicator;
 declare const diagram_d_Indicator: typeof Indicator;
+type diagram_d_Number = Number;
+declare const diagram_d_Number: typeof Number;
 type diagram_d_RightAngle = RightAngle;
 declare const diagram_d_RightAngle: typeof RightAngle;
 declare namespace diagram_d {
-  export { diagram_d_Angle as Angle, diagram_d_CongruentAngle as CongruentAngle, diagram_d_CongruentLine as CongruentLine, diagram_d_Indicator as Indicator, diagram_d_RightAngle as RightAngle };
+  export { diagram_d_Angle as Angle, diagram_d_CongruentAngle as CongruentAngle, diagram_d_CongruentLine as CongruentLine, diagram_d_Indicator as Indicator, diagram_d_Number as Number, diagram_d_RightAngle as RightAngle };
 }
 
 declare const _default: {
@@ -755,7 +824,7 @@ declare class SceneController {
     loopAnimations: Array<Animation>;
     finishedAnimationCount: number;
     userScene: StudioScene;
-    viewport: THREE.Vector4;
+    viewport: THREE.Vector4 | undefined;
     aspectRatio: number;
     constructor(UserScene: StudioSceneClass, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
     get scene(): THREE.Scene;
@@ -764,53 +833,6 @@ declare class SceneController {
     render(): void;
     tick(deltaTime: number, render?: boolean): void;
     play(): void;
-}
-
-type TextStyle = {
-    fillColor?: THREE.Color;
-    fillOpacity?: number;
-};
-type TextConfig = {
-    groupColoring?: Array<[number, string?]>;
-    batchMaterials?: boolean;
-};
-declare class Text extends THREE.Group {
-    text: string;
-    constructor(text: string, config?: TextStyle & TextConfig);
-    dispose(): void;
-    clone(recursive: boolean): this;
-    copy(source: this, recursive: boolean): this;
-    getDimensions(): THREE.Vector2;
-    getCloneAttributes(): string[];
-    getAttributes(): {
-        text: string;
-    };
-    static fromAttributes(attributes: any): Text;
-    get attributeData(): {
-        attribute: string;
-        type: string;
-        default: string;
-    }[];
-    toJson(): {
-        className: string;
-        attributes: {
-            text: string;
-        };
-        transform: Transform;
-        style: {
-            fillColor: number[];
-        };
-    };
-    static fromJson(json: any): Text;
-    getTransform(): Transform;
-    setTransform(transform: Transform): void;
-}
-//# sourceMappingURL=text.d.ts.map
-
-type text_d_Text = Text;
-declare const text_d_Text: typeof Text;
-declare namespace text_d {
-  export { text_d_Text as Text };
 }
 
 declare module "three" {

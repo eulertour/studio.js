@@ -29,7 +29,7 @@ export declare class SceneController {
     loopAnimations: Array<Animation>;
     finishedAnimationCount: number;
     userScene: StudioScene;
-    viewport: THREE.Vector4;
+    viewport: THREE.Vector4 | undefined;
     aspectRatio: number;
     constructor(UserScene: StudioSceneClass, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
     get scene(): THREE.Scene;

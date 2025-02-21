@@ -5,7 +5,6 @@ import { setCameraDimensions } from "./geometry/MeshLine/MeshLineMaterial.js";
 import { CanvasViewport } from "./geometry/MeshLine/MeshLineMaterial.js";
 import { DEFAULT_BACKGROUND_HEX, PIXELS_TO_COORDS } from "./constants.js";
 import * as Geometry from "./geometry/index.js";
-import * as Text from "./text.js";
 const BUFFER = 0.5;
 const ORIGIN = Object.freeze(new THREE.Vector3(0, 0, 0));
 const RIGHT = Object.freeze(new THREE.Vector3(1, 0, 0));
@@ -215,7 +214,8 @@ const furthestInDirection = (object, direction, exclude = []) => {
             }
         }
         else if (obj instanceof THREE.Mesh &&
-            obj.parent?.parent?.parent instanceof Text.Text) {
+            (obj.parent?.parent?.parent?.constructor?.name === "Text" ||
+                object.parent?.constructor?.name === "Number")) {
             const pointsArray = obj.geometry.attributes.position.array;
             const pointContainer = new THREE.Vector3();
             for (let i = 0; i < pointsArray.length; i += 3) {
