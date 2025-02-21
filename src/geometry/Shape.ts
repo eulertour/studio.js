@@ -23,12 +23,17 @@ export type Style = {
 };
 
 const getFillGeometry = (points: Array<THREE.Vector3>) => {
-  const shape = new THREE.Shape();
-  shape.moveTo(points[0].x, points[0].y);
-  for (const point of points.slice(1)) {
-    shape.lineTo(point.x, point.y);
+  if (points.length === 0) {
+    return new THREE.ShapeGeometry();
   }
-  shape.closePath();
+  const shape = new THREE.Shape();
+  if (points[0]) {
+    shape.moveTo(points[0].x, points[0].y);
+    for (const point of points.slice(1)) {
+      shape.lineTo(point.x, point.y);
+    }
+    shape.closePath();
+  }
   return new THREE.ShapeGeometry(shape);
 };
 
@@ -154,12 +159,18 @@ export default abstract class Shape extends THREE.Group {
   }
 
   copyStroke(shape: Shape) {
-    this.stroke.geometry.dispose();
-    this.stroke.geometry = shape.stroke.geometry;
+    if (this.stroke?.geometry) {
+      this.stroke.geometry.dispose();
+    }
+    if (shape.stroke?.geometry) {
+      this.stroke.geometry = shape.stroke.geometry;
+    }
   }
 
   copyFill(shape: Shape) {
-    this.fill.geometry.dispose();
+    if (this.fill?.geometry) {
+      this.fill.geometry.dispose();
+    }
     this.fill.geometry = shape.fill.geometry;
   }
 
@@ -257,7 +268,13 @@ export default abstract class Shape extends THREE.Group {
     };
   }
 
-  restyle(style: Style): void {
+  restyle(
+    style: Style, 
+    config: { includeChildren: boolean } = { includeChildren: false }
+  ): void {
+    // Type guard to ensure fill and stroke exist
+    if (!this.fill?.material || !this.stroke?.material) return;
+
     const { fillColor, fillOpacity } = style;
     if (fillColor !== undefined) {
       this.fill.material.color = fillColor;
@@ -266,7 +283,7 @@ export default abstract class Shape extends THREE.Group {
       this.fill.material.opacity = fillOpacity;
     }
 
-    const { strokeColor, strokeOpacity, strokeWidth } = style;
+    const { strokeColor, strokeOpacity, strokeWidth, strokeDashLength, strokeDashOffset, dashed } = style;
     if (strokeColor !== undefined) {
       this.stroke.material.color = strokeColor;
     }
@@ -276,16 +293,22 @@ export default abstract class Shape extends THREE.Group {
     if (strokeWidth !== undefined) {
       this.stroke.material.width = strokeWidth;
     }
-
-    if (style.dashed === true) {
+    if (dashed === true) {
       this.stroke.material.dashLength = 0.4;
     }
-    const { strokeDashLength, strokeDashOffset } = style;
     if (strokeDashLength !== undefined) {
       this.stroke.material.dashLength = strokeDashLength;
     }
     if (strokeDashOffset !== undefined) {
       this.stroke.material.dashOffset = strokeDashOffset;
+    }
+
+    if (config.includeChildren) {
+      this.traverse((child: THREE.Object3D) => {
+        if (child !== this && child instanceof Shape) {
+          child.restyle(style, { includeChildren: false });
+        }
+      });
     }
   }
 
