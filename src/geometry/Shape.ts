@@ -147,7 +147,7 @@ export default abstract class Shape extends THREE.Group {
       ...this.getStyle(),
       ...config,
     });
-    this.copyStrokeFill(newShape);
+    this.copyStrokeAndFill(newShape);
     this.copyStyle(newShape);
     const newAttributes = newShape.getAttributes();
     Object.assign(this, newAttributes);
@@ -163,7 +163,7 @@ export default abstract class Shape extends THREE.Group {
     this.fill.geometry = shape.fill.geometry;
   }
 
-  copyStrokeFill(shape: Shape) {
+  copyStrokeAndFill(shape: Shape) {
     this.copyStroke(shape);
     this.copyFill(shape);
   }

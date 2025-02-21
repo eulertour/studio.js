@@ -1,7 +1,8 @@
 import * as THREE from "three";
-import { Animation } from "./animation/Animation.js";
+import { Animation } from "./animation/index.js";
 import * as Geometry from "./geometry/index.js";
 import * as Utils from "./utils.js";
+import * as Text from "./text.js";
 import Angle from "./angle.js";
 
 interface IndicatorConfig {
@@ -155,4 +156,89 @@ class RightAngle extends Geometry.Polyline {
   }
 }
 
-export { Indicator, Angle, RightAngle, CongruentLine, CongruentAngle };
+class Number extends THREE.Group {
+  static geometries = Number.initializeGeometries();
+  material = new THREE.MeshBasicMaterial({ color: "black" });
+  decimals: number;
+  centerData = {
+    center: new THREE.Vector3(),
+    box: new THREE.Box3(),
+  };
+
+  constructor(
+    value = 0,
+    config: { color?: THREE.ColorRepresentation; decimals?: number } = {},
+  ) {
+    const fullConfig = {
+      color: config.color ?? "black",
+      decimals: config.decimals ?? 2,
+    };
+
+    super();
+    this.material.color = new THREE.Color(fullConfig.color);
+    this.decimals = fullConfig.decimals;
+    this.scale.set(0.0008, -0.0008, 0.0008);
+    this.updateFromValue(value);
+  }
+
+  reshape(
+    value: number,
+    config: { color?: THREE.ColorRepresentation; decimals?: number } = {},
+  ) {
+    const fullConfig = {
+      color: config.color ?? "black",
+      decimals: config.decimals ?? 2,
+    };
+    this.material.color = new THREE.Color(fullConfig.color);
+    this.decimals = fullConfig.decimals;
+    this.clear();
+    this.updateFromValue(value);
+  }
+
+  updateFromValue(value: number) {
+    const characters = value.toFixed(this.decimals).split("");
+    for (const character of characters) {
+      if (!Number.geometries.has(character)) {
+        throw new Error(`Character ${character} isn't supported in Number.`);
+      }
+
+      const geometry = Number.geometries.get(character);
+      const mesh = new THREE.Mesh(geometry, this.material);
+      this.add(mesh);
+    }
+
+    for (let i = 1; i < this.children.length; i++) {
+      const previousChild = this.children[i - 1];
+      const currentChild = this.children[i];
+      currentChild.moveNextTo(previousChild, Utils.RIGHT, 0.025);
+    }
+
+    this.centerData.box.setFromObject(this).getCenter(this.centerData.center);
+    this.children.forEach((child) =>
+      child.position.sub(this.centerData.center),
+    );
+  }
+
+  static extractGeometry(textShape: Text.Text) {
+    return textShape.children[0].children[0].children[0]
+      .geometry as THREE.ShapeGeometry;
+  }
+
+  static initializeGeometries() {
+    const geometryMap = new Map<string, THREE.ShapeGeometry>();
+
+    for (let i = 0; i < 10; i++) {
+      const numberShape = new Text.Text(i.toString());
+      const numberGeometry = Number.extractGeometry(numberShape);
+      geometryMap.set(i.toString(), numberGeometry);
+    }
+
+    const decimalShape = new Text.Text(".");
+    const decimalGeometry = Number.extractGeometry(decimalShape);
+    geometryMap.set(".", decimalGeometry);
+
+    return geometryMap;
+  }
+}
+
+export { Indicator, Angle, RightAngle, CongruentLine, CongruentAngle, Number };

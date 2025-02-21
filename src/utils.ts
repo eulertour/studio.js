@@ -275,7 +275,8 @@ const furthestInDirection = (
       }
     } else if (
       obj instanceof THREE.Mesh &&
-      obj.parent?.parent?.parent instanceof Text.Text
+      (obj.parent?.parent?.parent?.constructor?.name === "Text" ||
+        object.parent?.constructor?.name === "Number")
     ) {
       const pointsArray = obj.geometry.attributes.position.array;
       const pointContainer = new THREE.Vector3();
