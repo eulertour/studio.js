@@ -158,11 +158,13 @@ class RightAngle extends Geometry.Polyline {
 
 class Number extends THREE.Group {
   static geometries = Number.initializeGeometries();
+  meshes: THREE.Mesh[] = [];
   material = new THREE.MeshBasicMaterial({ color: "black" });
   decimals: number;
   centerData = {
     center: new THREE.Vector3(),
     box: new THREE.Box3(),
+    offset: new THREE.Vector3(),
   };
 
   constructor(
@@ -197,13 +199,25 @@ class Number extends THREE.Group {
 
   updateFromValue(value: number) {
     const characters = value.toFixed(this.decimals).split("");
-    for (const character of characters) {
-      if (!Number.geometries.has(character)) {
-        throw new Error(`Character ${character} isn't supported in Number.`);
+    for (let i = 0; i < characters.length; i++) {
+      const character = characters[i];
+
+      if (character === undefined) {
+        throw new Error(`No character at index ${i}`);
       }
 
       const geometry = Number.geometries.get(character);
-      const mesh = new THREE.Mesh(geometry, this.material);
+      if (geometry === undefined) {
+        throw new Error(`Character ${character} isn't supported in Number.`);
+      }
+
+      let mesh = this.meshes[i];
+      if (mesh !== undefined) {
+        mesh.geometry = geometry;
+      } else {
+        mesh = new THREE.Mesh(geometry, this.material);
+        this.meshes.push(mesh);
+      }
       this.add(mesh);
     }
 
@@ -213,9 +227,17 @@ class Number extends THREE.Group {
       currentChild.moveNextTo(previousChild, Utils.RIGHT, 0.025);
     }
 
-    this.centerData.box.setFromObject(this).getCenter(this.centerData.center);
+    const box = this.centerData.box;
+    box.setFromObject(this);
+    box.getCenter(this.centerData.center);
+
+    this.centerData.center.y *= -1;
+    this.centerData.offset
+      .subVectors(this.position, this.centerData.center)
+      .multiplyScalar(1 / 0.0008);
+
     this.children.forEach((child) =>
-      child.position.sub(this.centerData.center),
+      child.position.add(this.centerData.offset),
     );
   }
 
