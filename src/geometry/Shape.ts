@@ -4,6 +4,8 @@ import MeshLine, {
   MeshLineGeometry,
   MeshLineMaterial,
 } from "./MeshLine/index.js";
+import { Text } from "../text.js";
+import { moveNextTo } from "../utils.js";
 
 export type Transform = {
   position: THREE.Vector3;
@@ -23,17 +25,18 @@ export type Style = {
 };
 
 const getFillGeometry = (points: Array<THREE.Vector3>) => {
-  if (points.length === 0) {
-    return new THREE.ShapeGeometry();
+  if (points.length < 3) {
+    // 如果点数少于3个，返回一个空的几何体
+    return new THREE.BufferGeometry();
   }
+  
   const shape = new THREE.Shape();
-  if (points[0]) {
-    shape.moveTo(points[0].x, points[0].y);
-    for (const point of points.slice(1)) {
-      shape.lineTo(point.x, point.y);
-    }
-    shape.closePath();
+  shape.moveTo(points[0].x, points[0].y);
+  for (const point of points.slice(1)) {
+    shape.lineTo(point.x, point.y);
   }
+  // 确保最后一个点连接到第一个点
+  shape.lineTo(points[0].x, points[0].y);
   return new THREE.ShapeGeometry(shape);
 };
 
@@ -44,10 +47,10 @@ type Stroke = MeshLine;
  * An abstract class representing a generalized shape.
  */
 export default abstract class Shape extends THREE.Group {
-  fill?: Fill;
-  stroke?: Stroke;
-  curveEndIndices: Array<Array<number>>;
-  arrow: boolean;
+  protected fill!: Fill;
+  protected stroke!: Stroke;
+  protected curveEndIndices!: Array<Array<number>>;
+  protected arrow: boolean = false;
 
   constructor(
     points: Array<THREE.Vector3>,
@@ -62,11 +65,15 @@ export default abstract class Shape extends THREE.Group {
     super();
     config = Object.assign(Shape.defaultStyle(), config);
 
+    if (!points || points.length === 0) {
+      points = [new THREE.Vector3(0, 0, 0)];
+    }
+
     if (config.fill !== false) {
-      const fillGeometry = getFillGeometry(config.fillPoints ?? points);
+      const fillGeometry = getFillGeometry(points);
       const fillMaterial = new THREE.MeshBasicMaterial({
-        color: config.fillColor,
-        opacity: config.fillOpacity,
+        color: config.fillColor || new THREE.Color(0xfffaf0),
+        opacity: config.fillOpacity || 0.0,
         transparent: true,
         side: THREE.DoubleSide,
       });
@@ -75,27 +82,24 @@ export default abstract class Shape extends THREE.Group {
     }
 
     if (config.stroke !== false) {
-      const strokeGeometry = new MeshLineGeometry(config.arrow);
+      const strokeGeometry = new MeshLineGeometry(config.arrow || false);
       strokeGeometry.setPoints(points);
 
-      if (config.dashed && config.strokeDashLength === 0) {
-        config.strokeDashLength = 0.4;
-      }
-
       const strokeMaterial = new MeshLineMaterial({
-        color: config.strokeColor,
-        opacity: config.strokeOpacity,
+        color: config.strokeColor || new THREE.Color(0x000000),
+        opacity: config.strokeOpacity || 1.0,
         transparent: true,
         side: THREE.DoubleSide,
-        width: config.strokeWidth,
-        dashLength: config.strokeDashLength,
-        dashOffset: config.strokeDashOffset,
+        width: config.strokeWidth || 4,
+        dashLength: config.strokeDashLength || 0,
+        dashOffset: config.strokeDashOffset || 0,
       });
       this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
       this.add(this.stroke);
     }
 
     this.curveEndIndices = this.getCurveEndIndices();
+    this.arrow = config.arrow || false;
   }
 
   forwardEvent = (e) => this.dispatchEvent(e);
@@ -152,29 +156,23 @@ export default abstract class Shape extends THREE.Group {
       ...this.getStyle(),
       ...config,
     });
-    this.copyStrokeFill(newShape);
+    this.copyStrokeAndFill(newShape);
     this.copyStyle(newShape);
     const newAttributes = newShape.getAttributes();
     Object.assign(this, newAttributes);
   }
 
   copyStroke(shape: Shape) {
-    if (this.stroke?.geometry) {
-      this.stroke.geometry.dispose();
-    }
-    if (shape.stroke?.geometry) {
-      this.stroke.geometry = shape.stroke.geometry;
-    }
+    this.stroke.geometry.dispose();
+    this.stroke.geometry = shape.stroke.geometry;
   }
 
   copyFill(shape: Shape) {
-    if (this.fill?.geometry) {
-      this.fill.geometry.dispose();
-    }
+    this.fill.geometry.dispose();
     this.fill.geometry = shape.fill.geometry;
   }
 
-  copyStrokeFill(shape: Shape) {
+  copyStrokeAndFill(shape: Shape) {
     this.copyStroke(shape);
     this.copyFill(shape);
   }
@@ -259,6 +257,10 @@ export default abstract class Shape extends THREE.Group {
   }
 
   getStyle(): Style {
+    if (!this.fill || !this.stroke) {
+      throw new Error("Shape not properly initialized");
+    }
+    
     return {
       fillColor: this.fill.material.color,
       fillOpacity: this.fill.material.opacity,
@@ -268,12 +270,10 @@ export default abstract class Shape extends THREE.Group {
     };
   }
 
-  restyle(
-    style: Style, 
-    config: { includeChildren: boolean } = { includeChildren: false }
-  ): void {
-    // Type guard to ensure fill and stroke exist
-    if (!this.fill?.material || !this.stroke?.material) return;
+  restyle(style: Style, config: { includeChildren: boolean } = { includeChildren: false }): void {
+    if (!this.fill || !this.stroke) {
+      throw new Error("Shape not properly initialized");
+    }
 
     const { fillColor, fillOpacity } = style;
     if (fillColor !== undefined) {
@@ -283,7 +283,7 @@ export default abstract class Shape extends THREE.Group {
       this.fill.material.opacity = fillOpacity;
     }
 
-    const { strokeColor, strokeOpacity, strokeWidth, strokeDashLength, strokeDashOffset, dashed } = style;
+    const { strokeColor, strokeOpacity, strokeWidth } = style;
     if (strokeColor !== undefined) {
       this.stroke.material.color = strokeColor;
     }
@@ -293,9 +293,11 @@ export default abstract class Shape extends THREE.Group {
     if (strokeWidth !== undefined) {
       this.stroke.material.width = strokeWidth;
     }
-    if (dashed === true) {
+
+    if (style.dashed === true) {
       this.stroke.material.dashLength = 0.4;
     }
+    const { strokeDashLength, strokeDashOffset } = style;
     if (strokeDashLength !== undefined) {
       this.stroke.material.dashLength = strokeDashLength;
     }
@@ -304,8 +306,8 @@ export default abstract class Shape extends THREE.Group {
     }
 
     if (config.includeChildren) {
-      this.traverse((child: THREE.Object3D) => {
-        if (child !== this && child instanceof Shape) {
+      this.children.forEach((child) => {
+        if (child instanceof Shape) {
           child.restyle(style, { includeChildren: false });
         }
       });
@@ -365,5 +367,16 @@ export default abstract class Shape extends THREE.Group {
       }
     }
     return target;
+  }
+
+  addLabel(tex: string, direction: THREE.Vector3) {
+    // Create a Text object for the label
+    const label = new Text(tex);
+
+    // Position the label using moveNextTo
+    moveNextTo(label, this, direction);
+
+    // Add the label as a child of the shape
+    this.add(label);
   }
 }

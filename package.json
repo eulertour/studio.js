@@ -34,24 +34,32 @@
     ":deploy": "bun run --cwd deploy :deploy"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-typescript": "^7.26.0",
     "@microsoft/api-extractor": "^7.48.1",
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-typescript": "^12.1.2",
-    "@types/three": "^0.162",
+    "@types/chai": "^5.0.1",
+    "@types/jest": "^29.5.14",
+    "@types/three": "^0.173.0",
     "@xmldom/xmldom": "^0.9.6",
     "ajv": "8",
+    "bun-types": "^1.2.3",
+    "chai": "^5.2.0",
     "colors": "^1.4.0",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "mathjax-full": "^3.2.2",
+    "mocha": "^11.1.0",
     "rollup-plugin-dts": "^6.1.1",
     "serve": "^14.2.4",
+    "ts-jest": "^29.2.6",
     "tslib": "^2.8.1",
-    "typescript": "5.4",
+    "typescript": "^5.7.3",
     "typescript-eslint": "^8.18.2",
     "vite": "^6.0.5",
-    "vitest": "^2.1.8"
+    "vitest": "^3.0.7"
   },
   "dependencies": {
     "three": "^0.162"

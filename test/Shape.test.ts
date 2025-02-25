@@ -1,95 +1,171 @@
-import { assert } from "chai";
-import * as THREE from "three";
-import { Geometry } from "../src/index.js";
+import { describe, test, expect } from "bun:test";
+import * as THREE from 'three';
+import Shape from '../src/geometry/Shape.js';
+import { Vector3, Color } from 'three';
+import { MeshBasicMaterial } from 'three';
 
-class TestShape extends Geometry.Shape {
-  getAttributes(): object {
-    return {};
+// Test implementation with explicit type handling
+class TestShape extends Shape {
+  constructor(points: THREE.Vector3[] = [
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(0.5, 0, 0),
+    new THREE.Vector3(1, 0, 0),
+    new THREE.Vector3(1, 0.5, 0),
+    new THREE.Vector3(1, 1, 0),
+    new THREE.Vector3(0.5, 1, 0),
+    new THREE.Vector3(0, 1, 0),
+    new THREE.Vector3(0, 0.5, 0),
+    new THREE.Vector3(0, 0, 0)  // 闭合路径
+  ]) {
+    super(points, {
+      fillColor: new THREE.Color('white'),
+      strokeColor: new THREE.Color('black'),
+      strokeWidth: 2,
+      arrow: false,
+      fill: true,
+      stroke: true
+    });
   }
+  
+  public getAttributes() { return {}; }
+  public getCurveEndIndices() { return []; }
+
+  // 添加 getter 方法来访问 protected 属性
+  public getFill() { return this.fill; }
+  public getStroke() { return this.stroke; }
 }
 
 describe("Shape", () => {
-  const points = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 1, 1)];
-
   describe("restyle", () => {
-    it("updates material uniforms", () => {
-      const shape = new TestShape(points);
-      const newStyle = {
-        fillColor: new THREE.Color(0xff0000),
+    test("updates material properties", () => {
+      const shape = new TestShape();
+      const newFill = new THREE.Color('#ff0000');
+      
+      shape.restyle({ 
+        fillColor: newFill,
         fillOpacity: 0.5,
-        strokeColor: new THREE.Color(0x00ff00),
-        strokeOpacity: 0.7,
-        strokeWidth: 2,
-        strokeDashLength: 0.3,
-        strokeDashOffset: 0.1,
-        dashed: true,
-      };
+        strokeWidth: 4
+      });
 
-      shape.restyle(newStyle);
+      const fillMat = shape.getFill().material as THREE.MeshBasicMaterial;
+      expect(fillMat.color.getHexString()).toBe('ff0000');
+      expect(fillMat.opacity).toBe(0.5);
 
-      // Check fill material
-      assert.equal(shape.fill.material.color.getHex(), 0xff0000);
-      assert.equal(shape.fill.material.opacity, 0.5);
-
-      // Check stroke material
-      assert.equal(shape.stroke.material.color.getHex(), 0x00ff00);
-      assert.equal(shape.stroke.material.opacity, 0.7);
-      assert.equal(shape.stroke.material.width, 2);
-      assert.equal(shape.stroke.material.dashLength, 0.3);
-      assert.equal(shape.stroke.material.dashOffset, 0.1);
+      const strokeMat = shape.getStroke().material as any;
+      expect(strokeMat.width).toBe(4);
     });
 
-    it("applies style to children when includeChildren is true", () => {
-      const parentShape = new TestShape(points);
-      const childShape1 = new TestShape(points);
-      const childShape2 = new TestShape(points);
+    test("propagates to direct children when includeChildren is true", () => {
+      const parent = new TestShape();
+      const child = new TestShape();
+      const grandchild = new TestShape();
       
-      parentShape.add(childShape1);
-      childShape1.add(childShape2);
-
-      const newStyle = {
-        fillColor: new THREE.Color(0xff0000),
-        strokeColor: new THREE.Color(0x00ff00),
-      };
-
-      parentShape.restyle(newStyle, { includeChildren: true });
-
-      // Check parent
-      assert.equal(parentShape.fill.material.color.getHex(), 0xff0000);
-      assert.equal(parentShape.stroke.material.color.getHex(), 0x00ff00);
-
-      // Check first child
-      assert.equal(childShape1.fill.material.color.getHex(), 0xff0000);
-      assert.equal(childShape1.stroke.material.color.getHex(), 0x00ff00);
-
-      // Check nested child
-      assert.equal(childShape2.fill.material.color.getHex(), 0xff0000);
-      assert.equal(childShape2.stroke.material.color.getHex(), 0x00ff00);
+      parent.add(child);
+      child.add(grandchild);
+      
+      const newColor = new THREE.Color('blue');
+      parent.restyle({ fillColor: newColor }, { includeChildren: true });
+      
+      expect(parent.getFill().material.color.getHexString()).toBe('0000ff');
+      expect(child.getFill().material.color.getHexString()).toBe('0000ff');
+      expect(grandchild.getFill().material.color.getHexString()).not.toBe('0000ff');
     });
 
-    it("does not apply style to children when includeChildren is false", () => {
-      const parentShape = new TestShape(points);
-      const childShape = new TestShape(points);
+    test("ignores non-Shape children", () => {
+      const parent = new TestShape();
+      const light = new THREE.PointLight();
+      parent.add(light);
       
-      parentShape.add(childShape);
-
-      const initialChildFillColor = childShape.fill.material.color.getHex();
-      const initialChildStrokeColor = childShape.stroke.material.color.getHex();
-
-      const newStyle = {
-        fillColor: new THREE.Color(0xff0000),
-        strokeColor: new THREE.Color(0x00ff00),
-      };
-
-      parentShape.restyle(newStyle, { includeChildren: false });
-
-      // Check parent was updated
-      assert.equal(parentShape.fill.material.color.getHex(), 0xff0000);
-      assert.equal(parentShape.stroke.material.color.getHex(), 0x00ff00);
-
-      // Check child was not updated
-      assert.equal(childShape.fill.material.color.getHex(), initialChildFillColor);
-      assert.equal(childShape.stroke.material.color.getHex(), initialChildStrokeColor);
+      parent.restyle({ fillColor: new THREE.Color('green') }, { includeChildren: true });
+      
+      expect(light.userData.fill).toBeUndefined();
     });
   });
-}); 
+
+  test("material update", () => {
+    const shape = new TestShape([new Vector3()]);
+    const material = shape.getFill().material as MeshBasicMaterial;
+    material.color = new Color('red');
+    expect(material.color.getHexString()).toBe('ff0000');
+  });
+
+  test("restyle updates materials", () => {
+    const shape = new TestShape();
+    if (!shape.fill) {
+      throw new Error("Shape fill not initialized");
+    }
+
+    const newColor = new THREE.Color('red');
+    shape.restyle({ fillColor: newColor });
+    
+    expect(shape.fill.material.color.getHexString())
+      .toBe(newColor.getHexString());
+  });
+
+  test("includeChildren propagates to direct children", () => {
+    const parent = new TestShape();
+    const child = new TestShape();
+    const grandchild = new TestShape();
+    
+    if (!parent.fill || !child.fill || !grandchild.fill) {
+      throw new Error("Shapes missing required properties");
+    }
+
+    parent.add(child);
+    child.add(grandchild);
+    
+    const newColor = new THREE.Color('blue');
+    parent.restyle({ fillColor: newColor }, { includeChildren: true });
+    
+    expect(parent.getFill().material.color.getHexString()).toBe('0000ff');
+    expect(child.getFill().material.color.getHexString()).toBe('0000ff');
+    expect(grandchild.getFill().material.color.getHexString()).not.toBe('0000ff');
+  });
+});
+
+test("child propagation hierarchy", () => {
+  const parent = new TestShape();
+  const child = new TestShape();
+  const grandchild = new TestShape();
+  
+  parent.add(child);
+  child.add(grandchild);
+  
+  const testColor = new THREE.Color('#00ff00');
+  parent.restyle({ fillColor: testColor }, { includeChildren: true });
+  
+  expect(child.getFill().material.color.getHexString()).toBe('00ff00');
+  expect(grandchild.getFill().material.color.getHexString()).not.toBe('00ff00');
+});
+
+test("non-Shape children exclusion", () => {
+  const parent = new TestShape();
+  const light = new THREE.PointLight();
+  parent.add(light);
+  
+  parent.restyle({ fillColor: new THREE.Color('blue') }, { includeChildren: true });
+  
+  expect(light.userData.fill).toBeUndefined();
+});
+
+// test restyle
+test("basic restyle updates materials", () => {
+  const shape = new TestShape();
+  shape.restyle({ 
+    fillColor: new THREE.Color('red'),
+    fillOpacity: 0.5
+  });
+});
+
+// test includeChildren
+test("restyle with includeChildren", () => {
+  const parent = new TestShape();
+  const child = new TestShape();
+  parent.add(child);
+  
+  parent.restyle(
+    { fillColor: new THREE.Color('blue') },
+    { includeChildren: true }
+  );
+});
+

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + TS</title>
+    <title>Simple Animation</title>
   </head>
   <body>
     <canvas id="canvas" style="border: 1px solid black; height: 420px"></canvas>
@@ -17,30 +17,28 @@
           this.camera = camera;
           this.renderer = renderer;
 
-          const triangle = new Geometry.Polygon(
+          // Create a square
+          const square = new Geometry.Polygon(
             [
-              new THREE.Vector3(-1, -1, 0),
-              new THREE.Vector3(1, 1, 0),
-              new THREE.Vector3(1, -1, 0),
+              new THREE.Vector3(-0.5, -0.5, 0),
+              new THREE.Vector3(0.5, -0.5, 0),
+              new THREE.Vector3(0.5, 0.5, 0),
+              new THREE.Vector3(-0.5, 0.5, 0),
             ],
             {
-              strokeWidth: 4,
-              fillColor: new THREE.Color("red"),
+              strokeWidth: 2,
+              strokeColor: new THREE.Color("green"),
+              fillColor: new THREE.Color("lightgreen"),
               fillOpacity: 0.5,
-              strokeColor: new THREE.Color("red"),
-            },
+            }
           );
-          scene.add(triangle);
+          scene.add(square);
 
+          // Define animations
           this.animations = [
-            new Animation.Wait(),
-
             new Animation.Animation((t, dt) => {
-              triangle.reshape([
-                new THREE.Vector3(-1, -1, 0),
-                new THREE.Vector3(1 + t, 1, 0),
-                new THREE.Vector3(1, -1, 0),
-              ]);
+              // Move the square back and forth
+              square.position.x = Math.sin(t * Math.PI * 2) * 2;
             }),
           ];
         }

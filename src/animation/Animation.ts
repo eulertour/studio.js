@@ -1,4 +1,5 @@
 import { clamp } from "../utils.js";
+import { BaseAnimation } from "./BaseAnimation.js";
 
 const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
 const smooth = (t: number) => {
@@ -30,7 +31,7 @@ interface INoConfigAnimation {
   ): Animation;
 }
 
-class Animation {
+export class Animation extends BaseAnimation {
   public scene;
   public startTime: number;
   public endTime: number;
@@ -52,24 +53,22 @@ class Animation {
   // family: whether or not the animation will affect the entire family
   // add: whether or not affected shapes will be added to their parents
   constructor(
-    public func: (elapsedTime: number, deltaTime: number) => void,
-    {
-      object = undefined,
-      parent = undefined,
-      before = undefined,
-      after = undefined,
-      family = undefined,
-      reveal = undefined,
-      hide = undefined,
-    } = {},
+    public update: (t: number, dt: number) => void,
+    public config?: {
+      object?: THREE.Object3D;
+      duration?: number;
+      delay?: number;
+      onComplete?: () => void;
+    }
   ) {
-    this.object = object;
-    this.parent = parent;
-    this.before = before;
-    this.after = after;
-    this.family = family;
-    this.reveal = reveal;
-    this.hide = hide;
+    super();
+    this.object = config?.object;
+    this.parent = config?.parent;
+    this.before = config?.before;
+    this.after = config?.after;
+    this.family = config?.family;
+    this.reveal = config?.reveal;
+    this.hide = config?.hide;
   }
 
   setUp() {
@@ -109,7 +108,7 @@ class Animation {
     this.prevUpdateTime = worldTime;
     this.elapsedSinceStart += deltaTime;
 
-    this.func(...modulate(this.elapsedSinceStart, deltaTime));
+    this.update(...modulate(this.elapsedSinceStart, deltaTime));
 
     if (worldTime >= this.endTime) {
       this.finished = true;
@@ -142,7 +141,3 @@ class Animation {
     }
   }
 }
-
-export {
-  Animation,
-};

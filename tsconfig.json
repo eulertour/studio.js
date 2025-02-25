@@ -3,12 +3,12 @@
 		"outDir": "build/studio/dist",
     "target": "es2020",
     "useDefineForClassFields": true,
-    "module": "nodenext",
+    "module": "es2020",
     "lib": ["es2022", "dom", "dom.iterable"],
     "skipLibCheck": true,
 
     /* Bundler mode */
-    "moduleResolution": "nodenext",
+    "moduleResolution": "node",
     "isolatedModules": true,
     "moduleDetection": "force",
     "declaration": true,
@@ -24,7 +24,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 		"noImplicitReturns": true,
-		"noUncheckedIndexedAccess": true
+		"noUncheckedIndexedAccess": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "types": ["bun-types"]
   },
-  "include": ["src"]
+  "include": ["src", "test/Shape.test.ts"]
 }
