@@ -1,154 +1,117 @@
-import * as THREE from "three";
+import * as BaseTHREE from "three";
 import * as Utils from "./utils.js";
 
 declare module "three" {
   export interface Object3D {
-    vstack(buffer?: number): THREE.Object3D;
-    vspace(distanceBetween?: number): THREE.Object3D;
-    setScale(factor: number): THREE.Object3D;
+    vstack(buffer?: number): BaseTHREE.Object3D;
+    vspace(distanceBetween?: number): BaseTHREE.Object3D;
+    setScale(factor: number): BaseTHREE.Object3D;
     moveNextTo(
-      target: THREE.Object3D,
-      direction: THREE.Vector3,
+      target: BaseTHREE.Object3D,
+      direction: BaseTHREE.Vector3,
       distance?: number,
     ): void;
-    moveToRightOf(target: THREE.Object3D, distance?: number): void;
-    moveToLeftOf(target: THREE.Object3D, distance?: number): void;
-    moveAbove(target: THREE.Object3D, distance?: number): void;
-    moveBelow(target: THREE.Object3D, distance?: number): void;
-    setOpacity(opacity: number, config?: any): THREE.Object3D;
-    setInvisible(config?: any): THREE.Object3D;
-    setVisible(config?: any): THREE.Object3D;
-    setUpright(): THREE.Object3D;
-    recenter(center: THREE.Vector3): THREE.Object3D;
+    moveToRightOf(target: BaseTHREE.Object3D, distance?: number): void;
+    moveToLeftOf(target: BaseTHREE.Object3D, distance?: number): void;
+    moveAbove(target: BaseTHREE.Object3D, distance?: number): void;
+    moveBelow(target: BaseTHREE.Object3D, distance?: number): void;
+    setOpacity(opacity: number, config?: any): BaseTHREE.Object3D;
+    setInvisible(config?: any): BaseTHREE.Object3D;
+    setVisible(config?: any): BaseTHREE.Object3D;
+    setUpright(): BaseTHREE.Object3D;
+    recenter(center: BaseTHREE.Vector3): BaseTHREE.Object3D;
     reorient(zRotation: number): void;
-    pointAlongCurve(t: number): THREE.Vector3;
-    addComponent<T extends THREE.Object3D, K extends string>(
+    pointAlongCurve(t: number): BaseTHREE.Vector3;
+    addComponent<T extends BaseTHREE.Object3D, K extends string>(
       name: K,
       child: T,
     ): this & { [P in K]: T };
-    updateComponent(name: string, child: THREE.Object3D): void;
-    removeComponent(name: string): THREE.Object3D;
-    hideComponents(): THREE.Object3D;
-    revealComponents(): THREE.Object3D;
-    hide(): THREE.Object3D;
-    reveal(): THREE.Object3D;
+    updateComponent(name: string, child: BaseTHREE.Object3D): void;
+    removeComponent(name: string): BaseTHREE.Object3D;
+    hideComponents(): BaseTHREE.Object3D;
+    revealComponents(): BaseTHREE.Object3D;
+    hide(): BaseTHREE.Object3D;
+    reveal(): BaseTHREE.Object3D;
     isHidden(): boolean;
     isRevealed(): boolean;
     isComponent(): boolean;
     revealDescendants(config?: { includeSelf: boolean }): this;
-    hideDescendants(config?: { includeSelf: boolean }): THREE.Object3D;
-    revealAncestors(config?: { includeSelf: boolean }): THREE.Object3D;
-    hideAncestors(config?: { includeSelf: boolean }): THREE.Object3D;
-    revealLineage(): THREE.Object3D;
-    hideLineage(): THREE.Object3D;
+    hideDescendants(config?: { includeSelf: boolean }): BaseTHREE.Object3D;
+    revealAncestors(config?: { includeSelf: boolean }): BaseTHREE.Object3D;
+    hideAncestors(config?: { includeSelf: boolean }): BaseTHREE.Object3D;
+    revealLineage(): BaseTHREE.Object3D;
+    hideLineage(): BaseTHREE.Object3D;
     traverseComponents(f: () => void, config?: { includeSelf: boolean }): void;
     traverseAncestorComponents(
       f: () => void,
       config?: { includeSelf: boolean },
     ): void;
   }
-
-  export interface Vector3 {
-    rotate90(): THREE.Vector3;
-    rotate180(): THREE.Vector3;
-    rotate270(): THREE.Vector3;
-    rotateZ(angle: number): THREE.Vector3;
-    transformBetweenSpaces(
-      from: THREE.Object3D,
-      to: THREE.Object3D,
-    ): THREE.Vector3;
-    positiveAngleTo(vector: THREE.Vector3): number;
-  }
 }
 
-THREE.Vector3.prototype.rotate90 = function (): THREE.Vector3 {
-  return Utils.rotate90(this);
-};
-
-THREE.Vector3.prototype.rotate180 = function (): THREE.Vector3 {
-  return Utils.rotate180(this);
-};
-
-THREE.Vector3.prototype.rotate270 = function (): THREE.Vector3 {
-  return Utils.rotate270(this);
-};
-
-THREE.Vector3.prototype.transformBetweenSpaces = function (
-  from: THREE.Object3D,
-  to: THREE.Object3D,
-): THREE.Vector3 {
-  return Utils.transformBetweenSpaces(from, to, this);
-};
-
-THREE.Vector3.prototype.positiveAngleTo = function (
-  other: THREE.Vector3,
-): number {
-  return Utils.positiveAngleTo(this, other);
-};
-
-THREE.Vector3.prototype.rotateZ = function (angle: number) {
-  return this.applyAxisAngle(Utils.OUT, angle);
-};
-
-THREE.Object3D.prototype.vstack = function (buffer = 0.2): THREE.Object3D {
+BaseTHREE.Object3D.prototype.vstack = function (
+  buffer = 0.2,
+): BaseTHREE.Object3D {
   return Utils.vstack(this, buffer);
 };
 
-THREE.Object3D.prototype.vspace = function (
+BaseTHREE.Object3D.prototype.vspace = function (
   distanceBetween?: number,
-): THREE.Object3D {
+): BaseTHREE.Object3D {
   return Utils.vspace(this, distanceBetween);
 };
 
-THREE.Object3D.prototype.setScale = function (factor): THREE.Object3D {
+BaseTHREE.Object3D.prototype.setScale = function (factor): BaseTHREE.Object3D {
   this.scale.x = factor;
   this.scale.y = factor;
   return this;
 };
 
-THREE.Object3D.prototype.pointAlongCurve = function (t: number) {
+BaseTHREE.Object3D.prototype.pointAlongCurve = function (t: number) {
   return Utils.pointAlongCurve(this, t);
 };
 
-THREE.Object3D.prototype.moveNextTo = function (
-  target: THREE.Object3D,
-  direction: THREE.Vector3,
+BaseTHREE.Object3D.prototype.moveNextTo = function (
+  target: BaseTHREE.Object3D,
+  direction: BaseTHREE.Vector3,
   distance?: number,
 ) {
   return Utils.moveNextTo(target, this, direction, distance);
 };
 
-THREE.Object3D.prototype.moveToRightOf = function (
-  target: THREE.Object3D,
+BaseTHREE.Object3D.prototype.moveToRightOf = function (
+  target: BaseTHREE.Object3D,
   distance?: number,
 ) {
   return Utils.moveToRightOf(target, this, distance);
 };
 
-THREE.Object3D.prototype.moveToLeftOf = function (
-  target: THREE.Object3D,
+BaseTHREE.Object3D.prototype.moveToLeftOf = function (
+  target: BaseTHREE.Object3D,
   distance?: number,
 ) {
   return Utils.moveToLeftOf(target, this, distance);
 };
 
-THREE.Object3D.prototype.moveAbove = function (
-  target: THREE.Object3D,
+BaseTHREE.Object3D.prototype.moveAbove = function (
+  target: BaseTHREE.Object3D,
   distance?: number,
 ) {
   return Utils.moveAbove(target, this, distance);
 };
 
-THREE.Object3D.prototype.moveBelow = function (
-  target: THREE.Object3D,
+BaseTHREE.Object3D.prototype.moveBelow = function (
+  target: BaseTHREE.Object3D,
   distance?: number,
 ) {
   return Utils.moveBelow(target, this, distance);
 };
 
-THREE.Object3D.prototype.addComponent = function <T extends THREE.Object3D>(
+BaseTHREE.Object3D.prototype.addComponent = function <
+  T extends BaseTHREE.Object3D,
+>(
   name: string,
-  child: T & { parentComponent: THREE.Object3D | undefined },
+  child: T & { parentComponent: BaseTHREE.Object3D | undefined },
 ) {
   if (this.components?.has(name)) {
     throw new Error(
@@ -169,14 +132,14 @@ THREE.Object3D.prototype.addComponent = function <T extends THREE.Object3D>(
   return this;
 };
 
-THREE.Object3D.prototype.updateComponent = (
+BaseTHREE.Object3D.prototype.updateComponent = (
   name: string,
-  child: THREE.Object3D,
+  child: BaseTHREE.Object3D,
 ) => {
   throw new Error("Not implemented");
 };
 
-THREE.Object3D.prototype.removeComponent = function (name: string) {
+BaseTHREE.Object3D.prototype.removeComponent = function (name: string) {
   if (!this.components || !this.components.has(name)) {
     throw new Error(`Failed to remove component ${name}: No such component`);
   }
@@ -191,7 +154,7 @@ THREE.Object3D.prototype.removeComponent = function (name: string) {
   return this;
 };
 
-THREE.Object3D.prototype.reveal = function () {
+BaseTHREE.Object3D.prototype.reveal = function () {
   if (!this.parentComponent) {
     throw new Error("Attempt to reveal a component with no parent component");
   }
@@ -199,7 +162,7 @@ THREE.Object3D.prototype.reveal = function () {
   return this;
 };
 
-THREE.Object3D.prototype.hide = function () {
+BaseTHREE.Object3D.prototype.hide = function () {
   if (!this.parentComponent) {
     throw new Error("Attempt to hide a component with no parent component");
   }
@@ -207,39 +170,39 @@ THREE.Object3D.prototype.hide = function () {
   return this;
 };
 
-THREE.Object3D.prototype.isComponent = function () {
+BaseTHREE.Object3D.prototype.isComponent = function () {
   return this.parentComponent !== undefined;
 };
 
-THREE.Object3D.prototype.isRevealed = function () {
+BaseTHREE.Object3D.prototype.isRevealed = function () {
   if (!this.isComponent()) {
     throw new Error("Attempt to check revealed status of a non-component");
   }
   return this.parentComponent.children.includes(this) ?? false;
 };
 
-THREE.Object3D.prototype.isHidden = function () {
+BaseTHREE.Object3D.prototype.isHidden = function () {
   if (!this.isComponent()) {
     throw new Error("Attempt to check revealed status of a non-component");
   }
   return !this.isRevealed();
 };
 
-THREE.Object3D.prototype.revealDescendants = function (config?: {
+BaseTHREE.Object3D.prototype.revealDescendants = function (config?: {
   includeSelf: boolean;
 }) {
   this.traverseComponents((obj) => obj.parentComponent && obj.reveal(), config);
   return this;
 };
 
-THREE.Object3D.prototype.hideDescendants = function (config?: {
+BaseTHREE.Object3D.prototype.hideDescendants = function (config?: {
   includeSelf: boolean;
 }) {
   this.traverseComponents((obj) => obj.parentComponent && obj.hide(), config);
   return this;
 };
 
-THREE.Object3D.prototype.revealAncestors = function (config?: {
+BaseTHREE.Object3D.prototype.revealAncestors = function (config?: {
   includeSelf: boolean;
 }) {
   this.traverseAncestorComponents(
@@ -249,7 +212,7 @@ THREE.Object3D.prototype.revealAncestors = function (config?: {
   return this;
 };
 
-THREE.Object3D.prototype.hideAncestors = function (config?: {
+BaseTHREE.Object3D.prototype.hideAncestors = function (config?: {
   includeSelf: boolean;
 }) {
   this.traverseAncestorComponents(
@@ -259,18 +222,18 @@ THREE.Object3D.prototype.hideAncestors = function (config?: {
   return this;
 };
 
-THREE.Object3D.prototype.revealComponents = function () {
+BaseTHREE.Object3D.prototype.revealComponents = function () {
   this.components?.forEach((child) => this.add(child));
   return this;
 };
 
-THREE.Object3D.prototype.hideComponents = function () {
+BaseTHREE.Object3D.prototype.hideComponents = function () {
   this.components?.forEach((child) => this.remove(child));
   return this;
 };
 
-THREE.Object3D.prototype.traverseComponents = function (
-  f: (o: THREE.Object3D) => void,
+BaseTHREE.Object3D.prototype.traverseComponents = function (
+  f: (o: BaseTHREE.Object3D) => void,
   config?: { includeSelf: boolean },
 ) {
   if (config?.includeSelf) f(this);
@@ -281,8 +244,8 @@ THREE.Object3D.prototype.traverseComponents = function (
   });
 };
 
-THREE.Object3D.prototype.traverseAncestorComponents = function (
-  f: (o: THREE.Object3D) => void,
+BaseTHREE.Object3D.prototype.traverseAncestorComponents = function (
+  f: (o: BaseTHREE.Object3D) => void,
   config?: { includeSelf: boolean },
 ) {
   if (config?.includeSelf) f(this);
@@ -291,24 +254,24 @@ THREE.Object3D.prototype.traverseAncestorComponents = function (
   this.parentComponent.traverseAncestorComponents(f);
 };
 
-THREE.Object3D.prototype.revealLineage = function () {
+BaseTHREE.Object3D.prototype.revealLineage = function () {
   this.revealAncestors({ includeSelf: true });
   this.revealDescendants({ includeSelf: true });
   return this;
 };
 
-THREE.Object3D.prototype.hideLineage = function () {
+BaseTHREE.Object3D.prototype.hideLineage = function () {
   this.hideAncestors({ includeSelf: true });
   this.hideDescendants({ includeSelf: true });
   return this;
 };
 
-type ComponentParent = THREE.Object3D & {
-  components?: Map<string, THREE.Object3D>;
+type ComponentParent = BaseTHREE.Object3D & {
+  components?: Map<string, BaseTHREE.Object3D>;
 };
 function component(
-  _: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>,
-  context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>,
+  _: ClassAccessorDecoratorTarget<ComponentParent, BaseTHREE.Object3D>,
+  context: ClassAccessorDecoratorContext<ComponentParent, BaseTHREE.Object3D>,
 ): ClassAccessorDecoratorResult<ComponentParent, any> {
   const propertyName = String(context.name);
   return {
@@ -323,10 +286,10 @@ function component(
   };
 }
 
-THREE.Object3D.prototype.setOpacity = function (
+BaseTHREE.Object3D.prototype.setOpacity = function (
   opacity: number,
   config?: any,
-): THREE.Object3D {
+): BaseTHREE.Object3D {
   let family = true;
   if (config && config.family === false) {
     family = false;
@@ -334,7 +297,7 @@ THREE.Object3D.prototype.setOpacity = function (
 
   if (family) {
     this.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
+      if (child instanceof BaseTHREE.Mesh) {
         child.material.opacity = opacity;
       }
     });
@@ -347,9 +310,9 @@ THREE.Object3D.prototype.setOpacity = function (
   return this;
 };
 
-THREE.Object3D.prototype.setInvisible = function (
+BaseTHREE.Object3D.prototype.setInvisible = function (
   config?: any,
-): THREE.Object3D {
+): BaseTHREE.Object3D {
   let family = true;
   if (config && config.family === false) {
     family = false;
@@ -358,9 +321,9 @@ THREE.Object3D.prototype.setInvisible = function (
   return this.setOpacity(0, { family });
 };
 
-THREE.Object3D.prototype.setVisible = function (
+BaseTHREE.Object3D.prototype.setVisible = function (
   config?: any,
-): THREE.Object3D {
+): BaseTHREE.Object3D {
   let family = true;
   if (config && config.family === false) {
     family = false;
@@ -368,8 +331,8 @@ THREE.Object3D.prototype.setVisible = function (
   return this.setOpacity(1, { family });
 };
 
-THREE.Object3D.prototype.setUpright = function (): THREE.Object3D {
-  const worldQuaternion = new THREE.Quaternion();
+BaseTHREE.Object3D.prototype.setUpright = function (): BaseTHREE.Object3D {
+  const worldQuaternion = new BaseTHREE.Quaternion();
   this.getWorldQuaternion(worldQuaternion);
 
   const inverseQuaternion = worldQuaternion.clone().invert();
@@ -377,12 +340,15 @@ THREE.Object3D.prototype.setUpright = function (): THREE.Object3D {
   return this;
 };
 
-THREE.Object3D.prototype.recenter = function (
-  globalPosition: THREE.Vector3,
-): THREE.Object3D {
+BaseTHREE.Object3D.prototype.recenter = function (
+  globalPosition: BaseTHREE.Vector3,
+): BaseTHREE.Object3D {
   const localPosition = globalPosition.clone();
   this.worldToLocal(globalPosition.clone());
-  const offset = new THREE.Vector3().subVectors(localPosition, this.position);
+  const offset = new BaseTHREE.Vector3().subVectors(
+    localPosition,
+    this.position,
+  );
   this.position.add(offset);
 
   if (this.points) {
@@ -410,7 +376,7 @@ THREE.Object3D.prototype.recenter = function (
   return this;
 };
 
-THREE.Object3D.prototype.reorient = (): void => {};
+BaseTHREE.Object3D.prototype.reorient = (): void => {};
 import {
   setCameraDimensions,
   setCanvasViewport,
@@ -428,6 +394,12 @@ import {
 } from "./scene.js";
 import * as Text from "./text.js";
 import { setupCanvas, SceneCanvasConfig } from "./utils.js";
+import { Vector3 } from "./vector3.js";
+
+const THREE = {
+  ...BaseTHREE,
+  Vector3,
+};
 
 export {
   component,
