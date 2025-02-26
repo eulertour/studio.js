@@ -9,49 +9,15 @@
   <body>
     <canvas id="canvas" style="border: 1px solid black; height: 420px"></canvas>
     <script type="module">
-      import { Geometry, Animation, THREE, SceneController } from "./src/index";
-
-      class Scene {
-        constructor(scene, camera, renderer) {
-          this.scene = scene;
-          this.camera = camera;
-          this.renderer = renderer;
-
-          const triangle = new Geometry.Polygon(
-            [
-              new THREE.Vector3(-1, -1, 0),
-              new THREE.Vector3(1, 1, 0),
-              new THREE.Vector3(1, -1, 0),
-            ],
-            {
-              strokeWidth: 4,
-              fillColor: new THREE.Color("red"),
-              fillOpacity: 0.5,
-              strokeColor: new THREE.Color("red"),
-            },
-          );
-          scene.add(triangle);
-
-          this.animations = [
-            new Animation.Wait(),
-
-            new Animation.Animation((t, dt) => {
-              triangle.reshape([
-                new THREE.Vector3(-1, -1, 0),
-                new THREE.Vector3(1 + t, 1, 0),
-                new THREE.Vector3(1, -1, 0),
-              ]);
-            }),
-          ];
-        }
-      }
+      import { SceneController } from "./src/index";
+      import UserScene from "./userScene/main.ts";
 
       const canvas = document.querySelector("#canvas");
       if (canvas === null) {
         throw new Error("canvas is null");
       }
 
-      const sceneController = new SceneController(Scene, canvas, {
+      const sceneController = new SceneController(UserScene, canvas, {
         aspectRatio: 16 / 9,
         pixelHeight: 720,
         coordinateHeight: 8,
