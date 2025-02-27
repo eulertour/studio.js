@@ -50,14 +50,6 @@ declare module "three" {
             includeSelf: boolean;
         }): void;
     }
-    interface Vector3 {
-        rotate90(): THREE.Vector3;
-        rotate180(): THREE.Vector3;
-        rotate270(): THREE.Vector3;
-        rotateZ(angle: number): THREE.Vector3;
-        transformBetweenSpaces(from: THREE.Object3D, to: THREE.Object3D): THREE.Vector3;
-        positiveAngleTo(vector: THREE.Vector3): number;
-    }
 }
 type ComponentParent = THREE.Object3D & {
     components?: Map<string, THREE.Object3D>;

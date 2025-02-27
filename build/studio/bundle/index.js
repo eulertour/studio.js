@@ -56856,11 +56856,11 @@ class Angle extends Shape {
         const arcAngle = vector21.angleTo(vector23);
         let arcRotation;
         // TODO: Handle 180 degree angles
-        if (vector21.positiveAngleTo(vector23) < Math.PI) {
-            arcRotation = RIGHT.positiveAngleTo(vector21);
+        if (positiveAngleTo(vector21, vector23) < Math.PI) {
+            arcRotation = positiveAngleTo(RIGHT, vector21);
         }
         else {
-            arcRotation = RIGHT.positiveAngleTo(vector23);
+            arcRotation = positiveAngleTo(RIGHT, vector23);
         }
         const points = getArcPoints(config.radius, arcAngle);
         config.fillPoints = [...points, new THREE.Vector3(0, 0, 0)];
@@ -57381,24 +57381,6 @@ class SceneController {
     }
 }
 
-THREE.Vector3.prototype.rotate90 = function () {
-    return rotate90(this);
-};
-THREE.Vector3.prototype.rotate180 = function () {
-    return rotate180(this);
-};
-THREE.Vector3.prototype.rotate270 = function () {
-    return rotate270(this);
-};
-THREE.Vector3.prototype.transformBetweenSpaces = function (from, to) {
-    return transformBetweenSpaces(from, to, this);
-};
-THREE.Vector3.prototype.positiveAngleTo = function (other) {
-    return positiveAngleTo(this, other);
-};
-THREE.Vector3.prototype.rotateZ = function (angle) {
-    return this.applyAxisAngle(OUT, angle);
-};
 THREE.Object3D.prototype.vstack = function (buffer = 0.2) {
     return vstack(this, buffer);
 };

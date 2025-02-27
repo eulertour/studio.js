@@ -26,5 +26,5 @@
 		"noImplicitReturns": true,
 		"noUncheckedIndexedAccess": true
   },
-  "include": ["src", "userScene"]
+  "include": ["src", "userScene", "three-types"]
 }

@@ -19,10 +19,10 @@
     "dev": "vite",
     "test": "vitest",
     "build": "rm -rf build; bun run build:source; bun run build:mathjax; bun run build:three; bun run build:api; bun run copy:examples",
-    "build:source": "tsc; rollup --config rollup.studio.ts --configPlugin typescript",
+    "build:source": "tsc --project tsconfig.build.json; rollup --config rollup.studio.ts --configPlugin typescript",
     "build:mathjax": "rollup --config rollup.mathjax.ts --configPlugin typescript",
     "build:three": "bun run :bundleThreeTypes && bun run :copyThreeBundle",
-    ":bundleThreeTypes": "rollup --config rollup.three-types.ts --configPlugin typescript",
+    ":bundleThreeTypes": "rollup --config three-types/rollup.ts --configPlugin typescript",
     ":copyThreeBundle": "cp node_modules/three/build/three.module.js build/three",
     "build:api": "bun run :extractApi && bun run :parseJson",
     ":extractApi": "api-extractor run --config docs/apiExtractor/api-extractor.json --local --verbose",
@@ -54,6 +54,6 @@
     "vitest": "^2.1.8"
   },
   "dependencies": {
-    "three": "^0.162"
+    "three": "@eulertour/three"
   }
 }

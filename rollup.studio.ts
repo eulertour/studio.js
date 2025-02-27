@@ -17,6 +17,7 @@ export default [
         declaration: false,
         declarationMap: false,
         outDir: "build/studio/bundle",
+        tsconfig: "tsconfig.build.json",
       }),
       commonjs(),
     ],
@@ -27,6 +28,6 @@ export default [
       file: "build/studio/bundle/index.d.ts",
       format: "es",
     },
-    plugins: [dts()],
+    plugins: [dts({ tsconfig: "tsconfig.build.json" })],
   },
 ];

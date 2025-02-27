@@ -16,6 +16,7 @@ export default {
       declarationMap: true,
       declarationDir: "build/studio/dist",
       outDir: "build/studio/dist",
+      tsconfig: "tsconfig.build.json",
     }),
     commonjs(),
   ],

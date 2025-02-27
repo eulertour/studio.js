@@ -11,11 +11,11 @@ export default class Angle extends Shape {
         const arcAngle = vector21.angleTo(vector23);
         let arcRotation;
         // TODO: Handle 180 degree angles
-        if (vector21.positiveAngleTo(vector23) < Math.PI) {
-            arcRotation = Utils.RIGHT.positiveAngleTo(vector21);
+        if (Utils.positiveAngleTo(vector21, vector23) < Math.PI) {
+            arcRotation = Utils.positiveAngleTo(Utils.RIGHT, vector21);
         }
         else {
-            arcRotation = Utils.RIGHT.positiveAngleTo(vector23);
+            arcRotation = Utils.positiveAngleTo(Utils.RIGHT, vector23);
         }
         const points = getArcPoints(config.radius, arcAngle);
         config.fillPoints = [...points, new THREE.Vector3(0, 0, 0)];

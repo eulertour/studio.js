@@ -1,23 +1,5 @@
 import * as THREE from "three";
 import * as Utils from "./utils.js";
-THREE.Vector3.prototype.rotate90 = function () {
-    return Utils.rotate90(this);
-};
-THREE.Vector3.prototype.rotate180 = function () {
-    return Utils.rotate180(this);
-};
-THREE.Vector3.prototype.rotate270 = function () {
-    return Utils.rotate270(this);
-};
-THREE.Vector3.prototype.transformBetweenSpaces = function (from, to) {
-    return Utils.transformBetweenSpaces(from, to, this);
-};
-THREE.Vector3.prototype.positiveAngleTo = function (other) {
-    return Utils.positiveAngleTo(this, other);
-};
-THREE.Vector3.prototype.rotateZ = function (angle) {
-    return this.applyAxisAngle(Utils.OUT, angle);
-};
 THREE.Object3D.prototype.vstack = function (buffer = 0.2) {
     return Utils.vstack(this, buffer);
 };
