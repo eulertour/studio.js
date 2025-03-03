@@ -3313,7 +3313,7 @@ function requireConventions () {
 		XML_APPLICATION: 'application/xml',
 
 		/**
-		 * `text/xml`, an alias for `application/xml`.
+		 * `text/html`, an alias for `application/xml`.
 		 *
 		 * @see https://tools.ietf.org/html/rfc7303#section-9.2 RFC 7303
 		 * @see https://www.iana.org/assignments/media-types/text/xml IANA MimeType registration
@@ -4021,9 +4021,6 @@ function requireGrammar () {
 	// to support XML without namespaces in DTD we can not restrict it to QName
 	var AttlistDecl = reg(ATTLIST_DECL_START, S, Name, AttDef, '*', S_OPT, '>');
 
-	// https://html.spec.whatwg.org/multipage/urls-and-fetching.html#about:legacy-compat
-	var ABOUT_LEGACY_COMPAT = 'about:legacy-compat';
-	var ABOUT_LEGACY_COMPAT_SystemLiteral = regg('"' + ABOUT_LEGACY_COMPAT + '"', '|', "'" + ABOUT_LEGACY_COMPAT + "'");
 	var SYSTEM = 'SYSTEM';
 	var PUBLIC = 'PUBLIC';
 	// https://www.w3.org/TR/xml11/#NT-ExternalID
@@ -4137,8 +4134,6 @@ function requireGrammar () {
 	grammar.detectUnicodeSupport = detectUnicodeSupport;
 	grammar.reg = reg;
 	grammar.regg = regg;
-	grammar.ABOUT_LEGACY_COMPAT = ABOUT_LEGACY_COMPAT;
-	grammar.ABOUT_LEGACY_COMPAT_SystemLiteral = ABOUT_LEGACY_COMPAT_SystemLiteral;
 	grammar.AttlistDecl = AttlistDecl;
 	grammar.CDATA_START = CDATA_START;
 	grammar.CDATA_END = CDATA_END;
@@ -4437,6 +4432,23 @@ function requireDom () {
 	});
 
 	//helper functions for compareDocumentPosition
+	/**
+	 * Constructs a parent chain for a node.
+	 *
+	 * @param {Node} node
+	 * The start node from which the parent chain will be constructed.
+	 * @returns {Node[]}
+	 * The array of nodes representing the parent chain from the root to the specified node.
+	 */
+	function parentChain(node) {
+		var chain = [];
+		while (node.parentNode || node.ownerElement) {
+			node = node.parentNode || node.ownerElement;
+			chain.unshift(node);
+		}
+		return chain;
+	}
+
 	/**
 	 * Finds the common ancestor in two parent chains.
 	 *
@@ -5639,36 +5651,15 @@ function requireDom () {
 						: DocumentPosition.DOCUMENT_POSITION_PRECEDING)
 				);
 			}
-			if (attr2 && node1 === node2) {
+			var chain1 = parentChain(node1);
+			var chain2 = parentChain(node2);
+			if ((!attr1 && chain2.indexOf(node1) >= 0) || (attr2 && node1 === node2)) {
 				return DocumentPosition.DOCUMENT_POSITION_CONTAINS + DocumentPosition.DOCUMENT_POSITION_PRECEDING;
 			}
-			if (attr1 && node1 === node2) {
+			if ((!attr2 && chain1.indexOf(node2) >= 0) || (attr1 && node1 === node2)) {
 				return DocumentPosition.DOCUMENT_POSITION_CONTAINED_BY + DocumentPosition.DOCUMENT_POSITION_FOLLOWING;
 			}
-
-			var chain1 = [];
-			var ancestor1 = node1.parentNode;
-			while (ancestor1) {
-				if (!attr2 && ancestor1 === node2) {
-					return DocumentPosition.DOCUMENT_POSITION_CONTAINED_BY + DocumentPosition.DOCUMENT_POSITION_FOLLOWING;
-				}
-				chain1.push(ancestor1);
-				ancestor1 = ancestor1.parentNode;
-			}
-			chain1.reverse();
-
-			var chain2 = [];
-			var ancestor2 = node2.parentNode;
-			while (ancestor2) {
-				if (!attr1 && ancestor2 === node1) {
-					return DocumentPosition.DOCUMENT_POSITION_CONTAINS + DocumentPosition.DOCUMENT_POSITION_PRECEDING;
-				}
-				chain2.push(ancestor2);
-				ancestor2 = ancestor2.parentNode;
-			}
-			chain2.reverse();
-
-			var ca = commonAncestor(chain1, chain2);
+			var ca = commonAncestor(chain2, chain1);
 			for (var n in ca.childNodes) {
 				var child = ca.childNodes[n];
 				if (child === node2) return DocumentPosition.DOCUMENT_POSITION_FOLLOWING;
@@ -6536,16 +6527,6 @@ function requireDom () {
 		},
 		_isInHTMLDocumentAndNamespace: function () {
 			return this.ownerDocument.type === 'html' && this.namespaceURI === NAMESPACE.HTML;
-		},
-		/**
-		 * Implementaton of Level2 Core function hasAttributes.
-		 *
-		 * @returns {boolean}
-		 * True if attribute list is not empty.
-		 * @see https://www.w3.org/TR/DOM-Level-2-Core/#core-ID-NodeHasAttrs
-		 */
-		hasAttributes: function () {
-			return !!(this.attributes && this.attributes.length);
 		},
 		hasAttribute: function (name) {
 			return !!this.getAttributeNode(name);
@@ -10095,10 +10076,8 @@ function requireSax () {
 	 * @property {function(): string} substringFromIndex
 	 * creates a substring from the current index to the end of `source`
 	 * @property {function(compareWith: string): boolean} substringStartsWith
-	 * Checks if `source` contains `compareWith`, starting from the current index.
-	 * @property {function(compareWith: string): boolean} substringStartsWithCaseInsensitive
-	 * Checks if `source` contains `compareWith`, starting from the current index,
-	 * comparing the upper case of both sides.
+	 * Checks if source contains `compareWith`,
+	 * starting from the current index.
 	 * @see {@link parseUtils}
 	 */
 
@@ -10144,9 +10123,6 @@ function requireSax () {
 		function substringStartsWith(text) {
 			return source.substring(index, index + text.length) === text;
 		}
-		function substringStartsWithCaseInsensitive(text) {
-			return source.substring(index, index + text.length).toUpperCase() === text.toUpperCase();
-		}
 
 		function getMatch(args) {
 			var expr = g.reg('^', args);
@@ -10170,7 +10146,6 @@ function requireSax () {
 			skipBlanks: skipBlanks,
 			substringFromIndex: substringFromIndex,
 			substringStartsWith: substringStartsWith,
-			substringStartsWithCaseInsensitive: substringStartsWithCaseInsensitive,
 		};
 	}
 
@@ -10267,7 +10242,7 @@ function requireSax () {
 	function parseDoctypeCommentOrCData(source, start, domBuilder, errorHandler, isHTML) {
 		var p = parseUtils(source, start);
 
-		switch (isHTML ? p.char(2).toUpperCase() : p.char(2)) {
+		switch (p.char(2)) {
 			case '-':
 				// should be a comment
 				var comment = p.getMatch(g.Comment);
@@ -10296,7 +10271,7 @@ function requireSax () {
 				if (domBuilder.doc && domBuilder.doc.documentElement) {
 					return errorHandler.fatalError('Doctype not allowed inside or after documentElement at position ' + p.getIndex());
 				}
-				if (isHTML ? !p.substringStartsWithCaseInsensitive(g.DOCTYPE_DECL_START) : !p.substringStartsWith(g.DOCTYPE_DECL_START)) {
+				if (!p.substringStartsWith(g.DOCTYPE_DECL_START)) {
 					return errorHandler.fatalError('Expected ' + g.DOCTYPE_DECL_START + ' at position ' + p.getIndex());
 				}
 				p.skip(g.DOCTYPE_DECL_START.length);
@@ -10314,10 +10289,6 @@ function requireSax () {
 				doctype.name = p.getMatch(g.Name);
 				if (!doctype.name)
 					return errorHandler.fatalError('doctype name missing or contains unexpected characters at position ' + p.getIndex());
-
-				if (isHTML && doctype.name.toLowerCase() !== 'html') {
-					errorHandler.warning('Unexpected DOCTYPE in HTML document at position ' + p.getIndex());
-				}
 				p.skipBlanks();
 
 				// Check for ExternalID
@@ -10333,26 +10304,10 @@ function requireSax () {
 						doctype.publicId = match.groups.PubidLiteral;
 					}
 					p.skip(match[0].length);
-				} else if (isHTML && p.substringStartsWithCaseInsensitive(g.SYSTEM)) {
-					// https://html.spec.whatwg.org/multipage/syntax.html#doctype-legacy-string
-					p.skip(g.SYSTEM.length);
-					if (p.skipBlanks() < 1) {
-						return errorHandler.fatalError('Expected whitespace after ' + g.SYSTEM + ' at position ' + p.getIndex());
-					}
-					doctype.systemId = p.getMatch(g.ABOUT_LEGACY_COMPAT_SystemLiteral);
-					if (!doctype.systemId) {
-						return errorHandler.fatalError(
-							'Expected ' + g.ABOUT_LEGACY_COMPAT + ' in single or double quotes after ' + g.SYSTEM + ' at position ' + p.getIndex()
-						);
-					}
 				}
-				if (isHTML && doctype.systemId && !g.ABOUT_LEGACY_COMPAT_SystemLiteral.test(doctype.systemId)) {
-					errorHandler.warning('Unexpected doctype.systemId in HTML document at position ' + p.getIndex());
-				}
-				if (!isHTML) {
-					p.skipBlanks();
-					doctype.internalSubset = parseDoctypeInternalSubset(p, errorHandler);
-				}
+
+				p.skipBlanks();
+				doctype.internalSubset = parseDoctypeInternalSubset(p, errorHandler);
 				p.skipBlanks();
 				if (p.char() !== '>') {
 					return errorHandler.fatalError('doctype not terminated with > at position ' + p.getIndex());
@@ -10545,10 +10500,7 @@ function requireDomParser () {
 	 * @see https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-parsing-and-serialization
 	 */
 	function DOMParser(options) {
-		options = options || {};
-		if (options.locator === undefined) {
-			options.locator = true;
-		}
+		options = options || { locator: true };
 
 		/**
 		 * The method to use instead of `conventions.assign`, which is used to copy values from
@@ -57612,4 +57564,4 @@ THREE.Object3D.prototype.recenter = function (globalPosition) {
 };
 THREE.Object3D.prototype.reorient = () => { };
 
-export { index as Animation, constants as Constants, diagram as Diagram, frame as Frame, index$1 as Geometry, graphing as Graphing, SceneController, text as Text, utils as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };
+export { index as Animation, constants as Constants, diagram as Diagram, frame as Frame, index$1 as Geometry, graphing as Graphing, MeshLineMaterial, SceneController, text as Text, utils as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };

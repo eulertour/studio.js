@@ -895,4 +895,4 @@ type ComponentParent = THREE.Object3D & {
 declare function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 //# sourceMappingURL=index.d.ts.map
 
-export { index_d as Animation, type AnimationRepresentation, constants_d as Constants, diagram_d as Diagram, _default as Frame, index_d$1 as Geometry, graphing_d as Graphing, type SceneCanvasConfig, SceneController, type StudioScene, text_d as Text, utils_d as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };
+export { index_d as Animation, type AnimationRepresentation, constants_d as Constants, diagram_d as Diagram, _default as Frame, index_d$1 as Geometry, graphing_d as Graphing, MeshLineMaterial, type SceneCanvasConfig, SceneController, type StudioScene, text_d as Text, utils_d as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };

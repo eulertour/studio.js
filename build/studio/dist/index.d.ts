@@ -55,7 +55,7 @@ type ComponentParent = THREE.Object3D & {
     components?: Map<string, THREE.Object3D>;
 };
 declare function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
-import { setCameraDimensions, setCanvasViewport } from "./geometry/MeshLine/MeshLineMaterial.js";
+import MeshLineMaterial, { setCameraDimensions, setCanvasViewport } from "./geometry/MeshLine/MeshLineMaterial.js";
 import * as Animation from "./animation/index.js";
 import * as Constants from "./constants.js";
 import * as Diagram from "./diagram.js";
@@ -65,5 +65,5 @@ import * as Graphing from "./graphing.js";
 import { type AnimationRepresentation, SceneController, type StudioScene } from "./scene.js";
 import * as Text from "./text.js";
 import { setupCanvas, SceneCanvasConfig } from "./utils.js";
-export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, type StudioScene, type SceneCanvasConfig, type AnimationRepresentation, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };
+export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, type StudioScene, type SceneCanvasConfig, type AnimationRepresentation, MeshLineMaterial, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };
 //# sourceMappingURL=index.d.ts.map

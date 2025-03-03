@@ -6260,7 +6260,7 @@
                 {
                   "kind": "Reference",
                   "text": "MeshLineMaterial",
-                  "canonicalReference": "@eulertour/studio!~MeshLineMaterial:class"
+                  "canonicalReference": "@eulertour/studio!MeshLineMaterial:class"
                 },
                 {
                   "kind": "Content",
@@ -6298,7 +6298,7 @@
                     {
                       "kind": "Reference",
                       "text": "MeshLineMaterial",
-                      "canonicalReference": "@eulertour/studio!~MeshLineMaterial:class"
+                      "canonicalReference": "@eulertour/studio!MeshLineMaterial:class"
                     },
                     {
                       "kind": "Content",
@@ -9567,6 +9567,234 @@
               "implementsTokenRanges": []
             }
           ]
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "@eulertour/studio!MeshLineMaterial:class",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export default class MeshLineMaterial extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "THREE.ShaderMaterial",
+              "canonicalReference": "@types/three!ShaderMaterial:class"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "src/geometry/MeshLine/MeshLineMaterial.ts",
+          "releaseTag": "Public",
+          "isAbstract": false,
+          "name": "MeshLineMaterial",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "@eulertour/studio!MeshLineMaterial:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `MeshLineMaterial` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(parameters: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.ShaderMaterialParameters",
+                  "canonicalReference": "@types/three!ShaderMaterialParameters:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": " & {\n        color: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.ColorRepresentation",
+                  "canonicalReference": "@types/three!ColorRepresentation:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";\n        opacity: number;\n        width: number;\n        dashLength: number;\n        dashOffset: number;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "parameters",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 5
+                  },
+                  "isOptional": false
+                }
+              ]
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "@eulertour/studio!MeshLineMaterial#color:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get color(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";\n\nset color(value: any);"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "color",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false,
+              "isAbstract": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "@eulertour/studio!MeshLineMaterial#dashLength:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get dashLength(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";\n\nset dashLength(value: any);"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "dashLength",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false,
+              "isAbstract": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "@eulertour/studio!MeshLineMaterial#dashOffset:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get dashOffset(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";\n\nset dashOffset(value: any);"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "dashOffset",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false,
+              "isAbstract": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "@eulertour/studio!MeshLineMaterial#totalLength:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get totalLength(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";\n\nset totalLength(value: any);"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "totalLength",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false,
+              "isAbstract": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "@eulertour/studio!MeshLineMaterial#width:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "get width(): "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";\n\nset width(value: number);"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "width",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false,
+              "isAbstract": false
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
         },
         {
           "kind": "TypeAlias",

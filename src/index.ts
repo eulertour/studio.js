@@ -368,7 +368,7 @@ THREE.Object3D.prototype.recenter = function (
 };
 
 THREE.Object3D.prototype.reorient = (): void => {};
-import {
+import MeshLineMaterial, {
   setCameraDimensions,
   setCanvasViewport,
 } from "./geometry/MeshLine/MeshLineMaterial.js";
@@ -398,6 +398,7 @@ export {
   type StudioScene,
   type SceneCanvasConfig,
   type AnimationRepresentation,
+  MeshLineMaterial,
   Utils,
   Diagram,
   Constants,

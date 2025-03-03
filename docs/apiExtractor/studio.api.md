@@ -470,7 +470,6 @@ class Line extends Shape {
 }
 
 // Warning: (ae-forgotten-export) The symbol "MeshLineGeometry" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "MeshLineMaterial" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
 class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
@@ -480,6 +479,32 @@ class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
     set dashOffset(dashOffset: number);
     // (undocumented)
     get points(): THREE.Vector3[];
+}
+
+// @public (undocumented)
+export class MeshLineMaterial extends THREE.ShaderMaterial {
+    constructor(parameters: THREE.ShaderMaterialParameters & {
+        color: THREE.ColorRepresentation;
+        opacity: number;
+        width: number;
+        dashLength: number;
+        dashOffset: number;
+    });
+    // (undocumented)
+    get color(): any;
+    set color(value: any);
+    // (undocumented)
+    get dashLength(): any;
+    set dashLength(value: any);
+    // (undocumented)
+    get dashOffset(): any;
+    set dashOffset(value: any);
+    // (undocumented)
+    get totalLength(): any;
+    set totalLength(value: any);
+    // (undocumented)
+    get width(): number;
+    set width(value: number);
 }
 
 // @public (undocumented)

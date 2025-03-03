@@ -230,7 +230,7 @@ THREE.Object3D.prototype.recenter = function (globalPosition) {
     return this;
 };
 THREE.Object3D.prototype.reorient = () => { };
-import { setCameraDimensions, setCanvasViewport, } from "./geometry/MeshLine/MeshLineMaterial.js";
+import MeshLineMaterial, { setCameraDimensions, setCanvasViewport, } from "./geometry/MeshLine/MeshLineMaterial.js";
 import * as Animation from "./animation/index.js";
 import * as Constants from "./constants.js";
 import * as Diagram from "./diagram.js";
@@ -240,5 +240,5 @@ import * as Graphing from "./graphing.js";
 import { SceneController, } from "./scene.js";
 import * as Text from "./text.js";
 import { setupCanvas } from "./utils.js";
-export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };
+export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, MeshLineMaterial, Utils, Diagram, Constants, setCameraDimensions, setCanvasViewport, Frame, };
 //# sourceMappingURL=index.js.map
