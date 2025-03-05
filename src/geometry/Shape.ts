@@ -5,6 +5,8 @@ import MeshLine, {
   MeshLineMaterial,
 } from "./MeshLine/index.js";
 
+import * as Text from "../text.js";
+
 export type Transform = {
   position: THREE.Vector3;
   rotation: THREE.Euler;
@@ -112,6 +114,13 @@ export default abstract class Shape extends THREE.Group {
     });
     return this;
   }
+
+  addLabel(tex: string, direction: THREE.Vector3) {
+    const label = new Text.Text(tex);
+    this.add(label);
+    label.moveNextTo(this, direction);
+  }
+
 
   static defaultStyle() {
     return {
