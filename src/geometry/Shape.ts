@@ -266,7 +266,7 @@ export default abstract class Shape extends THREE.Group {
     };
   }
 
-  restyle(style: Style): void {
+  restyle(style: Style, config: { includeDescendents: boolean } = { includeDescendents: false }): void {
     const { fillColor, fillOpacity } = style;
     if (fillColor !== undefined) {
       this.fill.material.color = fillColor;
@@ -295,6 +295,14 @@ export default abstract class Shape extends THREE.Group {
     }
     if (strokeDashOffset !== undefined) {
       this.stroke.material.dashOffset = strokeDashOffset;
+    }
+
+    if (config.includeDescendents) {
+      this.traverse((child) => {
+        if (child instanceof Shape) {
+          child.restyle(style, { includeDescendents: false });
+        }
+      });
     }
   }
 
