@@ -5,6 +5,8 @@ import MeshLine, {
   MeshLineMaterial,
 } from "./MeshLine/index.js";
 
+import * as Text from "../text.js";
+
 export type Transform = {
   position: THREE.Vector3;
   rotation: THREE.Euler;
@@ -112,6 +114,13 @@ export default abstract class Shape extends THREE.Group {
     });
     return this;
   }
+
+  addLabel(tex: string, direction: THREE.Vector3) {
+    const label = new Text.Text(tex);
+    this.add(label);
+    label.moveNextTo(this, direction);
+  }
+
 
   static defaultStyle() {
     return {
@@ -257,7 +266,7 @@ export default abstract class Shape extends THREE.Group {
     };
   }
 
-  restyle(style: Style): void {
+  restyle(style: Style, config: { includeDescendents: boolean } = { includeDescendents: false }): void {
     const { fillColor, fillOpacity } = style;
     if (fillColor !== undefined) {
       this.fill.material.color = fillColor;
@@ -286,6 +295,14 @@ export default abstract class Shape extends THREE.Group {
     }
     if (strokeDashOffset !== undefined) {
       this.stroke.material.dashOffset = strokeDashOffset;
+    }
+
+    if (config.includeDescendents) {
+      this.traverse((child) => {
+        if (child instanceof Shape) {
+          child.restyle(style, { includeDescendents: false });
+        }
+      });
     }
   }
 
