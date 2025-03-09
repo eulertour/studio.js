@@ -85,6 +85,7 @@ declare abstract class Shape extends THREE.Group {
     forwardEvent: (e: any) => void;
     add(...objects: THREE.Object3D[]): this;
     remove(...objects: THREE.Object3D[]): this;
+    addLabel(tex: string, direction: THREE.Vector3): void;
     static defaultStyle(): {
         fillColor: THREE.Color;
         fillOpacity: number;
@@ -114,7 +115,9 @@ declare abstract class Shape extends THREE.Group {
     abstract getAttributes(): object;
     getCloneAttributes(): Array<unknown>;
     getStyle(): Style;
-    restyle(style: Style): void;
+    restyle(style: Style, config?: {
+        includeDescendents: boolean;
+    }): void;
     copyStyle(shape: Shape): void;
     getTransform(): Transform;
     setTransform(transform: Transform): void;
@@ -555,6 +558,10 @@ declare class Shake extends Animation {
     });
 }
 
+declare class Grow extends Animation {
+    constructor(object: THREE.Object3D);
+}
+
 //# sourceMappingURL=index.d.ts.map
 
 type index_d_Animation = Animation;
@@ -569,6 +576,8 @@ type index_d_FadeIn = FadeIn;
 declare const index_d_FadeIn: typeof FadeIn;
 type index_d_FadeOut = FadeOut;
 declare const index_d_FadeOut: typeof FadeOut;
+type index_d_Grow = Grow;
+declare const index_d_Grow: typeof Grow;
 type index_d_MoveTo = MoveTo;
 declare const index_d_MoveTo: typeof MoveTo;
 type index_d_Rotate = Rotate;
@@ -584,7 +593,7 @@ declare const index_d_Shift: typeof Shift;
 type index_d_Wait = Wait;
 declare const index_d_Wait: typeof Wait;
 declare namespace index_d {
-  export { index_d_Animation as Animation, index_d_Draw as Draw, index_d_Emphasize as Emphasize, index_d_Erase as Erase, index_d_FadeIn as FadeIn, index_d_FadeOut as FadeOut, index_d_MoveTo as MoveTo, index_d_Rotate as Rotate, index_d_SetOpacity as SetOpacity, index_d_SetScale as SetScale, index_d_Shake as Shake, index_d_Shift as Shift, index_d_Wait as Wait };
+  export { index_d_Animation as Animation, index_d_Draw as Draw, index_d_Emphasize as Emphasize, index_d_Erase as Erase, index_d_FadeIn as FadeIn, index_d_FadeOut as FadeOut, index_d_Grow as Grow, index_d_MoveTo as MoveTo, index_d_Rotate as Rotate, index_d_SetOpacity as SetOpacity, index_d_SetScale as SetScale, index_d_Shake as Shake, index_d_Shift as Shift, index_d_Wait as Wait };
 }
 
 declare const PIXELS_TO_COORDS: number;
