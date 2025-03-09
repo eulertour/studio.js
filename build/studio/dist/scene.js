@@ -124,6 +124,14 @@ export class SceneController {
                     this.loopAnimations.push(animation);
                     currentEndTime = animation.endTime;
                 }
+                else if (typeof o === "function") {
+                    const animation = new Animation(o);
+                    animation.startTime = currentEndTime;
+                    animation.endTime = currentEndTime + animation.runTime;
+                    animation.parent = this.userScene.scene;
+                    this.loopAnimations.push(animation);
+                    currentEndTime = animation.endTime;
+                }
                 else if (typeof o === "object") {
                     const animationArray = o.animations;
                     const runTime = o.runTime || 1;

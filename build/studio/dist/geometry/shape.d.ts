@@ -35,6 +35,7 @@ export default abstract class Shape extends THREE.Group {
     forwardEvent: (e: any) => void;
     add(...objects: THREE.Object3D[]): this;
     remove(...objects: THREE.Object3D[]): this;
+    addLabel(tex: string, direction: THREE.Vector3): void;
     static defaultStyle(): {
         fillColor: THREE.Color;
         fillOpacity: number;
@@ -64,7 +65,9 @@ export default abstract class Shape extends THREE.Group {
     abstract getAttributes(): object;
     getCloneAttributes(): Array<unknown>;
     getStyle(): Style;
-    restyle(style: Style): void;
+    restyle(style: Style, config?: {
+        includeDescendents: boolean;
+    }): void;
     copyStyle(shape: Shape): void;
     getTransform(): Transform;
     setTransform(transform: Transform): void;

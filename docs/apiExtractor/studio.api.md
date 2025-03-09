@@ -41,7 +41,8 @@ declare namespace Animation_2 {
         FadeOut,
         Wait,
         Emphasize,
-        Shake
+        Shake,
+        Grow
     }
 }
 export { Animation_2 as Animation }
@@ -409,6 +410,11 @@ declare namespace Graphing {
     }
 }
 export { Graphing }
+
+// @public (undocumented)
+class Grow extends Animation_3 {
+    constructor(object: THREE.Object3D);
+}
 
 // @public (undocumented)
 type HeightSetupConfig = {
@@ -783,6 +789,8 @@ abstract class Shape extends THREE.Group {
     // (undocumented)
     add(...objects: THREE.Object3D[]): this;
     // (undocumented)
+    addLabel(tex: string, direction: THREE.Vector3): void;
+    // (undocumented)
     arrow: boolean;
     // (undocumented)
     clear(): this;
@@ -849,7 +857,9 @@ abstract class Shape extends THREE.Group {
     // (undocumented)
     reshape(...args: any[]): void;
     // (undocumented)
-    restyle(style: Style): void;
+    restyle(style: Style, config?: {
+        includeDescendents: boolean;
+    }): void;
     // (undocumented)
     segment(index: number): THREE.Line3;
     // (undocumented)
