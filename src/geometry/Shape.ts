@@ -43,8 +43,8 @@ type Stroke = MeshLine;
 export default abstract class Shape extends THREE.Group {
   fill?: Fill;
   stroke?: Stroke;
-  curveEndIndices: Array<Array<number>>;
-  arrow: boolean;
+  curveEndIndices: Array<Array<number>> = [];
+  arrow: boolean = false;
 
   constructor(
     points: Array<THREE.Vector3>,
@@ -53,11 +53,29 @@ export default abstract class Shape extends THREE.Group {
       stroke?: boolean;
       fill?: boolean;
       closed?: boolean;
+      position?: THREE.Vector3;
+      rotation?: number;
+      scale?: THREE.Vector3;
       fillPoints?: Array<THREE.Vector3>;
     } = {},
   ) {
     super();
     config = Object.assign(Shape.defaultStyle(), config);
+    
+    // Apply position, rotation, and scale if provided
+    if (config.position) {
+      this.position.copy(config.position);
+    }
+    if (config.rotation !== undefined) {
+      this.rotation.z = config.rotation; // Assuming 2D rotation around Z-axis
+    }
+    if (config.scale) {
+      this.scale.copy(config.scale);
+    }
+    
+    if (config.arrow) {
+      this.arrow = config.arrow;
+    }
 
     if (config.fill !== false) {
       const fillGeometry = getFillGeometry(config.fillPoints ?? points);
