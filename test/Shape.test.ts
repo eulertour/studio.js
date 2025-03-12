@@ -1,5 +1,6 @@
-import * as THREE from 'three';
-import Shape from '../src/geometry/Shape';
+import * as THREE from "three";
+import Shape from "../src/geometry/Shape";
+import { describe, beforeEach, test, expect } from "vitest";
 
 // Mock class to test Shape since Shape is abstract
 class TestShape extends Shape {
@@ -12,14 +13,14 @@ class TestShape extends Shape {
   }
 }
 
-describe('Shape', () => {
+describe("Shape", () => {
   let shape: TestShape;
 
   beforeEach(() => {
     shape = new TestShape();
   });
 
-  test('restyle updates uniforms', () => {
+  test("restyle updates uniforms", () => {
     const newStyle = {
       fillColor: new THREE.Color(0xff0000),
       strokeColor: new THREE.Color(0x00ff00),
@@ -30,7 +31,7 @@ describe('Shape', () => {
     expect(shape.stroke.material.color).toEqual(newStyle.strokeColor);
   });
 
-  test('restyle with includeDescendents updates all children', () => {
+  test("restyle with includeDescendents updates all children", () => {
     const childShape = new TestShape();
     shape.add(childShape);
 
@@ -41,4 +42,5 @@ describe('Shape', () => {
 
     expect(childShape.fill.material.color).toEqual(newStyle.fillColor);
   });
-}); 
+});
+
