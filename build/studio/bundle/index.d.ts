@@ -85,6 +85,7 @@ declare abstract class Shape extends THREE.Group {
     forwardEvent: (e: any) => void;
     add(...objects: THREE.Object3D[]): this;
     remove(...objects: THREE.Object3D[]): this;
+    addLabel(tex: string, direction: THREE.Vector3): void;
     static defaultStyle(): {
         fillColor: THREE.Color;
         fillOpacity: number;
@@ -114,7 +115,9 @@ declare abstract class Shape extends THREE.Group {
     abstract getAttributes(): object;
     getCloneAttributes(): Array<unknown>;
     getStyle(): Style;
-    restyle(style: Style): void;
+    restyle(style: Style, config?: {
+        includeDescendents: boolean;
+    }): void;
     copyStyle(shape: Shape): void;
     getTransform(): Transform;
     setTransform(transform: Transform): void;
@@ -139,6 +142,7 @@ declare class Line extends Shape {
     static defaultConfig(): {};
     static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
     reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
+    length(): number;
     getClassConfig(): {};
     getAttributes(): LineAttributes;
     getVector(global?: boolean): THREE.Vector3;
@@ -680,6 +684,7 @@ declare class CongruentLine extends THREE.Group {
         tickLength?: number;
         spacing?: number;
     });
+    moveToSegment(start: THREE.Vector3, end: THREE.Vector3): void;
 }
 declare class CongruentAngle extends THREE.Group {
     config: Style & {
@@ -806,7 +811,7 @@ type AnimationRepresentation = Animation | Array<Animation> | {
     parent?: THREE.Object3D;
     runTime?: number;
     scale?: number;
-};
+} | ((t: number, dt: number) => void);
 type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
 interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
     scene: THREE.Scene;

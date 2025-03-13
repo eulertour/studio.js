@@ -3875,10 +3875,17 @@ class Vector3 {
 
 		switch ( index ) {
 
-			case 0: this.x = value; break;
-			case 1: this.y = value; break;
-			case 2: this.z = value; break;
-			default: throw new Error( 'index is out of range: ' + index );
+			case 0:
+				this.x = value;
+				break;
+			case 1:
+				this.y = value;
+				break;
+			case 2:
+				this.z = value;
+				break;
+			default:
+				throw new Error( 'index is out of range: ' + index );
 
 		}
 
@@ -3890,10 +3897,14 @@ class Vector3 {
 
 		switch ( index ) {
 
-			case 0: return this.x;
-			case 1: return this.y;
-			case 2: return this.z;
-			default: throw new Error( 'index is out of range: ' + index );
+			case 0:
+				return this.x;
+			case 1:
+				return this.y;
+			case 2:
+				return this.z;
+			default:
+				throw new Error( 'index is out of range: ' + index );
 
 		}
 
@@ -4029,7 +4040,9 @@ class Vector3 {
 
 	applyMatrix3( m ) {
 
-		const x = this.x, y = this.y, z = this.z;
+		const x = this.x,
+			y = this.y,
+			z = this.z;
 		const e = m.elements;
 
 		this.x = e[ 0 ] * x + e[ 3 ] * y + e[ 6 ] * z;
@@ -4048,7 +4061,9 @@ class Vector3 {
 
 	applyMatrix4( m ) {
 
-		const x = this.x, y = this.y, z = this.z;
+		const x = this.x,
+			y = this.y,
+			z = this.z;
 		const e = m.elements;
 
 		const w = 1 / ( e[ 3 ] * x + e[ 7 ] * y + e[ 11 ] * z + e[ 15 ] );
@@ -4065,8 +4080,13 @@ class Vector3 {
 
 		// quaternion q is assumed to have unit length
 
-		const vx = this.x, vy = this.y, vz = this.z;
-		const qx = q.x, qy = q.y, qz = q.z, qw = q.w;
+		const vx = this.x,
+			vy = this.y,
+			vz = this.z;
+		const qx = q.x,
+			qy = q.y,
+			qz = q.z,
+			qw = q.w;
 
 		// t = 2 * cross( q.xyz, v );
 		const tx = 2 * ( qy * vz - qz * vy );
@@ -4084,13 +4104,17 @@ class Vector3 {
 
 	project( camera ) {
 
-		return this.applyMatrix4( camera.matrixWorldInverse ).applyMatrix4( camera.projectionMatrix );
+		return this.applyMatrix4( camera.matrixWorldInverse ).applyMatrix4(
+			camera.projectionMatrix
+		);
 
 	}
 
 	unproject( camera ) {
 
-		return this.applyMatrix4( camera.projectionMatrixInverse ).applyMatrix4( camera.matrixWorld );
+		return this.applyMatrix4( camera.projectionMatrixInverse ).applyMatrix4(
+			camera.matrixWorld
+		);
 
 	}
 
@@ -4099,7 +4123,9 @@ class Vector3 {
 		// input: THREE.Matrix4 affine matrix
 		// vector interpreted as a direction
 
-		const x = this.x, y = this.y, z = this.z;
+		const x = this.x,
+			y = this.y,
+			z = this.z;
 		const e = m.elements;
 
 		this.x = e[ 0 ] * x + e[ 4 ] * y + e[ 8 ] * z;
@@ -4172,7 +4198,9 @@ class Vector3 {
 
 		const length = this.length();
 
-		return this.divideScalar( length || 1 ).multiplyScalar( Math.max( min, Math.min( max, length ) ) );
+		return this.divideScalar( length || 1 ).multiplyScalar(
+			Math.max( min, Math.min( max, length ) )
+		);
 
 	}
 
@@ -4292,8 +4320,12 @@ class Vector3 {
 
 	crossVectors( a, b ) {
 
-		const ax = a.x, ay = a.y, az = a.z;
-		const bx = b.x, by = b.y, bz = b.z;
+		const ax = a.x,
+			ay = a.y,
+			az = a.z;
+		const bx = b.x,
+			by = b.y,
+			bz = b.z;
 
 		this.x = ay * bz - az * by;
 		this.y = az * bx - ax * bz;
@@ -4338,6 +4370,30 @@ class Vector3 {
 
 	}
 
+	rotate180() {
+
+		return this.applyAxisAngle( Vector3.OUT, Math.PI );
+
+	}
+
+	rotate270() {
+
+		return this.applyAxisAngle( Vector3.OUT, - Math.PI / 2 );
+
+	}
+
+	rotateZ( angle ) {
+
+		return this.applyAxisAngle( Vector3.OUT, angle );
+
+	}
+
+	transformBetweenSpaces( from, to ) {
+
+		return to.worldToLocal( from.localToWorld( this ) );
+
+	}
+
 	angleTo( v ) {
 
 		const denominator = Math.sqrt( this.lengthSq() * v.lengthSq() );
@@ -4360,7 +4416,9 @@ class Vector3 {
 
 	distanceToSquared( v ) {
 
-		const dx = this.x - v.x, dy = this.y - v.y, dz = this.z - v.z;
+		const dx = this.x - v.x,
+			dy = this.y - v.y,
+			dz = this.z - v.z;
 
 		return dx * dx + dy * dy + dz * dz;
 
@@ -4368,7 +4426,9 @@ class Vector3 {
 
 	manhattanDistanceTo( v ) {
 
-		return Math.abs( this.x - v.x ) + Math.abs( this.y - v.y ) + Math.abs( this.z - v.z );
+		return (
+			Math.abs( this.x - v.x ) + Math.abs( this.y - v.y ) + Math.abs( this.z - v.z )
+		);
 
 	}
 
@@ -4466,7 +4526,7 @@ class Vector3 {
 
 	equals( v ) {
 
-		return ( ( v.x === this.x ) && ( v.y === this.y ) && ( v.z === this.z ) );
+		return v.x === this.x && v.y === this.y && v.z === this.z;
 
 	}
 
@@ -7088,6 +7148,88 @@ class Layers {
 
 }
 
+class UpdaterRegistry {
+
+	constructor( owner ) {
+
+		this.namedUpdaters = new Map();
+		this.updaters = [];
+		this.owner = owner;
+
+	}
+
+	register( nameOrFunc, func ) {
+
+		if ( typeof nameOrFunc === 'string' ) {
+
+			this.registerByName( nameOrFunc, func );
+
+		} else {
+
+			this.registerByFunction( nameOrFunc );
+
+		}
+
+	}
+
+	registerByName( name, func ) {
+
+		this.namedUpdaters.set( name, func );
+		this.registerByFunction( func );
+
+	}
+
+	registerByFunction( func ) {
+
+		this.updaters.push( func );
+
+	}
+
+	unregister( nameOrFunc ) {
+
+		if ( typeof nameOrFunc === 'string' ) {
+
+			return this.unregisterByName( nameOrFunc );
+
+		} else {
+
+			return this.unregisterByFunction( nameOrFunc );
+
+		}
+
+	}
+
+	unregisterByName( name ) {
+
+		const updaterToRemove = this.namedUpdaters.get( name );
+		if ( ! updaterToRemove ) {
+
+			return false;
+
+		}
+
+		this.namedUpdaters.delete( name );
+		return this.unregisterByFunction( updaterToRemove );
+
+	}
+
+	unregisterByFunction( func ) {
+
+		const updaterToRemove = this.updaters.find( updater => updater === func );
+
+		if ( ! updaterToRemove ) {
+
+			return false;
+
+		}
+
+		this.updaters = this.updaters.filter( updater => updater !== updaterToRemove );
+		return true;
+
+	}
+
+}
+
 let _object3DId = 0;
 
 const _v1$4 = /*@__PURE__*/ new Vector3();
@@ -7198,6 +7340,30 @@ class Object3D extends EventDispatcher {
 		this.animations = [];
 
 		this.userData = {};
+
+		this.updaterRegistry = new UpdaterRegistry();
+
+	}
+
+	addUpdater( nameOrFunc, func ) {
+
+		this.updaterRegistry.register( nameOrFunc, func );
+
+	}
+
+	removeUpdater( nameOrFunc, func ) {
+
+		this.updaterRegistry.unregister( nameOrFunc, func );
+
+	}
+
+	update( dt, t ) {
+
+		for ( const updater of this.updaterRegistry.updaters.values() ) {
+
+			updater( dt, t );
+
+		}
 
 	}
 

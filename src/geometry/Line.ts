@@ -47,6 +47,10 @@ export default class Line extends Shape {
     this.copyStrokeAndFill(new Line(start, end, config));
   }
 
+  length() {
+    return this.start.distanceTo(this.end);
+  }
+
   getClassConfig() {
     return {};
   }
