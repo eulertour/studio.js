@@ -41,7 +41,6 @@ declare module "three" {
       name: K,
       child: T
     ): this & { [P in K]: T };
-    // will add other half on another PR
   }
 }
 

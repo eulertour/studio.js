@@ -13,14 +13,8 @@ declare module "three" {
     moveToLeftOf(target: THREE.Object3D, distance?: number): void;
     moveAbove(target: THREE.Object3D, distance?: number): void;
     moveBelow(target: THREE.Object3D, distance?: number): void;
-    setUpright(): THREE.Object3D;
-    recenter(center: THREE.Vector3): THREE.Object3D;
-    reorient(zRotation: number): void;
     pointAlongCurve(t: number): THREE.Vector3;
-    addComponent<T extends THREE.Object3D, K extends string>(
-      name: K,
-      child: T
-    ): this & { [P in K]: T };
+
     updateComponent(name: string, child: THREE.Object3D): void;
     removeComponent(name: string): THREE.Object3D;
     hideComponents(): THREE.Object3D;
@@ -88,29 +82,6 @@ THREE.Object3D.prototype.moveBelow = function (
   distance?: number
 ) {
   return Utils.moveBelow(target, this, distance);
-};
-
-THREE.Object3D.prototype.addComponent = function <T extends THREE.Object3D>(
-  name: string,
-  child: T & { parentComponent: THREE.Object3D | undefined }
-) {
-  if (this.components?.has(name)) {
-    throw new Error(
-      `Failed to add component ${name}: Component or attribute already exists`
-    );
-  }
-  if (!this.components) {
-    this.components = new Map();
-  }
-  this.components.set(name, child);
-  child.parentComponent = this;
-  this.add(child);
-  Object.defineProperty(this, name, {
-    get: () => this.components.get(name),
-    set: (value) => this.setComponent(name, value),
-    configurable: true,
-  });
-  return this;
 };
 
 THREE.Object3D.prototype.updateComponent = (
@@ -267,49 +238,6 @@ function component(
   };
 }
 
-THREE.Object3D.prototype.setUpright = function (): THREE.Object3D {
-  const worldQuaternion = new THREE.Quaternion();
-  this.getWorldQuaternion(worldQuaternion);
-
-  const inverseQuaternion = worldQuaternion.clone().invert();
-  this.quaternion.copy(inverseQuaternion);
-  return this;
-};
-
-THREE.Object3D.prototype.recenter = function (
-  globalPosition: THREE.Vector3
-): THREE.Object3D {
-  const localPosition = globalPosition.clone();
-  this.worldToLocal(globalPosition.clone());
-  const offset = new THREE.Vector3().subVectors(localPosition, this.position);
-  this.position.add(offset);
-
-  if (this.points) {
-    // Update stroke and fill geometries.
-    const newPoints = this.points.map((point) => point.clone().sub(offset));
-    if (this.stroke) {
-      this.stroke.geometry.setPoints(newPoints);
-    }
-    if (this.fill) {
-      for (let i = 0; i < this.stroke.geometry.points.length - 1; i++) {
-        const { x, y, z } = newPoints[i];
-        this.fill.geometry.attributes.position.array[i * 3] = x;
-        this.fill.geometry.attributes.position.array[i * 3 + 1] = y;
-        this.fill.geometry.attributes.position.array[i * 3 + 2] = z;
-      }
-    }
-  }
-
-  // Update children.
-  this.children.forEach((child) => {
-    if (child === this.stroke || child === this.fill) return;
-    child.position.sub(offset);
-  });
-
-  return this;
-};
-
-THREE.Object3D.prototype.reorient = (): void => {};
 import MeshLineMaterial, {
   setCameraDimensions,
   setCanvasViewport,
