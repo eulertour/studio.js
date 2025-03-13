@@ -29,13 +29,7 @@ declare module "three" {
     removeUpdater(nameOrFunc: ((...args: any[]) => any) | string): boolean;
 
     vstack(buffer?: number): Object3D;
-    vspace(distanceBetween?: number): Object3D;
     setScale(factor: number): Object3D;
-    moveNextTo(target: Object3D, direction: Vector3, distance?: number): void;
-    moveToRightOf(target: Object3D, distance?: number): void;
-    moveToLeftOf(target: Object3D, distance?: number): void;
-    moveAbove(target: Object3D, distance?: number): void;
-    moveBelow(target: Object3D, distance?: number): void;
     setOpacity(opacity: number, config?: any): Object3D;
     setInvisible(config?: any): Object3D;
     setVisible(config?: any): Object3D;
