@@ -56935,6 +56935,9 @@ class CongruentLine extends THREE.Group {
             const tick = new Line(new THREE.Vector3(pos, -config.tickLength / 2, 0), new THREE.Vector3(pos, config.tickLength / 2, 0), config);
             this.add(tick);
         }
+        this.moveToSegment(start, end);
+    }
+    moveToSegment(start, end) {
         const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
         this.position.copy(center);
         const segmentVector = new THREE.Vector3().subVectors(end, start);

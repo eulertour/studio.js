@@ -20,6 +20,7 @@ declare class CongruentLine extends THREE.Group {
         tickLength?: number;
         spacing?: number;
     });
+    moveToSegment(start: THREE.Vector3, end: THREE.Vector3): void;
 }
 declare class CongruentAngle extends THREE.Group {
     config: Geometry.Style & {

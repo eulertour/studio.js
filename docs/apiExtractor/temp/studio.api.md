@@ -113,7 +113,7 @@ export type AnimationRepresentation = Animation_3 | Array<Animation_3> | {
     parent?: THREE.Object3D;
     runTime?: number;
     scale?: number;
-};
+} | ((t: number, dt: number) => void);
 
 // @public
 class Arc extends Shape {
@@ -220,6 +220,8 @@ class CongruentLine extends THREE.Group {
         tickLength?: number;
         spacing?: number;
     });
+    // (undocumented)
+    moveToSegment(start: THREE.Vector3, end: THREE.Vector3): void;
 }
 
 declare namespace Constants {
