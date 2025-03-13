@@ -94,6 +94,10 @@ class CongruentLine extends THREE.Group {
       this.add(tick);
     }
 
+    this.moveToSegment(start, end);
+  }
+
+  moveToSegment(start: THREE.Vector3, end: THREE.Vector3) {
     const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
     this.position.copy(center);
 
