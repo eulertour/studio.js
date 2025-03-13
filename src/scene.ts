@@ -16,7 +16,8 @@ export type AnimationRepresentation =
       parent?: THREE.Object3D;
       runTime?: number;
       scale?: number;
-    };
+    }
+  | ((t: number, dt: number) => void);
 
 type Class<T> = new (
   scene: THREE.Scene,
