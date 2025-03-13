@@ -464,6 +464,8 @@ class Line extends Shape {
     // (undocumented)
     getVector(global?: boolean): THREE.Vector3;
     // (undocumented)
+    length(): number;
+    // (undocumented)
     reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
     // (undocumented)
     start: THREE.Vector3;
@@ -783,6 +785,8 @@ abstract class Shape extends THREE.Group {
     // (undocumented)
     add(...objects: THREE.Object3D[]): this;
     // (undocumented)
+    addLabel(tex: string, direction: THREE.Vector3): void;
+    // (undocumented)
     arrow: boolean;
     // (undocumented)
     clear(): this;
@@ -849,7 +853,9 @@ abstract class Shape extends THREE.Group {
     // (undocumented)
     reshape(...args: any[]): void;
     // (undocumented)
-    restyle(style: Style): void;
+    restyle(style: Style, config?: {
+        includeDescendents: boolean;
+    }): void;
     // (undocumented)
     segment(index: number): THREE.Line3;
     // (undocumented)

@@ -1,6 +1,6 @@
-import { Utils } from "../index.js";
 import * as THREE from "three";
 import MeshLine, { MeshLineGeometry, MeshLineMaterial, } from "./MeshLine/index.js";
+import * as Text from "../text.js";
 const getFillGeometry = (points) => {
     const shape = new THREE.Shape();
     shape.moveTo(points[0].x, points[0].y);
@@ -94,6 +94,11 @@ export default class Shape extends THREE.Group {
         });
         return this;
     }
+    addLabel(tex, direction) {
+        const label = new Text.Text(tex);
+        this.add(label);
+        label.moveNextTo(this, direction);
+    }
     static defaultStyle() {
         return {
             fillColor: new THREE.Color(0xfffaf0),
@@ -153,7 +158,7 @@ export default class Shape extends THREE.Group {
     }
     transformedPoint(index, targetSpace) {
         const startingPoint = this.points[index].clone();
-        return Utils.transformBetweenSpaces(this, targetSpace, startingPoint);
+        return targetSpace.worldToLocal(this.localToWorld(startingPoint));
     }
     segment(index) {
         return new THREE.Line3(this.points[index].clone(), this.points[index + 1].clone());
@@ -209,7 +214,7 @@ export default class Shape extends THREE.Group {
             strokeWidth: this.stroke.material.width,
         };
     }
-    restyle(style) {
+    restyle(style, config = { includeDescendents: false }) {
         const { fillColor, fillOpacity } = style;
         if (fillColor !== undefined) {
             this.fill.material.color = fillColor;
@@ -236,6 +241,13 @@ export default class Shape extends THREE.Group {
         }
         if (strokeDashOffset !== undefined) {
             this.stroke.material.dashOffset = strokeDashOffset;
+        }
+        if (config.includeDescendents) {
+            this.traverse((child) => {
+                if (child instanceof Shape) {
+                    child.restyle(style, { includeDescendents: false });
+                }
+            });
         }
     }
     copyStyle(shape) {
