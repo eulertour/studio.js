@@ -146,13 +146,15 @@ export class SceneController {
     }
 
     try {
-      this.userScene.update?.(this.deltaTime, this.elapsedTime);
+      const roundedElapsedTime =
+        Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
+      this.loopAnimations.forEach((animation) =>
+        animation.update(roundedElapsedTime),
+      );
       this.userScene.scene.traverse((object) => {
         object.update(this.deltaTime, this.elapsedTime);
       });
-      const roundedTime =
-        Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
-      this.loopAnimations.forEach((animation) => animation.update(roundedTime));
+      this.userScene.update?.(this.deltaTime, this.elapsedTime);
     } catch (err: any) {
       throw new Error(`Error executing user animation: ${err.toString()}`);
     }
