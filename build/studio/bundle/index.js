@@ -54937,6 +54937,9 @@ class Shape extends THREE.Group {
             ...this.getStyle(),
             ...config,
         });
+        this.position.copy(newShape.position);
+        this.rotation.copy(newShape.rotation);
+        this.scale.copy(newShape.scale);
         this.copyStrokeAndFill(newShape);
         this.copyStyle(newShape);
         const newAttributes = newShape.getAttributes();
