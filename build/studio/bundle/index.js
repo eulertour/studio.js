@@ -57362,16 +57362,8 @@ class SceneController {
     }
 }
 
-THREE.Object3D.prototype.vstack = function (buffer = 0.2) {
-    return vstack(this, buffer);
-};
 THREE.Object3D.prototype.vspace = function (distanceBetween) {
     return vspace(this, distanceBetween);
-};
-THREE.Object3D.prototype.setScale = function (factor) {
-    this.scale.x = factor;
-    this.scale.y = factor;
-    return this;
 };
 THREE.Object3D.prototype.pointAlongCurve = function (t) {
     return pointAlongCurve(this, t);
@@ -57390,23 +57382,6 @@ THREE.Object3D.prototype.moveAbove = function (target, distance) {
 };
 THREE.Object3D.prototype.moveBelow = function (target, distance) {
     return moveBelow(target, this, distance);
-};
-THREE.Object3D.prototype.addComponent = function (name, child) {
-    if (this.components?.has(name)) {
-        throw new Error(`Failed to add component ${name}: Component or attribute already exists`);
-    }
-    if (!this.components) {
-        this.components = new Map();
-    }
-    this.components.set(name, child);
-    child.parentComponent = this;
-    this.add(child);
-    Object.defineProperty(this, name, {
-        get: () => this.components.get(name),
-        set: (value) => this.setComponent(name, value),
-        configurable: true,
-    });
-    return this;
 };
 THREE.Object3D.prototype.updateComponent = (name, child) => {
     throw new Error("Not implemented");
@@ -57521,76 +57496,5 @@ function component(_, context) {
         },
     };
 }
-THREE.Object3D.prototype.setOpacity = function (opacity, config) {
-    let family = true;
-    if (config && config.family === false) {
-        family = false;
-    }
-    if (family) {
-        this.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-                child.material.opacity = opacity;
-            }
-        });
-    }
-    else {
-        [this.stroke, this.fill].forEach((mesh) => {
-            if (!mesh)
-                return;
-            mesh.material.opacity = opacity;
-        });
-    }
-    return this;
-};
-THREE.Object3D.prototype.setInvisible = function (config) {
-    let family = true;
-    if (config && config.family === false) {
-        family = false;
-    }
-    return this.setOpacity(0, { family });
-};
-THREE.Object3D.prototype.setVisible = function (config) {
-    let family = true;
-    if (config && config.family === false) {
-        family = false;
-    }
-    return this.setOpacity(1, { family });
-};
-THREE.Object3D.prototype.setUpright = function () {
-    const worldQuaternion = new THREE.Quaternion();
-    this.getWorldQuaternion(worldQuaternion);
-    const inverseQuaternion = worldQuaternion.clone().invert();
-    this.quaternion.copy(inverseQuaternion);
-    return this;
-};
-THREE.Object3D.prototype.recenter = function (globalPosition) {
-    const localPosition = globalPosition.clone();
-    this.worldToLocal(globalPosition.clone());
-    const offset = new THREE.Vector3().subVectors(localPosition, this.position);
-    this.position.add(offset);
-    if (this.points) {
-        // Update stroke and fill geometries.
-        const newPoints = this.points.map((point) => point.clone().sub(offset));
-        if (this.stroke) {
-            this.stroke.geometry.setPoints(newPoints);
-        }
-        if (this.fill) {
-            for (let i = 0; i < this.stroke.geometry.points.length - 1; i++) {
-                const { x, y, z } = newPoints[i];
-                this.fill.geometry.attributes.position.array[i * 3] = x;
-                this.fill.geometry.attributes.position.array[i * 3 + 1] = y;
-                this.fill.geometry.attributes.position.array[i * 3 + 2] = z;
-            }
-        }
-    }
-    // Update children.
-    this.children.forEach((child) => {
-        if (child === this.stroke || child === this.fill)
-            return;
-        child.position.sub(offset);
-    });
-    return this;
-};
-THREE.Object3D.prototype.reorient = () => { };
 
 export { index as Animation, constants as Constants, diagram as Diagram, frame as Frame, index$1 as Geometry, graphing as Graphing, MeshLineMaterial, SceneController, text as Text, utils as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };
