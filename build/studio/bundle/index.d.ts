@@ -75,7 +75,8 @@ declare abstract class Shape extends THREE.Group {
     stroke?: Stroke;
     curveEndIndices: Array<Array<number>>;
     arrow: boolean;
-    constructor(points: Array<THREE.Vector3>, config?: Style & {
+    intrinsicChildren?: THREE.Group;
+    constructor(points?: Array<THREE.Vector3>, config?: Style & {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
@@ -87,8 +88,10 @@ declare abstract class Shape extends THREE.Group {
     remove(...objects: THREE.Object3D[]): this;
     addLabel(tex: string, direction: THREE.Vector3): void;
     static defaultStyle(): {
+        fill: boolean;
         fillColor: THREE.Color;
         fillOpacity: number;
+        stroke: boolean;
         strokeColor: THREE.Color;
         strokeOpacity: number;
         strokeWidth: number;
@@ -686,7 +689,11 @@ declare class CongruentLine extends THREE.Group {
     });
     moveToSegment(start: THREE.Vector3, end: THREE.Vector3): void;
 }
-declare class CongruentAngle extends THREE.Group {
+declare class CongruentAngle extends Shape {
+    arcs: number;
+    point1: THREE.Vector3;
+    point2: THREE.Vector3;
+    point3: THREE.Vector3;
     config: Style & {
         minRadius?: number;
         spacing?: number;
@@ -695,6 +702,12 @@ declare class CongruentAngle extends THREE.Group {
         minRadius?: number;
         spacing?: number;
     });
+    getAttributes(): {
+        arcs: number;
+        point1: THREE.Vector3;
+        point2: THREE.Vector3;
+        point3: THREE.Vector3;
+    };
 }
 declare class RightAngle extends Polyline {
     constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {

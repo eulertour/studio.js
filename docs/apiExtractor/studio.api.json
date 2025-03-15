@@ -3407,8 +3407,8 @@
                 },
                 {
                   "kind": "Reference",
-                  "text": "THREE.Group",
-                  "canonicalReference": "@types/three!Group:class"
+                  "text": "Shape",
+                  "canonicalReference": "@eulertour/studio!Geometry.Shape:class"
                 },
                 {
                   "kind": "Content",
@@ -3527,6 +3527,36 @@
                 },
                 {
                   "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Diagram.CongruentAngle#arcs:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "arcs: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "arcs",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
                   "canonicalReference": "@eulertour/studio!Diagram.CongruentAngle#config:member",
                   "docComment": "",
                   "excerptTokens": [
@@ -3555,6 +3585,157 @@
                   "propertyTypeTokenRange": {
                     "startIndex": 1,
                     "endIndex": 3
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Diagram.CongruentAngle#getAttributes:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "getAttributes(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{\n        arcs: number;\n        point1: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Vector3",
+                      "canonicalReference": "@types/three!Vector3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";\n        point2: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Vector3",
+                      "canonicalReference": "@types/three!Vector3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";\n        point3: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Vector3",
+                      "canonicalReference": "@types/three!Vector3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 8
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "getAttributes"
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Diagram.CongruentAngle#point1:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "point1: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Vector3",
+                      "canonicalReference": "@types/three!Vector3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "point1",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Diagram.CongruentAngle#point2:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "point2: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Vector3",
+                      "canonicalReference": "@types/three!Vector3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "point2",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Diagram.CongruentAngle#point3:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "point3: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Vector3",
+                      "canonicalReference": "@types/three!Vector3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "point3",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
                   },
                   "isStatic": false,
                   "isProtected": false,
@@ -7619,7 +7800,7 @@
                   "excerptTokens": [
                     {
                       "kind": "Content",
-                      "text": "constructor(points: "
+                      "text": "constructor(points?: "
                     },
                     {
                       "kind": "Reference",
@@ -7685,7 +7866,7 @@
                         "startIndex": 1,
                         "endIndex": 5
                       },
-                      "isOptional": false
+                      "isOptional": true
                     },
                     {
                       "parameterName": "config",
@@ -8342,7 +8523,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": "{\n        fillColor: "
+                      "text": "{\n        fill: boolean;\n        fillColor: "
                     },
                     {
                       "kind": "Reference",
@@ -8351,7 +8532,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": ";\n        fillOpacity: number;\n        strokeColor: "
+                      "text": ";\n        fillOpacity: number;\n        stroke: boolean;\n        strokeColor: "
                     },
                     {
                       "kind": "Reference",
@@ -8696,6 +8877,37 @@
                   "isOptional": false,
                   "isAbstract": false,
                   "name": "getTransform"
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Geometry.Shape#intrinsicChildren:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "intrinsicChildren?: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Group",
+                      "canonicalReference": "@types/three!Group:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": true,
+                  "releaseTag": "Public",
+                  "name": "intrinsicChildren",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
                 },
                 {
                   "kind": "Property",

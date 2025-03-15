@@ -3,6 +3,7 @@ import { Animation } from "./animation/index.js";
 import * as Geometry from "./geometry/index.js";
 import * as Text from "./text.js";
 import Angle from "./angle.js";
+import { Shape } from "./geometry/index.js";
 interface IndicatorConfig {
     tickLength?: number;
 }
@@ -22,7 +23,11 @@ declare class CongruentLine extends THREE.Group {
     });
     moveToSegment(start: THREE.Vector3, end: THREE.Vector3): void;
 }
-declare class CongruentAngle extends THREE.Group {
+declare class CongruentAngle extends Shape {
+    arcs: number;
+    point1: THREE.Vector3;
+    point2: THREE.Vector3;
+    point3: THREE.Vector3;
     config: Geometry.Style & {
         minRadius?: number;
         spacing?: number;
@@ -31,6 +36,12 @@ declare class CongruentAngle extends THREE.Group {
         minRadius?: number;
         spacing?: number;
     });
+    getAttributes(): {
+        arcs: number;
+        point1: THREE.Vector3;
+        point2: THREE.Vector3;
+        point3: THREE.Vector3;
+    };
 }
 declare class RightAngle extends Geometry.Polyline {
     constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Geometry.Style & {

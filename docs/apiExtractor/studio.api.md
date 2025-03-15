@@ -202,16 +202,31 @@ const clamp: (num: any, min: any, max: any) => number;
 export function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 
 // @public (undocumented)
-class CongruentAngle extends THREE.Group {
+class CongruentAngle extends Shape {
     constructor(arcs: number, point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Geometry.Style & {
         minRadius?: number;
         spacing?: number;
     });
     // (undocumented)
+    arcs: number;
+    // (undocumented)
     config: Geometry.Style & {
         minRadius?: number;
         spacing?: number;
     };
+    // (undocumented)
+    getAttributes(): {
+        arcs: number;
+        point1: THREE.Vector3;
+        point2: THREE.Vector3;
+        point3: THREE.Vector3;
+    };
+    // (undocumented)
+    point1: THREE.Vector3;
+    // (undocumented)
+    point2: THREE.Vector3;
+    // (undocumented)
+    point3: THREE.Vector3;
 }
 
 // @public (undocumented)
@@ -777,7 +792,7 @@ class Shake extends Animation_3 {
 
 // @public
 abstract class Shape extends THREE.Group {
-    constructor(points: Array<THREE.Vector3>, config?: Style & {
+    constructor(points?: Array<THREE.Vector3>, config?: Style & {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
@@ -812,8 +827,10 @@ abstract class Shape extends THREE.Group {
     static defaultConfig(): {};
     // (undocumented)
     static defaultStyle(): {
+        fill: boolean;
         fillColor: THREE.Color;
         fillOpacity: number;
+        stroke: boolean;
         strokeColor: THREE.Color;
         strokeOpacity: number;
         strokeWidth: number;
@@ -845,6 +862,8 @@ abstract class Shape extends THREE.Group {
     //
     // (undocumented)
     getTransform(): Transform;
+    // (undocumented)
+    intrinsicChildren?: THREE.Group;
     // (undocumented)
     get numCurves(): number;
     // (undocumented)

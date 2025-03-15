@@ -54847,6 +54847,12 @@ class Shape extends THREE.Group {
             writable: true,
             value: void 0
         });
+        Object.defineProperty(this, "intrinsicChildren", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
         Object.defineProperty(this, "forwardEvent", {
             enumerable: true,
             configurable: true,
@@ -54854,7 +54860,14 @@ class Shape extends THREE.Group {
             value: (e) => this.dispatchEvent(e)
         });
         config = Object.assign(Shape.defaultStyle(), config);
-        if (config.fill !== false) {
+        if (points === undefined) {
+            config.stroke = false;
+            config.fill = false;
+        }
+        if (config.fill) {
+            if (!config.fillPoints && !points) {
+                throw new Error("Fill requires either fillPoints or points");
+            }
             const fillGeometry = getFillGeometry(config.fillPoints ?? points);
             const fillMaterial = new THREE.MeshBasicMaterial({
                 color: config.fillColor,
@@ -54865,7 +54878,10 @@ class Shape extends THREE.Group {
             this.fill = new THREE.Mesh(fillGeometry, fillMaterial);
             this.add(this.fill);
         }
-        if (config.stroke !== false) {
+        if (config.stroke) {
+            if (!points) {
+                throw new Error("Stroke requires points");
+            }
             const strokeGeometry = new MeshLineGeometry(config.arrow);
             strokeGeometry.setPoints(points);
             if (config.dashed && config.strokeDashLength === 0) {
@@ -54883,7 +54899,9 @@ class Shape extends THREE.Group {
             this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
             this.add(this.stroke);
         }
-        this.curveEndIndices = this.getCurveEndIndices();
+        if (this.stroke) {
+            this.curveEndIndices = this.getCurveEndIndices();
+        }
     }
     add(...objects) {
         super.add(...objects);
@@ -54908,8 +54926,10 @@ class Shape extends THREE.Group {
     }
     static defaultStyle() {
         return {
+            fill: true,
             fillColor: new THREE.Color(0xfffaf0),
             fillOpacity: 0.0,
+            stroke: true,
             strokeColor: new THREE.Color(0x000000),
             strokeOpacity: 1.0,
             strokeWidth: 4,
@@ -54942,6 +54962,16 @@ class Shape extends THREE.Group {
         this.scale.copy(newShape.scale);
         this.copyStrokeAndFill(newShape);
         this.copyStyle(newShape);
+        if (this.intrinsicChildren && newShape.intrinsicChildren) {
+            this.intrinsicChildren.traverse((child) => {
+                if (child instanceof Shape) {
+                    child.dispose();
+                }
+            });
+            this.remove(this.intrinsicChildren);
+            this.intrinsicChildren = newShape.intrinsicChildren;
+            this.add(this.intrinsicChildren);
+        }
         const newAttributes = newShape.getAttributes();
         Object.assign(this, newAttributes);
     }
@@ -54954,8 +54984,12 @@ class Shape extends THREE.Group {
         this.fill.geometry = shape.fill.geometry;
     }
     copyStrokeAndFill(shape) {
-        this.copyStroke(shape);
-        this.copyFill(shape);
+        if (this.stroke && shape.stroke) {
+            this.copyStroke(shape);
+        }
+        if (this.fill && shape.fill) {
+            this.copyFill(shape);
+        }
     }
     get points() {
         return this.stroke.geometry.points;
@@ -55016,41 +55050,46 @@ class Shape extends THREE.Group {
         return [this.points];
     }
     getStyle() {
+        const defaultStyle = Shape.defaultStyle();
         return {
-            fillColor: this.fill.material.color,
-            fillOpacity: this.fill.material.opacity,
-            strokeColor: this.stroke.material.color,
-            strokeOpacity: this.stroke.material.opacity,
-            strokeWidth: this.stroke.material.width,
+            fillColor: this.fill?.material.color ?? defaultStyle.fillColor,
+            fillOpacity: this.fill?.material.opacity ?? defaultStyle.fillOpacity,
+            strokeColor: this.stroke?.material.color ?? defaultStyle.strokeColor,
+            strokeOpacity: this.stroke?.material.opacity ?? defaultStyle.strokeOpacity,
+            strokeWidth: this.stroke?.material.width ?? defaultStyle.strokeWidth,
         };
     }
     restyle(style, config = { includeDescendents: false }) {
         const { fillColor, fillOpacity } = style;
-        if (fillColor !== undefined) {
-            this.fill.material.color = fillColor;
-        }
-        if (fillOpacity !== undefined) {
-            this.fill.material.opacity = fillOpacity;
+        if (this.fill) {
+            if (fillColor !== undefined) {
+                this.fill.material.color = fillColor;
+            }
+            if (fillOpacity !== undefined) {
+                this.fill.material.opacity = fillOpacity;
+            }
         }
         const { strokeColor, strokeOpacity, strokeWidth } = style;
-        if (strokeColor !== undefined) {
-            this.stroke.material.color = strokeColor;
-        }
-        if (strokeOpacity !== undefined) {
-            this.stroke.material.opacity = strokeOpacity;
-        }
-        if (strokeWidth !== undefined) {
-            this.stroke.material.width = strokeWidth;
-        }
-        if (style.dashed === true) {
-            this.stroke.material.dashLength = 0.4;
-        }
-        const { strokeDashLength, strokeDashOffset } = style;
-        if (strokeDashLength !== undefined) {
-            this.stroke.material.dashLength = strokeDashLength;
-        }
-        if (strokeDashOffset !== undefined) {
-            this.stroke.material.dashOffset = strokeDashOffset;
+        if (this.stroke) {
+            if (strokeColor !== undefined) {
+                this.stroke.material.color = strokeColor;
+            }
+            if (strokeOpacity !== undefined) {
+                this.stroke.material.opacity = strokeOpacity;
+            }
+            if (strokeWidth !== undefined) {
+                this.stroke.material.width = strokeWidth;
+            }
+            if (style.dashed === true) {
+                this.stroke.material.dashLength = 0.4;
+            }
+            const { strokeDashLength, strokeDashOffset } = style;
+            if (strokeDashLength !== undefined) {
+                this.stroke.material.dashLength = strokeDashLength;
+            }
+            if (strokeDashOffset !== undefined) {
+                this.stroke.material.dashOffset = strokeDashOffset;
+            }
         }
         if (config.includeDescendents) {
             this.traverse((child) => {
@@ -56947,7 +56986,7 @@ class CongruentLine extends THREE.Group {
         this.rotation.z = Math.atan2(segmentVector.y, segmentVector.x);
     }
 }
-class CongruentAngle extends THREE.Group {
+class CongruentAngle extends Shape {
     constructor(arcs, point1, point2, point3, config = {}) {
         config = {
             minRadius: 0.4,
@@ -56955,19 +56994,53 @@ class CongruentAngle extends THREE.Group {
             ...config,
         };
         super();
+        Object.defineProperty(this, "arcs", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: arcs
+        });
+        Object.defineProperty(this, "point1", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point1
+        });
+        Object.defineProperty(this, "point2", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point2
+        });
+        Object.defineProperty(this, "point3", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point3
+        });
         Object.defineProperty(this, "config", {
             enumerable: true,
             configurable: true,
             writable: true,
             value: config
         });
+        this.intrinsicChildren = new THREE.Group();
         for (let i = 0; i < arcs; i++) {
             const arc = new Angle(point1, point2, point3, {
                 radius: config.minRadius + i * config.spacing,
                 ...config,
             });
-            this.add(arc);
+            this.intrinsicChildren.add(arc);
         }
+        this.add(this.intrinsicChildren);
+    }
+    getAttributes() {
+        return {
+            arcs: this.arcs,
+            point1: this.point1,
+            point2: this.point2,
+            point3: this.point3,
+        };
     }
 }
 class RightAngle extends Polyline {

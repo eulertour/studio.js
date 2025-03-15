@@ -4,6 +4,7 @@ import * as Geometry from "./geometry/index.js";
 import * as Utils from "./utils.js";
 import * as Text from "./text.js";
 import Angle from "./angle.js";
+import { Shape } from "./geometry/index.js";
 class Indicator extends THREE.Group {
     constructor(start, end, config = {}) {
         const { tickLength = 0.4 } = config;
@@ -86,7 +87,7 @@ class CongruentLine extends THREE.Group {
         this.rotation.z = Math.atan2(segmentVector.y, segmentVector.x);
     }
 }
-class CongruentAngle extends THREE.Group {
+class CongruentAngle extends Shape {
     constructor(arcs, point1, point2, point3, config = {}) {
         config = {
             minRadius: 0.4,
@@ -94,19 +95,53 @@ class CongruentAngle extends THREE.Group {
             ...config,
         };
         super();
+        Object.defineProperty(this, "arcs", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: arcs
+        });
+        Object.defineProperty(this, "point1", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point1
+        });
+        Object.defineProperty(this, "point2", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point2
+        });
+        Object.defineProperty(this, "point3", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point3
+        });
         Object.defineProperty(this, "config", {
             enumerable: true,
             configurable: true,
             writable: true,
             value: config
         });
+        this.intrinsicChildren = new THREE.Group();
         for (let i = 0; i < arcs; i++) {
             const arc = new Angle(point1, point2, point3, {
                 radius: config.minRadius + i * config.spacing,
                 ...config,
             });
-            this.add(arc);
+            this.intrinsicChildren.add(arc);
         }
+        this.add(this.intrinsicChildren);
+    }
+    getAttributes() {
+        return {
+            arcs: this.arcs,
+            point1: this.point1,
+            point2: this.point2,
+            point3: this.point3,
+        };
     }
 }
 class RightAngle extends Geometry.Polyline {
