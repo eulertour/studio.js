@@ -44,9 +44,10 @@ export default abstract class Shape extends THREE.Group {
   stroke?: Stroke;
   curveEndIndices: Array<Array<number>>;
   arrow: boolean;
+  intrinsicChildren?: THREE.Group;
 
   constructor(
-    points: Array<THREE.Vector3>,
+    points?: Array<THREE.Vector3>,
     config: Style & {
       arrow?: boolean;
       stroke?: boolean;
@@ -57,8 +58,15 @@ export default abstract class Shape extends THREE.Group {
   ) {
     super();
     config = Object.assign(Shape.defaultStyle(), config);
+    if (points === undefined) {
+      config.stroke = false;
+      config.fill = false;
+    }
 
-    if (config.fill !== false) {
+    if (config.fill) {
+      if (!config.fillPoints && !points) {
+        throw new Error("Fill requires either fillPoints or points");
+      }
       const fillGeometry = getFillGeometry(config.fillPoints ?? points);
       const fillMaterial = new THREE.MeshBasicMaterial({
         color: config.fillColor,
@@ -70,7 +78,10 @@ export default abstract class Shape extends THREE.Group {
       this.add(this.fill);
     }
 
-    if (config.stroke !== false) {
+    if (config.stroke) {
+      if (!points) {
+        throw new Error("Stroke requires points");
+      }
       const strokeGeometry = new MeshLineGeometry(config.arrow);
       strokeGeometry.setPoints(points);
 
@@ -91,7 +102,9 @@ export default abstract class Shape extends THREE.Group {
       this.add(this.stroke);
     }
 
-    this.curveEndIndices = this.getCurveEndIndices();
+    if (this.stroke) {
+      this.curveEndIndices = this.getCurveEndIndices();
+    }
   }
 
   forwardEvent = (e) => this.dispatchEvent(e);
@@ -122,8 +135,10 @@ export default abstract class Shape extends THREE.Group {
 
   static defaultStyle() {
     return {
+      fill: true,
       fillColor: new THREE.Color(0xfffaf0),
       fillOpacity: 0.0,
+      stroke: true,
       strokeColor: new THREE.Color(0x000000),
       strokeOpacity: 1.0,
       strokeWidth: 4,
@@ -150,7 +165,7 @@ export default abstract class Shape extends THREE.Group {
       config = args[args.length - 1];
     }
 
-    const newShape = new (this.constructor as any)(...requiredArgs, {
+    const newShape = new (this.constructor as new (...args: any[]) => this)(...requiredArgs, {
       ...this.getStyle(),
       ...config,
     });
@@ -161,6 +176,16 @@ export default abstract class Shape extends THREE.Group {
 
     this.copyStrokeAndFill(newShape);
     this.copyStyle(newShape);
+    if (this.intrinsicChildren && newShape.intrinsicChildren) {
+      this.intrinsicChildren.traverse((child) => {
+        if (child instanceof Shape) {
+          child.dispose();
+        }
+      });
+      this.remove(this.intrinsicChildren);
+      this.intrinsicChildren = newShape.intrinsicChildren;
+      this.add(this.intrinsicChildren);
+    }
     const newAttributes = newShape.getAttributes();
     Object.assign(this, newAttributes);
   }
@@ -176,8 +201,12 @@ export default abstract class Shape extends THREE.Group {
   }
 
   copyStrokeAndFill(shape: Shape) {
-    this.copyStroke(shape);
-    this.copyFill(shape);
+    if (this.stroke && shape.stroke) {
+      this.copyStroke(shape);
+    }
+    if (this.fill && shape.fill) {
+      this.copyFill(shape);
+    }
   }
 
   get points(): Array<THREE.Vector3> {
@@ -260,12 +289,13 @@ export default abstract class Shape extends THREE.Group {
   }
 
   getStyle(): Style {
+    const defaultStyle = Shape.defaultStyle();
     return {
-      fillColor: this.fill.material.color,
-      fillOpacity: this.fill.material.opacity,
-      strokeColor: this.stroke.material.color,
-      strokeOpacity: this.stroke.material.opacity,
-      strokeWidth: this.stroke.material.width,
+      fillColor: this.fill?.material.color ?? defaultStyle.fillColor,
+      fillOpacity: this.fill?.material.opacity ?? defaultStyle.fillOpacity,
+      strokeColor: this.stroke?.material.color ?? defaultStyle.strokeColor,
+      strokeOpacity: this.stroke?.material.opacity ?? defaultStyle.strokeOpacity,
+      strokeWidth: this.stroke?.material.width ?? defaultStyle.strokeWidth,
     };
   }
 
@@ -274,33 +304,37 @@ export default abstract class Shape extends THREE.Group {
     config: { includeDescendents: boolean } = { includeDescendents: false },
   ): void {
     const { fillColor, fillOpacity } = style;
-    if (fillColor !== undefined) {
-      this.fill.material.color = fillColor;
-    }
-    if (fillOpacity !== undefined) {
-      this.fill.material.opacity = fillOpacity;
+    if (this.fill) {
+      if (fillColor !== undefined) {
+        this.fill.material.color = fillColor;
+      }
+      if (fillOpacity !== undefined) {
+        this.fill.material.opacity = fillOpacity;
+      }
     }
 
     const { strokeColor, strokeOpacity, strokeWidth } = style;
-    if (strokeColor !== undefined) {
-      this.stroke.material.color = strokeColor;
-    }
-    if (strokeOpacity !== undefined) {
-      this.stroke.material.opacity = strokeOpacity;
-    }
-    if (strokeWidth !== undefined) {
-      this.stroke.material.width = strokeWidth;
-    }
+    if (this.stroke) {
+      if (strokeColor !== undefined) {
+        this.stroke.material.color = strokeColor;
+      }
+      if (strokeOpacity !== undefined) {
+        this.stroke.material.opacity = strokeOpacity;
+      }
+      if (strokeWidth !== undefined) {
+        this.stroke.material.width = strokeWidth;
+      }
 
-    if (style.dashed === true) {
-      this.stroke.material.dashLength = 0.4;
-    }
-    const { strokeDashLength, strokeDashOffset } = style;
-    if (strokeDashLength !== undefined) {
-      this.stroke.material.dashLength = strokeDashLength;
-    }
-    if (strokeDashOffset !== undefined) {
-      this.stroke.material.dashOffset = strokeDashOffset;
+      if (style.dashed === true) {
+        this.stroke.material.dashLength = 0.4;
+      }
+      const { strokeDashLength, strokeDashOffset } = style;
+      if (strokeDashLength !== undefined) {
+        this.stroke.material.dashLength = strokeDashLength;
+      }
+      if (strokeDashOffset !== undefined) {
+        this.stroke.material.dashOffset = strokeDashOffset;
+      }
     }
 
     if (config.includeDescendents) {
