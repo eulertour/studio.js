@@ -1,6 +1,6 @@
-import { default as Indicator } from "./Indicator.js";
-import { default as CongruentAngle } from "./CongruentAngle.js";
-import { default as RightAngle } from "./RightAngle.js";
-import { default as CongruentLine } from "./CongruentLine.js";
+export { default as Indicator } from "./Indicator.js";
+export { default as CongruentAngle } from "./CongruentAngle.js";
+export { default as RightAngle } from "./RightAngle.js";
+export { default as CongruentLine } from "./CongruentLine.js";
+export { default as Number } from "./Number.js";
 
-export { Indicator, CongruentAngle, RightAngle, CongruentLine, };
