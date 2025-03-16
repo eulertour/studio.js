@@ -10,60 +10,9 @@ interface IndicatorConfig {
 }
 
 
-  grow(config?): Animation {
-    const vec = new THREE.Vector3().subVectors(this.end, this.start);
-    this.startTick.position.set(0, 0, 0);
-    this.endTick.position.set(0, 0, 0);
-    this.stem.stroke.material.uniforms.drawRange.value.set(0.5, 0.5);
-    return new Animation(
-      (elapsedTime: number) => {
-        const halfTime = elapsedTime / 2;
-        this.stem.stroke.material.uniforms.drawRange.value.set(
-          0.5 - halfTime,
-          0.5 + halfTime,
-        );
-        this.startTick.position.set(0, 0, 0).addScaledVector(vec, halfTime);
-        this.endTick.position.set(0, 0, 0).addScaledVector(vec, -halfTime);
-      },
-      { object: this, ...config },
-    );
-  }
-}
 
-class CongruentLine extends THREE.Group {
-  constructor(
-    ticks: number,
-    start: THREE.Vector3,
-    end: THREE.Vector3,
-    config: Geometry.Style & {
-      tickLength?: number;
-      spacing?: number;
-    } = {},
-  ) {
-    config = Object.assign({ tickLength: 0.25, spacing: 0.15 }, config);
-    super();
-    const left = -(config.spacing * (ticks - 1)) / 2;
-    for (let i = 0; i < ticks; i++) {
-      const pos = left + config.spacing * i;
-      const tick = new Geometry.Line(
-        new THREE.Vector3(pos, -config.tickLength / 2, 0),
-        new THREE.Vector3(pos, config.tickLength / 2, 0),
-        config,
-      );
-      this.add(tick);
-    }
 
-    this.moveToSegment(start, end);
-  }
 
-  moveToSegment(start: THREE.Vector3, end: THREE.Vector3) {
-    const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
-    this.position.copy(center);
-
-    const segmentVector = new THREE.Vector3().subVectors(end, start);
-    this.rotation.z = Math.atan2(segmentVector.y, segmentVector.x);
-  }
-}
 
 class CongruentAngle extends THREE.Group {
   constructor(

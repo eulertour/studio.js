@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import * as Geometry from "../geometry/index.js";
 import * as Utils from "../utils.js";
+import { Animation } from "../animation/index.js";
 
 interface IndicatorConfig {
   tickLength?: number;
@@ -48,4 +49,22 @@ export default class Indicator extends THREE.Group {
       }
       this.position.copy(center);
     }
-}
+    grow(config?): Animation {
+        const vec = new THREE.Vector3().subVectors(this.end, this.start);
+        this.startTick.position.set(0, 0, 0);
+        this.endTick.position.set(0, 0, 0);
+        this.stem.stroke.material.uniforms.drawRange.value.set(0.5, 0.5);
+        return new Animation(
+          (elapsedTime: number) => {
+            const halfTime = elapsedTime / 2;
+            this.stem.stroke.material.uniforms.drawRange.value.set(
+              0.5 - halfTime,
+              0.5 + halfTime,
+            );
+            this.startTick.position.set(0, 0, 0).addScaledVector(vec, halfTime);
+            this.endTick.position.set(0, 0, 0).addScaledVector(vec, -halfTime);
+          },
+          { object: this, ...config },
+        );
+      }
+    }
