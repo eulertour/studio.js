@@ -1,4 +1,3 @@
-import { Utils } from "../index.js";
 import * as THREE from "three";
 import MeshLine, {
   MeshLineGeometry,
@@ -121,7 +120,6 @@ export default abstract class Shape extends THREE.Group {
     label.moveNextTo(this, direction);
   }
 
-
   static defaultStyle() {
     return {
       fillColor: new THREE.Color(0xfffaf0),
@@ -156,6 +154,11 @@ export default abstract class Shape extends THREE.Group {
       ...this.getStyle(),
       ...config,
     });
+
+    this.position.copy(newShape.position);
+    this.rotation.copy(newShape.rotation);
+    this.scale.copy(newShape.scale);
+
     this.copyStrokeAndFill(newShape);
     this.copyStyle(newShape);
     const newAttributes = newShape.getAttributes();
@@ -191,7 +194,7 @@ export default abstract class Shape extends THREE.Group {
 
   transformedPoint(index: number, targetSpace: THREE.Object3D) {
     const startingPoint = this.points[index].clone();
-    return Utils.transformBetweenSpaces(this, targetSpace, startingPoint);
+    return targetSpace.worldToLocal(this.localToWorld(startingPoint));
   }
 
   segment(index: number) {
@@ -266,7 +269,10 @@ export default abstract class Shape extends THREE.Group {
     };
   }
 
-  restyle(style: Style, config: { includeDescendents: boolean } = { includeDescendents: false }): void {
+  restyle(
+    style: Style,
+    config: { includeDescendents: boolean } = { includeDescendents: false },
+  ): void {
     const { fillColor, fillOpacity } = style;
     if (fillColor !== undefined) {
       this.fill.material.color = fillColor;

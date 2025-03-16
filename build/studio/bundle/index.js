@@ -54937,6 +54937,9 @@ class Shape extends THREE.Group {
             ...this.getStyle(),
             ...config,
         });
+        this.position.copy(newShape.position);
+        this.rotation.copy(newShape.rotation);
+        this.scale.copy(newShape.scale);
         this.copyStrokeAndFill(newShape);
         this.copyStyle(newShape);
         const newAttributes = newShape.getAttributes();
@@ -54965,7 +54968,7 @@ class Shape extends THREE.Group {
     }
     transformedPoint(index, targetSpace) {
         const startingPoint = this.points[index].clone();
-        return transformBetweenSpaces(this, targetSpace, startingPoint);
+        return targetSpace.worldToLocal(this.localToWorld(startingPoint));
     }
     segment(index) {
         return new THREE.Line3(this.points[index].clone(), this.points[index + 1].clone());
@@ -55144,6 +55147,9 @@ class Line extends Shape {
         this.start.copy(start);
         this.end.copy(end);
         this.copyStrokeAndFill(new Line(start, end, config));
+    }
+    length() {
+        return this.start.distanceTo(this.end);
     }
     getClassConfig() {
         return {};
@@ -56794,14 +56800,6 @@ class Shake extends Animation {
     }
 }
 
-class Grow extends Animation {
-    constructor(object) {
-        super((elapsedTime) => {
-            object.scale.set(elapsedTime, elapsedTime, elapsedTime);
-        }, { object, reveal: true });
-    }
-}
-
 var index = /*#__PURE__*/Object.freeze({
     __proto__: null,
     Animation: Animation,
@@ -56810,7 +56808,6 @@ var index = /*#__PURE__*/Object.freeze({
     Erase: Erase,
     FadeIn: FadeIn,
     FadeOut: FadeOut,
-    Grow: Grow,
     MoveTo: MoveTo,
     Rotate: Rotate,
     SetOpacity: SetOpacity,
@@ -56941,6 +56938,9 @@ class CongruentLine extends THREE.Group {
             const tick = new Line(new THREE.Vector3(pos, -config.tickLength / 2, 0), new THREE.Vector3(pos, config.tickLength / 2, 0), config);
             this.add(tick);
         }
+        this.moveToSegment(start, end);
+    }
+    moveToSegment(start, end) {
         const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
         this.position.copy(center);
         const segmentVector = new THREE.Vector3().subVectors(end, start);
@@ -57336,9 +57336,12 @@ class SceneController {
             this.elapsedTime += deltaTime;
         }
         try {
+            const roundedElapsedTime = Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
+            this.loopAnimations.forEach((animation) => animation.update(roundedElapsedTime));
+            this.userScene.scene.traverse((object) => {
+                object.update(this.deltaTime, this.elapsedTime);
+            });
             this.userScene.update?.(this.deltaTime, this.elapsedTime);
-            const roundedTime = Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
-            this.loopAnimations.forEach((animation) => animation.update(roundedTime));
         }
         catch (err) {
             throw new Error(`Error executing user animation: ${err.toString()}`);

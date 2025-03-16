@@ -114,7 +114,7 @@ export type AnimationRepresentation = Animation_3 | Array<Animation_3> | {
     parent?: THREE.Object3D;
     runTime?: number;
     scale?: number;
-};
+} | ((t: number, dt: number) => void);
 
 // @public
 class Arc extends Shape {
@@ -221,6 +221,8 @@ class CongruentLine extends THREE.Group {
         tickLength?: number;
         spacing?: number;
     });
+    // (undocumented)
+    moveToSegment(start: THREE.Vector3, end: THREE.Vector3): void;
 }
 
 declare namespace Constants {
@@ -469,6 +471,8 @@ class Line extends Shape {
     getClassConfig(): {};
     // (undocumented)
     getVector(global?: boolean): THREE.Vector3;
+    // (undocumented)
+    length(): number;
     // (undocumented)
     reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
     // (undocumented)

@@ -1,4 +1,3 @@
-import { Utils } from "../index.js";
 import * as THREE from "three";
 import MeshLine, { MeshLineGeometry, MeshLineMaterial, } from "./MeshLine/index.js";
 import * as Text from "../text.js";
@@ -131,6 +130,9 @@ export default class Shape extends THREE.Group {
             ...this.getStyle(),
             ...config,
         });
+        this.position.copy(newShape.position);
+        this.rotation.copy(newShape.rotation);
+        this.scale.copy(newShape.scale);
         this.copyStrokeAndFill(newShape);
         this.copyStyle(newShape);
         const newAttributes = newShape.getAttributes();
@@ -159,7 +161,7 @@ export default class Shape extends THREE.Group {
     }
     transformedPoint(index, targetSpace) {
         const startingPoint = this.points[index].clone();
-        return Utils.transformBetweenSpaces(this, targetSpace, startingPoint);
+        return targetSpace.worldToLocal(this.localToWorld(startingPoint));
     }
     segment(index) {
         return new THREE.Line3(this.points[index].clone(), this.points[index + 1].clone());

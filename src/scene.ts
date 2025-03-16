@@ -16,7 +16,8 @@ export type AnimationRepresentation =
       parent?: THREE.Object3D;
       runTime?: number;
       scale?: number;
-    };
+    }
+  | ((t: number, dt: number) => void);
 
 type Class<T> = new (
   scene: THREE.Scene,
@@ -145,10 +146,15 @@ export class SceneController {
     }
 
     try {
-      this.userScene.update?.(this.deltaTime, this.elapsedTime);
-      const roundedTime =
+      const roundedElapsedTime =
         Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
-      this.loopAnimations.forEach((animation) => animation.update(roundedTime));
+      this.loopAnimations.forEach((animation) =>
+        animation.update(roundedElapsedTime),
+      );
+      this.userScene.scene.traverse((object) => {
+        object.update(this.deltaTime, this.elapsedTime);
+      });
+      this.userScene.update?.(this.deltaTime, this.elapsedTime);
     } catch (err: any) {
       throw new Error(`Error executing user animation: ${err.toString()}`);
     }
