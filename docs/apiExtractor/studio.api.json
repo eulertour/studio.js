@@ -1835,6 +1835,71 @@
             },
             {
               "kind": "Class",
+              "canonicalReference": "@eulertour/studio!Animation_2.Grow:class",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "export default class Grow extends "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Animation",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Animation_3:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": " "
+                }
+              ],
+              "fileUrlPath": "src/animation/Grow.ts",
+              "releaseTag": "Public",
+              "isAbstract": false,
+              "name": "Grow",
+              "preserveMemberOrder": false,
+              "members": [
+                {
+                  "kind": "Constructor",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Grow:constructor(1)",
+                  "docComment": "/**\n * Constructs a new instance of the `Grow` class\n */\n",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "constructor(object: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Object3D",
+                      "canonicalReference": "@types/three!Object3D:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ");"
+                    }
+                  ],
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "object",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": false
+                    }
+                  ]
+                }
+              ],
+              "extendsTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "implementsTokenRanges": []
+            },
+            {
+              "kind": "Class",
               "canonicalReference": "@eulertour/studio!Animation_2.MoveTo:class",
               "docComment": "",
               "excerptTokens": [
@@ -3144,7 +3209,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/angle.ts",
+              "fileUrlPath": "src/diagram/Angle.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "Angle",
@@ -3403,7 +3468,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class CongruentAngle extends "
+                  "text": "export default class CongruentAngle extends "
                 },
                 {
                   "kind": "Reference",
@@ -3415,7 +3480,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/diagram.ts",
+              "fileUrlPath": "src/diagram/CongruentAngle.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "CongruentAngle",
@@ -3755,7 +3820,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class CongruentLine extends "
+                  "text": "export default class CongruentLine extends "
                 },
                 {
                   "kind": "Reference",
@@ -3767,7 +3832,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/diagram.ts",
+              "fileUrlPath": "src/diagram/CongruentLine.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "CongruentLine",
@@ -3940,7 +4005,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class Indicator extends "
+                  "text": "export default class Indicator extends "
                 },
                 {
                   "kind": "Reference",
@@ -3952,7 +4017,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/diagram.ts",
+              "fileUrlPath": "src/diagram/Indicator.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "Indicator",
@@ -4252,7 +4317,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class Number extends "
+                  "text": "export default class Number extends "
                 },
                 {
                   "kind": "Reference",
@@ -4264,7 +4329,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/diagram.ts",
+              "fileUrlPath": "src/diagram/Number.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "Number",
@@ -4763,7 +4828,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class RightAngle extends "
+                  "text": "export default class RightAngle extends "
                 },
                 {
                   "kind": "Reference",
@@ -4775,7 +4840,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/diagram.ts",
+              "fileUrlPath": "src/diagram/RightAngle.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "RightAngle",
