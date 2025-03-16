@@ -7,7 +7,6 @@ interface IndicatorConfig {
   tickLength?: number;
 }
 
-
 export default class Indicator extends THREE.Group {
     public startTick: Geometry.Line;
     public endTick: Geometry.Line;
