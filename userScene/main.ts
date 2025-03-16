@@ -6,7 +6,6 @@ import {
 } from "../src/index.js";
 import * as THREE from "three";
 
-
 export default class Scene implements StudioScene {
   animations?: Array<AnimationRepresentation>;
 
@@ -29,7 +28,6 @@ export default class Scene implements StudioScene {
       },
     );
     scene.add(triangle);
-
 
     this.animations = [
       new Animation.Wait(),
