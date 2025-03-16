@@ -261,9 +261,9 @@ declare namespace Diagram {
     export {
         Indicator,
         Angle,
+        CongruentAngle,
         RightAngle,
         CongruentLine,
-        CongruentAngle,
         Number_2 as Number
     }
 }

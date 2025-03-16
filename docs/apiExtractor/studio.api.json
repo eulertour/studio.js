@@ -3209,7 +3209,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/angle.ts",
+              "fileUrlPath": "src/diagram/Angle.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "Angle",
@@ -3468,7 +3468,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class CongruentAngle extends "
+                  "text": "export default class CongruentAngle extends "
                 },
                 {
                   "kind": "Reference",
@@ -3480,7 +3480,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/diagram.ts",
+              "fileUrlPath": "src/diagram/CongruentAngle.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "CongruentAngle",
@@ -3639,7 +3639,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class CongruentLine extends "
+                  "text": "export default class CongruentLine extends "
                 },
                 {
                   "kind": "Reference",
@@ -3651,7 +3651,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/diagram.ts",
+              "fileUrlPath": "src/diagram/CongruentLine.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "CongruentLine",
@@ -3824,7 +3824,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class Indicator extends "
+                  "text": "export default class Indicator extends "
                 },
                 {
                   "kind": "Reference",
@@ -3836,7 +3836,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/diagram.ts",
+              "fileUrlPath": "src/diagram/Indicator.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "Indicator",
@@ -4136,7 +4136,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class Number extends "
+                  "text": "export default class Number extends "
                 },
                 {
                   "kind": "Reference",
@@ -4148,7 +4148,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/diagram.ts",
+              "fileUrlPath": "src/diagram/Number.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "Number",
@@ -4647,7 +4647,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "declare class RightAngle extends "
+                  "text": "export default class RightAngle extends "
                 },
                 {
                   "kind": "Reference",
@@ -4659,7 +4659,7 @@
                   "text": " "
                 }
               ],
-              "fileUrlPath": "src/diagram.ts",
+              "fileUrlPath": "src/diagram/RightAngle.ts",
               "releaseTag": "Public",
               "isAbstract": false,
               "name": "RightAngle",

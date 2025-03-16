@@ -55577,7 +55577,7 @@ class Square extends Rectangle {
     }
 }
 
-var index$1 = /*#__PURE__*/Object.freeze({
+var index$2 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     Arc: Arc,
     Arrow: Arrow,
@@ -56800,7 +56800,15 @@ class Shake extends Animation {
     }
 }
 
-var index = /*#__PURE__*/Object.freeze({
+class Grow extends Animation {
+    constructor(object) {
+        super((elapsedTime) => {
+            object.scale.set(elapsedTime, elapsedTime, elapsedTime);
+        }, { object, reveal: true });
+    }
+}
+
+var index$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     Animation: Animation,
     Draw: Draw,
@@ -56808,6 +56816,7 @@ var index = /*#__PURE__*/Object.freeze({
     Erase: Erase,
     FadeIn: FadeIn,
     FadeOut: FadeOut,
+    Grow: Grow,
     MoveTo: MoveTo,
     Rotate: Rotate,
     SetOpacity: SetOpacity,
@@ -56816,54 +56825,6 @@ var index = /*#__PURE__*/Object.freeze({
     Shift: Shift,
     Wait: Wait
 });
-
-// TODO: Handle reflex angles.
-class Angle extends Shape {
-    constructor(point1, point2, point3, config = {}) {
-        config = { radius: 0.4, reflex: false, ...config };
-        const vector21 = new THREE.Vector3().subVectors(point1, point2);
-        const vector23 = new THREE.Vector3().subVectors(point3, point2);
-        const arcAngle = vector21.angleTo(vector23);
-        let arcRotation;
-        // TODO: Handle 180 degree angles
-        if (positiveAngleTo(vector21, vector23) < Math.PI) {
-            arcRotation = positiveAngleTo(RIGHT, vector21);
-        }
-        else {
-            arcRotation = positiveAngleTo(RIGHT, vector23);
-        }
-        const points = getArcPoints(config.radius, arcAngle);
-        config.fillPoints = [...points, new THREE.Vector3(0, 0, 0)];
-        super(points, config);
-        Object.defineProperty(this, "point1", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: point1
-        });
-        Object.defineProperty(this, "point2", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: point2
-        });
-        Object.defineProperty(this, "point3", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: point3
-        });
-        this.position.copy(point2);
-        this.rotateZ(arcRotation);
-    }
-    getAttributes() {
-        return {
-            point1: this.point1,
-            point2: this.point2,
-            point3: this.point3,
-        };
-    }
-}
 
 class Indicator extends THREE.Group {
     constructor(start, end, config = {}) {
@@ -56928,25 +56889,55 @@ class Indicator extends THREE.Group {
         }, { object: this, ...config });
     }
 }
-class CongruentLine extends THREE.Group {
-    constructor(ticks, start, end, config = {}) {
-        config = Object.assign({ tickLength: 0.25, spacing: 0.15 }, config);
-        super();
-        const left = -(config.spacing * (ticks - 1)) / 2;
-        for (let i = 0; i < ticks; i++) {
-            const pos = left + config.spacing * i;
-            const tick = new Line(new THREE.Vector3(pos, -config.tickLength / 2, 0), new THREE.Vector3(pos, config.tickLength / 2, 0), config);
-            this.add(tick);
+
+// TODO: Handle reflex angles.
+class Angle extends Shape {
+    constructor(point1, point2, point3, config = {}) {
+        config = { radius: 0.4, reflex: false, ...config };
+        const vector21 = new THREE.Vector3().subVectors(point1, point2);
+        const vector23 = new THREE.Vector3().subVectors(point3, point2);
+        const arcAngle = vector21.angleTo(vector23);
+        let arcRotation;
+        // TODO: Handle 180 degree angles
+        if (positiveAngleTo(vector21, vector23) < Math.PI) {
+            arcRotation = positiveAngleTo(RIGHT, vector21);
         }
-        this.moveToSegment(start, end);
+        else {
+            arcRotation = positiveAngleTo(RIGHT, vector23);
+        }
+        const points = getArcPoints(config.radius, arcAngle);
+        config.fillPoints = [...points, new THREE.Vector3(0, 0, 0)];
+        super(points, config);
+        Object.defineProperty(this, "point1", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point1
+        });
+        Object.defineProperty(this, "point2", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point2
+        });
+        Object.defineProperty(this, "point3", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point3
+        });
+        this.position.copy(point2);
+        this.rotateZ(arcRotation);
     }
-    moveToSegment(start, end) {
-        const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
-        this.position.copy(center);
-        const segmentVector = new THREE.Vector3().subVectors(end, start);
-        this.rotation.z = Math.atan2(segmentVector.y, segmentVector.x);
+    getAttributes() {
+        return {
+            point1: this.point1,
+            point2: this.point2,
+            point3: this.point3,
+        };
     }
 }
+
 class CongruentAngle extends THREE.Group {
     constructor(arcs, point1, point2, point3, config = {}) {
         config = {
@@ -56970,6 +56961,7 @@ class CongruentAngle extends THREE.Group {
         }
     }
 }
+
 class RightAngle extends Polyline {
     constructor(point1, point2, point3, config = {}) {
         config = { sideLength: 0.35, ...config };
@@ -56986,6 +56978,27 @@ class RightAngle extends Polyline {
         ], config);
     }
 }
+
+class CongruentLine extends THREE.Group {
+    constructor(ticks, start, end, config = {}) {
+        config = Object.assign({ tickLength: 0.25, spacing: 0.15 }, config);
+        super();
+        const left = -(config.spacing * (ticks - 1)) / 2;
+        for (let i = 0; i < ticks; i++) {
+            const pos = left + config.spacing * i;
+            const tick = new Line(new THREE.Vector3(pos, -config.tickLength / 2, 0), new THREE.Vector3(pos, config.tickLength / 2, 0), config);
+            this.add(tick);
+        }
+        this.moveToSegment(start, end);
+    }
+    moveToSegment(start, end) {
+        const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
+        this.position.copy(center);
+        const segmentVector = new THREE.Vector3().subVectors(end, start);
+        this.rotation.z = Math.atan2(segmentVector.y, segmentVector.x);
+    }
+}
+
 let Number$1 = class Number extends THREE.Group {
     constructor(value = 0, config = {}) {
         const fullConfig = {
@@ -57096,7 +57109,7 @@ Object.defineProperty(Number$1, "geometries", {
     value: Number$1.initializeGeometries()
 });
 
-var diagram = /*#__PURE__*/Object.freeze({
+var index = /*#__PURE__*/Object.freeze({
     __proto__: null,
     Angle: Angle,
     CongruentAngle: CongruentAngle,
@@ -57104,6 +57117,33 @@ var diagram = /*#__PURE__*/Object.freeze({
     Indicator: Indicator,
     Number: Number$1,
     RightAngle: RightAngle
+});
+
+/**
+ * A curve described by an equation.
+ */
+class Curve extends Polyline {
+    constructor(equation, config = {}) {
+        config = { ...Polyline.defaultConfig(), ...config };
+        super([new THREE.Vector3(-1, -1, 0), new THREE.Vector3(1, 1, 0)], config);
+        Object.defineProperty(this, "equation", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: equation
+        });
+    }
+    static defaultConfig() {
+        return { ...Polyline.defaultConfig() };
+    }
+    getClassConfig() {
+        return {};
+    }
+}
+
+var graphing = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    Curve: Curve
 });
 
 var frame = {
@@ -57148,33 +57188,6 @@ var frame = {
         },
     },
 };
-
-/**
- * A curve described by an equation.
- */
-class Curve extends Polyline {
-    constructor(equation, config = {}) {
-        config = { ...Polyline.defaultConfig(), ...config };
-        super([new THREE.Vector3(-1, -1, 0), new THREE.Vector3(1, 1, 0)], config);
-        Object.defineProperty(this, "equation", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: equation
-        });
-    }
-    static defaultConfig() {
-        return { ...Polyline.defaultConfig() };
-    }
-    getClassConfig() {
-        return {};
-    }
-}
-
-var graphing = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    Curve: Curve
-});
 
 class SceneController {
     constructor(UserScene, canvasRef, config) {
@@ -57596,4 +57609,4 @@ THREE.Object3D.prototype.recenter = function (globalPosition) {
 };
 THREE.Object3D.prototype.reorient = () => { };
 
-export { index as Animation, constants as Constants, diagram as Diagram, frame as Frame, index$1 as Geometry, graphing as Graphing, MeshLineMaterial, SceneController, text as Text, utils as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };
+export { index$1 as Animation, constants as Constants, index as Diagram, frame as Frame, index$2 as Geometry, graphing as Graphing, MeshLineMaterial, SceneController, text as Text, utils as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };

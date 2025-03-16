@@ -4,3 +4,4 @@ export { default as CongruentAngle } from "./CongruentAngle.js";
 export { default as RightAngle } from "./RightAngle.js";
 export { default as CongruentLine } from "./CongruentLine.js";
 export { default as Number } from "./Number.js";
+//# sourceMappingURL=index.js.map
