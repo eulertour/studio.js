@@ -41,7 +41,8 @@ declare namespace Animation_2 {
         FadeOut,
         Wait,
         Emphasize,
-        Shake
+        Shake,
+        Grow
     }
 }
 export { Animation_2 as Animation }
@@ -260,9 +261,9 @@ declare namespace Diagram {
     export {
         Indicator,
         Angle,
+        CongruentAngle,
         RightAngle,
         CongruentLine,
-        CongruentAngle,
         Number_2 as Number
     }
 }
@@ -411,6 +412,11 @@ declare namespace Graphing {
     }
 }
 export { Graphing }
+
+// @public (undocumented)
+class Grow extends Animation_3 {
+    constructor(object: THREE.Object3D);
+}
 
 // @public (undocumented)
 type HeightSetupConfig = {

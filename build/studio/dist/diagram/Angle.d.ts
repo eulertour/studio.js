@@ -1,4 +1,4 @@
-import Shape, { Style } from "./geometry/Shape.js";
+import Shape, { Style } from "../geometry/Shape.js";
 import * as THREE from "three";
 export type AngleAttributes = {
     point1: THREE.Vector3;
@@ -19,4 +19,4 @@ export default class Angle extends Shape {
         point3: THREE.Vector3;
     };
 }
-//# sourceMappingURL=angle.d.ts.map
+//# sourceMappingURL=Angle.d.ts.map
