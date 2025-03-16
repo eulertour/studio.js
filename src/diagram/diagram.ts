@@ -1,9 +1,9 @@
 import * as THREE from "three";
-import { Animation } from "./animation/index.js";
-import * as Geometry from "./geometry/index.js";
-import * as Utils from "./utils.js";
-import * as Text from "./text.js";
-import Angle from "./angle.js";
+import { Animation } from "../animation/index.js";
+import * as Geometry from "../geometry/index.js";
+import * as Utils from "../utils.js";
+import * as Text from "../text.js";
+import Angle from "../angle.js";
 
 interface IndicatorConfig {
   tickLength?: number;

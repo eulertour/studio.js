@@ -374,7 +374,7 @@ import MeshLineMaterial, {
 } from "./geometry/MeshLine/MeshLineMaterial.js";
 import * as Animation from "./animation/index.js";
 import * as Constants from "./constants.js";
-import * as Diagram from "./diagram.js";
+import * as Diagram from "./diagram/diagram.js";
 import Frame from "./frame.js";
 import * as Geometry from "./geometry/index.js";
 import * as Graphing from "./graphing.js";
