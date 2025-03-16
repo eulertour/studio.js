@@ -8,7 +8,6 @@ import { PolygonAttributes } from "./Polygon.js";
  */
 export default class Polyline extends Shape {
     constructor(points: Array<THREE.Vector3>, config?: Style);
-    reshape(points: Array<THREE.Vector3>, config?: Style): void;
     static defaultConfig(): {
         fill: boolean;
     };

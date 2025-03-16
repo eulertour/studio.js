@@ -651,8 +651,6 @@ class Polyline extends Shape {
     getAttributes(): PolygonAttributes;
     // (undocumented)
     getClassConfig(): {};
-    // (undocumented)
-    reshape(points: Array<THREE.Vector3>, config?: Style): void;
 }
 
 // @public (undocumented)

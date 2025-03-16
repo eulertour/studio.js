@@ -193,7 +193,6 @@ declare class Polygon extends Shape {
  */
 declare class Polyline extends Shape {
     constructor(points: Array<THREE.Vector3>, config?: Style);
-    reshape(points: Array<THREE.Vector3>, config?: Style): void;
     static defaultConfig(): {
         fill: boolean;
     };
