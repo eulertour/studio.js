@@ -92,7 +92,7 @@ const setupCanvas = (
     coordinateHeight: 8,
     viewport: undefined,
   },
-): [Scene, THREE.Camera, THREE.WebGLRenderer] => {
+): [Scene, THREE.Camera, THREE.WebGPURenderer] => {
   let aspectRatio;
   let pixelWidth;
   let pixelHeight;
@@ -128,7 +128,6 @@ const setupCanvas = (
   const renderer = new THREE.WebGPURenderer({
     canvas,
     antialias: true,
-    preserveDrawingBuffer: true,
   });
   renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
   renderer.autoClear = false;

@@ -22,7 +22,7 @@ export type AnimationRepresentation =
 type Class<T> = new (
   scene: THREE.Scene,
   camera: THREE.Camera,
-  renderer: THREE.WebGLRenderer,
+  renderer: THREE.WebGPURenderer,
 ) => T;
 
 export interface StudioScene<
@@ -30,7 +30,7 @@ export interface StudioScene<
 > {
   scene: THREE.Scene;
   camera: T;
-  renderer: THREE.WebGLRenderer;
+  renderer: THREE.WebGPURenderer;
   animations?: Array<AnimationRepresentation>;
   update?: (deltaTime: number, time: number) => void;
 }
