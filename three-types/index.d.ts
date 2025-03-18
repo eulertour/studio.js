@@ -1,4 +1,4 @@
-declare module "three" {
+declare module "three/webgpu" {
   export interface Vector3 {
     rotate90(): Vector3;
     rotate180(): Vector3;
@@ -31,4 +31,4 @@ declare module "three" {
   }
 }
 
-export * from "three";
+export * from "three/webgpu";

@@ -4,7 +4,7 @@ import {
   StudioScene,
   AnimationRepresentation,
 } from "../src/index.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 
 export default class Scene implements StudioScene {
   animations?: Array<AnimationRepresentation>;

@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import * as Utils from "./utils.js";
 
 declare module "three" {

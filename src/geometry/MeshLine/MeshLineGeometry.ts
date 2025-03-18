@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import "./meshline.glsl.js";
 
 export default class MeshLineGeometry extends THREE.BufferGeometry {

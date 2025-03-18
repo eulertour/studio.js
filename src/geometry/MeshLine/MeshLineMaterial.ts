@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import { MESHLINE_FRAG, MESHLINE_VERT } from "./meshline.glsl.js";
 
 export const CameraDimensions = new THREE.Vector2();
@@ -27,17 +27,20 @@ export default class MeshLineMaterial extends THREE.ShaderMaterial {
     },
   ) {
     super({
-      uniforms: Object.assign({}, THREE.UniformsLib.fog, {
-        color: { value: new THREE.Color() },
-        opacity: { value: 1 },
-        viewport: { value: CanvasViewport },
-        dimensions: { value: CameraDimensions },
-        unitWidth: { value: 1 / 10 },
-        drawRange: { value: new THREE.Vector2(0, 1) },
-        dashLength: { value: 0 },
-        totalLength: { value: 0 },
-        dashOffset: { value: 0 },
-      }),
+      uniforms: Object.assign(
+        {},
+        {
+          color: { value: new THREE.Color() },
+          opacity: { value: 1 },
+          viewport: { value: CanvasViewport },
+          dimensions: { value: CameraDimensions },
+          unitWidth: { value: 1 / 10 },
+          drawRange: { value: new THREE.Vector2(0, 1) },
+          dashLength: { value: 0 },
+          totalLength: { value: 0 },
+          dashOffset: { value: 0 },
+        },
+      ),
       vertexShader: MESHLINE_VERT,
       fragmentShader: MESHLINE_FRAG,
       transparent: true,

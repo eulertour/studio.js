@@ -1,5 +1,5 @@
-import * as THREE from "three";
-import { Scene as BaseScene } from "three";
+import * as THREE from "three/webgpu";
+import { Scene as BaseScene } from "three/webgpu";
 import MeshLine from "./geometry/MeshLine/index.js";
 import { setCameraDimensions } from "./geometry/MeshLine/MeshLineMaterial.js";
 import { CanvasViewport } from "./geometry/MeshLine/MeshLineMaterial.js";
@@ -59,6 +59,7 @@ const isHeightSetup = (config: object): config is HeightSetupConfig => {
 
 export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
   viewport?: THREE.Vector4;
+  webgpu: boolean;
 };
 
 class Scene extends BaseScene {
@@ -124,7 +125,7 @@ const setupCanvas = (
   camera.position.z = 6;
   setCameraDimensions(camera);
 
-  const renderer = new THREE.WebGLRenderer({
+  const renderer = new THREE.WebGPURenderer({
     canvas,
     antialias: true,
     preserveDrawingBuffer: true,

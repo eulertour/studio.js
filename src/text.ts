@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import { SVGLoader } from "./SVGLoader.js";
 import type { Transform } from "./geometry/Shape.js";
 import tex2svg from "./mathjax.js";

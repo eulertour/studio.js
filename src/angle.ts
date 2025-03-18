@@ -1,5 +1,5 @@
 import Shape, { Style } from "./geometry/Shape.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import { Utils } from "./index.js";
 import { getArcPoints } from "./geometry/geometryUtils.js";
 
@@ -48,4 +48,3 @@ export default class Angle extends Shape {
     };
   }
 }
-

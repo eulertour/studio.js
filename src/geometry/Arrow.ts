@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import Shape, { type Style } from "./Shape.js";
 
 export type ArrowAttributes = {

@@ -1,6 +1,6 @@
 import { ERROR_THRESHOLD } from "../constants.js";
 import Shape, { Style } from "./Shape.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 
 export type CircleAttributes = {
   radius: number;

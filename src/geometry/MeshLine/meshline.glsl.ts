@@ -1,8 +1,6 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 
 export const MESHLINE_VERT = /*glsl*/ `
-${THREE.ShaderChunk.logdepthbuf_pars_vertex}
-${THREE.ShaderChunk.fog_pars_vertex}
 
 // Passed by WebGLProgram
 // https://threejs.org/docs/index.html#api/en/renderers/webgl/WebGLProgram
@@ -92,14 +90,9 @@ void main() {
   gl_Position = start * eq(startEnd, 0.) + end * eq(startEnd, 1.);
   gl_Position.xy += (projectionMatrix * vec4(fragmentOffset, 0., 1.)).xy;
 
-  ${THREE.ShaderChunk.logdepthbuf_vertex}
-  ${THREE.ShaderChunk.fog_vertex && /*glsl*/ "vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );"}
-  ${THREE.ShaderChunk.fog_vertex}
 }`;
 
 export const MESHLINE_FRAG = /*glsl*/ `
-${THREE.ShaderChunk.fog_pars_fragment}
-${THREE.ShaderChunk.logdepthbuf_pars_fragment}
 
 uniform vec3 color;
 uniform float unitWidth;
@@ -302,7 +295,6 @@ float dashCoversFragment(
 }
 
 void main() {
-    ${THREE.ShaderChunk.logdepthbuf_fragment}
 
     float pixelsPerUnit = viewport.w / dimensions.y;
     float pixelWidth = unitWidth * pixelsPerUnit;
@@ -445,5 +437,4 @@ void main() {
     }
 
     gl_FragColor = vec4(color, opacity);
-    ${THREE.ShaderChunk.fog_fragment}
 }`;

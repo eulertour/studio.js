@@ -1,10 +1,10 @@
 import { Animation } from "./Animation.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 
 export default class Shake extends Animation {
   constructor(
     object: THREE.Object3D,
-    config: { maxRotation?: number, frequency?: number } = {}
+    config: { maxRotation?: number; frequency?: number } = {},
   ) {
     const { maxRotation = 0.05, frequency = 4 } = config;
 
@@ -17,3 +17,4 @@ export default class Shake extends Animation {
     );
   }
 }
+

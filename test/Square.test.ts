@@ -1,6 +1,6 @@
 import { Geometry } from "../src/index.js";
 import { describe, it, assert } from "vitest";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 
 describe("Square", () => {
   const square = new Geometry.Square(2);
@@ -20,3 +20,4 @@ describe("Square", () => {
     });
   });
 });
+

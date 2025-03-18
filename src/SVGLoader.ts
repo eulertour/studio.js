@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import { DOMParser } from "@xmldom/xmldom";
 
 const COLOR_SPACE_SVG = THREE.SRGBColorSpace;

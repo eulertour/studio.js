@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import MeshLineGeometry from "./MeshLineGeometry.js";
 import MeshLineMaterial from "./MeshLineMaterial.js";
 import MeshLineRaycast from "./MeshLineRaycast.js";

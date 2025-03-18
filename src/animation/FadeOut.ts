@@ -1,73 +1,72 @@
 import { Animation } from "./Animation.js";
-import * as THREE from "three";
-
+import * as THREE from "three/webgpu";
 
 export default class FadeOut extends Animation {
-    initialOpacity = new Map();
-  
-    constructor(
-      objectOrFunc: THREE.Object3D | (() => THREE.Object3D),
-      public config?: any,
-    ) {
-      let family = true;
-      if (config && config.family === false) {
-        family = false;
-      }
-  
-      super(
-        (elapsedTime, _deltaTime) => {
-          if (family) {
-            this.object.traverse((child: THREE.Object3D) => {
-              if (child instanceof THREE.Mesh) {
-                if (!this.initialOpacity.has(child)) {
-                  console.error("Unknown child");
-                }
-                child.material.opacity = THREE.MathUtils.lerp(
-                  this.initialOpacity.get(child),
-                  0,
-                  elapsedTime,
-                );
+  initialOpacity = new Map();
+
+  constructor(
+    objectOrFunc: THREE.Object3D | (() => THREE.Object3D),
+    public config?: any,
+  ) {
+    let family = true;
+    if (config && config.family === false) {
+      family = false;
+    }
+
+    super(
+      (elapsedTime, _deltaTime) => {
+        if (family) {
+          this.object.traverse((child: THREE.Object3D) => {
+            if (child instanceof THREE.Mesh) {
+              if (!this.initialOpacity.has(child)) {
+                console.error("Unknown child");
               }
-            });
-          } else {
-            [this.object.stroke, this.object.fill].forEach((mesh) => {
-              if (!mesh) return;
-              mesh.material.opacity = THREE.MathUtils.lerp(
-                this.initialOpacity.get(mesh),
+              child.material.opacity = THREE.MathUtils.lerp(
+                this.initialOpacity.get(child),
                 0,
                 elapsedTime,
               );
-            });
-          }
-        },
-        { object: objectOrFunc, hide: true, ...config },
-      );
+            }
+          });
+        } else {
+          [this.object.stroke, this.object.fill].forEach((mesh) => {
+            if (!mesh) return;
+            mesh.material.opacity = THREE.MathUtils.lerp(
+              this.initialOpacity.get(mesh),
+              0,
+              elapsedTime,
+            );
+          });
+        }
+      },
+      { object: objectOrFunc, hide: true, ...config },
+    );
+  }
+
+  setUp() {
+    super.setUp();
+    this.object.traverse((child: THREE.Object3D) => {
+      if (child instanceof THREE.Mesh) {
+        this.initialOpacity.set(child, child.material.opacity);
+      }
+    });
+  }
+
+  tearDown() {
+    if (this.config?.remove) {
+      this.object.parent.remove(this.object);
     }
-  
-    setUp() {
-      super.setUp();
+    if (this.config?.restore) {
       this.object.traverse((child: THREE.Object3D) => {
         if (child instanceof THREE.Mesh) {
-          this.initialOpacity.set(child, child.material.opacity);
+          if (!this.initialOpacity.has(child)) {
+            console.error("Unknown child");
+          }
+          child.material.opacity = this.initialOpacity.get(child);
         }
       });
     }
-  
-    tearDown() {
-      if (this.config?.remove) {
-        this.object.parent.remove(this.object);
-      }
-      if (this.config?.restore) {
-        this.object.traverse((child: THREE.Object3D) => {
-          if (child instanceof THREE.Mesh) {
-            if (!this.initialOpacity.has(child)) {
-              console.error("Unknown child");
-            }
-            child.material.opacity = this.initialOpacity.get(child);
-          }
-        });
-      }
-      super.tearDown();
-    }
+    super.tearDown();
   }
-  
+}
+

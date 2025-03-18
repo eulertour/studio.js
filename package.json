@@ -7,7 +7,7 @@
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-typescript": "^12.1.2",
-    "@types/three": "^0.162",
+    "@types/three": "^0.174.0",
     "@xmldom/xmldom": "^0.9.6",
     "ajv": "8",
     "colors": "^1.4.0",
@@ -54,6 +54,6 @@
   "source": "src/index.ts",
   "type": "module",
   "dependencies": {
-    "three": "github:eulertour/three.js"
+    "three": "../three-latest"
   }
 }

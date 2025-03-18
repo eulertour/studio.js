@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import Shape from "../src/geometry/Shape";
 import { describe, beforeEach, test, expect } from "vitest";
 
@@ -43,4 +43,3 @@ describe("Shape", () => {
     expect(childShape.fill.material.color).toEqual(newStyle.fillColor);
   });
 });
-
