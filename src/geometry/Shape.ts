@@ -44,19 +44,20 @@ export default abstract class Shape extends THREE.Group {
   fill?: Fill;
   stroke?: Stroke;
   curveEndIndices: Array<Array<number>> = [];
-  arrow: boolean = false;
-  public rotation: THREE.Euler = new THREE.Euler();
+  public rotation: THREE.Euler = new THREE.Euler(0, 0, 0, 'XYZ');
 
   constructor(
     public radius: number,
     config: {
       position?: THREE.Vector3;
       rotation?: THREE.Euler | number;
+      scale?: THREE.Vector3;
       fillColor?: THREE.Color;
       strokeColor?: THREE.Color;
       fillOpacity?: number;
       strokeOpacity?: number;
       strokeWidth?: number;
+      fillPoints?: Array<THREE.Vector3>;
     } = {},
   ) {
     super();
@@ -70,6 +71,10 @@ export default abstract class Shape extends THREE.Group {
       this.rotation = typeof config.rotation === 'number' 
         ? new THREE.Euler(0, 0, config.rotation)
         : config.rotation.clone();
+    }
+
+    if (config.scale) {
+      this.scale.copy(config.scale);
     }
 
     if (config.fill !== false) {
@@ -86,7 +91,7 @@ export default abstract class Shape extends THREE.Group {
     }
 
     if (config.stroke !== false) {
-      const strokeGeometry = new MeshLineGeometry(config.arrow);
+      const strokeGeometry = new MeshLineGeometry();
       strokeGeometry.setPoints(points);
 
       if (config.dashed && config.strokeDashLength === 0) {
