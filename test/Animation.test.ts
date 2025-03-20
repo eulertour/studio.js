@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from 'vitest';
-import { Animation } from '../../../src/animation/index.js';
+import { Animation } from '../../src/animation/index.js';
 
 
 class TestAnimation extends Animation {
