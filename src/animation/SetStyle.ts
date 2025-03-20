@@ -1,4 +1,4 @@
-import { Animation } from "./Animation.js";
+import { Animation } from "./index.js";
 import * as THREE from "three";
 import { Shape, Style } from "../geometry/index.js";
 
@@ -13,36 +13,52 @@ export default class SetStyle extends Animation {
     config?: any,
   ) {
     super(
-      (elapsedTime) => {
-        if (this.initialStyle.fillColor && this.targetStyle.fillColor) {
-          this.currentStyle.fillColor ||= new THREE.Color();
-          this.currentStyle.fillColor.copy(this.initialStyle.fillColor);
-          this.currentStyle.fillColor.lerp(this.targetStyle.fillColor, elapsedTime);
+      (elapsedTime: number) => {
+        if (
+          this.initialStyle.fillColor !== undefined && 
+          this.targetStyle.fillColor !== undefined
+        ) {
+          const t = Math.min(Math.max(elapsedTime, 0), 1);
+          this.currentStyle.fillColor = new THREE.Color()
+            .copy(this.initialStyle.fillColor)
+            .lerp(this.targetStyle.fillColor, t);
         }
 
-        if (this.initialStyle.strokeColor && style.strokeColor) {
-          this.currentStyle.strokeColor = this.initialStyle.strokeColor.clone();
-          this.currentStyle.strokeColor.lerp(style.strokeColor, elapsedTime);
+        if (
+          this.initialStyle.strokeColor !== undefined && 
+          this.targetStyle.strokeColor !== undefined
+        ) {
+          const t = Math.min(Math.max(elapsedTime, 0), 1);
+          this.currentStyle.strokeColor = new THREE.Color().copy(this.initialStyle.strokeColor);
+          this.currentStyle.strokeColor.lerp(this.targetStyle.strokeColor, t);
         }
 
-        if (this.initialStyle.fillOpacity !== undefined && style.fillOpacity !== undefined) {
+        if (
+          this.initialStyle.fillOpacity !== undefined && 
+          this.targetStyle.fillOpacity !== undefined
+        ) {
           this.currentStyle.fillOpacity = THREE.MathUtils.lerp(
             this.initialStyle.fillOpacity,
-            style.fillOpacity,
+            this.targetStyle.fillOpacity,
             elapsedTime
           );
         }
 
-        if (this.initialStyle.strokeOpacity !== undefined && style.strokeOpacity !== undefined) {
+        if (
+          this.initialStyle.strokeOpacity !== undefined && 
+          this.targetStyle.strokeOpacity !== undefined
+        ) {
           this.currentStyle.strokeOpacity = THREE.MathUtils.lerp(
             this.initialStyle.strokeOpacity,
-            style.strokeOpacity,
+            this.targetStyle.strokeOpacity,
             elapsedTime
           );
         }
 
-        if (typeof this.targetStyle.strokeWidth !== 'undefined' && 
-            typeof this.initialStyle.strokeWidth !== 'undefined') {
+        if (
+          this.initialStyle.strokeWidth !== undefined && 
+          this.targetStyle.strokeWidth !== undefined
+        ) {
           this.currentStyle.strokeWidth = THREE.MathUtils.lerp(
             this.initialStyle.strokeWidth,
             this.targetStyle.strokeWidth,
@@ -58,15 +74,20 @@ export default class SetStyle extends Animation {
 
   setUp() {
     super.setUp();
-    this.initialStyle = {
-      ...this.shape.getStyle(),
-      fillColor: this.shape.getStyle().fillColor?.clone(),
-      strokeColor: this.shape.getStyle().strokeColor?.clone()
+    const shapeStyle = this.shape.getStyle();
+    
+    
+    this.initialStyle = { 
+      ...shapeStyle,
+      fillColor: shapeStyle.fillColor ? new THREE.Color().copy(shapeStyle.fillColor) : undefined,
+      strokeColor: shapeStyle.strokeColor ? new THREE.Color().copy(shapeStyle.strokeColor) : undefined
     };
-    this.targetStyle = {
+    
+    
+    this.targetStyle = { 
       ...this.style,
-      fillColor: this.style.fillColor?.clone(),
-      strokeColor: this.style.strokeColor?.clone()
+      fillColor: this.style.fillColor ? new THREE.Color().copy(this.style.fillColor) : undefined,
+      strokeColor: this.style.strokeColor ? new THREE.Color().copy(this.style.strokeColor) : undefined
     };
   }
 } 
