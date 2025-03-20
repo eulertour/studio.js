@@ -1,10 +1,11 @@
 import { Animation } from "./Animation.js";
 import * as THREE from "three";
-import Shape, { Style } from "../geometry/Shape.js";
+import { Shape, Style } from "../geometry/index.js";
 
 export default class SetStyle extends Animation {
-  private initialStyle: Style = {};
-  private targetStyle: Style = {};
+  private initialStyle!: Style;
+  private targetStyle!: Style;
+  private currentStyle: Style = {};
 
   constructor(
     public shape: Shape,
@@ -13,20 +14,19 @@ export default class SetStyle extends Animation {
   ) {
     super(
       (elapsedTime) => {
-        const currentStyle: Style = {};
-
-        if (this.initialStyle.fillColor && style.fillColor) {
-          currentStyle.fillColor = this.initialStyle.fillColor.clone();
-          currentStyle.fillColor.lerp(style.fillColor, elapsedTime);
+        if (this.initialStyle.fillColor && this.targetStyle.fillColor) {
+          this.currentStyle.fillColor ||= new THREE.Color();
+          this.currentStyle.fillColor.copy(this.initialStyle.fillColor);
+          this.currentStyle.fillColor.lerp(this.targetStyle.fillColor, elapsedTime);
         }
 
         if (this.initialStyle.strokeColor && style.strokeColor) {
-          currentStyle.strokeColor = this.initialStyle.strokeColor.clone();
-          currentStyle.strokeColor.lerp(style.strokeColor, elapsedTime);
+          this.currentStyle.strokeColor = this.initialStyle.strokeColor.clone();
+          this.currentStyle.strokeColor.lerp(style.strokeColor, elapsedTime);
         }
 
         if (this.initialStyle.fillOpacity !== undefined && style.fillOpacity !== undefined) {
-          currentStyle.fillOpacity = THREE.MathUtils.lerp(
+          this.currentStyle.fillOpacity = THREE.MathUtils.lerp(
             this.initialStyle.fillOpacity,
             style.fillOpacity,
             elapsedTime
@@ -34,22 +34,23 @@ export default class SetStyle extends Animation {
         }
 
         if (this.initialStyle.strokeOpacity !== undefined && style.strokeOpacity !== undefined) {
-          currentStyle.strokeOpacity = THREE.MathUtils.lerp(
+          this.currentStyle.strokeOpacity = THREE.MathUtils.lerp(
             this.initialStyle.strokeOpacity,
             style.strokeOpacity,
             elapsedTime
           );
         }
 
-        if (this.initialStyle.strokeWidth !== undefined && style.strokeWidth !== undefined) {
-          currentStyle.strokeWidth = THREE.MathUtils.lerp(
+        if (typeof this.targetStyle.strokeWidth !== 'undefined' && 
+            typeof this.initialStyle.strokeWidth !== 'undefined') {
+          this.currentStyle.strokeWidth = THREE.MathUtils.lerp(
             this.initialStyle.strokeWidth,
-            style.strokeWidth,
+            this.targetStyle.strokeWidth,
             elapsedTime
           );
         }
 
-        shape.restyle(currentStyle);
+        shape.restyle(this.currentStyle);
       },
       { object: shape, ...config }
     );
@@ -57,11 +58,15 @@ export default class SetStyle extends Animation {
 
   setUp() {
     super.setUp();
-    this.initialStyle = { 
+    this.initialStyle = {
       ...this.shape.getStyle(),
       fillColor: this.shape.getStyle().fillColor?.clone(),
       strokeColor: this.shape.getStyle().strokeColor?.clone()
     };
-    this.targetStyle = this.style;
+    this.targetStyle = {
+      ...this.style,
+      fillColor: this.style.fillColor?.clone(),
+      strokeColor: this.style.strokeColor?.clone()
+    };
   }
 } 
