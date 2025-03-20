@@ -940,6 +940,8 @@ class Square extends Rectangle {
     // (undocumented)
     getCloneAttributes(): number[];
     // (undocumented)
+    Reshape(sideLength: number, config?: {}): Animation_3;
+    // (undocumented)
     reshape(sideLength: number, config?: {}): void;
     // (undocumented)
     sideLength: number;

@@ -9677,6 +9677,71 @@
                   "name": "reshape"
                 },
                 {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Square#Reshape:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "Reshape(sideLength: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", config?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{}"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "): "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Animation",
+                      "canonicalReference": "@eulertour/studio!Animation_2.Animation_3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 5,
+                    "endIndex": 6
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "sideLength",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": false
+                    },
+                    {
+                      "parameterName": "config",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 3,
+                        "endIndex": 4
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "Reshape"
+                },
+                {
                   "kind": "Property",
                   "canonicalReference": "@eulertour/studio!Geometry.Square#sideLength:member",
                   "docComment": "",

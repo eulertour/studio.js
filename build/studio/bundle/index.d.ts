@@ -298,6 +298,42 @@ declare class Rectangle extends Shape {
     getCurveEndIndices(): Array<Array<number>>;
 }
 
+declare class Animation {
+    func: (elapsedTime: number, deltaTime: number) => void;
+    scene: any;
+    startTime: number;
+    endTime: number;
+    prevUpdateTime: number;
+    beforeFunc: () => void;
+    afterFunc: () => void;
+    parent: any;
+    object: any;
+    before: any;
+    after: any;
+    family: any;
+    reveal: any;
+    hide: any;
+    scale: number;
+    runTime: number;
+    finished: boolean;
+    elapsedSinceStart: number;
+    constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, family, reveal, hide, }?: {
+        object?: undefined;
+        parent?: undefined;
+        before?: undefined;
+        after?: undefined;
+        family?: undefined;
+        reveal?: undefined;
+        hide?: undefined;
+    });
+    setUp(): void;
+    tearDown(): void;
+    update(worldTime: any): void;
+    addBefore(before: any): void;
+    addAfter(after: any): void;
+}
+//# sourceMappingURL=Animation.d.ts.map
+
 /**
  * A shape with four sides of equal length and four right angles.
  *
@@ -307,6 +343,7 @@ declare class Square extends Rectangle {
     sideLength: number;
     constructor(sideLength?: number, config?: Style);
     reshape(sideLength: number, config?: {}): void;
+    Reshape(sideLength: number, config?: {}): Animation;
     getCloneAttributes(): number[];
     getAttributes(): RectangleAttributes;
     static fromAttributes(attributes: RectangleAttributes): Square;
@@ -449,42 +486,6 @@ declare const utils_d_vstack: typeof vstack;
 declare namespace utils_d {
   export { utils_d_BUFFER as BUFFER, utils_d_DOWN as DOWN, type utils_d_HeightSetupConfig as HeightSetupConfig, utils_d_IN as IN, utils_d_LEFT as LEFT, utils_d_ORIGIN as ORIGIN, utils_d_OUT as OUT, utils_d_RIGHT as RIGHT, type utils_d_SceneCanvasConfig as SceneCanvasConfig, utils_d_ShapeFromCurves as ShapeFromCurves, utils_d_UP as UP, type utils_d_WidthSetupConfig as WidthSetupConfig, utils_d_clamp as clamp, utils_d_convertWorldDirectionToObjectSpace as convertWorldDirectionToObjectSpace, utils_d_furthestInDirection as furthestInDirection, utils_d_getBoundingBoxCenter as getBoundingBoxCenter, utils_d_getBoundingBoxHelper as getBoundingBoxHelper, utils_d_getFrameAttributes as getFrameAttributes, utils_d_intersectionsBetween as intersectionsBetween, utils_d_moveAbove as moveAbove, utils_d_moveBelow as moveBelow, utils_d_moveNextTo as moveNextTo, utils_d_moveToLeftOf as moveToLeftOf, utils_d_moveToRightOf as moveToRightOf, utils_d_pointAlongCurve as pointAlongCurve, utils_d_positiveAngleTo as positiveAngleTo, utils_d_rotate180 as rotate180, utils_d_rotate270 as rotate270, utils_d_rotate90 as rotate90, utils_d_setupCanvas as setupCanvas, utils_d_transformBetweenSpaces as transformBetweenSpaces, utils_d_vspace as vspace, utils_d_vstack as vstack };
 }
-
-declare class Animation {
-    func: (elapsedTime: number, deltaTime: number) => void;
-    scene: any;
-    startTime: number;
-    endTime: number;
-    prevUpdateTime: number;
-    beforeFunc: () => void;
-    afterFunc: () => void;
-    parent: any;
-    object: any;
-    before: any;
-    after: any;
-    family: any;
-    reveal: any;
-    hide: any;
-    scale: number;
-    runTime: number;
-    finished: boolean;
-    elapsedSinceStart: number;
-    constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, family, reveal, hide, }?: {
-        object?: undefined;
-        parent?: undefined;
-        before?: undefined;
-        after?: undefined;
-        family?: undefined;
-        reveal?: undefined;
-        hide?: undefined;
-    });
-    setUp(): void;
-    tearDown(): void;
-    update(worldTime: any): void;
-    addBefore(before: any): void;
-    addAfter(after: any): void;
-}
-//# sourceMappingURL=Animation.d.ts.map
 
 declare class Shift extends Animation {
     constructor(object: THREE.Object3D, offset: THREE.Vector3, config?: any);
