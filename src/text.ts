@@ -187,6 +187,37 @@ class Text extends THREE.Group {
     this.rotation.copy(rotation);
     this.scale.copy(scale);
   }
+
+  restyle(
+    style: { fillColor?: THREE.Color; fillOpacity?: number },
+    config: { includeDescendents: boolean } = { includeDescendents: false },
+  ): void {
+    const { fillColor, fillOpacity } = style;
+    
+    // Update all meshes in the text group
+    this.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        const material = child.material as THREE.MeshBasicMaterial;
+        
+        if (fillColor !== undefined) {
+          material.color = fillColor;
+        }
+        
+        if (fillOpacity !== undefined) {
+          material.opacity = fillOpacity;
+        }
+      }
+    });
+
+    // Handle descendents if requested
+    if (config.includeDescendents) {
+      this.traverse((child) => {
+        if (child instanceof Text && child !== this) {
+          child.restyle(style, { includeDescendents: false });
+        }
+      });
+    }
+  }
 }
 
 export { Text };
