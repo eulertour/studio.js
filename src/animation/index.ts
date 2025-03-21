@@ -1,4 +1,4 @@
-export { Animation } from "./Animation.js";
+export { default as Animation } from './Animation.js';
 export { default as Shift } from "./Shift.js";
 export { default as MoveTo } from "./MoveTo.js";
 export { default as Rotate } from "./Rotate.js";

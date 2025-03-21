@@ -44,40 +44,41 @@ export default abstract class Shape extends THREE.Group {
   fill?: Fill;
   stroke?: Stroke;
   curveEndIndices: Array<Array<number>> = [];
-  arrow: boolean = false;
+  public rotation: THREE.Euler = new THREE.Euler(0, 0, 0, 'XYZ');
 
   constructor(
-    points: Array<THREE.Vector3>,
-    config: Style & {
-      arrow?: boolean;
-      stroke?: boolean;
-      fill?: boolean;
-      closed?: boolean;
+    public radius: number,
+    config: {
       position?: THREE.Vector3;
-      rotation?: number;
+      rotation?: THREE.Euler | number;
       scale?: THREE.Vector3;
+      fillColor?: THREE.Color;
+      strokeColor?: THREE.Color;
+      fillOpacity?: number;
+      strokeOpacity?: number;
+      strokeWidth?: number;
       fillPoints?: Array<THREE.Vector3>;
     } = {},
   ) {
     super();
     config = Object.assign(Shape.defaultStyle(), config);
     
-    // Apply position, rotation, and scale if provided
     if (config.position) {
       this.position.copy(config.position);
     }
+
     if (config.rotation !== undefined) {
-      this.rotation.z = config.rotation; // Assuming 2D rotation around Z-axis
+      this.rotation = typeof config.rotation === 'number' 
+        ? new THREE.Euler(0, 0, config.rotation)
+        : config.rotation.clone();
     }
+
     if (config.scale) {
       this.scale.copy(config.scale);
     }
-    
-    if (config.arrow) {
-      this.arrow = config.arrow;
-    }
 
     if (config.fill !== false) {
+      const points = this.points.length > 0 ? this.points : [new THREE.Vector3()];
       const fillGeometry = getFillGeometry(config.fillPoints ?? points);
       const fillMaterial = new THREE.MeshBasicMaterial({
         color: config.fillColor,
@@ -90,7 +91,7 @@ export default abstract class Shape extends THREE.Group {
     }
 
     if (config.stroke !== false) {
-      const strokeGeometry = new MeshLineGeometry(config.arrow);
+      const strokeGeometry = new MeshLineGeometry();
       strokeGeometry.setPoints(points);
 
       if (config.dashed && config.strokeDashLength === 0) {
@@ -113,7 +114,7 @@ export default abstract class Shape extends THREE.Group {
     this.curveEndIndices = this.getCurveEndIndices();
   }
 
-  forwardEvent = (e) => this.dispatchEvent(e);
+  forwardEvent = (e: any) => this.dispatchEvent(e);
 
   add(...objects: THREE.Object3D[]) {
     super.add(...objects);
@@ -196,7 +197,7 @@ export default abstract class Shape extends THREE.Group {
   }
 
   get points(): Array<THREE.Vector3> {
-    return this.stroke.geometry.points;
+    return this.stroke?.geometry?.points || [];
   }
 
   set points(newPoints: THREE.Vector3[]) {
