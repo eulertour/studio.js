@@ -566,6 +566,22 @@ declare class Grow extends Animation {
     constructor(object: THREE.Object3D);
 }
 
+declare class Stagger extends Animation {
+    private objects;
+    private initialOpacities;
+    private duration;
+    private staggerDelay;
+    /**
+     * Creates a staggered fade-in animation for multiple objects
+     * @param objects Array of objects to animate in sequence
+     * @param config Additional configuration options
+     */
+    constructor(objects: THREE.Object3D[], config?: {
+        duration?: number;
+    });
+    setUp(): void;
+}
+
 //# sourceMappingURL=index.d.ts.map
 
 type index_d$1_Animation = Animation;
@@ -594,10 +610,12 @@ type index_d$1_Shake = Shake;
 declare const index_d$1_Shake: typeof Shake;
 type index_d$1_Shift = Shift;
 declare const index_d$1_Shift: typeof Shift;
+type index_d$1_Stagger = Stagger;
+declare const index_d$1_Stagger: typeof Stagger;
 type index_d$1_Wait = Wait;
 declare const index_d$1_Wait: typeof Wait;
 declare namespace index_d$1 {
-  export { index_d$1_Animation as Animation, index_d$1_Draw as Draw, index_d$1_Emphasize as Emphasize, index_d$1_Erase as Erase, index_d$1_FadeIn as FadeIn, index_d$1_FadeOut as FadeOut, index_d$1_Grow as Grow, index_d$1_MoveTo as MoveTo, index_d$1_Rotate as Rotate, index_d$1_SetOpacity as SetOpacity, index_d$1_SetScale as SetScale, index_d$1_Shake as Shake, index_d$1_Shift as Shift, index_d$1_Wait as Wait };
+  export { index_d$1_Animation as Animation, index_d$1_Draw as Draw, index_d$1_Emphasize as Emphasize, index_d$1_Erase as Erase, index_d$1_FadeIn as FadeIn, index_d$1_FadeOut as FadeOut, index_d$1_Grow as Grow, index_d$1_MoveTo as MoveTo, index_d$1_Rotate as Rotate, index_d$1_SetOpacity as SetOpacity, index_d$1_SetScale as SetScale, index_d$1_Shake as Shake, index_d$1_Shift as Shift, index_d$1_Stagger as Stagger, index_d$1_Wait as Wait };
 }
 
 declare const PIXELS_TO_COORDS: number;

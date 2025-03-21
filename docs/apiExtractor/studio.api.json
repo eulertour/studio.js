@@ -2807,6 +2807,122 @@
             },
             {
               "kind": "Class",
+              "canonicalReference": "@eulertour/studio!Animation_2.Stagger:class",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "export default class Stagger extends "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Animation",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Animation_3:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": " "
+                }
+              ],
+              "fileUrlPath": "src/animation/Stagger.ts",
+              "releaseTag": "Public",
+              "isAbstract": false,
+              "name": "Stagger",
+              "preserveMemberOrder": false,
+              "members": [
+                {
+                  "kind": "Constructor",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Stagger:constructor(1)",
+                  "docComment": "/**\n * Creates a staggered fade-in animation for multiple objects\n *\n * @param objects - Array of objects to animate in sequence\n *\n * @param config - Additional configuration options\n */\n",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "constructor(objects: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Object3D",
+                      "canonicalReference": "@types/three!Object3D:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "[]"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", config?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{\n        duration?: number;\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ");"
+                    }
+                  ],
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "objects",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 3
+                      },
+                      "isOptional": false
+                    },
+                    {
+                      "parameterName": "config",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 4,
+                        "endIndex": 5
+                      },
+                      "isOptional": true
+                    }
+                  ]
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Stagger#setUp:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "setUp(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "void"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "setUp"
+                }
+              ],
+              "extendsTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "implementsTokenRanges": []
+            },
+            {
+              "kind": "Class",
               "canonicalReference": "@eulertour/studio!Animation_2.Wait:class",
               "docComment": "",
               "excerptTokens": [
