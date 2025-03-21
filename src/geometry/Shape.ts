@@ -7,9 +7,9 @@ import MeshLine, {
 import * as Text from "../text.js";
 
 export type Transform = {
-  position: THREE.Vector3;
-  rotation: THREE.Euler;
-  scale: THREE.Vector3;
+  position?: THREE.Vector3;
+  rotation?: THREE.Euler | number;
+  scale?: THREE.Vector3 | number;
 };
 
 export type Style = {
@@ -42,13 +42,13 @@ type Stroke = MeshLine;
 export default abstract class Shape extends THREE.Group {
   fill?: Fill;
   stroke?: Stroke;
-  curveEndIndices: Array<Array<number>>;
+  curveEndIndices: Array<Array<number>> = [];
   arrow: boolean;
   intrinsicChildren?: THREE.Group;
 
   constructor(
-    points?: Array<THREE.Vector3>,
-    config: Style & {
+    points: Array<THREE.Vector3>,
+    config: Style & Transform & {
       arrow?: boolean;
       stroke?: boolean;
       fill?: boolean;
@@ -58,6 +58,26 @@ export default abstract class Shape extends THREE.Group {
   ) {
     super();
     config = Object.assign(Shape.defaultStyle(), config);
+    if (config.position) {
+      this.position.copy(config.position);
+    }
+
+    if (config.rotation !== undefined) {
+      this.rotation.copy(
+        typeof config.rotation === 'number' 
+          ? new THREE.Euler(0, 0, config.rotation)
+          : config.rotation
+      );
+    }
+    
+    if (config.scale) {
+      this.scale.copy(
+        typeof config.scale === 'number' 
+          ? new THREE.Vector3(config.scale, config.scale, config.scale)
+          : config.scale
+      );
+    }
+
     if (points === undefined) {
       config.stroke = false;
       config.fill = false;
@@ -67,6 +87,7 @@ export default abstract class Shape extends THREE.Group {
       if (!config.fillPoints && !points) {
         throw new Error("Fill requires either fillPoints or points");
       }
+
       const fillGeometry = getFillGeometry(config.fillPoints ?? points);
       const fillMaterial = new THREE.MeshBasicMaterial({
         color: config.fillColor,
@@ -82,6 +103,7 @@ export default abstract class Shape extends THREE.Group {
       if (!points) {
         throw new Error("Stroke requires points");
       }
+
       const strokeGeometry = new MeshLineGeometry(config.arrow);
       strokeGeometry.setPoints(points);
 
@@ -107,7 +129,7 @@ export default abstract class Shape extends THREE.Group {
     }
   }
 
-  forwardEvent = (e) => this.dispatchEvent(e);
+  forwardEvent = (e: any) => this.dispatchEvent(e);
 
   add(...objects: THREE.Object3D[]) {
     super.add(...objects);
@@ -210,7 +232,7 @@ export default abstract class Shape extends THREE.Group {
   }
 
   get points(): Array<THREE.Vector3> {
-    return this.stroke.geometry.points;
+    return this.stroke?.geometry?.points || [];
   }
 
   set points(newPoints: THREE.Vector3[]) {
