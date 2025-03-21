@@ -9,7 +9,7 @@ import * as Text from "../text.js";
 export type Transform = {
   position?: THREE.Vector3;
   rotation?: THREE.Euler | number;
-  scale?: THREE.Vector3;
+  scale?: THREE.Vector3 | number;
 };
 
 export type Style = {
@@ -66,12 +66,16 @@ export default abstract class Shape extends THREE.Group {
       this.rotation.copy(
         typeof config.rotation === 'number' 
           ? new THREE.Euler(0, 0, config.rotation)
-          : config.rotation.clone()
+          : config.rotation
       );
     }
     
     if (config.scale) {
-      this.scale.copy(config.scale);
+      this.scale.copy(
+        typeof config.scale === 'number' 
+          ? new THREE.Vector3(config.scale, config.scale, config.scale)
+          : config.scale
+      );
     }
 
     if (points === undefined) {
