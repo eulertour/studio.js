@@ -75,7 +75,8 @@ declare abstract class Shape extends THREE.Group {
     stroke?: Stroke;
     curveEndIndices: Array<Array<number>>;
     arrow: boolean;
-    constructor(points: Array<THREE.Vector3>, config?: Style & {
+    intrinsicChildren?: THREE.Group;
+    constructor(points?: Array<THREE.Vector3>, config?: Style & {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
@@ -85,9 +86,12 @@ declare abstract class Shape extends THREE.Group {
     forwardEvent: (e: any) => void;
     add(...objects: THREE.Object3D[]): this;
     remove(...objects: THREE.Object3D[]): this;
+    addLabel(tex: string, direction: THREE.Vector3): void;
     static defaultStyle(): {
+        fill: boolean;
         fillColor: THREE.Color;
         fillOpacity: number;
+        stroke: boolean;
         strokeColor: THREE.Color;
         strokeOpacity: number;
         strokeWidth: number;
@@ -114,7 +118,9 @@ declare abstract class Shape extends THREE.Group {
     abstract getAttributes(): object;
     getCloneAttributes(): Array<unknown>;
     getStyle(): Style;
-    restyle(style: Style): void;
+    restyle(style: Style, config?: {
+        includeDescendents: boolean;
+    }): void;
     copyStyle(shape: Shape): void;
     getTransform(): Transform;
     setTransform(transform: Transform): void;
@@ -139,6 +145,7 @@ declare class Line extends Shape {
     static defaultConfig(): {};
     static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
     reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
+    length(): number;
     getClassConfig(): {};
     getAttributes(): LineAttributes;
     getVector(global?: boolean): THREE.Vector3;
@@ -186,7 +193,6 @@ declare class Polygon extends Shape {
  */
 declare class Polyline extends Shape {
     constructor(points: Array<THREE.Vector3>, config?: Style);
-    reshape(points: Array<THREE.Vector3>, config?: Style): void;
     static defaultConfig(): {
         fill: boolean;
     };
@@ -292,6 +298,42 @@ declare class Rectangle extends Shape {
     getCurveEndIndices(): Array<Array<number>>;
 }
 
+declare class Animation {
+    func: (elapsedTime: number, deltaTime: number) => void;
+    scene: any;
+    startTime: number;
+    endTime: number;
+    prevUpdateTime: number;
+    beforeFunc: () => void;
+    afterFunc: () => void;
+    parent: any;
+    object: any;
+    before: any;
+    after: any;
+    family: any;
+    reveal: any;
+    hide: any;
+    scale: number;
+    runTime: number;
+    finished: boolean;
+    elapsedSinceStart: number;
+    constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, family, reveal, hide, }?: {
+        object?: undefined;
+        parent?: undefined;
+        before?: undefined;
+        after?: undefined;
+        family?: undefined;
+        reveal?: undefined;
+        hide?: undefined;
+    });
+    setUp(): void;
+    tearDown(): void;
+    update(worldTime: any): void;
+    addBefore(before: any): void;
+    addAfter(after: any): void;
+}
+//# sourceMappingURL=Animation.d.ts.map
+
 /**
  * A shape with four sides of equal length and four right angles.
  *
@@ -301,6 +343,7 @@ declare class Square extends Rectangle {
     sideLength: number;
     constructor(sideLength?: number, config?: Style);
     reshape(sideLength: number, config?: {}): void;
+    Reshape(sideLength: number, config?: {}): Animation;
     getCloneAttributes(): number[];
     getAttributes(): RectangleAttributes;
     static fromAttributes(attributes: RectangleAttributes): Square;
@@ -313,31 +356,31 @@ declare class Square extends Rectangle {
 
 //# sourceMappingURL=index.d.ts.map
 
-type index_d$1_Arc = Arc;
-declare const index_d$1_Arc: typeof Arc;
-type index_d$1_Arrow = Arrow;
-declare const index_d$1_Arrow: typeof Arrow;
-type index_d$1_Circle = Circle;
-declare const index_d$1_Circle: typeof Circle;
-type index_d$1_Line = Line;
-declare const index_d$1_Line: typeof Line;
-type index_d$1_MeshLine = MeshLine;
-declare const index_d$1_MeshLine: typeof MeshLine;
-type index_d$1_Point = Point;
-declare const index_d$1_Point: typeof Point;
-type index_d$1_Polygon = Polygon;
-declare const index_d$1_Polygon: typeof Polygon;
-type index_d$1_Polyline = Polyline;
-declare const index_d$1_Polyline: typeof Polyline;
-type index_d$1_Rectangle = Rectangle;
-declare const index_d$1_Rectangle: typeof Rectangle;
-type index_d$1_Shape = Shape;
-declare const index_d$1_Shape: typeof Shape;
-type index_d$1_Square = Square;
-declare const index_d$1_Square: typeof Square;
-type index_d$1_Style = Style;
-declare namespace index_d$1 {
-  export { index_d$1_Arc as Arc, index_d$1_Arrow as Arrow, index_d$1_Circle as Circle, index_d$1_Line as Line, index_d$1_MeshLine as MeshLine, index_d$1_Point as Point, index_d$1_Polygon as Polygon, index_d$1_Polyline as Polyline, index_d$1_Rectangle as Rectangle, index_d$1_Shape as Shape, index_d$1_Square as Square, type index_d$1_Style as Style };
+type index_d$2_Arc = Arc;
+declare const index_d$2_Arc: typeof Arc;
+type index_d$2_Arrow = Arrow;
+declare const index_d$2_Arrow: typeof Arrow;
+type index_d$2_Circle = Circle;
+declare const index_d$2_Circle: typeof Circle;
+type index_d$2_Line = Line;
+declare const index_d$2_Line: typeof Line;
+type index_d$2_MeshLine = MeshLine;
+declare const index_d$2_MeshLine: typeof MeshLine;
+type index_d$2_Point = Point;
+declare const index_d$2_Point: typeof Point;
+type index_d$2_Polygon = Polygon;
+declare const index_d$2_Polygon: typeof Polygon;
+type index_d$2_Polyline = Polyline;
+declare const index_d$2_Polyline: typeof Polyline;
+type index_d$2_Rectangle = Rectangle;
+declare const index_d$2_Rectangle: typeof Rectangle;
+type index_d$2_Shape = Shape;
+declare const index_d$2_Shape: typeof Shape;
+type index_d$2_Square = Square;
+declare const index_d$2_Square: typeof Square;
+type index_d$2_Style = Style;
+declare namespace index_d$2 {
+  export { index_d$2_Arc as Arc, index_d$2_Arrow as Arrow, index_d$2_Circle as Circle, index_d$2_Line as Line, index_d$2_MeshLine as MeshLine, index_d$2_Point as Point, index_d$2_Polygon as Polygon, index_d$2_Polyline as Polyline, index_d$2_Rectangle as Rectangle, index_d$2_Shape as Shape, index_d$2_Square as Square, type index_d$2_Style as Style };
 }
 
 declare const BUFFER = 0.5;
@@ -444,42 +487,6 @@ declare namespace utils_d {
   export { utils_d_BUFFER as BUFFER, utils_d_DOWN as DOWN, type utils_d_HeightSetupConfig as HeightSetupConfig, utils_d_IN as IN, utils_d_LEFT as LEFT, utils_d_ORIGIN as ORIGIN, utils_d_OUT as OUT, utils_d_RIGHT as RIGHT, type utils_d_SceneCanvasConfig as SceneCanvasConfig, utils_d_ShapeFromCurves as ShapeFromCurves, utils_d_UP as UP, type utils_d_WidthSetupConfig as WidthSetupConfig, utils_d_clamp as clamp, utils_d_convertWorldDirectionToObjectSpace as convertWorldDirectionToObjectSpace, utils_d_furthestInDirection as furthestInDirection, utils_d_getBoundingBoxCenter as getBoundingBoxCenter, utils_d_getBoundingBoxHelper as getBoundingBoxHelper, utils_d_getFrameAttributes as getFrameAttributes, utils_d_intersectionsBetween as intersectionsBetween, utils_d_moveAbove as moveAbove, utils_d_moveBelow as moveBelow, utils_d_moveNextTo as moveNextTo, utils_d_moveToLeftOf as moveToLeftOf, utils_d_moveToRightOf as moveToRightOf, utils_d_pointAlongCurve as pointAlongCurve, utils_d_positiveAngleTo as positiveAngleTo, utils_d_rotate180 as rotate180, utils_d_rotate270 as rotate270, utils_d_rotate90 as rotate90, utils_d_setupCanvas as setupCanvas, utils_d_transformBetweenSpaces as transformBetweenSpaces, utils_d_vspace as vspace, utils_d_vstack as vstack };
 }
 
-declare class Animation {
-    func: (elapsedTime: number, deltaTime: number) => void;
-    scene: any;
-    startTime: number;
-    endTime: number;
-    prevUpdateTime: number;
-    beforeFunc: () => void;
-    afterFunc: () => void;
-    parent: any;
-    object: any;
-    before: any;
-    after: any;
-    family: any;
-    reveal: any;
-    hide: any;
-    scale: number;
-    runTime: number;
-    finished: boolean;
-    elapsedSinceStart: number;
-    constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, family, reveal, hide, }?: {
-        object?: undefined;
-        parent?: undefined;
-        before?: undefined;
-        after?: undefined;
-        family?: undefined;
-        reveal?: undefined;
-        hide?: undefined;
-    });
-    setUp(): void;
-    tearDown(): void;
-    update(worldTime: any): void;
-    addBefore(before: any): void;
-    addAfter(after: any): void;
-}
-//# sourceMappingURL=Animation.d.ts.map
-
 declare class Shift extends Animation {
     constructor(object: THREE.Object3D, offset: THREE.Vector3, config?: any);
 }
@@ -555,36 +562,60 @@ declare class Shake extends Animation {
     });
 }
 
+declare class Grow extends Animation {
+    constructor(object: THREE.Object3D);
+}
+
+declare class Stagger extends Animation {
+    private objects;
+    private initialOpacities;
+    private duration;
+    private staggerDelay;
+    /**
+     * Creates a staggered fade-in animation for multiple objects
+     * @param objects Array of objects to animate in sequence
+     * @param config Additional configuration options
+     */
+    constructor(objects: THREE.Object3D[], config?: {
+        duration?: number;
+    });
+    setUp(): void;
+}
+
 //# sourceMappingURL=index.d.ts.map
 
-type index_d_Animation = Animation;
-declare const index_d_Animation: typeof Animation;
-type index_d_Draw = Draw;
-declare const index_d_Draw: typeof Draw;
-type index_d_Emphasize = Emphasize;
-declare const index_d_Emphasize: typeof Emphasize;
-type index_d_Erase = Erase;
-declare const index_d_Erase: typeof Erase;
-type index_d_FadeIn = FadeIn;
-declare const index_d_FadeIn: typeof FadeIn;
-type index_d_FadeOut = FadeOut;
-declare const index_d_FadeOut: typeof FadeOut;
-type index_d_MoveTo = MoveTo;
-declare const index_d_MoveTo: typeof MoveTo;
-type index_d_Rotate = Rotate;
-declare const index_d_Rotate: typeof Rotate;
-type index_d_SetOpacity = SetOpacity;
-declare const index_d_SetOpacity: typeof SetOpacity;
-type index_d_SetScale = SetScale;
-declare const index_d_SetScale: typeof SetScale;
-type index_d_Shake = Shake;
-declare const index_d_Shake: typeof Shake;
-type index_d_Shift = Shift;
-declare const index_d_Shift: typeof Shift;
-type index_d_Wait = Wait;
-declare const index_d_Wait: typeof Wait;
-declare namespace index_d {
-  export { index_d_Animation as Animation, index_d_Draw as Draw, index_d_Emphasize as Emphasize, index_d_Erase as Erase, index_d_FadeIn as FadeIn, index_d_FadeOut as FadeOut, index_d_MoveTo as MoveTo, index_d_Rotate as Rotate, index_d_SetOpacity as SetOpacity, index_d_SetScale as SetScale, index_d_Shake as Shake, index_d_Shift as Shift, index_d_Wait as Wait };
+type index_d$1_Animation = Animation;
+declare const index_d$1_Animation: typeof Animation;
+type index_d$1_Draw = Draw;
+declare const index_d$1_Draw: typeof Draw;
+type index_d$1_Emphasize = Emphasize;
+declare const index_d$1_Emphasize: typeof Emphasize;
+type index_d$1_Erase = Erase;
+declare const index_d$1_Erase: typeof Erase;
+type index_d$1_FadeIn = FadeIn;
+declare const index_d$1_FadeIn: typeof FadeIn;
+type index_d$1_FadeOut = FadeOut;
+declare const index_d$1_FadeOut: typeof FadeOut;
+type index_d$1_Grow = Grow;
+declare const index_d$1_Grow: typeof Grow;
+type index_d$1_MoveTo = MoveTo;
+declare const index_d$1_MoveTo: typeof MoveTo;
+type index_d$1_Rotate = Rotate;
+declare const index_d$1_Rotate: typeof Rotate;
+type index_d$1_SetOpacity = SetOpacity;
+declare const index_d$1_SetOpacity: typeof SetOpacity;
+type index_d$1_SetScale = SetScale;
+declare const index_d$1_SetScale: typeof SetScale;
+type index_d$1_Shake = Shake;
+declare const index_d$1_Shake: typeof Shake;
+type index_d$1_Shift = Shift;
+declare const index_d$1_Shift: typeof Shift;
+type index_d$1_Stagger = Stagger;
+declare const index_d$1_Stagger: typeof Stagger;
+type index_d$1_Wait = Wait;
+declare const index_d$1_Wait: typeof Wait;
+declare namespace index_d$1 {
+  export { index_d$1_Animation as Animation, index_d$1_Draw as Draw, index_d$1_Emphasize as Emphasize, index_d$1_Erase as Erase, index_d$1_FadeIn as FadeIn, index_d$1_FadeOut as FadeOut, index_d$1_Grow as Grow, index_d$1_MoveTo as MoveTo, index_d$1_Rotate as Rotate, index_d$1_SetOpacity as SetOpacity, index_d$1_SetScale as SetScale, index_d$1_Shake as Shake, index_d$1_Shift as Shift, index_d$1_Stagger as Stagger, index_d$1_Wait as Wait };
 }
 
 declare const PIXELS_TO_COORDS: number;
@@ -599,6 +630,69 @@ declare const constants_d_ERROR_THRESHOLD: typeof ERROR_THRESHOLD;
 declare const constants_d_PIXELS_TO_COORDS: typeof PIXELS_TO_COORDS;
 declare namespace constants_d {
   export { constants_d_COORDS_TO_PIXELS as COORDS_TO_PIXELS, constants_d_DEFAULT_BACKGROUND_HEX as DEFAULT_BACKGROUND_HEX, constants_d_ERROR_THRESHOLD as ERROR_THRESHOLD, constants_d_PIXELS_TO_COORDS as PIXELS_TO_COORDS };
+}
+
+interface IndicatorConfig {
+    tickLength?: number;
+}
+declare class Indicator extends THREE.Group {
+    start: THREE.Vector3;
+    end: THREE.Vector3;
+    startTick: Line;
+    endTick: Line;
+    stem: Line;
+    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig & Style);
+    grow(config?: any): Animation;
+}
+
+declare class Angle extends Shape {
+    point1: THREE.Vector3;
+    point2: THREE.Vector3;
+    point3: THREE.Vector3;
+    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+        radius?: number;
+        reflex?: boolean;
+    });
+    getAttributes(): {
+        point1: THREE.Vector3;
+        point2: THREE.Vector3;
+        point3: THREE.Vector3;
+    };
+}
+
+declare class CongruentAngle extends Shape {
+    arcs: number;
+    point1: THREE.Vector3;
+    point2: THREE.Vector3;
+    point3: THREE.Vector3;
+    config: Style & {
+        minRadius?: number;
+        spacing?: number;
+    };
+    constructor(arcs: number, point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+        minRadius?: number;
+        spacing?: number;
+    });
+    getAttributes(): {
+        arcs: number;
+        point1: THREE.Vector3;
+        point2: THREE.Vector3;
+        point3: THREE.Vector3;
+    };
+}
+
+declare class RightAngle extends Polyline {
+    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
+        sideLength?: number;
+    });
+}
+
+declare class CongruentLine extends THREE.Group {
+    constructor(ticks: number, start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
+        tickLength?: number;
+        spacing?: number;
+    });
+    moveToSegment(start: THREE.Vector3, end: THREE.Vector3): void;
 }
 
 type TextStyle = {
@@ -648,54 +742,6 @@ declare namespace text_d {
   export { text_d_Text as Text };
 }
 
-declare class Angle extends Shape {
-    point1: THREE.Vector3;
-    point2: THREE.Vector3;
-    point3: THREE.Vector3;
-    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
-        radius?: number;
-        reflex?: boolean;
-    });
-    getAttributes(): {
-        point1: THREE.Vector3;
-        point2: THREE.Vector3;
-        point3: THREE.Vector3;
-    };
-}
-
-interface IndicatorConfig {
-    tickLength?: number;
-}
-declare class Indicator extends THREE.Group {
-    start: THREE.Vector3;
-    end: THREE.Vector3;
-    startTick: Line;
-    endTick: Line;
-    stem: Line;
-    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig & Style);
-    grow(config?: any): Animation;
-}
-declare class CongruentLine extends THREE.Group {
-    constructor(ticks: number, start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
-        tickLength?: number;
-        spacing?: number;
-    });
-}
-declare class CongruentAngle extends THREE.Group {
-    config: Style & {
-        minRadius?: number;
-        spacing?: number;
-    };
-    constructor(arcs: number, point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
-        minRadius?: number;
-        spacing?: number;
-    });
-}
-declare class RightAngle extends Polyline {
-    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
-        sideLength?: number;
-    });
-}
 declare class Number extends THREE.Group {
     static geometries: Map<string, THREE.ShapeGeometry>;
     meshes: THREE.Mesh[];
@@ -719,22 +765,41 @@ declare class Number extends THREE.Group {
     static extractGeometry(textShape: Text): THREE.ShapeGeometry;
     static initializeGeometries(): Map<string, THREE.ShapeGeometry>;
 }
-//# sourceMappingURL=diagram.d.ts.map
 
-type diagram_d_Angle = Angle;
-declare const diagram_d_Angle: typeof Angle;
-type diagram_d_CongruentAngle = CongruentAngle;
-declare const diagram_d_CongruentAngle: typeof CongruentAngle;
-type diagram_d_CongruentLine = CongruentLine;
-declare const diagram_d_CongruentLine: typeof CongruentLine;
-type diagram_d_Indicator = Indicator;
-declare const diagram_d_Indicator: typeof Indicator;
-type diagram_d_Number = Number;
-declare const diagram_d_Number: typeof Number;
-type diagram_d_RightAngle = RightAngle;
-declare const diagram_d_RightAngle: typeof RightAngle;
-declare namespace diagram_d {
-  export { diagram_d_Angle as Angle, diagram_d_CongruentAngle as CongruentAngle, diagram_d_CongruentLine as CongruentLine, diagram_d_Indicator as Indicator, diagram_d_Number as Number, diagram_d_RightAngle as RightAngle };
+//# sourceMappingURL=index.d.ts.map
+
+type index_d_Angle = Angle;
+declare const index_d_Angle: typeof Angle;
+type index_d_CongruentAngle = CongruentAngle;
+declare const index_d_CongruentAngle: typeof CongruentAngle;
+type index_d_CongruentLine = CongruentLine;
+declare const index_d_CongruentLine: typeof CongruentLine;
+type index_d_Indicator = Indicator;
+declare const index_d_Indicator: typeof Indicator;
+type index_d_Number = Number;
+declare const index_d_Number: typeof Number;
+type index_d_RightAngle = RightAngle;
+declare const index_d_RightAngle: typeof RightAngle;
+declare namespace index_d {
+  export { index_d_Angle as Angle, index_d_CongruentAngle as CongruentAngle, index_d_CongruentLine as CongruentLine, index_d_Indicator as Indicator, index_d_Number as Number, index_d_RightAngle as RightAngle };
+}
+
+/**
+ * A curve described by an equation.
+ */
+declare class Curve extends Polyline {
+    equation: () => void;
+    constructor(equation: () => void, config?: Style);
+    static defaultConfig(): {
+        fill: boolean;
+    };
+    getClassConfig(): {};
+}
+
+type graphing_d_Curve = Curve;
+declare const graphing_d_Curve: typeof Curve;
+declare namespace graphing_d {
+  export { graphing_d_Curve as Curve };
 }
 
 declare const _default: {
@@ -781,24 +846,6 @@ declare const _default: {
 };
 //# sourceMappingURL=frame.d.ts.map
 
-/**
- * A curve described by an equation.
- */
-declare class Curve extends Polyline {
-    equation: () => void;
-    constructor(equation: () => void, config?: Style);
-    static defaultConfig(): {
-        fill: boolean;
-    };
-    getClassConfig(): {};
-}
-
-type graphing_d_Curve = Curve;
-declare const graphing_d_Curve: typeof Curve;
-declare namespace graphing_d {
-  export { graphing_d_Curve as Curve };
-}
-
 type AnimationRepresentation = Animation | Array<Animation> | {
     animations: Array<Animation>;
     before?: () => void;
@@ -806,7 +853,7 @@ type AnimationRepresentation = Animation | Array<Animation> | {
     parent?: THREE.Object3D;
     runTime?: number;
     scale?: number;
-};
+} | ((t: number, dt: number) => void);
 type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
 interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
     scene: THREE.Scene;
@@ -895,4 +942,4 @@ type ComponentParent = THREE.Object3D & {
 declare function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 //# sourceMappingURL=index.d.ts.map
 
-export { index_d as Animation, type AnimationRepresentation, constants_d as Constants, diagram_d as Diagram, _default as Frame, index_d$1 as Geometry, graphing_d as Graphing, MeshLineMaterial, type SceneCanvasConfig, SceneController, type StudioScene, text_d as Text, utils_d as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };
+export { index_d$1 as Animation, type AnimationRepresentation, constants_d as Constants, index_d as Diagram, _default as Frame, index_d$2 as Geometry, graphing_d as Graphing, MeshLineMaterial, type SceneCanvasConfig, SceneController, type StudioScene, text_d as Text, utils_d as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };

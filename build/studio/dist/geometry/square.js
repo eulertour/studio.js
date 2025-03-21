@@ -1,4 +1,6 @@
 import Rectangle from "./Rectangle.js";
+import { Animation } from "../animation/Animation.js";
+import { MathUtils } from "three";
 /**
  * A shape with four sides of equal length and four right angles.
  *
@@ -17,6 +19,18 @@ export default class Square extends Rectangle {
     reshape(sideLength, config = {}) {
         this.sideLength = sideLength;
         this.copyStrokeAndFill(new Square(sideLength, config));
+    }
+    Reshape(sideLength, config = {}) {
+        let startSideLength;
+        let endSideLength;
+        return new Animation((t, dt) => {
+            this.reshape(MathUtils.lerp(startSideLength, endSideLength, t));
+        }, {
+            before: () => {
+                startSideLength = this.sideLength;
+                endSideLength = sideLength;
+            },
+        });
     }
     getCloneAttributes() {
         return [this.sideLength];

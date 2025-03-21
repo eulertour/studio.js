@@ -1,7 +1,7 @@
-import Shape, { Style } from "./geometry/Shape.js";
+import Shape, { Style } from "../geometry/Shape.js";
 import * as THREE from "three";
-import { Utils } from "./index.js";
-import { getArcPoints } from "./geometry/geometryUtils.js";
+import { Utils } from "../index.js";
+import { getArcPoints } from "../geometry/geometryUtils.js";
 
 // TODO: This should be radius, angle, and rotation.
 export type AngleAttributes = {
@@ -48,4 +48,3 @@ export default class Angle extends Shape {
     };
   }
 }
-

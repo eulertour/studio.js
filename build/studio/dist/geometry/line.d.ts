@@ -16,6 +16,7 @@ export default class Line extends Shape {
     static defaultConfig(): {};
     static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
     reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
+    length(): number;
     getClassConfig(): {};
     getAttributes(): LineAttributes;
     getVector(global?: boolean): THREE.Vector3;

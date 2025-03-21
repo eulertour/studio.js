@@ -4,6 +4,7 @@ import * as Geometry from "./geometry/index.js";
 import * as Utils from "./utils.js";
 import * as Text from "./text.js";
 import Angle from "./angle.js";
+import { Shape } from "./geometry/index.js";
 
 interface IndicatorConfig {
   tickLength?: number;
@@ -94,6 +95,10 @@ class CongruentLine extends THREE.Group {
       this.add(tick);
     }
 
+    this.moveToSegment(start, end);
+  }
+
+  moveToSegment(start: THREE.Vector3, end: THREE.Vector3) {
     const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
     this.position.copy(center);
 
@@ -102,12 +107,12 @@ class CongruentLine extends THREE.Group {
   }
 }
 
-class CongruentAngle extends THREE.Group {
+class CongruentAngle extends Shape {
   constructor(
-    arcs: number,
-    point1: THREE.Vector3,
-    point2: THREE.Vector3,
-    point3: THREE.Vector3,
+    public arcs: number,
+    public point1: THREE.Vector3,
+    public point2: THREE.Vector3,
+    public point3: THREE.Vector3,
     public config: Geometry.Style & {
       minRadius?: number;
       spacing?: number;
@@ -120,13 +125,26 @@ class CongruentAngle extends THREE.Group {
     };
 
     super();
+
+    this.intrinsicChildren = new THREE.Group();
     for (let i = 0; i < arcs; i++) {
       const arc = new Angle(point1, point2, point3, {
         radius: config.minRadius + i * config.spacing,
         ...config,
       });
-      this.add(arc);
+      this.intrinsicChildren.add(arc);
     }
+
+    this.add(this.intrinsicChildren);
+  }
+
+  getAttributes() {
+    return {
+      arcs: this.arcs,
+      point1: this.point1,
+      point2: this.point2,
+      point3: this.point3,
+    };
   }
 }
 

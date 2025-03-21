@@ -58,10 +58,10 @@ declare function component(_: ClassAccessorDecoratorTarget<ComponentParent, THRE
 import MeshLineMaterial, { setCameraDimensions, setCanvasViewport } from "./geometry/MeshLine/MeshLineMaterial.js";
 import * as Animation from "./animation/index.js";
 import * as Constants from "./constants.js";
-import * as Diagram from "./diagram.js";
-import Frame from "./frame.js";
+import * as Diagram from "./diagram/index.js";
 import * as Geometry from "./geometry/index.js";
 import * as Graphing from "./graphing.js";
+import Frame from "./frame.js";
 import { type AnimationRepresentation, SceneController, type StudioScene } from "./scene.js";
 import * as Text from "./text.js";
 import { setupCanvas, SceneCanvasConfig } from "./utils.js";

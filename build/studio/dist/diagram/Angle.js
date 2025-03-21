@@ -1,7 +1,7 @@
-import Shape from "./geometry/Shape.js";
+import Shape from "../geometry/Shape.js";
 import * as THREE from "three";
-import { Utils } from "./index.js";
-import { getArcPoints } from "./geometry/geometryUtils.js";
+import { Utils } from "../index.js";
+import { getArcPoints } from "../geometry/geometryUtils.js";
 // TODO: Handle reflex angles.
 export default class Angle extends Shape {
     constructor(point1, point2, point3, config = {}) {
@@ -49,4 +49,4 @@ export default class Angle extends Shape {
         };
     }
 }
-//# sourceMappingURL=angle.js.map
+//# sourceMappingURL=Angle.js.map

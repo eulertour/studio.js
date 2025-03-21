@@ -14,10 +14,6 @@ export default class Polyline extends Shape {
     this.curveEndIndices = [[0, 1]];
   }
 
-  reshape(points: Array<THREE.Vector3>, config: Style = {}) {
-    this.copyStrokeAndFill(new Polyline(points, config));
-  }
-
   static defaultConfig() {
     return { ...Shape.defaultConfig(), fill: false };
   }

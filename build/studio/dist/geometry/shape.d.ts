@@ -25,7 +25,8 @@ export default abstract class Shape extends THREE.Group {
     stroke?: Stroke;
     curveEndIndices: Array<Array<number>>;
     arrow: boolean;
-    constructor(points: Array<THREE.Vector3>, config?: Style & {
+    intrinsicChildren?: THREE.Group;
+    constructor(points?: Array<THREE.Vector3>, config?: Style & {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
@@ -35,9 +36,12 @@ export default abstract class Shape extends THREE.Group {
     forwardEvent: (e: any) => void;
     add(...objects: THREE.Object3D[]): this;
     remove(...objects: THREE.Object3D[]): this;
+    addLabel(tex: string, direction: THREE.Vector3): void;
     static defaultStyle(): {
+        fill: boolean;
         fillColor: THREE.Color;
         fillOpacity: number;
+        stroke: boolean;
         strokeColor: THREE.Color;
         strokeOpacity: number;
         strokeWidth: number;
@@ -64,7 +68,9 @@ export default abstract class Shape extends THREE.Group {
     abstract getAttributes(): object;
     getCloneAttributes(): Array<unknown>;
     getStyle(): Style;
-    restyle(style: Style): void;
+    restyle(style: Style, config?: {
+        includeDescendents: boolean;
+    }): void;
     copyStyle(shape: Shape): void;
     getTransform(): Transform;
     setTransform(transform: Transform): void;

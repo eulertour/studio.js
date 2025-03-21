@@ -124,6 +124,14 @@ export class SceneController {
                     this.loopAnimations.push(animation);
                     currentEndTime = animation.endTime;
                 }
+                else if (typeof o === "function") {
+                    const animation = new Animation(o);
+                    animation.startTime = currentEndTime;
+                    animation.endTime = currentEndTime + animation.runTime;
+                    animation.parent = this.userScene.scene;
+                    this.loopAnimations.push(animation);
+                    currentEndTime = animation.endTime;
+                }
                 else if (typeof o === "object") {
                     const animationArray = o.animations;
                     const runTime = o.runTime || 1;
@@ -153,12 +161,16 @@ export class SceneController {
             this.elapsedTime += deltaTime;
         }
         try {
+            const roundedElapsedTime = Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
+            this.loopAnimations.forEach((animation) => animation.update(roundedElapsedTime));
+            this.userScene.scene.traverse((object) => {
+                object.update(this.deltaTime, this.elapsedTime);
+            });
             this.userScene.update?.(this.deltaTime, this.elapsedTime);
-            const roundedTime = Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
-            this.loopAnimations.forEach((animation) => animation.update(roundedTime));
         }
         catch (err) {
-            throw new Error(`Error executing user animation: ${err.toString()}`);
+            console.error(`Error executing user animation: ${err.toString()}`);
+            throw err;
         }
         const newFinishedAnimationCount = this.loopAnimations.reduce((acc, cur) => acc + (cur.finished ? 1 : 0), 0);
         if (newFinishedAnimationCount !== this.finishedAnimationCount) {

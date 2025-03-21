@@ -41,7 +41,9 @@ declare namespace Animation_2 {
         FadeOut,
         Wait,
         Emphasize,
-        Shake
+        Shake,
+        Grow,
+        Stagger
     }
 }
 export { Animation_2 as Animation }
@@ -113,7 +115,7 @@ export type AnimationRepresentation = Animation_3 | Array<Animation_3> | {
     parent?: THREE.Object3D;
     runTime?: number;
     scale?: number;
-};
+} | ((t: number, dt: number) => void);
 
 // @public
 class Arc extends Shape {
@@ -202,16 +204,31 @@ const clamp: (num: any, min: any, max: any) => number;
 export function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 
 // @public (undocumented)
-class CongruentAngle extends THREE.Group {
+class CongruentAngle extends Shape {
     constructor(arcs: number, point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Geometry.Style & {
         minRadius?: number;
         spacing?: number;
     });
     // (undocumented)
+    arcs: number;
+    // (undocumented)
     config: Geometry.Style & {
         minRadius?: number;
         spacing?: number;
     };
+    // (undocumented)
+    getAttributes(): {
+        arcs: number;
+        point1: THREE.Vector3;
+        point2: THREE.Vector3;
+        point3: THREE.Vector3;
+    };
+    // (undocumented)
+    point1: THREE.Vector3;
+    // (undocumented)
+    point2: THREE.Vector3;
+    // (undocumented)
+    point3: THREE.Vector3;
 }
 
 // @public (undocumented)
@@ -220,6 +237,8 @@ class CongruentLine extends THREE.Group {
         tickLength?: number;
         spacing?: number;
     });
+    // (undocumented)
+    moveToSegment(start: THREE.Vector3, end: THREE.Vector3): void;
 }
 
 declare namespace Constants {
@@ -258,9 +277,9 @@ declare namespace Diagram {
     export {
         Indicator,
         Angle,
+        CongruentAngle,
         RightAngle,
         CongruentLine,
-        CongruentAngle,
         Number_2 as Number
     }
 }
@@ -411,6 +430,11 @@ declare namespace Graphing {
 export { Graphing }
 
 // @public (undocumented)
+class Grow extends Animation_3 {
+    constructor(object: THREE.Object3D);
+}
+
+// @public (undocumented)
 type HeightSetupConfig = {
     aspectRatio: number;
     pixelHeight: number;
@@ -463,6 +487,8 @@ class Line extends Shape {
     getClassConfig(): {};
     // (undocumented)
     getVector(global?: boolean): THREE.Vector3;
+    // (undocumented)
+    length(): number;
     // (undocumented)
     reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
     // (undocumented)
@@ -626,8 +652,6 @@ class Polyline extends Shape {
     getAttributes(): PolygonAttributes;
     // (undocumented)
     getClassConfig(): {};
-    // (undocumented)
-    reshape(points: Array<THREE.Vector3>, config?: Style): void;
 }
 
 // @public (undocumented)
@@ -773,7 +797,7 @@ class Shake extends Animation_3 {
 
 // @public
 abstract class Shape extends THREE.Group {
-    constructor(points: Array<THREE.Vector3>, config?: Style & {
+    constructor(points?: Array<THREE.Vector3>, config?: Style & {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
@@ -782,6 +806,8 @@ abstract class Shape extends THREE.Group {
     });
     // (undocumented)
     add(...objects: THREE.Object3D[]): this;
+    // (undocumented)
+    addLabel(tex: string, direction: THREE.Vector3): void;
     // (undocumented)
     arrow: boolean;
     // (undocumented)
@@ -806,8 +832,10 @@ abstract class Shape extends THREE.Group {
     static defaultConfig(): {};
     // (undocumented)
     static defaultStyle(): {
+        fill: boolean;
         fillColor: THREE.Color;
         fillOpacity: number;
+        stroke: boolean;
         strokeColor: THREE.Color;
         strokeOpacity: number;
         strokeWidth: number;
@@ -840,6 +868,8 @@ abstract class Shape extends THREE.Group {
     // (undocumented)
     getTransform(): Transform;
     // (undocumented)
+    intrinsicChildren?: THREE.Group;
+    // (undocumented)
     get numCurves(): number;
     // (undocumented)
     get points(): Array<THREE.Vector3>;
@@ -849,7 +879,9 @@ abstract class Shape extends THREE.Group {
     // (undocumented)
     reshape(...args: any[]): void;
     // (undocumented)
-    restyle(style: Style): void;
+    restyle(style: Style, config?: {
+        includeDescendents: boolean;
+    }): void;
     // (undocumented)
     segment(index: number): THREE.Line3;
     // (undocumented)
@@ -909,9 +941,20 @@ class Square extends Rectangle {
     // (undocumented)
     getCloneAttributes(): number[];
     // (undocumented)
+    Reshape(sideLength: number, config?: {}): Animation_3;
+    // (undocumented)
     reshape(sideLength: number, config?: {}): void;
     // (undocumented)
     sideLength: number;
+}
+
+// @public (undocumented)
+class Stagger extends Animation_3 {
+    constructor(objects: THREE.Object3D[], config?: {
+        duration?: number;
+    });
+    // (undocumented)
+    setUp(): void;
 }
 
 // @public (undocumented)
