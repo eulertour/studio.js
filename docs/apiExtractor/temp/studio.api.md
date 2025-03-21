@@ -42,7 +42,8 @@ declare namespace Animation_2 {
         Wait,
         Emphasize,
         Shake,
-        Grow
+        Grow,
+        Stagger
     }
 }
 export { Animation_2 as Animation }
@@ -926,6 +927,15 @@ class Square extends Rectangle {
     reshape(sideLength: number, config?: {}): void;
     // (undocumented)
     sideLength: number;
+}
+
+// @public (undocumented)
+class Stagger extends Animation_3 {
+    constructor(objects: THREE.Object3D[], config?: {
+        duration?: number;
+    });
+    // (undocumented)
+    setUp(): void;
 }
 
 // @public (undocumented)

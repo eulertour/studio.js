@@ -11,9 +11,6 @@ export default class Stagger extends Animation {
    * Creates a staggered fade-in animation for multiple objects
    * @param objects Array of objects to animate in sequence
    * @param config Additional configuration options
-   * 2 -> 2/3
-   * 3 -> 2/4
-   * 4 -> 2/5
    */
   constructor(objects: THREE.Object3D[], config: { duration?: number } = {}) {
     const { duration = 2 / (objects.length + 1) } = config;

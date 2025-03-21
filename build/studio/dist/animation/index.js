@@ -12,4 +12,5 @@ export { default as Wait } from "./Wait.js";
 export { default as Emphasize } from "./Emphasize.js";
 export { default as Shake } from "./Shake.js";
 export { default as Grow } from "./Grow.js";
+export { default as Stagger } from "./Stagger.js";
 //# sourceMappingURL=index.js.map
