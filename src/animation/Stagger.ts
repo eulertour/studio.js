@@ -12,8 +12,11 @@ type StaggerConfig = {
   };
 }
 
+// Define types for our animation items
+type AnimationItem = THREE.Object3D | THREE.Object3D[];
+
 export default class Stagger extends Animation {
-  private objects: THREE.Object3D[];
+  private items: AnimationItem[];
   private duration: number;
   private staggerDelay: number;
   private preserveOpacity: boolean;
@@ -23,43 +26,98 @@ export default class Stagger extends Animation {
 
   /**
    * Creates a staggered fade-in animation for multiple objects
-   * @param objects Array of objects to animate in sequence
-   * @param config Additional configuration options
+   * @param args Variable arguments containing objects to animate and a config object
+   *        Pass objects in sequence to fade them in one after another
+   *        Wrap objects in an array to make them fade in simultaneously
+   *        The last argument should be a config object
+   * 
+   * Examples:
+   * new Stagger(obj1, obj2, obj3, { duration: 0.2 })
+   * new Stagger(obj1, [obj2, obj3], obj4, { duration: 0.2 })
    */
-  constructor(objects: THREE.Object3D[], config: StaggerConfig = {}) {
+  constructor(...args: any[]) {
+    // Extract config from last argument if it's an object and not a THREE.Object3D
+    let config: StaggerConfig = {};
+    let animationItems: AnimationItem[] = [];
+    
+    if (args.length > 0) {
+      const lastArg = args[args.length - 1];
+      if (lastArg && typeof lastArg === 'object' && !(lastArg instanceof THREE.Object3D) && !Array.isArray(lastArg)) {
+        config = lastArg;
+        // Remove config from args
+        animationItems = args.slice(0, -1) as AnimationItem[];
+      } else {
+        // All args are animation items
+        animationItems = args as AnimationItem[];
+      }
+    }
+    
+    // Count total animation steps (a nested array counts as one step)
+    const totalSteps = animationItems.length;
+    
     const { 
-      duration = 2 / (objects.length + 1),
+      duration = 2 / (totalSteps + 1),
       preserveOpacity = true,
       targetOpacity = {} 
     } = config;
     
-    const staggerDelay = objects.length > 1 ? (1 - duration) / (objects.length - 1) : 0;
+    // Calculate delay between steps
+    const staggerDelay = totalSteps > 1 ? (1 - duration) / (totalSteps - 1) : 0;
 
+    // Extract all objects for the super constructor
+    const allObjects = Stagger.flattenItems(animationItems);
+    
+    // Call super constructor first, before accessing 'this'
     super(
       (elapsedTime, _deltaTime) => {
-        objects.forEach((object, index) => {
+        animationItems.forEach((item, index) => {
           const startTime = index * staggerDelay;
-          const objectProgress = THREE.MathUtils.clamp(
+          const stepProgress = THREE.MathUtils.clamp(
             (elapsedTime - startTime) / duration,
             0,
             1,
           );
 
-          // Only process if animation has started for this object
-          if (objectProgress > 0) {
-            this.animateObject(object, objectProgress);
+          // Only process if animation has started for this step
+          if (stepProgress > 0) {
+            // If the item is an array, animate all objects in the group simultaneously
+            if (Array.isArray(item)) {
+              item.forEach(obj => this.animateObject(obj, stepProgress));
+            } else {
+              // Otherwise, animate the single object
+              this.animateObject(item, stepProgress);
+            }
           }
         });
       },
-      { objects, reveal: true, ...config },
+      { objects: allObjects, reveal: true, ...config },
     );
 
-    this.objects = objects;
+    // Now it's safe to use 'this'
+    this.items = animationItems;
     this.duration = duration;
     this.staggerDelay = staggerDelay;
     this.preserveOpacity = preserveOpacity;
     this.targetFillOpacity = targetOpacity.fillOpacity;
     this.targetStrokeOpacity = targetOpacity.strokeOpacity;
+  }
+
+  /**
+   * Flattens the nested array structure to get all objects for initialization
+   * Static method so it can be called before initializing 'this'
+   */
+  private static flattenItems(items: AnimationItem[]): THREE.Object3D[] {
+    const flattenedObjects: THREE.Object3D[] = [];
+    
+    items.forEach(item => {
+      if (Array.isArray(item)) {
+        flattenedObjects.push(...item);
+      } else {
+        flattenedObjects.push(item);
+      }
+    });
+    
+    return flattenedObjects;
   }
 
   /**
@@ -164,10 +222,12 @@ export default class Stagger extends Animation {
             child.material.forEach(mat => {
               if (mat.opacity !== undefined) {
                 mat.opacity = progress * targetOpacity;
+                mat.transparent = true; // Ensure transparency is enabled
               }
             });
           } else if (child.material.opacity !== undefined) {
             child.material.opacity = progress * targetOpacity;
+            child.material.transparent = true; // Ensure transparency is enabled
           }
         }
       });
@@ -177,15 +237,18 @@ export default class Stagger extends Animation {
   setUp() {
     super.setUp();
     
+    // Get all objects to initialize
+    const allObjects = Stagger.flattenItems(this.items);
+    
     // Store initial opacities if we need to preserve them
     if (this.preserveOpacity) {
-      this.objects.forEach(object => {
+      allObjects.forEach(object => {
         this.storeInitialOpacity(object);
       });
     }
     
     // Make sure all objects start with opacity 0
-    this.objects.forEach(object => {
+    allObjects.forEach(object => {
       if (object instanceof Text) {
         object.restyle({
           fillOpacity: 0
@@ -209,10 +272,12 @@ export default class Stagger extends Animation {
               child.material.forEach(mat => {
                 if (mat.opacity !== undefined) {
                   mat.opacity = 0;
+                  mat.transparent = true; // Ensure transparency is enabled
                 }
               });
             } else if (child.material.opacity !== undefined) {
               child.material.opacity = 0;
+              child.material.transparent = true; // Ensure transparency is enabled
             }
           }
         });
@@ -220,37 +285,29 @@ export default class Stagger extends Animation {
     });
   }
 }
+
 /*
-// Example 1: Basic usage - fade to full opacity
+// Example 1: All items fade in sequentially
 new Stagger(
-  [
-    formula.greenTriangleArea,
-    formula.areaOfHexagon,
-    formula.areaOfHexagonAnswer,
-  ],
+  triangle,
+  text1,
+  text2,
   { duration: 0.2 }
 );
 
-// Example 2: Preserve original opacities
+// Example 2: Triangle fades in first, then text1 and text2 fade in together, then text3
 new Stagger(
-  [
-    formula.greenTriangleArea,
-    formula.areaOfHexagon,
-    formula.areaOfHexagonAnswer,
-  ],
-  { 
-    duration: 0.2,
-    preserveOpacity: true
-  }
+  triangle,
+  [text1, text2],
+  text3,
+  { duration: 0.2 }
 );
 
-// Example 3: Set specific target opacities
+// Example 3: Custom target opacities
 new Stagger(
-  [
-    formula.greenTriangleArea,
-    formula.areaOfHexagon,
-    formula.areaOfHexagonAnswer,
-  ],
+  item1,
+  [item2, item3],
+  item4,
   { 
     duration: 0.2,
     preserveOpacity: false,
@@ -260,8 +317,4 @@ new Stagger(
     }
   }
 );
-
-
-
-
 */
