@@ -9,3 +9,4 @@ export { default as Circle } from "./Circle.js";
 export { default as Point } from "./Point.js";
 export { default as Rectangle } from "./Rectangle.js";
 export { default as Square } from "./Square.js";
+export { default as WebGPULine } from "./WebGPULine.js";

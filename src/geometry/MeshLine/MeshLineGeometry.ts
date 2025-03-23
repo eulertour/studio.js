@@ -10,6 +10,10 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
   #nextPosition = new Float32Array();
   #previousPosition = new Float32Array();
   #textureCoords = new Float32Array();
+  #beforeArrow = new Float32Array();
+  #arrow = new Float32Array();
+  #start = new Float32Array();
+  #bottom = new Float32Array();
   #proportion = new Float32Array();
   #endProportion = new Float32Array();
   #indices = new Uint16Array();
@@ -20,6 +24,10 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
     nextPosition: THREE.Float32BufferAttribute;
     previousPosition: THREE.Float32BufferAttribute;
     textureCoords: THREE.Float32BufferAttribute;
+    beforeArrow: THREE.Float32BufferAttribute;
+    arrow: THREE.Float32BufferAttribute;
+    start: THREE.Float32BufferAttribute;
+    bottom: THREE.Float32BufferAttribute;
     proportion: THREE.Float32BufferAttribute;
     endProportion: THREE.Float32BufferAttribute;
     index: THREE.Uint16BufferAttribute;
@@ -282,6 +290,8 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
 
     const textureOffset = 4 * index;
     this.setTextureCoords(this.#textureCoords, textureOffset);
+    this.setStart(this.#start, textureOffset);
+    this.setBottom(this.#bottom, textureOffset);
 
     const indexOffset = 6 * index;
     const nextIndex = 4 * index;
@@ -298,6 +308,10 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
     this.#endPosition = new Float32Array(12 * rectCount);
     this.#nextPosition = new Float32Array(12 * rectCount);
     this.#textureCoords = new Float32Array(4 * rectCount);
+    this.#beforeArrow = new Float32Array(4 * rectCount);
+    this.#arrow = new Float32Array(4 * rectCount);
+    this.#start = new Float32Array(4 * rectCount);
+    this.#bottom = new Float32Array(4 * rectCount);
     this.#proportion = new Float32Array(4 * rectCount);
     this.#endProportion = new Float32Array(4 * rectCount);
     this.#indices = new Uint16Array(6 * rectCount);
@@ -308,6 +322,10 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
       endPosition: new THREE.BufferAttribute(this.#endPosition, 3),
       nextPosition: new THREE.BufferAttribute(this.#nextPosition, 3),
       textureCoords: new THREE.BufferAttribute(this.#textureCoords, 1),
+      beforeArrow: new THREE.BufferAttribute(this.#beforeArrow, 1),
+      arrow: new THREE.BufferAttribute(this.#arrow, 1),
+      start: new THREE.BufferAttribute(this.#start, 1),
+      bottom: new THREE.BufferAttribute(this.#bottom, 1),
       proportion: new THREE.BufferAttribute(this.#proportion, 1),
       endProportion: new THREE.BufferAttribute(this.#endProportion, 1),
       index: new THREE.BufferAttribute(this.#indices, 1),
@@ -318,6 +336,10 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
     this.setAttribute("nextPosition", this.#attributes.nextPosition);
     this.setAttribute("previousPosition", this.#attributes.previousPosition);
     this.setAttribute("textureCoords", this.#attributes.textureCoords);
+    this.setAttribute("beforeArrow", this.#attributes.beforeArrow);
+    this.setAttribute("arrow", this.#attributes.arrow);
+    this.setAttribute("start", this.#attributes.start);
+    this.setAttribute("bottom", this.#attributes.bottom);
     this.setAttribute("proportion", this.#attributes.proportion);
     this.setAttribute("endProportion", this.#attributes.endProportion);
     this.setIndex(this.#attributes.index);
@@ -354,10 +376,24 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
   //   *-----------------*--> x
   // 1                   2
   setTextureCoords(array: WritableArrayLike<number>, offset: number) {
-    array[offset] = 1; // 8 * 0 + 4 * 0 + 2 * 0 + 1;
+    array[offset] = 1;        // 8 * 0 + 4 * 0 + 2 * 0 + 1;
     // array[offset + 1] = 0; // 8 * 0 + 4 * 0 + 2 * 0 + 0;
-    array[offset + 2] = 2; // 8 * 0 + 4 * 0 + 2 * 1 + 0;
-    array[offset + 3] = 3; // 8 * 0 + 4 * 0 + 2 * 1 + 1;
+    array[offset + 2] = 2;    // 8 * 0 + 4 * 0 + 2 * 1 + 0;
+    array[offset + 3] = 3;    // 8 * 0 + 4 * 0 + 2 * 1 + 1;
+  }
+
+  setStart(array: WritableArrayLike<number>, offset: number) {
+    array[offset] = 1;
+    array[offset + 1] = 1;
+    array[offset + 2] = 0;
+    array[offset + 3] = 0;
+  }
+
+  setBottom(array: WritableArrayLike<number>, offset: number) {
+    array[offset] = 0;
+    array[offset + 1] = 1;
+    array[offset + 2] = 1;
+    array[offset + 3] = 0;
   }
 
   // 0, 3              5

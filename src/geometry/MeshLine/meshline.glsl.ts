@@ -1,4 +1,4 @@
-import * as THREE from "three/webgpu";
+import * as THREE from "three";
 
 export const MESHLINE_VERT = /*glsl*/ `
 

@@ -12,33 +12,12 @@ export default class Scene implements StudioScene {
   constructor(
     public scene: THREE.Scene,
     public camera: THREE.OrthographicCamera,
-    public renderer: THREE.WebGLRenderer,
+    public renderer: THREE.WebGPURenderer,
   ) {
-    const triangle = new Geometry.Polygon(
-      [
-        new THREE.Vector3(-1, -1, 0),
-        new THREE.Vector3(1, 1, 0),
-        new THREE.Vector3(1, -1, 0),
-      ],
-      {
-        strokeWidth: 4,
-        fillColor: new THREE.Color("red"),
-        fillOpacity: 0.5,
-        strokeColor: new THREE.Color("red"),
-      },
+    const line = new Geometry.WebGPULine(
+      new THREE.Vector3(-1, 0, 0),
+      new THREE.Vector3(1, 0, 0),
     );
-    scene.add(triangle);
-
-    this.animations = [
-      new Animation.Wait(),
-
-      new Animation.Animation((t, _) => {
-        triangle.reshape([
-          new THREE.Vector3(-1, -1, 0),
-          new THREE.Vector3(1 + t, 1, 0),
-          new THREE.Vector3(1, -1, 0),
-        ]);
-      }),
-    ];
+    scene.add(line);
   }
 }
