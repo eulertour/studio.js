@@ -18,6 +18,7 @@ import {
   varyingProperty,
   If,
   equals,
+  mat4,
 } from "three/tsl";
 import MeshLineGeometry from "./MeshLine/MeshLineGeometry.js";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
@@ -65,6 +66,7 @@ export default class WebGPULine extends THREE.Mesh {
     geometry.setPoints([
       new THREE.Vector3(-1, 0, 0),
       new THREE.Vector3(1, 0, 0),
+      new THREE.Vector3(2, 1, 0),
     ]);
 
     const vertexArray = [];
@@ -91,19 +93,34 @@ export default class WebGPULine extends THREE.Mesh {
     // console.log(geometry.attributes);
 
     const material = new THREE.MeshBasicNodeMaterial();
+    const viewportSize = vec2(1280, 720);
+    const viewportCoordinate = vec2(8, 8);
+    const lineWidth = 0.3;
+
+    // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=defined%20clipping%20region.-,Perspective%20divide,-%5Bedit%5D
+    const perspectiveDivide = Fn(
+      ([clipSpaceVertex]: [ShaderNodeObject<OperatorNode>]) => {
+        return clipSpaceVertex.xyz.div(clipSpaceVertex.w);
+      },
+    );
+
+    // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=)-,Viewport%20transform,-%5Bedit%5D
+    const viewportTransform = Fn(
+      ([normalizedDeviceCoordinates]: [ShaderNodeObject<OperatorNode>]) =>
+        // TODO: Read this programmatically.
+        normalizedDeviceCoordinates
+          .mul(viewportSize.div(2))
+          .add(viewportCoordinate)
+          .add(viewportSize.div(2)),
+    );
 
     const clipToFragment = Fn(
-      ([clipSpaceVertex]: [ShaderNodeObject<OperatorNode>]) => {
-        const viewportSize = vec2(1280, 720);
-        const normalizedDeviceCoordinateVertex = clipSpaceVertex.xyz.div(
-          clipSpaceVertex.w,
-        );
-        const screenSpaceVertex = normalizedDeviceCoordinateVertex
-          .mul(viewportSize.div(2))
-          // .add(viewportCoordinate)
-          .add(viewportSize.div(2));
-        return screenSpaceVertex.xy;
-      },
+      ([clipSpaceVertex]: [ShaderNodeObject<OperatorNode>]) =>
+        viewportTransform(perspectiveDivide(clipSpaceVertex)),
+    );
+
+    const boolToSign = Fn(([booleanValue]: [ShaderNodeObject<OperatorNode>]) =>
+      float(2).mul(booleanValue.oneMinus()).sub(1),
     );
 
     const vertexNode = Fn(() => {
@@ -111,33 +128,19 @@ export default class WebGPULine extends THREE.Mesh {
       varyingProperty("vec4", "vColor").assign(vColor);
 
       const modelViewProjection = cameraProjectionMatrix.mul(modelViewMatrix);
-
-      const position = attribute("position");
-      const endPosition = attribute("endPosition");
-      const nextPosition = attribute("nextPosition");
-      const previousPosition = attribute("previousPosition");
-
-      const start = modelViewProjection.mul(
-        vec4(position.x, position.y, position.z, 1),
-      );
-      const end = modelViewProjection.mul(
-        vec4(endPosition.x, endPosition.y, endPosition.z, 1),
-      );
-      const next = modelViewProjection.mul(
-        vec4(nextPosition.x, nextPosition.y, nextPosition.z, 1),
-      );
-      const previous = modelViewProjection.mul(
-        vec4(previousPosition.x, previousPosition.y, previousPosition.z, 1),
+      const pointMatrix = modelViewProjection.mul(
+        mat4(
+          vec4(attribute("position"), 1),
+          vec4(attribute("endPosition"), 1),
+          vec4(attribute("nextPosition"), 1),
+          vec4(attribute("previousPosition"), 1),
+        ),
       );
 
-      // let remaining = attribute("textureCoords");
-      // const beforeArrow = floor(float(0.125).mul(remaining));
-      // remaining.sub(float(8).mul(beforeArrow));
-      // const arrow = floor(float(0.25).mul(remaining));
-      // remaining.sub(float(4).mul(arrow));
-      // const startEnd = floor(float(0.5).mul(remaining));
-      // remaining.sub(float(2).mul(startEnd));
-      // const bottomTop = remaining;
+      const start = vec4(pointMatrix[0]);
+      const end = vec4(pointMatrix[1]);
+      const next = vec4(pointMatrix[2]);
+      const previous = vec4(pointMatrix[3]);
 
       const isStart = attribute("start");
       const isBottom = attribute("bottom");
@@ -147,32 +150,27 @@ export default class WebGPULine extends THREE.Mesh {
       const nextFragment = clipToFragment(next);
       const previousFragment = clipToFragment(previous);
 
-      const segmentVec = normalize(endFragment.sub(startFragment));
-      const segmentNormal = vec2(segmentVec.y.negate(), segmentVec.x);
-
-      const transformedSegmentVec = segmentVec.mul(
-        float(2).mul(isStart.oneMinus()).sub(1),
-      );
-      const transformedSegmentNormal = segmentNormal.mul(
-        float(2).mul(isBottom.oneMinus()).sub(1),
+      const screenSpaceSegmentVec = normalize(endFragment.sub(startFragment));
+      const screenSpaceSegmentNormal = vec2(
+        screenSpaceSegmentVec.y.negate(),
+        screenSpaceSegmentVec.x,
       );
 
-      const fragmentOffset = transformedSegmentVec.add(
-        transformedSegmentNormal,
-      );
+      const fragmentOffset = screenSpaceSegmentVec
+        .mul(boolToSign(isStart))
+        .add(screenSpaceSegmentNormal.mul(boolToSign(isBottom)))
+        .mul(lineWidth);
 
       const glPosition = select(isStart.equal(float(1)), start, end).toVar();
       const clipSpaceFragmentOffset = cameraProjectionMatrix.mul(
-        vec4(fragmentOffset.x, fragmentOffset.y, 0, 1),
+        vec4(fragmentOffset.xy, 0, 1),
       ).xy;
-
       glPosition.xy.addAssign(clipSpaceFragmentOffset);
-
-      return vec4(glPosition.x, glPosition.y, glPosition.z, 1);
+      return vec4(glPosition.xyz, 1);
     });
 
     material.vertexNode = vertexNode();
-    material.colorNode = varyingProperty("vec4", "vColor");
+    material.fragmentNode = varyingProperty("vec4", "vColor");
 
     super(geometry, material);
   }
