@@ -54839,7 +54839,7 @@ class Shape extends THREE.Group {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: void 0
+            value: []
         });
         Object.defineProperty(this, "arrow", {
             enumerable: true,
@@ -54860,6 +54860,19 @@ class Shape extends THREE.Group {
             value: (e) => this.dispatchEvent(e)
         });
         config = Object.assign(Shape.defaultStyle(), config);
+        if (config.position) {
+            this.position.copy(config.position);
+        }
+        if (config.rotation !== undefined) {
+            this.rotation.copy(typeof config.rotation === 'number'
+                ? new THREE.Euler(0, 0, config.rotation)
+                : config.rotation);
+        }
+        if (config.scale) {
+            this.scale.copy(typeof config.scale === 'number'
+                ? new THREE.Vector3(config.scale, config.scale, config.scale)
+                : config.scale);
+        }
         if (points === undefined) {
             config.stroke = false;
             config.fill = false;
@@ -54992,7 +55005,7 @@ class Shape extends THREE.Group {
         }
     }
     get points() {
-        return this.stroke.geometry.points;
+        return this.stroke?.geometry?.points || [];
     }
     set points(newPoints) {
         this.stroke.geometry.points = newPoints;
@@ -56636,16 +56649,44 @@ class SetScale extends Animation {
 }
 
 class FadeIn extends Animation {
-    constructor(object, config) {
-        let family = true;
-        if (config && config.family === false) {
-            family = false;
-        }
+    constructor(object, config = {}) {
+        // Default preserveOpacity to true unless explicitly set to false
+        const preserveOpacity = config.preserveOpacity !== false;
+        // Extract target opacities if provided
+        const targetFillOpacity = config.targetOpacity?.fillOpacity;
+        const targetStrokeOpacity = config.targetOpacity?.strokeOpacity;
+        // Default family to true unless explicitly set to false
+        const family = config.family !== false;
         super((elapsedTime, _deltaTime) => {
-            if (family) {
+            // Special handling for objects with restyle method (Text or Shape)
+            if (typeof object.restyle === 'function') {
+                // Get target fill opacity
+                const targetFill = targetFillOpacity !== undefined ? targetFillOpacity :
+                    (preserveOpacity ? this.initialOpacity.get(object)?.fillOpacity || 1 : 1);
+                // For Text objects (no strokeOpacity)
+                if (object.constructor.name === 'Text') {
+                    object.restyle({
+                        fillOpacity: THREE.MathUtils.lerp(0, targetFill, elapsedTime)
+                    });
+                }
+                // For Shape objects (has strokeOpacity)
+                else {
+                    // Get target stroke opacity
+                    const targetStroke = targetStrokeOpacity !== undefined ? targetStrokeOpacity :
+                        (preserveOpacity ? this.initialOpacity.get(object)?.strokeOpacity || 1 : 1);
+                    object.restyle({
+                        fillOpacity: THREE.MathUtils.lerp(0, targetFill, elapsedTime),
+                        strokeOpacity: THREE.MathUtils.lerp(0, targetStroke, elapsedTime)
+                    });
+                }
+            }
+            // Standard THREE.js object handling (original code with preserveOpacity logic updated)
+            else if (family) {
                 this.object.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
-                        child.material.opacity = THREE.MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(child) : 1, elapsedTime);
+                        const targetOpacity = targetFillOpacity !== undefined ? targetFillOpacity :
+                            (preserveOpacity ? this.initialOpacity.get(child) : 1);
+                        child.material.opacity = THREE.MathUtils.lerp(0, targetOpacity, elapsedTime);
                     }
                 });
             }
@@ -56653,7 +56694,9 @@ class FadeIn extends Animation {
                 [this.object.stroke, this.object.fill].forEach((mesh) => {
                     if (!mesh)
                         return;
-                    mesh.material.opacity = THREE.MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(mesh) : 1, elapsedTime);
+                    const targetOpacity = targetFillOpacity !== undefined ? targetFillOpacity :
+                        (preserveOpacity ? this.initialOpacity.get(mesh) : 1);
+                    mesh.material.opacity = THREE.MathUtils.lerp(0, targetOpacity, elapsedTime);
                 });
             }
         }, { object, reveal: true, ...config });
@@ -56663,16 +56706,93 @@ class FadeIn extends Animation {
             writable: true,
             value: new Map()
         });
+        Object.defineProperty(this, "preserveOpacity", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "targetFillOpacity", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "targetStrokeOpacity", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this.preserveOpacity = preserveOpacity;
+        this.targetFillOpacity = targetFillOpacity;
+        this.targetStrokeOpacity = targetStrokeOpacity;
     }
     setUp() {
         super.setUp();
-        this.object.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-                this.initialOpacity.set(child, child.material.opacity);
+        // Handle objects with restyle method
+        if (typeof this.object.restyle === 'function') {
+            const opacities = {};
+            // Extract current opacities
+            this.object.traverse((child) => {
+                if (child instanceof THREE.Mesh && child.material) {
+                    if (!opacities.fillOpacity && child.material.opacity !== undefined) {
+                        opacities.fillOpacity = child.material.opacity;
+                    }
+                }
+            });
+            // For shapes, try to find stroke opacity
+            if (this.object.constructor.name !== 'Text') {
+                // Placeholder - customize based on your implementation
+                if (this.object.strokeOpacity !== undefined) {
+                    opacities.strokeOpacity = this.object.strokeOpacity;
+                }
+                else if (this.object.style && this.object.style.strokeOpacity !== undefined) {
+                    opacities.strokeOpacity = this.object.style.strokeOpacity;
+                }
             }
-        });
+            // Store opacities and initialize
+            this.initialOpacity.set(this.object, opacities);
+            // Set initial opacity to 0
+            if (this.object.constructor.name === 'Text') {
+                this.object.restyle({ fillOpacity: 0 });
+            }
+            else {
+                this.object.restyle({
+                    fillOpacity: 0,
+                    strokeOpacity: 0
+                });
+            }
+        }
+        // Original code for standard THREE.js objects
+        else {
+            this.object.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    this.initialOpacity.set(child, child.material.opacity);
+                }
+            });
+        }
     }
 }
+/*
+
+Example 1: Basic usage - preserving original opacity
+new Animation.FadeIn(triangle)
+
+
+Example2: Fade in everything to 100% opacity, ignoring original opacity
+new Animation.FadeIn(triangle, { preserveOpacity: false })
+
+
+Example 3: Set specific target opacities
+new Animation.FadeIn(triangle, {
+    targetOpacity: {
+      fillOpacity: 0.5,
+      strokeOpacity: 0.8
+    }
+  })
+
+*/
 
 class SetOpacity extends Animation {
     constructor(objectOrFunc, targetOpacity, config) {
@@ -56925,6 +57045,83 @@ class Stagger extends Animation {
     }
 }
 
+class SetStyle extends Animation {
+    constructor(shape, style, config) {
+        super((elapsedTime) => {
+            if (this.initialStyle.fillColor !== undefined &&
+                this.targetStyle.fillColor !== undefined) {
+                const t = Math.min(Math.max(elapsedTime, 0), 1);
+                this.currentStyle.fillColor = new THREE.Color()
+                    .copy(this.initialStyle.fillColor)
+                    .lerp(this.targetStyle.fillColor, t);
+            }
+            if (this.initialStyle.strokeColor !== undefined &&
+                this.targetStyle.strokeColor !== undefined) {
+                const t = Math.min(Math.max(elapsedTime, 0), 1);
+                this.currentStyle.strokeColor = new THREE.Color().copy(this.initialStyle.strokeColor);
+                this.currentStyle.strokeColor.lerp(this.targetStyle.strokeColor, t);
+            }
+            if (this.initialStyle.fillOpacity !== undefined &&
+                this.targetStyle.fillOpacity !== undefined) {
+                this.currentStyle.fillOpacity = THREE.MathUtils.lerp(this.initialStyle.fillOpacity, this.targetStyle.fillOpacity, elapsedTime);
+            }
+            if (this.initialStyle.strokeOpacity !== undefined &&
+                this.targetStyle.strokeOpacity !== undefined) {
+                this.currentStyle.strokeOpacity = THREE.MathUtils.lerp(this.initialStyle.strokeOpacity, this.targetStyle.strokeOpacity, elapsedTime);
+            }
+            if (this.initialStyle.strokeWidth !== undefined &&
+                this.targetStyle.strokeWidth !== undefined) {
+                this.currentStyle.strokeWidth = THREE.MathUtils.lerp(this.initialStyle.strokeWidth, this.targetStyle.strokeWidth, elapsedTime);
+            }
+            shape.restyle(this.currentStyle);
+        }, { object: shape, ...config });
+        Object.defineProperty(this, "shape", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: shape
+        });
+        Object.defineProperty(this, "style", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: style
+        });
+        Object.defineProperty(this, "initialStyle", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "targetStyle", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "currentStyle", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: {}
+        });
+    }
+    setUp() {
+        super.setUp();
+        const shapeStyle = this.shape.getStyle();
+        this.initialStyle = {
+            ...shapeStyle,
+            fillColor: shapeStyle.fillColor ? new THREE.Color().copy(shapeStyle.fillColor) : undefined,
+            strokeColor: shapeStyle.strokeColor ? new THREE.Color().copy(shapeStyle.strokeColor) : undefined
+        };
+        this.targetStyle = {
+            ...this.style,
+            fillColor: this.style.fillColor ? new THREE.Color().copy(this.style.fillColor) : undefined,
+            strokeColor: this.style.strokeColor ? new THREE.Color().copy(this.style.strokeColor) : undefined
+        };
+    }
+}
+
 var index$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     Animation: Animation,
@@ -56938,6 +57135,7 @@ var index$1 = /*#__PURE__*/Object.freeze({
     Rotate: Rotate,
     SetOpacity: SetOpacity,
     SetScale: SetScale,
+    SetStyle: SetStyle,
     Shake: Shake,
     Shift: Shift,
     Stagger: Stagger,

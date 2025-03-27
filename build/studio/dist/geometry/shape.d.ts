@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import MeshLine from "./MeshLine/index.js";
 export type Transform = {
-    position: THREE.Vector3;
-    rotation: THREE.Euler;
-    scale: THREE.Vector3;
+    position?: THREE.Vector3;
+    rotation?: THREE.Euler | number;
+    scale?: THREE.Vector3 | number;
 };
 export type Style = {
     fillColor?: THREE.Color;
@@ -26,7 +26,7 @@ export default abstract class Shape extends THREE.Group {
     curveEndIndices: Array<Array<number>>;
     arrow: boolean;
     intrinsicChildren?: THREE.Group;
-    constructor(points?: Array<THREE.Vector3>, config?: Style & {
+    constructor(points: Array<THREE.Vector3>, config?: Style & Transform & {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;

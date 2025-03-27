@@ -32,7 +32,7 @@ export default class Shape extends THREE.Group {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: void 0
+            value: []
         });
         Object.defineProperty(this, "arrow", {
             enumerable: true,
@@ -53,6 +53,19 @@ export default class Shape extends THREE.Group {
             value: (e) => this.dispatchEvent(e)
         });
         config = Object.assign(Shape.defaultStyle(), config);
+        if (config.position) {
+            this.position.copy(config.position);
+        }
+        if (config.rotation !== undefined) {
+            this.rotation.copy(typeof config.rotation === 'number'
+                ? new THREE.Euler(0, 0, config.rotation)
+                : config.rotation);
+        }
+        if (config.scale) {
+            this.scale.copy(typeof config.scale === 'number'
+                ? new THREE.Vector3(config.scale, config.scale, config.scale)
+                : config.scale);
+        }
         if (points === undefined) {
             config.stroke = false;
             config.fill = false;
@@ -185,7 +198,7 @@ export default class Shape extends THREE.Group {
         }
     }
     get points() {
-        return this.stroke.geometry.points;
+        return this.stroke?.geometry?.points || [];
     }
     set points(newPoints) {
         this.stroke.geometry.points = newPoints;

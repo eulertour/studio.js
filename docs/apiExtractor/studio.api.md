@@ -43,7 +43,8 @@ declare namespace Animation_2 {
         Emphasize,
         Shake,
         Grow,
-        Stagger
+        Stagger,
+        SetStyle
     }
 }
 export { Animation_2 as Animation }
@@ -322,7 +323,8 @@ const ERROR_THRESHOLD = 0.001;
 
 // @public (undocumented)
 class FadeIn extends Animation_3 {
-    constructor(object: THREE.Object3D, config?: any);
+    // Warning: (ae-forgotten-export) The symbol "FadeInConfig" needs to be exported by the entry point index.d.ts
+    constructor(object: THREE.Object3D, config?: FadeInConfig);
     // (undocumented)
     initialOpacity: Map<any, any>;
     // (undocumented)
@@ -782,6 +784,17 @@ class SetScale extends Animation_3 {
     setUp(): void;
 }
 
+// @public (undocumented)
+class SetStyle extends Animation_3 {
+    constructor(shape: Shape, style: Style, config?: any);
+    // (undocumented)
+    setUp(): void;
+    // (undocumented)
+    shape: Shape;
+    // (undocumented)
+    style: Style;
+}
+
 // Warning: (ae-forgotten-export) The symbol "Scene" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -797,7 +810,8 @@ class Shake extends Animation_3 {
 
 // @public
 abstract class Shape extends THREE.Group {
-    constructor(points?: Array<THREE.Vector3>, config?: Style & {
+    // Warning: (ae-forgotten-export) The symbol "Transform" needs to be exported by the entry point index.d.ts
+    constructor(points: Array<THREE.Vector3>, config?: Style & Transform & {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
@@ -863,8 +877,6 @@ abstract class Shape extends THREE.Group {
     getDimensions(): THREE.Vector2;
     // (undocumented)
     getStyle(): Style;
-    // Warning: (ae-forgotten-export) The symbol "Transform" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     getTransform(): Transform;
     // (undocumented)

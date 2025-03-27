@@ -51,9 +51,9 @@ declare class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
 }
 
 type Transform = {
-    position: THREE.Vector3;
-    rotation: THREE.Euler;
-    scale: THREE.Vector3;
+    position?: THREE.Vector3;
+    rotation?: THREE.Euler | number;
+    scale?: THREE.Vector3 | number;
 };
 type Style = {
     fillColor?: THREE.Color;
@@ -76,7 +76,7 @@ declare abstract class Shape extends THREE.Group {
     curveEndIndices: Array<Array<number>>;
     arrow: boolean;
     intrinsicChildren?: THREE.Group;
-    constructor(points?: Array<THREE.Vector3>, config?: Style & {
+    constructor(points: Array<THREE.Vector3>, config?: Style & Transform & {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
@@ -521,9 +521,21 @@ declare class SetScale extends Animation {
     setUp(): void;
 }
 
+type FadeInConfig = {
+    duration?: number;
+    family?: boolean;
+    preserveOpacity?: boolean;
+    targetOpacity?: {
+        fillOpacity?: number;
+        strokeOpacity?: number;
+    };
+};
 declare class FadeIn extends Animation {
     initialOpacity: Map<any, any>;
-    constructor(object: THREE.Object3D, config?: any);
+    private preserveOpacity;
+    private targetFillOpacity?;
+    private targetStrokeOpacity?;
+    constructor(object: THREE.Object3D, config?: FadeInConfig);
     setUp(): void;
 }
 
@@ -582,6 +594,16 @@ declare class Stagger extends Animation {
     setUp(): void;
 }
 
+declare class SetStyle extends Animation {
+    shape: Shape;
+    style: Style;
+    private initialStyle;
+    private targetStyle;
+    private currentStyle;
+    constructor(shape: Shape, style: Style, config?: any);
+    setUp(): void;
+}
+
 //# sourceMappingURL=index.d.ts.map
 
 type index_d$1_Animation = Animation;
@@ -606,6 +628,8 @@ type index_d$1_SetOpacity = SetOpacity;
 declare const index_d$1_SetOpacity: typeof SetOpacity;
 type index_d$1_SetScale = SetScale;
 declare const index_d$1_SetScale: typeof SetScale;
+type index_d$1_SetStyle = SetStyle;
+declare const index_d$1_SetStyle: typeof SetStyle;
 type index_d$1_Shake = Shake;
 declare const index_d$1_Shake: typeof Shake;
 type index_d$1_Shift = Shift;
@@ -615,7 +639,7 @@ declare const index_d$1_Stagger: typeof Stagger;
 type index_d$1_Wait = Wait;
 declare const index_d$1_Wait: typeof Wait;
 declare namespace index_d$1 {
-  export { index_d$1_Animation as Animation, index_d$1_Draw as Draw, index_d$1_Emphasize as Emphasize, index_d$1_Erase as Erase, index_d$1_FadeIn as FadeIn, index_d$1_FadeOut as FadeOut, index_d$1_Grow as Grow, index_d$1_MoveTo as MoveTo, index_d$1_Rotate as Rotate, index_d$1_SetOpacity as SetOpacity, index_d$1_SetScale as SetScale, index_d$1_Shake as Shake, index_d$1_Shift as Shift, index_d$1_Stagger as Stagger, index_d$1_Wait as Wait };
+  export { index_d$1_Animation as Animation, index_d$1_Draw as Draw, index_d$1_Emphasize as Emphasize, index_d$1_Erase as Erase, index_d$1_FadeIn as FadeIn, index_d$1_FadeOut as FadeOut, index_d$1_Grow as Grow, index_d$1_MoveTo as MoveTo, index_d$1_Rotate as Rotate, index_d$1_SetOpacity as SetOpacity, index_d$1_SetScale as SetScale, index_d$1_SetStyle as SetStyle, index_d$1_Shake as Shake, index_d$1_Shift as Shift, index_d$1_Stagger as Stagger, index_d$1_Wait as Wait };
 }
 
 declare const PIXELS_TO_COORDS: number;
