@@ -59,13 +59,4 @@ export default class Rectangle extends Shape {
       },
     ];
   }
-
-  getCurveEndIndices(): Array<Array<number>> {
-    return [
-      [0, 1],
-      [1, 2],
-      [2, 3],
-      [3, 4],
-    ];
-  }
 }

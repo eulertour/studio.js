@@ -48,13 +48,14 @@ export default abstract class Shape extends THREE.Group {
 
   constructor(
     points: Array<THREE.Vector3>,
-    config: Style & Transform & {
-      arrow?: boolean;
-      stroke?: boolean;
-      fill?: boolean;
-      closed?: boolean;
-      fillPoints?: Array<THREE.Vector3>;
-    } = {},
+    config: Style &
+      Transform & {
+        arrow?: boolean;
+        stroke?: boolean;
+        fill?: boolean;
+        closed?: boolean;
+        fillPoints?: Array<THREE.Vector3>;
+      } = {},
   ) {
     super();
     config = Object.assign(Shape.defaultStyle(), config);
@@ -64,17 +65,17 @@ export default abstract class Shape extends THREE.Group {
 
     if (config.rotation !== undefined) {
       this.rotation.copy(
-        typeof config.rotation === 'number' 
+        typeof config.rotation === "number"
           ? new THREE.Euler(0, 0, config.rotation)
-          : config.rotation
+          : config.rotation,
       );
     }
-    
+
     if (config.scale) {
       this.scale.copy(
-        typeof config.scale === 'number' 
+        typeof config.scale === "number"
           ? new THREE.Vector3(config.scale, config.scale, config.scale)
-          : config.scale
+          : config.scale,
       );
     }
 
@@ -122,10 +123,6 @@ export default abstract class Shape extends THREE.Group {
       });
       this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
       this.add(this.stroke);
-    }
-
-    if (this.stroke) {
-      this.curveEndIndices = this.getCurveEndIndices();
     }
   }
 
@@ -187,10 +184,13 @@ export default abstract class Shape extends THREE.Group {
       config = args[args.length - 1];
     }
 
-    const newShape = new (this.constructor as new (...args: any[]) => this)(...requiredArgs, {
-      ...this.getStyle(),
-      ...config,
-    });
+    const newShape = new (this.constructor as new (...args: any[]) => this)(
+      ...requiredArgs,
+      {
+        ...this.getStyle(),
+        ...config,
+      },
+    );
 
     this.position.copy(newShape.position);
     this.rotation.copy(newShape.rotation);
@@ -271,15 +271,6 @@ export default abstract class Shape extends THREE.Group {
     return this.curveEndIndices.length;
   }
 
-  getCurveEndIndices() {
-    const points = this.stroke.geometry.points;
-    const indices = [];
-    for (let i = 0; i < points.length - 1; i++) {
-      indices.push([i, i + 1]);
-    }
-    return indices;
-  }
-
   clear() {
     this.remove(this.stroke);
     this.remove(this.fill);
@@ -316,7 +307,8 @@ export default abstract class Shape extends THREE.Group {
       fillColor: this.fill?.material.color ?? defaultStyle.fillColor,
       fillOpacity: this.fill?.material.opacity ?? defaultStyle.fillOpacity,
       strokeColor: this.stroke?.material.color ?? defaultStyle.strokeColor,
-      strokeOpacity: this.stroke?.material.opacity ?? defaultStyle.strokeOpacity,
+      strokeOpacity:
+        this.stroke?.material.opacity ?? defaultStyle.strokeOpacity,
       strokeWidth: this.stroke?.material.width ?? defaultStyle.strokeWidth,
     };
   }
