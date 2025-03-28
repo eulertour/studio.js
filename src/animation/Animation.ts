@@ -98,7 +98,11 @@ class Animation {
       if (this.object instanceof Function) {
         this.object = this.object();
       }
-      if (this.object !== undefined && this.object.parent === null) {
+      if (
+        this.object !== undefined &&
+        this.object.parent === undefined &&
+        this.parent !== undefined
+      ) {
         const parent = this.parent;
         !parent.children.includes(this.object) && parent.add(this.object);
       }
