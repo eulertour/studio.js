@@ -1,16 +1,17 @@
 import { clamp } from "../utils.js";
 
-const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
-const smooth = (t: number) => {
+// From https://easings.net/
+const easeInOutCubic = (x: number): number =>
+  x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 
-  const error = sigmoid(-10 / 2);
-  return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
-};
-
-const modulate = (t, dt): [number, number] => {
+export const applyEasing = (
+  t: number,
+  dt: number,
+  easingFunction: (_: number) => number,
+): [number, number] => {
   const tSeconds = t;
-  const modulatedDelta = smooth(tSeconds) - smooth(t - dt);
-  const modulatedTime = smooth(tSeconds);
+  const modulatedDelta = easingFunction(tSeconds) - easingFunction(t - dt);
+  const modulatedTime = easingFunction(tSeconds);
   return [modulatedTime, modulatedDelta];
 };
 
@@ -48,6 +49,7 @@ class Animation {
   public runTime = 1;
   public finished = false;
   public elapsedSinceStart = 0;
+  public easing: (_: number) => number;
 
   // family: whether or not the animation will affect the entire family
   // add: whether or not affected shapes will be added to their parents
@@ -61,6 +63,7 @@ class Animation {
       family = undefined,
       reveal = undefined,
       hide = undefined,
+      easing = undefined,
     } = {},
   ) {
     this.object = object;
@@ -70,6 +73,7 @@ class Animation {
     this.family = family;
     this.reveal = reveal;
     this.hide = hide;
+    this.easing = easing || easeInOutCubic;
   }
 
   setUp() {
@@ -109,7 +113,7 @@ class Animation {
     this.prevUpdateTime = worldTime;
     this.elapsedSinceStart += deltaTime;
 
-    this.func(...modulate(this.elapsedSinceStart, deltaTime));
+    this.func(...applyEasing(this.elapsedSinceStart, deltaTime, this.easing));
 
     if (worldTime >= this.endTime) {
       this.finished = true;
@@ -143,6 +147,4 @@ class Animation {
   }
 }
 
-export {
-  Animation,
-};
+export { Animation };
