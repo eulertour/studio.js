@@ -21,12 +21,12 @@ export default class Square extends Rectangle {
     this.copyStrokeAndFill(new Square(sideLength, config));
   }
 
-  Reshape(sideLength: number, config = {}) {
+  Reshape(sideLength: number) {
     let startSideLength: number;
     let endSideLength: number;
 
     return new Animation(
-      (t: number, dt: number) => {
+      (t: number) => {
         this.reshape(MathUtils.lerp(startSideLength, endSideLength, t));
       },
       {

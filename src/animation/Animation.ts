@@ -1,3 +1,4 @@
+import { THREE } from "../index.js";
 import { clamp } from "../utils.js";
 
 // From https://easings.net/
@@ -15,21 +16,16 @@ export const applyEasing = (
   return [modulatedTime, modulatedDelta];
 };
 
-interface IAnimation {
-  // biome-ignore lint/suspicious/noMisleadingInstantiator:
-  constructor(
-    func: (elapsedTime: number, deltaTime: number) => void,
-    config?: any,
-  ): Animation;
-}
-
-interface INoConfigAnimation {
-  // biome-ignore lint/suspicious/noMisleadingInstantiator:
-  constructor(
-    func: (elapsedTime: number, deltaTime: number) => void,
-    config?: any,
-  ): Animation;
-}
+export type AnimationConfig = {
+  object?: THREE.Object3D;
+  parent?: THREE.Object3D;
+  before?: () => void;
+  after?: () => void;
+  family?: boolean;
+  reveal?: boolean;
+  hide?: boolean;
+  easing?: (_: number) => number;
+};
 
 class Animation {
   public scene;
@@ -55,25 +51,16 @@ class Animation {
   // add: whether or not affected shapes will be added to their parents
   constructor(
     public func: (elapsedTime: number, deltaTime: number) => void,
-    {
-      object = undefined,
-      parent = undefined,
-      before = undefined,
-      after = undefined,
-      family = undefined,
-      reveal = undefined,
-      hide = undefined,
-      easing = undefined,
-    } = {},
+    config: AnimationConfig = {},
   ) {
-    this.object = object;
-    this.parent = parent;
-    this.before = before;
-    this.after = after;
-    this.family = family;
-    this.reveal = reveal;
-    this.hide = hide;
-    this.easing = easing || easeInOutCubic;
+    this.object = config.object;
+    this.parent = config.parent;
+    this.before = config.before;
+    this.after = config.after;
+    this.family = config.family;
+    this.reveal = config.reveal;
+    this.hide = config.hide;
+    this.easing = config.easing || easeInOutCubic;
   }
 
   setUp() {
