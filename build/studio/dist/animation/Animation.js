@@ -1,19 +1,15 @@
-import { clamp } from "../utils.js";
-const sigmoid = (x) => 1 / (1 + Math.exp(-x));
-const smooth = (t) => {
-    const error = sigmoid(-10 / 2);
-    return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
-};
-const modulate = (t, dt) => {
+// From https://easings.net/
+const easeInOutCubic = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+export const applyEasing = (t, dt, easingFunction) => {
     const tSeconds = t;
-    const modulatedDelta = smooth(tSeconds) - smooth(t - dt);
-    const modulatedTime = smooth(tSeconds);
+    const modulatedDelta = easingFunction(tSeconds) - easingFunction(t - dt);
+    const modulatedTime = easingFunction(tSeconds);
     return [modulatedTime, modulatedDelta];
 };
 class Animation {
     // family: whether or not the animation will affect the entire family
     // add: whether or not affected shapes will be added to their parents
-    constructor(func, { object = undefined, parent = undefined, before = undefined, after = undefined, family = undefined, reveal = undefined, hide = undefined, } = {}) {
+    constructor(func, config = {}) {
         Object.defineProperty(this, "func", {
             enumerable: true,
             configurable: true,
@@ -122,13 +118,20 @@ class Animation {
             writable: true,
             value: 0
         });
-        this.object = object;
-        this.parent = parent;
-        this.before = before;
-        this.after = after;
-        this.family = family;
-        this.reveal = reveal;
-        this.hide = hide;
+        Object.defineProperty(this, "easing", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this.object = config.object;
+        this.parent = config.parent;
+        this.before = config.before;
+        this.after = config.after;
+        this.family = config.family;
+        this.reveal = config.reveal;
+        this.hide = config.hide;
+        this.easing = config.easing || easeInOutCubic;
     }
     setUp() {
         if (this?.object?.parentComponent) {
@@ -149,7 +152,9 @@ class Animation {
             if (this.object instanceof Function) {
                 this.object = this.object();
             }
-            if (this.object !== undefined && this.object.parent === null) {
+            if (this.object !== undefined &&
+                this.object.parent === undefined &&
+                this.parent !== undefined) {
                 const parent = this.parent;
                 !parent.children.includes(this.object) && parent.add(this.object);
             }
@@ -165,7 +170,7 @@ class Animation {
         }
         this.prevUpdateTime = worldTime;
         this.elapsedSinceStart += deltaTime;
-        this.func(...modulate(this.elapsedSinceStart, deltaTime));
+        this.func(...applyEasing(this.elapsedSinceStart, deltaTime, this.easing));
         if (worldTime >= this.endTime) {
             this.finished = true;
             this.tearDown();
@@ -197,5 +202,5 @@ class Animation {
         }
     }
 }
-export { Animation, };
+export { Animation };
 //# sourceMappingURL=Animation.js.map

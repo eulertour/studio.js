@@ -213,11 +213,12 @@
                     },
                     {
                       "kind": "Content",
-                      "text": ", { object, parent, before, after, family, reveal, hide, }?: "
+                      "text": ", config?: "
                     },
                     {
-                      "kind": "Content",
-                      "text": "{\n        object?: undefined;\n        parent?: undefined;\n        before?: undefined;\n        after?: undefined;\n        family?: undefined;\n        reveal?: undefined;\n        hide?: undefined;\n    }"
+                      "kind": "Reference",
+                      "text": "AnimationConfig",
+                      "canonicalReference": "@eulertour/studio!~AnimationConfig:type"
                     },
                     {
                       "kind": "Content",
@@ -237,7 +238,7 @@
                       "isOptional": false
                     },
                     {
-                      "parameterName": "{ object, parent, before, after, family, reveal, hide, }",
+                      "parameterName": "config",
                       "parameterTypeTokenRange": {
                         "startIndex": 3,
                         "endIndex": 4
@@ -353,7 +354,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": "any"
+                      "text": "(() => void) | undefined"
                     },
                     {
                       "kind": "Content",
@@ -413,7 +414,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": "any"
+                      "text": "(() => void) | undefined"
                     },
                     {
                       "kind": "Content",
@@ -454,6 +455,36 @@
                   "isOptional": false,
                   "releaseTag": "Public",
                   "name": "beforeFunc",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Animation#easing:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "easing: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "(_: number) => number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "easing",
                   "propertyTypeTokenRange": {
                     "startIndex": 1,
                     "endIndex": 2
@@ -533,7 +564,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": "any"
+                      "text": "boolean | undefined"
                     },
                     {
                       "kind": "Content",
@@ -623,7 +654,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": "any"
+                      "text": "boolean | undefined"
                     },
                     {
                       "kind": "Content",
@@ -652,8 +683,22 @@
                       "text": "object: "
                     },
                     {
+                      "kind": "Reference",
+                      "text": "THREE.Object3D",
+                      "canonicalReference": "@types/three!Object3D:class"
+                    },
+                    {
                       "kind": "Content",
-                      "text": "any"
+                      "text": "<"
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Object3DEventMap",
+                      "canonicalReference": "@types/three!Object3DEventMap:interface"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "> | undefined"
                     },
                     {
                       "kind": "Content",
@@ -666,7 +711,7 @@
                   "name": "object",
                   "propertyTypeTokenRange": {
                     "startIndex": 1,
-                    "endIndex": 2
+                    "endIndex": 5
                   },
                   "isStatic": false,
                   "isProtected": false,
@@ -682,8 +727,22 @@
                       "text": "parent: "
                     },
                     {
+                      "kind": "Reference",
+                      "text": "THREE.Object3D",
+                      "canonicalReference": "@types/three!Object3D:class"
+                    },
+                    {
                       "kind": "Content",
-                      "text": "any"
+                      "text": "<"
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Object3DEventMap",
+                      "canonicalReference": "@types/three!Object3DEventMap:interface"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "> | undefined"
                     },
                     {
                       "kind": "Content",
@@ -696,7 +755,7 @@
                   "name": "parent",
                   "propertyTypeTokenRange": {
                     "startIndex": 1,
-                    "endIndex": 2
+                    "endIndex": 5
                   },
                   "isStatic": false,
                   "isProtected": false,
@@ -743,7 +802,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": "any"
+                      "text": "boolean | undefined"
                     },
                     {
                       "kind": "Content",
@@ -1506,12 +1565,12 @@
                     },
                     {
                       "kind": "Content",
-                      "text": ", config?: "
+                      "text": ", userConfig?: "
                     },
                     {
                       "kind": "Reference",
-                      "text": "FadeInConfig",
-                      "canonicalReference": "@eulertour/studio!~FadeInConfig:type"
+                      "text": "Config",
+                      "canonicalReference": "@eulertour/studio!~Config:type"
                     },
                     {
                       "kind": "Content",
@@ -1531,7 +1590,7 @@
                       "isOptional": false
                     },
                     {
-                      "parameterName": "config",
+                      "parameterName": "userConfig",
                       "parameterTypeTokenRange": {
                         "startIndex": 3,
                         "endIndex": 4
@@ -1542,21 +1601,17 @@
                 },
                 {
                   "kind": "Property",
-                  "canonicalReference": "@eulertour/studio!Animation_2.FadeIn#initialOpacity:member",
+                  "canonicalReference": "@eulertour/studio!Animation_2.FadeIn#config:member",
                   "docComment": "",
                   "excerptTokens": [
                     {
                       "kind": "Content",
-                      "text": "initialOpacity: "
+                      "text": "config: "
                     },
                     {
                       "kind": "Reference",
-                      "text": "Map",
-                      "canonicalReference": "!Map:interface"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "<any, any>"
+                      "text": "Config",
+                      "canonicalReference": "@eulertour/studio!~Config:type"
                     },
                     {
                       "kind": "Content",
@@ -1566,10 +1621,73 @@
                   "isReadonly": false,
                   "isOptional": false,
                   "releaseTag": "Public",
-                  "name": "initialOpacity",
+                  "name": "config",
                   "propertyTypeTokenRange": {
                     "startIndex": 1,
-                    "endIndex": 3
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Animation_2.FadeIn.defaultConfig:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static defaultConfig(): "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "FadeInConfig",
+                      "canonicalReference": "@eulertour/studio!~FadeInConfig:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": true,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "defaultConfig"
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Animation_2.FadeIn#object:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "object: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Object3D",
+                      "canonicalReference": "@types/three!Object3D:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "object",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
                   },
                   "isStatic": false,
                   "isProtected": false,
@@ -7951,51 +8069,6 @@
                   "name": "getCloneAttributes"
                 },
                 {
-                  "kind": "Method",
-                  "canonicalReference": "@eulertour/studio!Geometry.Rectangle#getCurveEndIndices:member(1)",
-                  "docComment": "",
-                  "excerptTokens": [
-                    {
-                      "kind": "Content",
-                      "text": "getCurveEndIndices(): "
-                    },
-                    {
-                      "kind": "Reference",
-                      "text": "Array",
-                      "canonicalReference": "!Array:interface"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "<"
-                    },
-                    {
-                      "kind": "Reference",
-                      "text": "Array",
-                      "canonicalReference": "!Array:interface"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "<number>>"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": ";"
-                    }
-                  ],
-                  "isStatic": false,
-                  "returnTypeTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 5
-                  },
-                  "releaseTag": "Public",
-                  "isProtected": false,
-                  "overloadIndex": 1,
-                  "parameters": [],
-                  "isOptional": false,
-                  "isAbstract": false,
-                  "name": "getCurveEndIndices"
-                },
-                {
                   "kind": "Property",
                   "canonicalReference": "@eulertour/studio!Geometry.Rectangle#height:member",
                   "docComment": "",
@@ -9056,37 +9129,6 @@
                 },
                 {
                   "kind": "Method",
-                  "canonicalReference": "@eulertour/studio!Geometry.Shape#getCurveEndIndices:member(1)",
-                  "docComment": "",
-                  "excerptTokens": [
-                    {
-                      "kind": "Content",
-                      "text": "getCurveEndIndices(): "
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "number[][]"
-                    },
-                    {
-                      "kind": "Content",
-                      "text": ";"
-                    }
-                  ],
-                  "isStatic": false,
-                  "returnTypeTokenRange": {
-                    "startIndex": 1,
-                    "endIndex": 2
-                  },
-                  "releaseTag": "Public",
-                  "isProtected": false,
-                  "overloadIndex": 1,
-                  "parameters": [],
-                  "isOptional": false,
-                  "isAbstract": false,
-                  "name": "getCurveEndIndices"
-                },
-                {
-                  "kind": "Method",
                   "canonicalReference": "@eulertour/studio!Geometry.Shape#getDimensions:member(1)",
                   "docComment": "",
                   "excerptTokens": [
@@ -10008,14 +10050,6 @@
                     },
                     {
                       "kind": "Content",
-                      "text": ", config?: "
-                    },
-                    {
-                      "kind": "Content",
-                      "text": "{}"
-                    },
-                    {
-                      "kind": "Content",
                       "text": "): "
                     },
                     {
@@ -10030,8 +10064,8 @@
                   ],
                   "isStatic": false,
                   "returnTypeTokenRange": {
-                    "startIndex": 5,
-                    "endIndex": 6
+                    "startIndex": 3,
+                    "endIndex": 4
                   },
                   "releaseTag": "Public",
                   "isProtected": false,
@@ -10044,14 +10078,6 @@
                         "endIndex": 2
                       },
                       "isOptional": false
-                    },
-                    {
-                      "parameterName": "config",
-                      "parameterTypeTokenRange": {
-                        "startIndex": 3,
-                        "endIndex": 4
-                      },
-                      "isOptional": true
                     }
                   ],
                   "isOptional": false,

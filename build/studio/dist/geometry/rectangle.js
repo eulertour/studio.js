@@ -54,13 +54,5 @@ export default class Rectangle extends Shape {
             },
         ];
     }
-    getCurveEndIndices() {
-        return [
-            [0, 1],
-            [1, 2],
-            [2, 3],
-            [3, 4],
-        ];
-    }
 }
 //# sourceMappingURL=Rectangle.js.map

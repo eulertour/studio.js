@@ -57,12 +57,12 @@ export default class Shape extends THREE.Group {
             this.position.copy(config.position);
         }
         if (config.rotation !== undefined) {
-            this.rotation.copy(typeof config.rotation === 'number'
+            this.rotation.copy(typeof config.rotation === "number"
                 ? new THREE.Euler(0, 0, config.rotation)
                 : config.rotation);
         }
         if (config.scale) {
-            this.scale.copy(typeof config.scale === 'number'
+            this.scale.copy(typeof config.scale === "number"
                 ? new THREE.Vector3(config.scale, config.scale, config.scale)
                 : config.scale);
         }
@@ -104,9 +104,6 @@ export default class Shape extends THREE.Group {
             });
             this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
             this.add(this.stroke);
-        }
-        if (this.stroke) {
-            this.curveEndIndices = this.getCurveEndIndices();
         }
     }
     add(...objects) {
@@ -223,14 +220,6 @@ export default class Shape extends THREE.Group {
     }
     get numCurves() {
         return this.curveEndIndices.length;
-    }
-    getCurveEndIndices() {
-        const points = this.stroke.geometry.points;
-        const indices = [];
-        for (let i = 0; i < points.length - 1; i++) {
-            indices.push([i, i + 1]);
-        }
-        return indices;
     }
     clear() {
         this.remove(this.stroke);

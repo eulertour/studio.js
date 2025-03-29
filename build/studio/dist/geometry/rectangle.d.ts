@@ -20,6 +20,5 @@ export default class Rectangle extends Shape {
         type: string;
         default: number;
     }[];
-    getCurveEndIndices(): Array<Array<number>>;
 }
 //# sourceMappingURL=Rectangle.d.ts.map

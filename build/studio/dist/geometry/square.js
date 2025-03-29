@@ -20,10 +20,10 @@ export default class Square extends Rectangle {
         this.sideLength = sideLength;
         this.copyStrokeAndFill(new Square(sideLength, config));
     }
-    Reshape(sideLength, config = {}) {
+    Reshape(sideLength) {
         let startSideLength;
         let endSideLength;
-        return new Animation((t, dt) => {
+        return new Animation((t) => {
             this.reshape(MathUtils.lerp(startSideLength, endSideLength, t));
         }, {
             before: () => {

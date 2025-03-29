@@ -54864,12 +54864,12 @@ class Shape extends THREE.Group {
             this.position.copy(config.position);
         }
         if (config.rotation !== undefined) {
-            this.rotation.copy(typeof config.rotation === 'number'
+            this.rotation.copy(typeof config.rotation === "number"
                 ? new THREE.Euler(0, 0, config.rotation)
                 : config.rotation);
         }
         if (config.scale) {
-            this.scale.copy(typeof config.scale === 'number'
+            this.scale.copy(typeof config.scale === "number"
                 ? new THREE.Vector3(config.scale, config.scale, config.scale)
                 : config.scale);
         }
@@ -54911,9 +54911,6 @@ class Shape extends THREE.Group {
             });
             this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
             this.add(this.stroke);
-        }
-        if (this.stroke) {
-            this.curveEndIndices = this.getCurveEndIndices();
         }
     }
     add(...objects) {
@@ -55030,14 +55027,6 @@ class Shape extends THREE.Group {
     }
     get numCurves() {
         return this.curveEndIndices.length;
-    }
-    getCurveEndIndices() {
-        const points = this.stroke.geometry.points;
-        const indices = [];
-        for (let i = 0; i < points.length - 1; i++) {
-            indices.push([i, i + 1]);
-        }
-        return indices;
     }
     clear() {
         this.remove(this.stroke);
@@ -55573,31 +55562,20 @@ class Rectangle extends Shape {
             },
         ];
     }
-    getCurveEndIndices() {
-        return [
-            [0, 1],
-            [1, 2],
-            [2, 3],
-            [3, 4],
-        ];
-    }
 }
 
-const sigmoid = (x) => 1 / (1 + Math.exp(-x));
-const smooth = (t) => {
-    const error = sigmoid(-10 / 2);
-    return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
-};
-const modulate = (t, dt) => {
+// From https://easings.net/
+const easeInOutCubic = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const applyEasing = (t, dt, easingFunction) => {
     const tSeconds = t;
-    const modulatedDelta = smooth(tSeconds) - smooth(t - dt);
-    const modulatedTime = smooth(tSeconds);
+    const modulatedDelta = easingFunction(tSeconds) - easingFunction(t - dt);
+    const modulatedTime = easingFunction(tSeconds);
     return [modulatedTime, modulatedDelta];
 };
 class Animation {
     // family: whether or not the animation will affect the entire family
     // add: whether or not affected shapes will be added to their parents
-    constructor(func, { object = undefined, parent = undefined, before = undefined, after = undefined, family = undefined, reveal = undefined, hide = undefined, } = {}) {
+    constructor(func, config = {}) {
         Object.defineProperty(this, "func", {
             enumerable: true,
             configurable: true,
@@ -55706,13 +55684,20 @@ class Animation {
             writable: true,
             value: 0
         });
-        this.object = object;
-        this.parent = parent;
-        this.before = before;
-        this.after = after;
-        this.family = family;
-        this.reveal = reveal;
-        this.hide = hide;
+        Object.defineProperty(this, "easing", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this.object = config.object;
+        this.parent = config.parent;
+        this.before = config.before;
+        this.after = config.after;
+        this.family = config.family;
+        this.reveal = config.reveal;
+        this.hide = config.hide;
+        this.easing = config.easing || easeInOutCubic;
     }
     setUp() {
         if (this?.object?.parentComponent) {
@@ -55733,7 +55718,9 @@ class Animation {
             if (this.object instanceof Function) {
                 this.object = this.object();
             }
-            if (this.object !== undefined && this.object.parent === null) {
+            if (this.object !== undefined &&
+                this.object.parent === undefined &&
+                this.parent !== undefined) {
                 const parent = this.parent;
                 !parent.children.includes(this.object) && parent.add(this.object);
             }
@@ -55749,7 +55736,7 @@ class Animation {
         }
         this.prevUpdateTime = worldTime;
         this.elapsedSinceStart += deltaTime;
-        this.func(...modulate(this.elapsedSinceStart, deltaTime));
+        this.func(...applyEasing(this.elapsedSinceStart, deltaTime, this.easing));
         if (worldTime >= this.endTime) {
             this.finished = true;
             this.tearDown();
@@ -55801,10 +55788,10 @@ class Square extends Rectangle {
         this.sideLength = sideLength;
         this.copyStrokeAndFill(new Square(sideLength, config));
     }
-    Reshape(sideLength, config = {}) {
+    Reshape(sideLength) {
         let startSideLength;
         let endSideLength;
-        return new Animation((t, dt) => {
+        return new Animation((t) => {
             this.reshape(MathUtils.lerp(startSideLength, endSideLength, t));
         }, {
             before: () => {
@@ -56648,151 +56635,155 @@ class SetScale extends Animation {
     }
 }
 
+const hasStrokeMaterial = (obj) => obj instanceof THREE.Object3D && "stroke" in obj;
+const hasFillMaterial = (obj) => obj instanceof THREE.Object3D && "fill" in obj;
 class FadeIn extends Animation {
-    constructor(object, config = {}) {
-        // Default preserveOpacity to true unless explicitly set to false
-        const preserveOpacity = config.preserveOpacity !== false;
-        // Extract target opacities if provided
-        const targetFillOpacity = config.targetOpacity?.fillOpacity;
-        const targetStrokeOpacity = config.targetOpacity?.strokeOpacity;
-        // Default family to true unless explicitly set to false
-        const family = config.family !== false;
-        super((elapsedTime, _deltaTime) => {
-            // Special handling for objects with restyle method (Text or Shape)
-            if (typeof object.restyle === 'function') {
-                // Get target fill opacity
-                const targetFill = targetFillOpacity !== undefined ? targetFillOpacity :
-                    (preserveOpacity ? this.initialOpacity.get(object)?.fillOpacity || 1 : 1);
-                // For Text objects (no strokeOpacity)
-                if (object.constructor.name === 'Text') {
-                    object.restyle({
-                        fillOpacity: THREE.MathUtils.lerp(0, targetFill, elapsedTime)
-                    });
-                }
-                // For Shape objects (has strokeOpacity)
-                else {
-                    // Get target stroke opacity
-                    const targetStroke = targetStrokeOpacity !== undefined ? targetStrokeOpacity :
-                        (preserveOpacity ? this.initialOpacity.get(object)?.strokeOpacity || 1 : 1);
-                    object.restyle({
-                        fillOpacity: THREE.MathUtils.lerp(0, targetFill, elapsedTime),
-                        strokeOpacity: THREE.MathUtils.lerp(0, targetStroke, elapsedTime)
-                    });
-                }
-            }
-            // Standard THREE.js object handling (original code with preserveOpacity logic updated)
-            else if (family) {
-                this.object.traverse((child) => {
-                    if (child instanceof THREE.Mesh) {
-                        const targetOpacity = targetFillOpacity !== undefined ? targetFillOpacity :
-                            (preserveOpacity ? this.initialOpacity.get(child) : 1);
-                        child.material.opacity = THREE.MathUtils.lerp(0, targetOpacity, elapsedTime);
-                    }
-                });
-            }
-            else {
-                [this.object.stroke, this.object.fill].forEach((mesh) => {
-                    if (!mesh)
-                        return;
-                    const targetOpacity = targetFillOpacity !== undefined ? targetFillOpacity :
-                        (preserveOpacity ? this.initialOpacity.get(mesh) : 1);
-                    mesh.material.opacity = THREE.MathUtils.lerp(0, targetOpacity, elapsedTime);
-                });
+    constructor(object, userConfig = {}) {
+        const config = {
+            ...FadeIn.defaultConfig(),
+            ...("targetOpacity" in userConfig ? { preserveOpacity: undefined } : {}),
+            ...userConfig,
+        };
+        super((elapsedTime) => {
+            for (const [mesh, targetOpacity] of this.targetOpacities.entries()) {
+                const material = this.getMaterial(mesh);
+                material.opacity = THREE.MathUtils.lerp(0, targetOpacity, elapsedTime);
             }
         }, { object, reveal: true, ...config });
-        Object.defineProperty(this, "initialOpacity", {
+        Object.defineProperty(this, "object", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: object
+        });
+        Object.defineProperty(this, "OpacityTargetMode", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: {
+                Preserve: "preserve",
+                FromConfig: "fromConfig",
+                Full: "full",
+            }
+        });
+        Object.defineProperty(this, "config", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "targetOpacities", {
             enumerable: true,
             configurable: true,
             writable: true,
             value: new Map()
         });
-        Object.defineProperty(this, "preserveOpacity", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "targetFillOpacity", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "targetStrokeOpacity", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        this.preserveOpacity = preserveOpacity;
-        this.targetFillOpacity = targetFillOpacity;
-        this.targetStrokeOpacity = targetStrokeOpacity;
+        this.config = config;
     }
     setUp() {
         super.setUp();
-        // Handle objects with restyle method
-        if (typeof this.object.restyle === 'function') {
-            const opacities = {};
-            // Extract current opacities
-            this.object.traverse((child) => {
-                if (child instanceof THREE.Mesh && child.material) {
-                    if (!opacities.fillOpacity && child.material.opacity !== undefined) {
-                        opacities.fillOpacity = child.material.opacity;
-                    }
-                }
-            });
-            // For shapes, try to find stroke opacity
-            if (this.object.constructor.name !== 'Text') {
-                // Placeholder - customize based on your implementation
-                if (this.object.strokeOpacity !== undefined) {
-                    opacities.strokeOpacity = this.object.strokeOpacity;
-                }
-                else if (this.object.style && this.object.style.strokeOpacity !== undefined) {
-                    opacities.strokeOpacity = this.object.style.strokeOpacity;
-                }
-            }
-            // Store opacities and initialize
-            this.initialOpacity.set(this.object, opacities);
-            // Set initial opacity to 0
-            if (this.object.constructor.name === 'Text') {
-                this.object.restyle({ fillOpacity: 0 });
-            }
-            else {
-                this.object.restyle({
-                    fillOpacity: 0,
-                    strokeOpacity: 0
-                });
-            }
+        const concealAncestors = this.config.concealAncestors ?? false;
+        if (concealAncestors) {
+            this.concealAncestors();
         }
-        // Original code for standard THREE.js objects
+        const meshes = this.getMeshes();
+        const opacityTargetMode = this.getOpacityTargetMode();
+        this.setTargetOpacities(meshes, opacityTargetMode);
+    }
+    static defaultConfig() {
+        return {
+            includeDescendants: true,
+            concealAncestors: true,
+            preserveOpacity: true,
+        };
+    }
+    setTargetOpacities(meshes, opacityTargetMode) {
+        meshes.forEach((mesh) => {
+            if (opacityTargetMode === this.OpacityTargetMode.Preserve) {
+                const material = this.getMaterial(mesh);
+                this.targetOpacities.set(mesh, material.opacity);
+            }
+            else if (opacityTargetMode === this.OpacityTargetMode.FromConfig) {
+                this.setTargetOpacityFromConfig(mesh);
+            }
+            else if (opacityTargetMode === this.OpacityTargetMode.Full) {
+                this.targetOpacities.set(mesh, 1);
+            }
+        });
+    }
+    setTargetOpacityFromConfig(mesh) {
+        if (!("targetOpacity" in this.config) ||
+            this.config.targetOpacity === undefined) {
+            throw new Error("Cannot determine opacity target");
+        }
+        const targetOpacity = this.config.targetOpacity;
+        if (typeof targetOpacity === "number") {
+            this.targetOpacities.set(mesh, targetOpacity);
+        }
         else {
+            const opacity = "isMeshLineGeometry" in mesh.geometry &&
+                mesh.geometry.isMeshLineGeometry
+                ? targetOpacity.stroke
+                : targetOpacity.fill;
+            this.targetOpacities.set(mesh, opacity ?? 0);
+        }
+    }
+    getMeshes() {
+        const meshes = [];
+        const includeDescendants = this.config.includeDescendants ?? true;
+        if (includeDescendants) {
             this.object.traverse((child) => {
                 if (child instanceof THREE.Mesh) {
-                    this.initialOpacity.set(child, child.material.opacity);
+                    meshes.push(child);
                 }
             });
         }
+        else {
+            if ("stroke" in this.object && this.object.stroke instanceof THREE.Mesh) {
+                meshes.push(this.object.stroke);
+            }
+            if ("fill" in this.object && this.object.fill instanceof THREE.Mesh) {
+                meshes.push(this.object.fill);
+            }
+        }
+        return meshes;
+    }
+    concealAncestors() {
+        let parent = this.object.parent;
+        while (parent !== null) {
+            if (hasStrokeMaterial(parent)) {
+                parent.stroke.material.opacity = 0;
+            }
+            if (hasFillMaterial(parent)) {
+                parent.fill.material.opacity = 0;
+            }
+            parent = parent.parent;
+        }
+    }
+    getOpacityTargetMode() {
+        if ("preserveOpacity" in this.config &&
+            typeof this.config.preserveOpacity === "boolean") {
+            return this.config.preserveOpacity
+                ? this.OpacityTargetMode.Preserve
+                : this.OpacityTargetMode.Full;
+        }
+        else if ("targetOpacity" in this.config) {
+            return this.OpacityTargetMode.FromConfig;
+        }
+        else {
+            return this.OpacityTargetMode.Full;
+        }
+    }
+    getMaterial(mesh) {
+        let material = Array.isArray(mesh.material)
+            ? mesh.material[0]
+            : mesh.material;
+        if (material === undefined) {
+            throw new Error("Encountered mesh with no material");
+        }
+        return material;
     }
 }
-/*
-
-Example 1: Basic usage - preserving original opacity
-new Animation.FadeIn(triangle)
-
-
-Example2: Fade in everything to 100% opacity, ignoring original opacity
-new Animation.FadeIn(triangle, { preserveOpacity: false })
-
-
-Example 3: Set specific target opacities
-new Animation.FadeIn(triangle, {
-    targetOpacity: {
-      fillOpacity: 0.5,
-      strokeOpacity: 0.8
-    }
-  })
-
-*/
 
 class SetOpacity extends Animation {
     constructor(objectOrFunc, targetOpacity, config) {

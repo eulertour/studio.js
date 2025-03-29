@@ -51,47 +51,42 @@ export { Animation_2 as Animation }
 
 // @public (undocumented)
 class Animation_3 {
-    constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, family, reveal, hide, }?: {
-        object?: undefined;
-        parent?: undefined;
-        before?: undefined;
-        after?: undefined;
-        family?: undefined;
-        reveal?: undefined;
-        hide?: undefined;
-    });
+    // Warning: (ae-forgotten-export) The symbol "AnimationConfig" needs to be exported by the entry point index.d.ts
+    constructor(func: (elapsedTime: number, deltaTime: number) => void, config?: AnimationConfig);
     // (undocumented)
     addAfter(after: any): void;
     // (undocumented)
     addBefore(before: any): void;
     // (undocumented)
-    after: any;
+    after: (() => void) | undefined;
     // (undocumented)
     afterFunc: () => void;
     // (undocumented)
-    before: any;
+    before: (() => void) | undefined;
     // (undocumented)
     beforeFunc: () => void;
+    // (undocumented)
+    easing: (_: number) => number;
     // (undocumented)
     elapsedSinceStart: number;
     // (undocumented)
     endTime: number;
     // (undocumented)
-    family: any;
+    family: boolean | undefined;
     // (undocumented)
     finished: boolean;
     // (undocumented)
     func: (elapsedTime: number, deltaTime: number) => void;
     // (undocumented)
-    hide: any;
+    hide: boolean | undefined;
     // (undocumented)
-    object: any;
+    object: THREE.Object3D<THREE.Object3DEventMap> | undefined;
     // (undocumented)
-    parent: any;
+    parent: THREE.Object3D<THREE.Object3DEventMap> | undefined;
     // (undocumented)
     prevUpdateTime: number;
     // (undocumented)
-    reveal: any;
+    reveal: boolean | undefined;
     // (undocumented)
     runTime: number;
     // (undocumented)
@@ -323,10 +318,17 @@ const ERROR_THRESHOLD = 0.001;
 
 // @public (undocumented)
 class FadeIn extends Animation_3 {
-    // Warning: (ae-forgotten-export) The symbol "FadeInConfig" needs to be exported by the entry point index.d.ts
-    constructor(object: THREE.Object3D, config?: FadeInConfig);
+    constructor(object: THREE.Object3D, userConfig?: Config);
+    // Warning: (ae-forgotten-export) The symbol "Config" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
-    initialOpacity: Map<any, any>;
+    config: Config;
+    // Warning: (ae-forgotten-export) The symbol "FadeInConfig" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    static defaultConfig(): FadeInConfig;
+    // (undocumented)
+    object: THREE.Object3D;
     // (undocumented)
     setUp(): void;
 }
@@ -677,8 +679,6 @@ class Rectangle extends Shape {
     // (undocumented)
     getCloneAttributes(): number[];
     // (undocumented)
-    getCurveEndIndices(): Array<Array<number>>;
-    // (undocumented)
     height: number;
     // (undocumented)
     width: number;
@@ -872,8 +872,6 @@ abstract class Shape extends THREE.Group {
     // (undocumented)
     getCloneAttributes(): Array<unknown>;
     // (undocumented)
-    getCurveEndIndices(): number[][];
-    // (undocumented)
     getDimensions(): THREE.Vector2;
     // (undocumented)
     getStyle(): Style;
@@ -953,7 +951,7 @@ class Square extends Rectangle {
     // (undocumented)
     getCloneAttributes(): number[];
     // (undocumented)
-    Reshape(sideLength: number, config?: {}): Animation_3;
+    Reshape(sideLength: number): Animation_3;
     // (undocumented)
     reshape(sideLength: number, config?: {}): void;
     // (undocumented)

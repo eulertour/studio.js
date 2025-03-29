@@ -29,12 +29,6 @@ const hasFillMaterial = (
   obj instanceof THREE.Object3D && "fill" in obj;
 
 export default class FadeIn extends Animation {
-  static defaultConfig: FadeInConfig = {
-    includeDescendants: true,
-    concealAncestors: true,
-    preserveOpacity: true,
-  };
-
   private OpacityTargetMode = {
     Preserve: "preserve",
     FromConfig: "fromConfig",
@@ -49,7 +43,7 @@ export default class FadeIn extends Animation {
     userConfig: Config = {},
   ) {
     const config = {
-      ...FadeIn.defaultConfig,
+      ...FadeIn.defaultConfig(),
       ...("targetOpacity" in userConfig ? { preserveOpacity: undefined } : {}),
       ...userConfig,
     };
@@ -80,6 +74,14 @@ export default class FadeIn extends Animation {
     const meshes = this.getMeshes();
     const opacityTargetMode = this.getOpacityTargetMode();
     this.setTargetOpacities(meshes, opacityTargetMode);
+  }
+
+  static defaultConfig(): FadeInConfig {
+    return {
+      includeDescendants: true,
+      concealAncestors: true,
+      preserveOpacity: true,
+    };
   }
 
   private setTargetOpacities(
@@ -176,4 +178,3 @@ export default class FadeIn extends Animation {
     return material;
   }
 }
-

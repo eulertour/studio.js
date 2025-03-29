@@ -111,7 +111,6 @@ declare abstract class Shape extends THREE.Group {
     segment(index: number): THREE.Line3;
     curve(curveIndex: number, worldTransform?: boolean): THREE.Vector3[];
     get numCurves(): number;
-    getCurveEndIndices(): number[][];
     clear(): this;
     clone(recursive?: boolean): this;
     getClassConfig(): {};
@@ -295,9 +294,18 @@ declare class Rectangle extends Shape {
         type: string;
         default: number;
     }[];
-    getCurveEndIndices(): Array<Array<number>>;
 }
 
+type AnimationConfig = {
+    object?: THREE.Object3D;
+    parent?: THREE.Object3D;
+    before?: () => void;
+    after?: () => void;
+    family?: boolean;
+    reveal?: boolean;
+    hide?: boolean;
+    easing?: (_: number) => number;
+};
 declare class Animation {
     func: (elapsedTime: number, deltaTime: number) => void;
     scene: any;
@@ -306,33 +314,25 @@ declare class Animation {
     prevUpdateTime: number;
     beforeFunc: () => void;
     afterFunc: () => void;
-    parent: any;
-    object: any;
-    before: any;
-    after: any;
-    family: any;
-    reveal: any;
-    hide: any;
+    parent: THREE.Object3D<THREE.Object3DEventMap> | undefined;
+    object: THREE.Object3D<THREE.Object3DEventMap> | undefined;
+    before: (() => void) | undefined;
+    after: (() => void) | undefined;
+    family: boolean | undefined;
+    reveal: boolean | undefined;
+    hide: boolean | undefined;
     scale: number;
     runTime: number;
     finished: boolean;
     elapsedSinceStart: number;
-    constructor(func: (elapsedTime: number, deltaTime: number) => void, { object, parent, before, after, family, reveal, hide, }?: {
-        object?: undefined;
-        parent?: undefined;
-        before?: undefined;
-        after?: undefined;
-        family?: undefined;
-        reveal?: undefined;
-        hide?: undefined;
-    });
+    easing: (_: number) => number;
+    constructor(func: (elapsedTime: number, deltaTime: number) => void, config?: AnimationConfig);
     setUp(): void;
     tearDown(): void;
     update(worldTime: any): void;
     addBefore(before: any): void;
     addAfter(after: any): void;
 }
-//# sourceMappingURL=Animation.d.ts.map
 
 /**
  * A shape with four sides of equal length and four right angles.
@@ -343,7 +343,7 @@ declare class Square extends Rectangle {
     sideLength: number;
     constructor(sideLength?: number, config?: Style);
     reshape(sideLength: number, config?: {}): void;
-    Reshape(sideLength: number, config?: {}): Animation;
+    Reshape(sideLength: number): Animation;
     getCloneAttributes(): number[];
     getAttributes(): RectangleAttributes;
     static fromAttributes(attributes: RectangleAttributes): Square;
@@ -522,21 +522,31 @@ declare class SetScale extends Animation {
 }
 
 type FadeInConfig = {
-    duration?: number;
-    family?: boolean;
+    includeDescendants?: boolean;
+    concealAncestors?: boolean;
+} & ({
     preserveOpacity?: boolean;
-    targetOpacity?: {
-        fillOpacity?: number;
-        strokeOpacity?: number;
+} | {
+    targetOpacity?: number | {
+        stroke?: number;
+        fill?: number;
     };
-};
+});
+type Config = AnimationConfig & FadeInConfig;
 declare class FadeIn extends Animation {
-    initialOpacity: Map<any, any>;
-    private preserveOpacity;
-    private targetFillOpacity?;
-    private targetStrokeOpacity?;
-    constructor(object: THREE.Object3D, config?: FadeInConfig);
+    object: THREE.Object3D;
+    private OpacityTargetMode;
+    config: Config;
+    private targetOpacities;
+    constructor(object: THREE.Object3D, userConfig?: Config);
     setUp(): void;
+    static defaultConfig(): FadeInConfig;
+    private setTargetOpacities;
+    private setTargetOpacityFromConfig;
+    private getMeshes;
+    private concealAncestors;
+    private getOpacityTargetMode;
+    private getMaterial;
 }
 
 declare class SetOpacity extends Animation {

@@ -61,7 +61,6 @@ export default abstract class Shape extends THREE.Group {
     segment(index: number): THREE.Line3;
     curve(curveIndex: number, worldTransform?: boolean): THREE.Vector3[];
     get numCurves(): number;
-    getCurveEndIndices(): number[][];
     clear(): this;
     clone(recursive?: boolean): this;
     getClassConfig(): {};
