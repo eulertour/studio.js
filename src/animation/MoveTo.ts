@@ -3,12 +3,12 @@ import * as THREE from "three";
 import { getBoundingBoxCenter } from "../utils.js";
 
 export default class MoveTo extends Animation {
-  public start;
-  public displacement;
+  public start: THREE.Vector3;
+  public displacement: THREE.Vector3;
 
   constructor(
-    public target: THREE.Object3D,
     public obj: THREE.Object3D,
+    public target: THREE.Vector3,
     config?: any,
   ) {
     super(
