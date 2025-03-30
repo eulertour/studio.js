@@ -1,5 +1,4 @@
 import { THREE } from "../index.js";
-import { clamp } from "../utils.js";
 
 // From https://easings.net/
 const easeInOutCubic = (x: number): number =>
@@ -9,10 +8,12 @@ export const applyEasing = (
   t: number,
   dt: number,
   easingFunction: (_: number) => number,
+  duration: number,
 ): [number, number] => {
   const tSeconds = t;
-  const modulatedDelta = easingFunction(tSeconds) - easingFunction(t - dt);
-  const modulatedTime = easingFunction(tSeconds);
+  const modulatedDelta =
+    easingFunction(tSeconds / duration) - easingFunction(t / duration - dt);
+  const modulatedTime = easingFunction(tSeconds / duration);
   return [modulatedTime, modulatedDelta];
 };
 
@@ -63,6 +64,10 @@ class Animation {
     this.easing = config.easing || easeInOutCubic;
   }
 
+  get duration() {
+    return this.endTime - this.startTime;
+  }
+
   setUp() {
     if (this?.object?.parentComponent) {
       this.object.revealAncestors({ includeSelf: true });
@@ -104,7 +109,14 @@ class Animation {
     this.prevUpdateTime = worldTime;
     this.elapsedSinceStart += deltaTime;
 
-    this.func(...applyEasing(this.elapsedSinceStart, deltaTime, this.easing));
+    this.func(
+      ...applyEasing(
+        this.elapsedSinceStart,
+        deltaTime,
+        this.easing,
+        this.duration,
+      ),
+    );
 
     if (worldTime >= this.endTime) {
       this.finished = true;
