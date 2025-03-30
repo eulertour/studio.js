@@ -936,6 +936,8 @@ class ShapeFromCurves {
 // @public (undocumented)
 class Shift extends Animation_3 {
     constructor(object: THREE.Object3D, offset: THREE.Vector3, config?: any);
+    // (undocumented)
+    totalDeltaTime: number;
 }
 
 // @public

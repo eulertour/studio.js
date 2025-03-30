@@ -1,10 +1,10 @@
 // From https://easings.net/
 const easeInOutCubic = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 export const applyEasing = (t, dt, easingFunction, duration) => {
-    const tSeconds = t;
-    const modulatedDelta = easingFunction(tSeconds / duration) - easingFunction(t / duration - dt);
-    const modulatedTime = easingFunction(tSeconds / duration);
-    return [modulatedTime, modulatedDelta];
+    const easedTime = duration * easingFunction(t / duration);
+    const previousEasedTime = duration * easingFunction((t - dt) / duration);
+    const easedDeltaTime = easedTime - previousEasedTime;
+    return [easedTime, easedDeltaTime];
 };
 class Animation {
     // family: whether or not the animation will affect the entire family

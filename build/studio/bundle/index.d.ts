@@ -489,6 +489,7 @@ declare namespace utils_d {
 }
 
 declare class Shift extends Animation {
+    totalDeltaTime: number;
     constructor(object: THREE.Object3D, offset: THREE.Vector3, config?: any);
 }
 
