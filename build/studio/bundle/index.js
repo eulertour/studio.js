@@ -55566,10 +55566,10 @@ class Rectangle extends Shape {
 
 // From https://easings.net/
 const easeInOutCubic = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-const applyEasing = (t, dt, easingFunction) => {
+const applyEasing = (t, dt, easingFunction, duration) => {
     const tSeconds = t;
-    const modulatedDelta = easingFunction(tSeconds) - easingFunction(t - dt);
-    const modulatedTime = easingFunction(tSeconds);
+    const modulatedDelta = easingFunction(tSeconds / duration) - easingFunction(t / duration - dt);
+    const modulatedTime = easingFunction(tSeconds / duration);
     return [modulatedTime, modulatedDelta];
 };
 class Animation {
@@ -55699,6 +55699,9 @@ class Animation {
         this.hide = config.hide;
         this.easing = config.easing || easeInOutCubic;
     }
+    get duration() {
+        return this.endTime - this.startTime;
+    }
     setUp() {
         if (this?.object?.parentComponent) {
             this.object.revealAncestors({ includeSelf: true });
@@ -55736,7 +55739,7 @@ class Animation {
         }
         this.prevUpdateTime = worldTime;
         this.elapsedSinceStart += deltaTime;
-        this.func(...applyEasing(this.elapsedSinceStart, deltaTime, this.easing));
+        this.func(...applyEasing(this.elapsedSinceStart, deltaTime, this.easing, this.duration));
         if (worldTime >= this.endTime) {
             this.finished = true;
             this.tearDown();
@@ -56515,7 +56518,7 @@ var utils = /*#__PURE__*/Object.freeze({
 class Shift extends Animation {
     constructor(object, offset, config) {
         super((_elapsedTime, deltaTime) => {
-            object.position.add(offset.clone().multiplyScalar(deltaTime));
+            object.position.add(offset.clone().multiplyScalar(deltaTime / this.duration));
         }, {
             object,
             reveal: true,
@@ -56978,74 +56981,51 @@ class Grow extends Animation {
     }
 }
 
-class Stagger extends Animation {
-    /**
-     * Creates a staggered fade-in animation for multiple objects
-     * @param objects Array of objects to animate in sequence
-     * @param config Additional configuration options
-     */
-    constructor(objects, config = {}) {
-        const { duration = 2 / (objects.length + 1) } = config;
-        const staggerDelay = (1 - duration) / (objects.length - 1);
-        super((elapsedTime, _deltaTime) => {
-            objects.forEach((object, index) => {
-                const startTime = index * staggerDelay;
-                const objectProgress = THREE.MathUtils.clamp((elapsedTime - startTime) / duration, 0, 1);
-                // Only process if animation has started for this object
-                if (objectProgress > 0) {
-                    object.traverse((child) => {
-                        if (child instanceof THREE.Mesh && child.material) {
-                            const initialOpacity = config?.preserveOpacity
-                                ? this.initialOpacities.get(child) || 1
-                                : 1;
-                            child.material.opacity = THREE.MathUtils.lerp(0, initialOpacity, objectProgress);
-                        }
-                    });
-                }
-            });
-        }, { objects, reveal: true, ...config });
-        Object.defineProperty(this, "objects", {
+let Stagger$1 = class Stagger extends Animation {
+    constructor(animations, userConfig = {}) {
+        const config = {
+            ...Stagger.defaultConfig(),
+            ...(animations.length === 1 ? { staggerDuration: 1 } : {}),
+            ...userConfig,
+        };
+        super(() => this.animations.forEach((animation) => animation.update(this.prevUpdateTime)), config);
+        Object.defineProperty(this, "animations", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: animations
+        });
+        Object.defineProperty(this, "config", {
             enumerable: true,
             configurable: true,
             writable: true,
             value: void 0
         });
-        Object.defineProperty(this, "initialOpacities", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: new Map()
-        });
-        Object.defineProperty(this, "duration", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "staggerDelay", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        this.objects = objects;
-        this.duration = duration;
-        this.staggerDelay = staggerDelay;
+        this.config = config;
     }
     setUp() {
         super.setUp();
-        // Store initial opacity values for all objects
-        this.objects.forEach((object) => {
-            object.traverse((child) => {
-                if (child instanceof THREE.Mesh && child.material) {
-                    this.initialOpacities.set(child, child.material.opacity);
-                    // Start with opacity 0
-                    child.material.opacity = 0;
-                }
-            });
+        const staggerDuration = this.config.staggerDuration ?? 3 / 4;
+        const staggerInterval = staggerDuration !== 1
+            ? (1 - staggerDuration) / (this.animations.length - 1)
+            : 0;
+        this.animations.forEach((animation, index) => {
+            animation.startTime = index * staggerInterval;
+            animation.endTime = animation.startTime + staggerDuration;
+            animation.parent = animation.parent || this.parent;
+            animation.before && animation.addBefore(animation.before);
+            animation.after && animation.addAfter(animation.after);
+            if (animation.endTime > 1.0) {
+                throw new Error("All Stagger animations must finish within 1 second");
+            }
         });
     }
-}
+    static defaultConfig() {
+        return {
+            staggerDuration: 3 / 4,
+        };
+    }
+};
 
 class SetStyle extends Animation {
     constructor(shape, style, config) {
@@ -57124,6 +57104,75 @@ class SetStyle extends Animation {
     }
 }
 
+class Stagger extends Animation {
+    /**
+     * Creates a staggered fade-in animation for multiple objects
+     * @param objects Array of objects to animate in sequence
+     * @param config Additional configuration options
+     */
+    constructor(objects, config = {}) {
+        const { duration = 2 / (objects.length + 1) } = config;
+        const staggerDelay = (1 - duration) / (objects.length - 1);
+        super((elapsedTime, _deltaTime) => {
+            objects.forEach((object, index) => {
+                const startTime = index * staggerDelay;
+                const objectProgress = THREE.MathUtils.clamp((elapsedTime - startTime) / duration, 0, 1);
+                // Only process if animation has started for this object
+                if (objectProgress > 0) {
+                    object.traverse((child) => {
+                        if (child instanceof THREE.Mesh && child.material) {
+                            const initialOpacity = config?.preserveOpacity
+                                ? this.initialOpacities.get(child) || 1
+                                : 1;
+                            child.material.opacity = THREE.MathUtils.lerp(0, initialOpacity, objectProgress);
+                        }
+                    });
+                }
+            });
+        }, { objects, reveal: true, ...config });
+        Object.defineProperty(this, "objects", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "initialOpacities", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: new Map()
+        });
+        Object.defineProperty(this, "duration", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "staggerDelay", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this.objects = objects;
+        this.duration = duration;
+        this.staggerDelay = staggerDelay;
+    }
+    setUp() {
+        super.setUp();
+        // Store initial opacity values for all objects
+        this.objects.forEach((object) => {
+            object.traverse((child) => {
+                if (child instanceof THREE.Mesh && child.material) {
+                    this.initialOpacities.set(child, child.material.opacity);
+                    // Start with opacity 0
+                    child.material.opacity = 0;
+                }
+            });
+        });
+    }
+}
+
 var index$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     Animation: Animation,
@@ -57140,7 +57189,8 @@ var index$1 = /*#__PURE__*/Object.freeze({
     SetStyle: SetStyle,
     Shake: Shake,
     Shift: Shift,
-    Stagger: Stagger,
+    Stagger: Stagger$1,
+    StaggerFadeIn: Stagger,
     Wait: Wait
 });
 

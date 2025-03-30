@@ -327,6 +327,7 @@ declare class Animation {
     elapsedSinceStart: number;
     easing: (_: number) => number;
     constructor(func: (elapsedTime: number, deltaTime: number) => void, config?: AnimationConfig);
+    get duration(): number;
     setUp(): void;
     tearDown(): void;
     update(worldTime: any): void;
@@ -532,13 +533,13 @@ type FadeInConfig = {
         fill?: number;
     };
 });
-type Config = AnimationConfig & FadeInConfig;
+type Config$1 = AnimationConfig & FadeInConfig;
 declare class FadeIn extends Animation {
     object: THREE.Object3D;
     private OpacityTargetMode;
-    config: Config;
+    config: Config$1;
     private targetOpacities;
-    constructor(object: THREE.Object3D, userConfig?: Config);
+    constructor(object: THREE.Object3D, userConfig?: Config$1);
     setUp(): void;
     static defaultConfig(): FadeInConfig;
     private setTargetOpacities;
@@ -588,6 +589,28 @@ declare class Grow extends Animation {
     constructor(object: THREE.Object3D);
 }
 
+type StaggerConfig = {
+    staggerDuration?: number;
+};
+type Config = AnimationConfig & StaggerConfig;
+declare class Stagger$1 extends Animation {
+    animations: Animation[];
+    config: Config;
+    constructor(animations: Animation[], userConfig?: Config);
+    setUp(): void;
+    static defaultConfig(): StaggerConfig;
+}
+
+declare class SetStyle extends Animation {
+    shape: Shape;
+    style: Style;
+    private initialStyle;
+    private targetStyle;
+    private currentStyle;
+    constructor(shape: Shape, style: Style, config?: any);
+    setUp(): void;
+}
+
 declare class Stagger extends Animation {
     private objects;
     private initialOpacities;
@@ -601,16 +624,6 @@ declare class Stagger extends Animation {
     constructor(objects: THREE.Object3D[], config?: {
         duration?: number;
     });
-    setUp(): void;
-}
-
-declare class SetStyle extends Animation {
-    shape: Shape;
-    style: Style;
-    private initialStyle;
-    private targetStyle;
-    private currentStyle;
-    constructor(shape: Shape, style: Style, config?: any);
     setUp(): void;
 }
 
@@ -644,12 +657,10 @@ type index_d$1_Shake = Shake;
 declare const index_d$1_Shake: typeof Shake;
 type index_d$1_Shift = Shift;
 declare const index_d$1_Shift: typeof Shift;
-type index_d$1_Stagger = Stagger;
-declare const index_d$1_Stagger: typeof Stagger;
 type index_d$1_Wait = Wait;
 declare const index_d$1_Wait: typeof Wait;
 declare namespace index_d$1 {
-  export { index_d$1_Animation as Animation, index_d$1_Draw as Draw, index_d$1_Emphasize as Emphasize, index_d$1_Erase as Erase, index_d$1_FadeIn as FadeIn, index_d$1_FadeOut as FadeOut, index_d$1_Grow as Grow, index_d$1_MoveTo as MoveTo, index_d$1_Rotate as Rotate, index_d$1_SetOpacity as SetOpacity, index_d$1_SetScale as SetScale, index_d$1_SetStyle as SetStyle, index_d$1_Shake as Shake, index_d$1_Shift as Shift, index_d$1_Stagger as Stagger, index_d$1_Wait as Wait };
+  export { index_d$1_Animation as Animation, index_d$1_Draw as Draw, index_d$1_Emphasize as Emphasize, index_d$1_Erase as Erase, index_d$1_FadeIn as FadeIn, index_d$1_FadeOut as FadeOut, index_d$1_Grow as Grow, index_d$1_MoveTo as MoveTo, index_d$1_Rotate as Rotate, index_d$1_SetOpacity as SetOpacity, index_d$1_SetScale as SetScale, index_d$1_SetStyle as SetStyle, index_d$1_Shake as Shake, index_d$1_Shift as Shift, Stagger$1 as Stagger, Stagger as StaggerFadeIn, index_d$1_Wait as Wait };
 }
 
 declare const PIXELS_TO_COORDS: number;

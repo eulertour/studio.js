@@ -44,7 +44,8 @@ declare namespace Animation_2 {
         Shake,
         Grow,
         Stagger,
-        SetStyle
+        SetStyle,
+        Stagger_2 as StaggerFadeIn
     }
 }
 export { Animation_2 as Animation }
@@ -65,6 +66,8 @@ class Animation_3 {
     before: (() => void) | undefined;
     // (undocumented)
     beforeFunc: () => void;
+    // (undocumented)
+    get duration(): number;
     // (undocumented)
     easing: (_: number) => number;
     // (undocumented)
@@ -960,6 +963,23 @@ class Square extends Rectangle {
 
 // @public (undocumented)
 class Stagger extends Animation_3 {
+    constructor(animations: Animation_3[], userConfig?: Config_2);
+    // (undocumented)
+    animations: Animation_3[];
+    // Warning: (ae-forgotten-export) The symbol "Config_2" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    config: Config_2;
+    // Warning: (ae-forgotten-export) The symbol "StaggerConfig" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    static defaultConfig(): StaggerConfig;
+    // (undocumented)
+    setUp(): void;
+}
+
+// @public (undocumented)
+class Stagger_2 extends Animation_3 {
     constructor(objects: THREE.Object3D[], config?: {
         duration?: number;
     });

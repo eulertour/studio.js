@@ -1,5 +1,5 @@
 import { THREE } from "../index.js";
-export declare const applyEasing: (t: number, dt: number, easingFunction: (_: number) => number) => [number, number];
+export declare const applyEasing: (t: number, dt: number, easingFunction: (_: number) => number, duration: number) => [number, number];
 export type AnimationConfig = {
     object?: THREE.Object3D;
     parent?: THREE.Object3D;
@@ -31,6 +31,7 @@ declare class Animation {
     elapsedSinceStart: number;
     easing: (_: number) => number;
     constructor(func: (elapsedTime: number, deltaTime: number) => void, config?: AnimationConfig);
+    get duration(): number;
     setUp(): void;
     tearDown(): void;
     update(worldTime: any): void;

@@ -1,18 +1,14 @@
-import { Animation } from "./Animation.js";
-import * as THREE from "three";
+import { Animation, AnimationConfig } from "./Animation.js";
+type StaggerConfig = {
+    staggerDuration?: number;
+};
+type Config = AnimationConfig & StaggerConfig;
 export default class Stagger extends Animation {
-    private objects;
-    private initialOpacities;
-    private duration;
-    private staggerDelay;
-    /**
-     * Creates a staggered fade-in animation for multiple objects
-     * @param objects Array of objects to animate in sequence
-     * @param config Additional configuration options
-     */
-    constructor(objects: THREE.Object3D[], config?: {
-        duration?: number;
-    });
+    animations: Animation[];
+    config: Config;
+    constructor(animations: Animation[], userConfig?: Config);
     setUp(): void;
+    static defaultConfig(): StaggerConfig;
 }
+export {};
 //# sourceMappingURL=Stagger.d.ts.map

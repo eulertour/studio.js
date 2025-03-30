@@ -465,6 +465,36 @@
                 },
                 {
                   "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Animation#duration:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "get duration(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": true,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "duration",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
                   "canonicalReference": "@eulertour/studio!Animation_2.Animation#easing:member",
                   "docComment": "",
                   "excerptTokens": [
@@ -3145,6 +3175,221 @@
                 {
                   "kind": "Constructor",
                   "canonicalReference": "@eulertour/studio!Animation_2.Stagger:constructor(1)",
+                  "docComment": "/**\n * Constructs a new instance of the `Stagger` class\n */\n",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "constructor(animations: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Animation",
+                      "canonicalReference": "@eulertour/studio!Animation_2.Animation_3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "[]"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", userConfig?: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Config",
+                      "canonicalReference": "@eulertour/studio!~Config_2:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ");"
+                    }
+                  ],
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "animations",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 3
+                      },
+                      "isOptional": false
+                    },
+                    {
+                      "parameterName": "userConfig",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 4,
+                        "endIndex": 5
+                      },
+                      "isOptional": true
+                    }
+                  ]
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Stagger#animations:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "animations: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Animation",
+                      "canonicalReference": "@eulertour/studio!Animation_2.Animation_3:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "[]"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "animations",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 3
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Stagger#config:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "config: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Config",
+                      "canonicalReference": "@eulertour/studio!~Config_2:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "config",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Stagger.defaultConfig:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static defaultConfig(): "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "StaggerConfig",
+                      "canonicalReference": "@eulertour/studio!~StaggerConfig:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": true,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "defaultConfig"
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Stagger#setUp:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "setUp(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "void"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "setUp"
+                }
+              ],
+              "extendsTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "implementsTokenRanges": []
+            },
+            {
+              "kind": "Class",
+              "canonicalReference": "@eulertour/studio!Animation_2.StaggerFadeIn:class",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "export default class Stagger extends "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Animation",
+                  "canonicalReference": "@eulertour/studio!Animation_2.Animation_3:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": " "
+                }
+              ],
+              "fileUrlPath": "src/animation/StaggerFadeIn.ts",
+              "releaseTag": "Public",
+              "isAbstract": false,
+              "name": "StaggerFadeIn",
+              "preserveMemberOrder": false,
+              "members": [
+                {
+                  "kind": "Constructor",
+                  "canonicalReference": "@eulertour/studio!Animation_2.StaggerFadeIn:constructor(1)",
                   "docComment": "/**\n * Creates a staggered fade-in animation for multiple objects\n *\n * @param objects - Array of objects to animate in sequence\n *\n * @param config - Additional configuration options\n */\n",
                   "excerptTokens": [
                     {
@@ -3197,7 +3442,7 @@
                 },
                 {
                   "kind": "Method",
-                  "canonicalReference": "@eulertour/studio!Animation_2.Stagger#setUp:member(1)",
+                  "canonicalReference": "@eulertour/studio!Animation_2.StaggerFadeIn#setUp:member(1)",
                   "docComment": "",
                   "excerptTokens": [
                     {

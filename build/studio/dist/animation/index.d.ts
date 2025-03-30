@@ -1,4 +1,4 @@
-export { Animation } from './Animation.js';
+export { Animation } from "./Animation.js";
 export { default as Shift } from "./Shift.js";
 export { default as MoveTo } from "./MoveTo.js";
 export { default as Rotate } from "./Rotate.js";
@@ -14,4 +14,5 @@ export { default as Shake } from "./Shake.js";
 export { default as Grow } from "./Grow.js";
 export { default as Stagger } from "./Stagger.js";
 export { default as SetStyle } from "./SetStyle.js";
+export { default as StaggerFadeIn } from "./StaggerFadeIn.js";
 //# sourceMappingURL=index.d.ts.map

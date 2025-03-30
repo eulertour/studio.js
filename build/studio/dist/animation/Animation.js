@@ -1,9 +1,9 @@
 // From https://easings.net/
 const easeInOutCubic = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-export const applyEasing = (t, dt, easingFunction) => {
+export const applyEasing = (t, dt, easingFunction, duration) => {
     const tSeconds = t;
-    const modulatedDelta = easingFunction(tSeconds) - easingFunction(t - dt);
-    const modulatedTime = easingFunction(tSeconds);
+    const modulatedDelta = easingFunction(tSeconds / duration) - easingFunction(t / duration - dt);
+    const modulatedTime = easingFunction(tSeconds / duration);
     return [modulatedTime, modulatedDelta];
 };
 class Animation {
@@ -133,6 +133,9 @@ class Animation {
         this.hide = config.hide;
         this.easing = config.easing || easeInOutCubic;
     }
+    get duration() {
+        return this.endTime - this.startTime;
+    }
     setUp() {
         if (this?.object?.parentComponent) {
             this.object.revealAncestors({ includeSelf: true });
@@ -170,7 +173,7 @@ class Animation {
         }
         this.prevUpdateTime = worldTime;
         this.elapsedSinceStart += deltaTime;
-        this.func(...applyEasing(this.elapsedSinceStart, deltaTime, this.easing));
+        this.func(...applyEasing(this.elapsedSinceStart, deltaTime, this.easing, this.duration));
         if (worldTime >= this.endTime) {
             this.finished = true;
             this.tearDown();
