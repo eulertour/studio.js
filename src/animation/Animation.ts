@@ -10,11 +10,10 @@ export const applyEasing = (
   easingFunction: (_: number) => number,
   duration: number,
 ): [number, number] => {
-  const tSeconds = t;
-  const modulatedDelta =
-    easingFunction(tSeconds / duration) - easingFunction(t / duration - dt);
-  const modulatedTime = easingFunction(tSeconds / duration);
-  return [modulatedTime, modulatedDelta];
+  const easedTime = duration * easingFunction(t / duration);
+  const previousEasedTime = duration * easingFunction((t - dt) / duration);
+  const easedDeltaTime = easedTime - previousEasedTime;
+  return [easedTime, easedDeltaTime];
 };
 
 export type AnimationConfig = {
