@@ -1,11 +1,11 @@
 import { Animation } from "./Animation.js";
 import * as THREE from "three";
 export default class MoveTo extends Animation {
-    target: THREE.Object3D;
     obj: THREE.Object3D;
-    start: any;
-    displacement: any;
-    constructor(target: THREE.Object3D, obj: THREE.Object3D, config?: any);
+    target: THREE.Vector3;
+    start: THREE.Vector3;
+    displacement: THREE.Vector3;
+    constructor(obj: THREE.Object3D, target: THREE.Vector3, config?: any);
     setUp(): void;
 }
 //# sourceMappingURL=MoveTo.d.ts.map

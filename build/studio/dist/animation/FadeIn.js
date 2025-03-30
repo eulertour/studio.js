@@ -58,7 +58,7 @@ export default class FadeIn extends Animation {
     static defaultConfig() {
         return {
             includeDescendants: true,
-            concealAncestors: true,
+            concealAncestors: false,
             preserveOpacity: true,
         };
     }

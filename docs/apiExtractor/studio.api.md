@@ -548,17 +548,17 @@ const moveNextTo: (target: THREE.Object3D, object: THREE.Object3D, direction: TH
 
 // @public (undocumented)
 class MoveTo extends Animation_3 {
-    constructor(target: THREE.Object3D, obj: THREE.Object3D, config?: any);
+    constructor(obj: THREE.Object3D, target: THREE.Vector3, config?: any);
     // (undocumented)
-    displacement: any;
+    displacement: THREE.Vector3;
     // (undocumented)
     obj: THREE.Object3D;
     // (undocumented)
     setUp(): void;
     // (undocumented)
-    start: any;
+    start: THREE.Vector3;
     // (undocumented)
-    target: THREE.Object3D;
+    target: THREE.Vector3;
 }
 
 // @public (undocumented)

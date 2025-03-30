@@ -56,6 +56,52 @@ describe("FadeIn", () => {
     ]);
   });
 
+  it("preserves opacity by default", () => {
+    const config = {
+      fillOpacity: 0.8,
+      strokeOpacity: 0.6,
+    };
+    const shape = new Geometry.Square(1, config);
+    const child = new Geometry.Circle(1, config);
+    shape.add(child);
+
+    const animation = new Animation.FadeIn(shape, {
+      easing: (t: number) => t,
+    });
+    animation.startTime = 0;
+    animation.endTime = 1;
+
+    checkFading(animation, [
+      {
+        t: 0.1,
+        expectedOpacities: [
+          [shape.stroke, 0.06],
+          [shape.fill, 0.08],
+          [child.stroke, 0.06],
+          [child.fill, 0.08],
+        ],
+      },
+      {
+        t: 0.5,
+        expectedOpacities: [
+          [shape.stroke, 0.3],
+          [shape.fill, 0.4],
+          [child.stroke, 0.3],
+          [child.fill, 0.4],
+        ],
+      },
+      {
+        t: 1.0,
+        expectedOpacities: [
+          [shape.stroke, 0.6],
+          [shape.fill, 0.8],
+          [child.stroke, 0.6],
+          [child.fill, 0.8],
+        ],
+      },
+    ]);
+  });
+
   it("can exclude descendants", () => {
     const shape = new Geometry.Square(1);
     const child = new Geometry.Circle(1);
@@ -99,13 +145,14 @@ describe("FadeIn", () => {
     ]);
   });
 
-  it("conceals ancestors by default", () => {
+  it("can conceal ancestors", () => {
     const shape = new Geometry.Square(1);
     const child = new Geometry.Circle(1);
     shape.add(child);
 
     const animation = new Animation.FadeIn(child, {
       easing: (t: number) => t,
+      concealAncestors: true,
     });
     animation.startTime = 0;
     animation.endTime = 1;
@@ -136,52 +183,6 @@ describe("FadeIn", () => {
           [shape.fill, 0.0],
           [child.stroke, 1.0],
           [child.fill, 0.0],
-        ],
-      },
-    ]);
-  });
-
-  it("preserves opacity by default", () => {
-    const config = {
-      fillOpacity: 0.8,
-      strokeOpacity: 0.6,
-    };
-    const shape = new Geometry.Square(1, config);
-    const child = new Geometry.Circle(1, config);
-    shape.add(child);
-
-    const animation = new Animation.FadeIn(shape, {
-      easing: (t: number) => t,
-    });
-    animation.startTime = 0;
-    animation.endTime = 1;
-
-    checkFading(animation, [
-      {
-        t: 0.1,
-        expectedOpacities: [
-          [shape.stroke, 0.06],
-          [shape.fill, 0.08],
-          [child.stroke, 0.06],
-          [child.fill, 0.08],
-        ],
-      },
-      {
-        t: 0.5,
-        expectedOpacities: [
-          [shape.stroke, 0.3],
-          [shape.fill, 0.4],
-          [child.stroke, 0.3],
-          [child.fill, 0.4],
-        ],
-      },
-      {
-        t: 1.0,
-        expectedOpacities: [
-          [shape.stroke, 0.6],
-          [shape.fill, 0.8],
-          [child.stroke, 0.6],
-          [child.fill, 0.8],
         ],
       },
     ]);
