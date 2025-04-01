@@ -43,7 +43,7 @@ const boolToSign = Fn(([booleanValue]: [ShaderNodeObject<OperatorNode>]) =>
 );
 
 const VertexNode = Fn(() => {
-  let vColor = vec4(1, 0, 0, 0.75);
+  let vColor = vec4(1, 0, 0, 1);
   varyingProperty("vec4", "vColor").assign(vColor);
 
   const modelViewProjection = cameraProjectionMatrix.mul(modelViewMatrix);

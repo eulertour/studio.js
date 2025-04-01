@@ -8,11 +8,17 @@ import {
   mul,
   screenCoordinate,
   screenSize,
+  uniform,
   varyingProperty,
   vec2,
   vec3,
+  color,
+  vec4,
 } from "three/tsl";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
+import * as THREE from "three/webgpu";
+
+export const fragmentColor = uniform(new THREE.Color());
 
 const sceneDimensions = vec2((8 * 16) / 9, 8);
 const unitWidth = float(0.1);
@@ -50,7 +56,8 @@ const segmentCoversFragment = Fn(
 );
 
 const FragmentNode = Fn(() => {
-  const color = varyingProperty("vec4", "vColor").toVar();
+  // const color = varyingProperty("vec4", "vColor").toVar();
+  // const color = uniform("color");
 
   const vStartFragment = varyingProperty("vec2", "vStartFragment");
   const vEndFragment = varyingProperty("vec2", "vEndFragment");
@@ -133,7 +140,7 @@ const FragmentNode = Fn(() => {
     },
   );
 
-  return color;
+  return vec4(1, 0, 0, 1);
 });
 
 export default FragmentNode;

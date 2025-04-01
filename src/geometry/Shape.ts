@@ -5,6 +5,7 @@ import MeshLine, {
 } from "./MeshLine/index.js";
 
 import * as Text from "../text.js";
+import WebGPUMeshLine from "./WebGPUMeshLine/index.js";
 
 export type Transform = {
   position: THREE.Vector3;
@@ -34,7 +35,7 @@ const getFillGeometry = (points: Array<THREE.Vector3>) => {
 };
 
 type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
-type Stroke = MeshLine;
+type Stroke = WebGPUMeshLine;
 
 /**
  * An abstract class representing a generalized shape.
@@ -71,23 +72,24 @@ export default abstract class Shape extends THREE.Group {
     }
 
     if (config.stroke !== false) {
-      const strokeGeometry = new MeshLineGeometry(config.arrow);
-      strokeGeometry.setPoints(points);
-
-      if (config.dashed && config.strokeDashLength === 0) {
-        config.strokeDashLength = 0.4;
-      }
-
-      const strokeMaterial = new MeshLineMaterial({
-        color: config.strokeColor,
-        opacity: config.strokeOpacity,
-        transparent: true,
-        side: THREE.DoubleSide,
-        width: config.strokeWidth,
-        dashLength: config.strokeDashLength,
-        dashOffset: config.strokeDashOffset,
-      });
-      this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
+      // const strokeGeometry = new MeshLineGeometry(config.arrow);
+      // strokeGeometry.setPoints(points);
+      //
+      // if (config.dashed && config.strokeDashLength === 0) {
+      //   config.strokeDashLength = 0.4;
+      // }
+      //
+      // const strokeMaterial = new MeshLineMaterial({
+      //   color: config.strokeColor,
+      //   opacity: config.strokeOpacity,
+      //   transparent: true,
+      //   side: THREE.DoubleSide,
+      //   width: config.strokeWidth,
+      //   dashLength: config.strokeDashLength,
+      //   dashOffset: config.strokeDashOffset,
+      // });
+      this.stroke = new WebGPUMeshLine(points);
+      this.stroke.restyle({ color: config.strokeColor });
       this.add(this.stroke);
     }
 
@@ -283,7 +285,10 @@ export default abstract class Shape extends THREE.Group {
 
     const { strokeColor, strokeOpacity, strokeWidth } = style;
     if (strokeColor !== undefined) {
-      this.stroke.material.color = strokeColor;
+      this.stroke.restyle({
+        color: strokeColor,
+        opacity: strokeOpacity,
+      });
     }
     if (strokeOpacity !== undefined) {
       this.stroke.material.opacity = strokeOpacity;
