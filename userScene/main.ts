@@ -8,6 +8,7 @@ import * as THREE from "three/webgpu";
 
 export default class Scene implements StudioScene {
   animations?: Array<AnimationRepresentation>;
+  line: Geometry.Polyline;
   square: Geometry.Square;
 
   constructor(
@@ -19,26 +20,45 @@ export default class Scene implements StudioScene {
     // const p2 = new Geometry.Point(new THREE.Vector2(1, 1), { stroke: false });
     // scene.add(p1, p2);
 
-    this.square = new Geometry.Square(2, {
+    const resolution = 200;
+    const revolutions = 5;
+    const height = 5;
+    const points = [];
+    const f = (t: number) => {
+      const r = height / 2;
+      const x = r - 2 * t * r;
+      const theta = Math.acos(x / r);
+      const y = r * Math.sin(theta);
+
+      return new THREE.Vector3(
+        y * Math.cos(revolutions * 2 * Math.PI * t),
+        THREE.MathUtils.lerp(-r, r, t),
+        y * Math.sin(revolutions * 2 * Math.PI * t),
+      );
+    };
+    for (let i = 0; i <= resolution; i++) {
+      points.push(f(i / resolution));
+    }
+    this.line = new Geometry.Polyline(points, {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 1,
       strokeWidth: 4,
       fillColor: new THREE.Color("blue"),
       fillOpacity: 0.5,
+      // fill: false,
     });
-    this.square.rotation.y = 0;
-    scene.add(this.square);
+    scene.add(this.line);
 
-    // const square2 = new Geometry.Square(1, {
-    //   // strokeColor: new THREE.Color("blue"),
-    //   // strokeOpacity: 1.0,
-    //   // strokeWidth: 6,
-    //   fillColor: new THREE.Color("red"),
-    //   fillOpacity: 0.5,
-    //   stroke: false,
-    // });
-    // square2.position.setZ(1);
-    // scene.add(square2);
+    this.square = new Geometry.Square(2, {
+      // strokeColor: new THREE.Color("blue"),
+      // strokeOpacity: 1.0,
+      // strokeWidth: 6,
+      fillColor: new THREE.Color("red"),
+      fillOpacity: 1,
+      stroke: false,
+    });
+    this.square.position.setZ(1);
+    scene.add(this.square);
 
     this.animations = [
       new Animation.Animation((t) => {
@@ -50,6 +70,6 @@ export default class Scene implements StudioScene {
   }
 
   update(dt, t) {
-    // this.square.rotation.y += dt;
+    this.line.rotation.y += dt;
   }
 }
