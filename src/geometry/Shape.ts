@@ -89,7 +89,10 @@ export default abstract class Shape extends THREE.Group {
       //   dashOffset: config.strokeDashOffset,
       // });
       this.stroke = new WebGPUMeshLine(points);
-      this.stroke.restyle({ color: config.strokeColor });
+      this.stroke.restyle({
+        color: config.strokeColor,
+        opacity: config.strokeOpacity,
+      });
       this.add(this.stroke);
     }
 

@@ -8,20 +8,21 @@ import {
   mul,
   screenCoordinate,
   screenSize,
+  select,
   uniform,
   varyingProperty,
   vec2,
   vec3,
-  color,
   vec4,
 } from "three/tsl";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import * as THREE from "three/webgpu";
 
 export const fragmentColor = uniform(new THREE.Color());
+export const fragmentOpacity = uniform(1.0);
 
 const sceneDimensions = vec2((8 * 16) / 9, 8);
-const unitWidth = float(0.1);
+const unitWidth = float(0.2);
 
 const lengthSquared = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
   dot(vector, vector),
@@ -61,8 +62,8 @@ const FragmentNode = Fn(() => {
 
   const vStartFragment = varyingProperty("vec2", "vStartFragment");
   const vEndFragment = varyingProperty("vec2", "vEndFragment");
+  const vNextFragment = varyingProperty("vec2", "vNextFragment");
   // const vPreviousFragment = varyingProperty("vec2", "vPreviousFragment");
-  // const vNextFragment = varyingProperty("vec2", "vNextFragment");
 
   // [cssViewportWidth, cssViewportHeight, ?] * devicePixelRatio
   // [1280, 720, ?] * devicePixelRatio
@@ -89,13 +90,13 @@ const FragmentNode = Fn(() => {
   const startToEndNormal = vec2(startToFrag.sub(startToEndProjection)).toVar();
 
   const endToFrag = vec2(glFragCoord.xy.sub(vEndFragment)).toVar();
-  // const endToNext = vec2(vNextFragment.sub(vEndFragment)).toVar();
-  // const endToNextDotProduct = float(dot(endToNext, endToFrag)).toVar();
-  // const endToNextProjection = vec2(
-  //   endToNextDotProduct.div(lengthSquared(endToNext).mul(endToNext)),
-  // ).toVar();
-  // const endToNextNormal = vec2(endToFrag.sub(endToNextProjection)).toVar();
-  // const nextToFrag = vec2(glFragCoord.xy.sub(vNextFragment)).toVar();
+  const endToNext = vec2(vNextFragment.sub(vEndFragment)).toVar();
+  const endToNextDotProduct = float(dot(endToNext, endToFrag)).toVar();
+  const endToNextProjection = vec2(
+    endToNextDotProduct.div(lengthSquared(endToNext).mul(endToNext)),
+  ).toVar();
+  const endToNextNormal = vec2(endToFrag.sub(endToNextProjection)).toVar();
+  const nextToFrag = vec2(glFragCoord.xy.sub(vNextFragment)).toVar();
 
   // const startToPrevious = vec2(vPreviousFragment.sub(vStartFragment)).toVar();
   // const startToPreviousDotProduct = float(
@@ -125,22 +126,37 @@ const FragmentNode = Fn(() => {
   //   previousToFrag.sub(previousToStartProjection),
   // ).toVar();
 
-  If(
-    segmentCoversFragment(
-      halfWidthSquared,
-      startToEnd,
-      startToFrag,
-      endToFrag,
-      startToEndDotProduct,
-      startToEndProjection,
-      startToEndNormal,
-    ).not(),
-    () => {
-      Discard();
-    },
+  const coveredByCurrentSegment = segmentCoversFragment(
+    halfWidthSquared,
+    startToEnd,
+    startToFrag,
+    endToFrag,
+    startToEndDotProduct,
+    startToEndProjection,
+    startToEndNormal,
   );
 
-  return vec4(1, 0, 0, 1);
+  const coveredByNextSegment = segmentCoversFragment(
+    halfWidthSquared,
+    endToNext,
+    endToFrag,
+    nextToFrag,
+    endToNextDotProduct,
+    endToNextProjection,
+    endToNextNormal,
+  );
+
+  const shouldDiscardThisFragment = coveredByCurrentSegment
+    .not()
+    .or(coveredByNextSegment);
+  If(shouldDiscardThisFragment, () => Discard());
+  const color = select(
+    shouldDiscardThisFragment,
+    vec4(0, 1, 0, 1),
+    vec4(fragmentColor, fragmentOpacity),
+  );
+
+  return color;
 });
 
 export default FragmentNode;

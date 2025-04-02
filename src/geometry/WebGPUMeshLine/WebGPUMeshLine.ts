@@ -1,8 +1,10 @@
 import * as THREE from "three/webgpu";
 import WebGPUMeshLineGeometry from "./WebGPUMeshLineGeometry.js";
 import VertexNode from "./shaders/vertex.js";
-import FragmentNode, { fragmentColor } from "./shaders/fragment.js";
-import { uniform } from "three/tsl";
+import FragmentNode, {
+  fragmentColor,
+  fragmentOpacity,
+} from "./shaders/fragment.js";
 
 export default class WebGPUMeshLine extends THREE.Mesh {
   geometry: WebGPUMeshLineGeometry;
@@ -13,9 +15,10 @@ export default class WebGPUMeshLine extends THREE.Mesh {
     geometry.setPoints(points);
 
     const material = new THREE.MeshBasicNodeMaterial({
-      fragmentNode: FragmentNode(),
-      vertexNode: VertexNode(),
+      transparent: true,
     });
+    material.vertexNode = VertexNode();
+    material.fragmentNode = FragmentNode();
 
     super(geometry, material);
     this.geometry = geometry;
@@ -32,7 +35,7 @@ export default class WebGPUMeshLine extends THREE.Mesh {
       fragmentColor.value.set(color);
     }
     if (opacity !== undefined) {
-      this.fragmentOpacity.value = opacity;
+      fragmentOpacity.value = opacity;
     }
   }
 }

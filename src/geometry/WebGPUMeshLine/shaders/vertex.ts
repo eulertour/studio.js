@@ -15,7 +15,7 @@ import {
 } from "three/tsl";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 
-const lineWidth = 0.3;
+const lineWidth = 0.8;
 
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=defined%20clipping%20region.-,Perspective%20divide,-%5Bedit%5D
 const perspectiveDivide = Fn(
@@ -71,23 +71,27 @@ const VertexNode = Fn(() => {
   varyingProperty("vec2", "vNextFragment").assign(nextFragment);
   varyingProperty("vec2", "vPreviousFragment").assign(previousFragment);
 
-  const screenSpaceSegmentVec = normalize(endFragment.sub(startFragment));
-  const screenSpaceSegmentNormal = vec2(
-    screenSpaceSegmentVec.y.negate(),
-    screenSpaceSegmentVec.x,
+  const screenSpaceSegmentUnitVector = normalize(
+    endFragment.sub(startFragment),
+  );
+  const screenSpaceSegmentUnitNormal = vec2(
+    screenSpaceSegmentUnitVector.y.negate(),
+    screenSpaceSegmentUnitVector.x,
   );
 
   const isStart = attribute("start");
   const isBottom = attribute("bottom");
 
-  const fragmentOffset = screenSpaceSegmentVec
+  const fragmentOffsetUnitVector = screenSpaceSegmentUnitVector
     .mul(boolToSign(isStart))
-    .add(screenSpaceSegmentNormal.mul(boolToSign(isBottom)))
-    .mul(lineWidth);
+    .add(screenSpaceSegmentUnitNormal.mul(boolToSign(isBottom)))
+    .normalize();
+
+  const cameraSpaceFragmentOffset = fragmentOffsetUnitVector.mul(lineWidth);
 
   const glPosition = select(isStart.equal(float(1)), start, end).toVar();
   const clipSpaceFragmentOffset = cameraProjectionMatrix.mul(
-    vec4(fragmentOffset.xy, 0, 1),
+    vec4(fragmentOffsetUnitVector.xy, 0, 1),
   ).xy;
   glPosition.xy.addAssign(clipSpaceFragmentOffset);
   return vec4(glPosition.xyz, 1);

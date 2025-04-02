@@ -15,11 +15,26 @@ export default class Scene implements StudioScene {
     public renderer: THREE.WebGPURenderer,
   ) {
     const square = new Geometry.Square(1, {
+      strokeColor: new THREE.Color("blue"),
+      strokeOpacity: 0.5,
+      strokeWidth: 6,
       // fillColor: new THREE.Color("red"),
-      // fillOpacity: 1,
+      // fillOpacity: 0.5,
       // stroke: false,
     });
+    square.position.setZ(-1);
     scene.add(square);
+
+    // const square2 = new Geometry.Square(1, {
+    //   // strokeColor: new THREE.Color("blue"),
+    //   // strokeOpacity: 1.0,
+    //   // strokeWidth: 6,
+    //   fillColor: new THREE.Color("red"),
+    //   fillOpacity: 0.5,
+    //   stroke: false,
+    // });
+    // square2.position.setZ(1);
+    // scene.add(square2);
 
     this.animations = [
       new Animation.Animation((t) => {
