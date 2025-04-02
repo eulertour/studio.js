@@ -9,13 +9,14 @@ import {
   normalize,
   screenSize,
   select,
+  sqrt,
   varyingProperty,
   vec2,
   vec4,
 } from "three/tsl";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 
-const lineWidth = 0.8;
+const lineWidth = 1;
 
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=defined%20clipping%20region.-,Perspective%20divide,-%5Bedit%5D
 const perspectiveDivide = Fn(
@@ -26,16 +27,16 @@ const perspectiveDivide = Fn(
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=)-,Viewport%20transform,-%5Bedit%5D
 const viewportTransform = Fn(
   ([normalizedDeviceCoordinates]: [ShaderNodeObject<OperatorNode>]) =>
-    // TODO: Read this programmatically.
-    normalizedDeviceCoordinates
-      .mul(screenSize.div(2))
-      // .add(viewportCoordinate)
-      .add(screenSize.div(2)),
+    normalizedDeviceCoordinates.mul(screenSize.div(2)).add(screenSize.div(2))
+      .xy,
 );
 
-const clipToFragment = Fn(
-  ([clipSpaceVertex]: [ShaderNodeObject<OperatorNode>]) =>
-    viewportTransform(perspectiveDivide(clipSpaceVertex)),
+const clipToScreenSpace = Fn(
+  ([clipSpaceVertex]: [ShaderNodeObject<OperatorNode>]) => {
+    const normalizedDeviceCoordinate = perspectiveDivide(clipSpaceVertex);
+    const screenSpaceFragment = viewportTransform(normalizedDeviceCoordinate);
+    return screenSpaceFragment;
+  },
 );
 
 const boolToSign = Fn(([booleanValue]: [ShaderNodeObject<OperatorNode>]) =>
@@ -47,7 +48,7 @@ const VertexNode = Fn(() => {
   varyingProperty("vec4", "vColor").assign(vColor);
 
   const modelViewProjection = cameraProjectionMatrix.mul(modelViewMatrix);
-  const pointMatrix = modelViewProjection.mul(
+  const homogeneousLinePoints = modelViewProjection.mul(
     mat4(
       vec4(attribute("position"), 1),
       vec4(attribute("endPosition"), 1),
@@ -56,23 +57,25 @@ const VertexNode = Fn(() => {
     ),
   );
 
-  const start = vec4(pointMatrix[0]);
-  const end = vec4(pointMatrix[1]);
-  const next = vec4(pointMatrix[2]);
-  const previous = vec4(pointMatrix[3]);
+  const clipSpaceStart = vec4(homogeneousLinePoints[0]);
+  const clipSpaceEnd = vec4(homogeneousLinePoints[1]);
+  const clipSpaceNext = vec4(homogeneousLinePoints[2]);
+  const clipSpacePrevious = vec4(homogeneousLinePoints[3]);
 
-  const startFragment = clipToFragment(start);
-  const endFragment = clipToFragment(end);
-  const nextFragment = clipToFragment(next);
-  const previousFragment = clipToFragment(previous);
+  const screenSpaceStartFragment = clipToScreenSpace(clipSpaceStart);
+  const screenSpaceEndFragment = clipToScreenSpace(clipSpaceEnd);
+  const screenSpaceNextFragment = clipToScreenSpace(clipSpaceNext);
+  const screenSpacePreviousFragment = clipToScreenSpace(clipSpacePrevious);
 
-  varyingProperty("vec2", "vStartFragment").assign(startFragment);
-  varyingProperty("vec2", "vEndFragment").assign(endFragment);
-  varyingProperty("vec2", "vNextFragment").assign(nextFragment);
-  varyingProperty("vec2", "vPreviousFragment").assign(previousFragment);
+  varyingProperty("vec2", "vStartFragment").assign(screenSpaceStartFragment);
+  varyingProperty("vec2", "vEndFragment").assign(screenSpaceEndFragment);
+  varyingProperty("vec2", "vNextFragment").assign(screenSpaceNextFragment);
+  varyingProperty("vec2", "vPreviousFragment").assign(
+    screenSpacePreviousFragment,
+  );
 
   const screenSpaceSegmentUnitVector = normalize(
-    endFragment.sub(startFragment),
+    screenSpaceEndFragment.sub(screenSpaceStartFragment),
   );
   const screenSpaceSegmentUnitNormal = vec2(
     screenSpaceSegmentUnitVector.y.negate(),
@@ -82,19 +85,32 @@ const VertexNode = Fn(() => {
   const isStart = attribute("start");
   const isBottom = attribute("bottom");
 
-  const fragmentOffsetUnitVector = screenSpaceSegmentUnitVector
+  // NOTE: This is the vector offset from the start or end of the current
+  // segment to a corner of the polygon representing it. It's represented
+  // by the diagonal lines in the diagram below. The components parallel
+  // and normal to the segment vector are equal and each have length 1.
+  // Accordingly, the legnth of this vector is sqrt(2).
+  // +-------------------+
+  // |\                 /|
+  // | +---------------+ |
+  // |/                 \|
+  // +-------------------+
+  const screenSpaceUnitVertexOffset = screenSpaceSegmentUnitVector
     .mul(boolToSign(isStart))
-    .add(screenSpaceSegmentUnitNormal.mul(boolToSign(isBottom)))
-    .normalize();
-
-  const cameraSpaceFragmentOffset = fragmentOffsetUnitVector.mul(lineWidth);
-
-  const glPosition = select(isStart.equal(float(1)), start, end).toVar();
+    .add(screenSpaceSegmentUnitNormal.mul(boolToSign(isBottom)));
+  const cameraSpaceFragmentOffset = vec4(
+    screenSpaceUnitVertexOffset.mul(lineWidth).xy,
+    0,
+    0,
+  );
   const clipSpaceFragmentOffset = cameraProjectionMatrix.mul(
-    vec4(fragmentOffsetUnitVector.xy, 0, 1),
-  ).xy;
-  glPosition.xy.addAssign(clipSpaceFragmentOffset);
-  return vec4(glPosition.xyz, 1);
+    cameraSpaceFragmentOffset,
+  );
+
+  const clipSpaceVertex = select(isStart, clipSpaceStart, clipSpaceEnd).add(
+    clipSpaceFragmentOffset,
+  );
+  return clipSpaceVertex;
 });
 
 export default VertexNode;

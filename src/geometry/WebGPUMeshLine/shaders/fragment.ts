@@ -57,8 +57,7 @@ const segmentCoversFragment = Fn(
 );
 
 const FragmentNode = Fn(() => {
-  // const color = varyingProperty("vec4", "vColor").toVar();
-  // const color = uniform("color");
+  const vColor = varyingProperty("vec4", "vColor").toVar();
 
   const vStartFragment = varyingProperty("vec2", "vStartFragment");
   const vEndFragment = varyingProperty("vec2", "vEndFragment");
@@ -136,27 +135,34 @@ const FragmentNode = Fn(() => {
     startToEndNormal,
   );
 
-  const coveredByNextSegment = segmentCoversFragment(
-    halfWidthSquared,
-    endToNext,
-    endToFrag,
-    nextToFrag,
-    endToNextDotProduct,
-    endToNextProjection,
-    endToNextNormal,
-  );
+  const isLastSegment = vNextFragment.sub(vEndFragment).length().equal(0);
+  const coveredByNextSegment = isLastSegment
+    .not()
+    .and(
+      segmentCoversFragment(
+        halfWidthSquared,
+        endToNext,
+        endToFrag,
+        nextToFrag,
+        endToNextDotProduct,
+        endToNextProjection,
+        endToNextNormal,
+      ),
+    );
 
   const shouldDiscardThisFragment = coveredByCurrentSegment
     .not()
     .or(coveredByNextSegment);
-  If(shouldDiscardThisFragment, () => Discard());
+  // If(shouldDiscardThisFragment, () => Discard());
   const color = select(
     shouldDiscardThisFragment,
+    vec4(1, 0, 0, 1),
     vec4(0, 1, 0, 1),
-    vec4(fragmentColor, fragmentOpacity),
   );
 
+  // return vec4(fragmentColor, fragmentOpacity),
   return color;
+  // return vColor;
 });
 
 export default FragmentNode;

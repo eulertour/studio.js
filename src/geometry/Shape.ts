@@ -96,7 +96,7 @@ export default abstract class Shape extends THREE.Group {
       this.add(this.stroke);
     }
 
-    this.curveEndIndices = this.getCurveEndIndices();
+    // this.curveEndIndices = this.getCurveEndIndices();
   }
 
   forwardEvent = (e) => this.dispatchEvent(e);
