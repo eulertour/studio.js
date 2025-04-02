@@ -18,11 +18,14 @@ import {
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import * as THREE from "three/webgpu";
 
-export const fragmentColor = uniform(new THREE.Color());
-export const fragmentOpacity = uniform(1.0);
+import {
+  strokeColor,
+  strokeOpacity,
+  strokeWidth,
+  worldUnitsPerStrokeWidth,
+} from "../WebGPUMeshLine.js";
 
 const sceneDimensions = vec2((8 * 16) / 9, 8);
-const unitWidth = float(0.2);
 
 const lengthSquared = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
   dot(vector, vector),
@@ -73,11 +76,13 @@ const FragmentNode = Fn(() => {
     screenCoordinate.z,
   ).toVar();
   const pixelsPerUnit = float(screenSize.y.div(sceneDimensions.y)).toVar();
-  const pixelWidth = float(unitWidth.mul(pixelsPerUnit)).toVar(); // 9
-  const halfWidthSquared = float(mul(0.25, pixelWidth).mul(pixelWidth)).toVar(); // 20.25
-  const startToFrag = vec2(glFragCoord.xy.sub(vStartFragment)).toVar();
+  const pixelWidth = strokeWidth
+    .mul(worldUnitsPerStrokeWidth)
+    .mul(pixelsPerUnit);
+  const halfWidthSquared = float(mul(0.25, pixelWidth).mul(pixelWidth)).toVar();
   // const previousToFrag = vec2(glFragCoord.xy.sub(vPreviousFragment)).toVar();
 
+  const startToFrag = vec2(glFragCoord.xy.sub(vStartFragment)).toVar();
   const startToEnd = vec2(vEndFragment.sub(vStartFragment)).toVar();
   const startToEndDotProduct = float(dot(startToEnd, startToFrag)).toVar();
   const startToEndProjectionFactor = float(
@@ -95,6 +100,7 @@ const FragmentNode = Fn(() => {
     endToNextDotProduct.div(lengthSquared(endToNext).mul(endToNext)),
   ).toVar();
   const endToNextNormal = vec2(endToFrag.sub(endToNextProjection)).toVar();
+
   const nextToFrag = vec2(glFragCoord.xy.sub(vNextFragment)).toVar();
 
   // const startToPrevious = vec2(vPreviousFragment.sub(vStartFragment)).toVar();
@@ -153,15 +159,15 @@ const FragmentNode = Fn(() => {
   const shouldDiscardThisFragment = coveredByCurrentSegment
     .not()
     .or(coveredByNextSegment);
-  // If(shouldDiscardThisFragment, () => Discard());
-  const color = select(
-    shouldDiscardThisFragment,
-    vec4(1, 0, 0, 1),
-    vec4(0, 1, 0, 1),
-  );
+  If(shouldDiscardThisFragment, () => Discard());
+  // const color = select(
+  //   shouldDiscardThisFragment,
+  //   vec4(1, 0, 0, 1),
+  //   vec4(0, 1, 0, 1),
+  // );
 
-  // return vec4(fragmentColor, fragmentOpacity),
-  return color;
+  return vec4(strokeColor, strokeOpacity);
+  // return color;
   // return vColor;
 });
 

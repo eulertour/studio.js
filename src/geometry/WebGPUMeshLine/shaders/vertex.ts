@@ -15,8 +15,7 @@ import {
   vec4,
 } from "three/tsl";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
-
-const lineWidth = 1;
+import { strokeWidth, worldUnitsPerStrokeWidth } from "../WebGPUMeshLine.js";
 
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=defined%20clipping%20region.-,Perspective%20divide,-%5Bedit%5D
 const perspectiveDivide = Fn(
@@ -99,7 +98,10 @@ const VertexNode = Fn(() => {
     .mul(boolToSign(isStart))
     .add(screenSpaceSegmentUnitNormal.mul(boolToSign(isBottom)));
   const cameraSpaceFragmentOffset = vec4(
-    screenSpaceUnitVertexOffset.mul(lineWidth).xy,
+    screenSpaceUnitVertexOffset
+      .mul(strokeWidth)
+      .div(2)
+      .mul(worldUnitsPerStrokeWidth).xy,
     0,
     0,
   );

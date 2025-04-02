@@ -92,6 +92,7 @@ export default abstract class Shape extends THREE.Group {
       this.stroke.restyle({
         color: config.strokeColor,
         opacity: config.strokeOpacity,
+        width: config.strokeWidth,
       });
       this.add(this.stroke);
     }
@@ -287,18 +288,11 @@ export default abstract class Shape extends THREE.Group {
     }
 
     const { strokeColor, strokeOpacity, strokeWidth } = style;
-    if (strokeColor !== undefined) {
-      this.stroke.restyle({
-        color: strokeColor,
-        opacity: strokeOpacity,
-      });
-    }
-    if (strokeOpacity !== undefined) {
-      this.stroke.material.opacity = strokeOpacity;
-    }
-    if (strokeWidth !== undefined) {
-      this.stroke.material.width = strokeWidth;
-    }
+    this.stroke.restyle({
+      color: strokeColor,
+      opacity: strokeOpacity,
+      width: strokeWidth,
+    });
 
     if (style.dashed === true) {
       this.stroke.material.dashLength = 0.4;

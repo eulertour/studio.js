@@ -1,10 +1,13 @@
 import * as THREE from "three/webgpu";
 import WebGPUMeshLineGeometry from "./WebGPUMeshLineGeometry.js";
 import VertexNode from "./shaders/vertex.js";
-import FragmentNode, {
-  fragmentColor,
-  fragmentOpacity,
-} from "./shaders/fragment.js";
+import FragmentNode from "./shaders/fragment.js";
+import { uniform } from "three/tsl";
+
+export const strokeColor = uniform(new THREE.Color());
+export const strokeOpacity = uniform(1.0);
+export const strokeWidth = uniform(4);
+export const worldUnitsPerStrokeWidth = 0.05;
 
 export default class WebGPUMeshLine extends THREE.Mesh {
   geometry: WebGPUMeshLineGeometry;
@@ -29,13 +32,16 @@ export default class WebGPUMeshLine extends THREE.Mesh {
     this.geometry.setPoints(points);
   }
 
-  restyle(style: { color?: THREE.Color; opacity?: number }) {
-    const { color, opacity } = style;
+  restyle(style: { color?: THREE.Color; opacity?: number; width?: number }) {
+    const { color, opacity, width } = style;
     if (color !== undefined) {
-      fragmentColor.value.set(color);
+      strokeColor.value.set(color);
     }
     if (opacity !== undefined) {
-      fragmentOpacity.value = opacity;
+      strokeOpacity.value = opacity;
+    }
+    if (width !== undefined) {
+      strokeWidth.value = width;
     }
   }
 }
