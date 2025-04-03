@@ -9,6 +9,7 @@ import {
   screenCoordinate,
   screenSize,
   select,
+  texture,
   uniform,
   varyingProperty,
   vec2,
@@ -24,6 +25,7 @@ import {
   strokeWidth,
   worldUnitsPerStrokeWidth,
 } from "../WebGPUMeshLine.js";
+import atlas from "./atlas.js";
 
 const sceneDimensions = vec2((8 * 16) / 9, 8);
 
@@ -160,14 +162,17 @@ const FragmentNode = Fn(() => {
     .not()
     .or(coveredByNextSegment);
   If(shouldDiscardThisFragment, () => Discard());
-  // const color = select(
-  //   shouldDiscardThisFragment,
-  //   vec4(1, 0, 0, 1),
-  //   vec4(0, 1, 0, 1),
-  // );
 
-  return vec4(strokeColor, strokeOpacity);
-  // return color;
+  const textureData = texture(atlas, vec2(0, 0));
+  const color = select(
+    textureData.x.greaterThan(0.5),
+    vec4(0, 1, 0, 1),
+    vec4(1, 0, 0, 1),
+  );
+
+  // return vec4(strokeColor, strokeOpacity);
+  // return vec4(textureData.x, 0, 0, 1);
+  return color;
   // return vColor;
 });
 
