@@ -54,6 +54,6 @@
   "source": "src/index.ts",
   "type": "module",
   "dependencies": {
-    "three": "github:eulertour/three.js"
+    "three": "../three.js"
   }
 }
