@@ -3,6 +3,7 @@ import {
   Fn,
   If,
   ShaderNodeObject,
+  attribute,
   dot,
   float,
   mul,
@@ -61,13 +62,55 @@ const segmentCoversFragment = Fn(
   },
 );
 
+const fragmentFromProportion = Fn(
+  ([
+    proportion,
+    startProportion,
+    endProportion,
+    previousFragment,
+    startFragment,
+    endFragment,
+    nextFragment,
+  ]: [
+    ShaderNodeObject<OperatorNode>,
+    ShaderNodeObject<OperatorNode>,
+    ShaderNodeObject<OperatorNode>,
+    ShaderNodeObject<OperatorNode>,
+    ShaderNodeObject<OperatorNode>,
+    ShaderNodeObject<OperatorNode>,
+    ShaderNodeObject<OperatorNode>,
+  ]) => {
+    const lengthPerProportion = endFragment
+      .distance(startFragment)
+      .div(endProportion.sub(startProportion));
+    If(proportion.lessThan(startProportion), () => {
+      const offsetVector = previousFragment.sub(startFragment).normalize();
+      const offsetProportion = startProportion.sub(proportion);
+      const offsetLength = offsetProportion.mul(lengthPerProportion);
+      return startProportion.add(offsetVector.mul(offsetLength));
+    })
+      .ElseIf(proportion.lessThan(endProportion), () => {
+        const offsetVector = endFragment.sub(startFragment);
+        const offsetProportion = endProportion.sub(startProportion);
+        const offsetLength = offsetProportion.mul(lengthPerProportion);
+        return startProportion.add(offsetVector.mul(offsetLength));
+      })
+      .ElseIf(proportion.greaterThanEqual(endProportion), () => {
+        const offsetVector = nextFragment.sub(endFragment);
+        const offsetProportion = proportion.sub(endProportion);
+        const offsetLength = offsetProportion.mul(lengthPerProportion);
+        return endProportion.add(offsetVector.mul(offsetLength));
+      });
+  },
+);
+
 const FragmentNode = Fn(() => {
   const vColor = varyingProperty("vec4", "vColor").toVar();
 
   const vStartFragment = varyingProperty("vec2", "vStartFragment");
   const vEndFragment = varyingProperty("vec2", "vEndFragment");
   const vNextFragment = varyingProperty("vec2", "vNextFragment");
-  // const vPreviousFragment = varyingProperty("vec2", "vPreviousFragment");
+  const vPreviousFragment = varyingProperty("vec2", "vPreviousFragment");
 
   // [cssViewportWidth, cssViewportHeight, ?] * devicePixelRatio
   // [1280, 720, ?] * devicePixelRatio
@@ -105,19 +148,19 @@ const FragmentNode = Fn(() => {
 
   const nextToFrag = vec2(glFragCoord.xy.sub(vNextFragment)).toVar();
 
-  // const startToPrevious = vec2(vPreviousFragment.sub(vStartFragment)).toVar();
-  // const startToPreviousDotProduct = float(
-  //   dot(startToPrevious, startToFrag),
-  // ).toVar();
-  // const startToPreviousProjectionFactor = float(
-  //   startToPreviousDotProduct.div(lengthSquared(startToPrevious)),
-  // ).toVar();
-  // const startToPreviousProjection = vec2(
-  //   startToPreviousProjectionFactor.mul(startToPrevious),
-  // ).toVar();
-  // const startToPreviousNormal = vec2(
-  //   startToFrag.sub(startToPreviousProjection),
-  // ).toVar();
+  const startToPrevious = vec2(vPreviousFragment.sub(vStartFragment)).toVar();
+  const startToPreviousDotProduct = float(
+    dot(startToPrevious, startToFrag),
+  ).toVar();
+  const startToPreviousProjectionFactor = float(
+    startToPreviousDotProduct.div(lengthSquared(startToPrevious)),
+  ).toVar();
+  const startToPreviousProjection = vec2(
+    startToPreviousProjectionFactor.mul(startToPrevious),
+  ).toVar();
+  const startToPreviousNormal = vec2(
+    startToFrag.sub(startToPreviousProjection),
+  ).toVar();
 
   // const previousToStart = vec2(vStartFragment.sub(vPreviousFragment)).toVar();
   // const previousToStartDotProduct = float(
@@ -163,15 +206,28 @@ const FragmentNode = Fn(() => {
     .or(coveredByNextSegment);
   If(shouldDiscardThisFragment, () => Discard());
 
-  const textureData = texture(atlas, vec2(0, 0));
+  const proportion = attribute("proportion");
+  const endProportion = attribute("endProportion");
+  const uBar = proportion.mod(1 / 4).mul(4);
+  const uStar = texture(atlas, vec2(uBar, 0));
+  const referenceFragment = fragmentFromProportion(
+    uStar,
+    proportion,
+    endProportion,
+    vPreviousFragment,
+    vStartFragment,
+    vEndFragment,
+    vNextFragment,
+  );
   const color = select(
-    textureData.x.greaterThan(0.5),
+    uBar.sub(uStar.x).abs().lessThan(0.005),
     vec4(0, 1, 0, 1),
     vec4(1, 0, 0, 1),
   );
 
+  // return vec4(strokeColor, uStar.x);
   // return vec4(strokeColor, strokeOpacity);
-  // return vec4(textureData.x, 0, 0, 1);
+  // return textureData;
   return color;
   // return vColor;
 });
