@@ -45,6 +45,10 @@ export default class Circle extends Shape {
     };
   }
 
+  area() {
+    return Math.PI * this.radius * this.radius;
+  }
+
   static fromAttributes(attributes: CircleAttributes): Circle {
     const { radius } = attributes;
     return new Circle(radius);

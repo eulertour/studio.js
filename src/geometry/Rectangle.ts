@@ -45,6 +45,10 @@ export default class Rectangle extends Shape {
     return new Rectangle(width, height);
   }
 
+  area() {
+    return this.width * this.height
+  }
+
   get attributeData() {
     return [
       {
