@@ -13,7 +13,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   #arrow = new Float32Array();
   #start = new Float32Array();
   #bottom = new Float32Array();
-  #proportion = new Float32Array();
+  #startProportion = new Float32Array();
   #endProportion = new Float32Array();
   #indices = new Uint16Array();
 
@@ -27,7 +27,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     arrow: THREE.Float32BufferAttribute;
     start: THREE.Float32BufferAttribute;
     bottom: THREE.Float32BufferAttribute;
-    proportion: THREE.Float32BufferAttribute;
+    startProportion: THREE.Float32BufferAttribute;
     endProportion: THREE.Float32BufferAttribute;
     index: THREE.Uint16BufferAttribute;
   } | null = null;
@@ -237,10 +237,10 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       const startProportion = startLength / this.totalLength;
       const endProportion = endLength / this.totalLength;
       const offset = 4 * i;
-      this.#proportion[offset] = startProportion;
-      this.#proportion[offset + 1] = startProportion;
-      this.#proportion[offset + 2] = startProportion;
-      this.#proportion[offset + 3] = startProportion;
+      this.#startProportion[offset] = startProportion;
+      this.#startProportion[offset + 1] = startProportion;
+      this.#startProportion[offset + 2] = startProportion;
+      this.#startProportion[offset + 3] = startProportion;
       this.#endProportion[offset] = endProportion;
       this.#endProportion[offset + 1] = endProportion;
       this.#endProportion[offset + 2] = endProportion;
@@ -253,7 +253,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.#attributes.nextPosition.needsUpdate = true;
     this.#attributes.previousPosition.needsUpdate = true;
     this.#attributes.textureCoords.needsUpdate = sizeChanged;
-    this.#attributes.proportion.needsUpdate = true;
+    this.#attributes.startProportion.needsUpdate = true;
     this.#attributes.endProportion.needsUpdate = true;
     this.#attributes.index.needsUpdate = sizeChanged;
 
@@ -311,7 +311,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.#arrow = new Float32Array(4 * rectCount);
     this.#start = new Float32Array(4 * rectCount);
     this.#bottom = new Float32Array(4 * rectCount);
-    this.#proportion = new Float32Array(4 * rectCount);
+    this.#startProportion = new Float32Array(4 * rectCount);
     this.#endProportion = new Float32Array(4 * rectCount);
     this.#indices = new Uint16Array(6 * rectCount);
 
@@ -325,7 +325,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       arrow: new THREE.BufferAttribute(this.#arrow, 1),
       start: new THREE.BufferAttribute(this.#start, 1),
       bottom: new THREE.BufferAttribute(this.#bottom, 1),
-      proportion: new THREE.BufferAttribute(this.#proportion, 1),
+      startProportion: new THREE.BufferAttribute(this.#startProportion, 1),
       endProportion: new THREE.BufferAttribute(this.#endProportion, 1),
       index: new THREE.BufferAttribute(this.#indices, 1),
     };
@@ -339,7 +339,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.setAttribute("arrow", this.#attributes.arrow);
     this.setAttribute("start", this.#attributes.start);
     this.setAttribute("bottom", this.#attributes.bottom);
-    this.setAttribute("proportion", this.#attributes.proportion);
+    this.setAttribute("startProportion", this.#attributes.startProportion);
     this.setAttribute("endProportion", this.#attributes.endProportion);
     this.setIndex(this.#attributes.index);
   }
