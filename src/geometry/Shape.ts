@@ -126,6 +126,10 @@ export default abstract class Shape extends THREE.Group {
     label.moveNextTo(this, direction);
   }
 
+  update(dt: number, t: number) {
+    this.stroke?.update(dt, t);
+  }
+
   static defaultStyle() {
     return {
       fillColor: new THREE.Color(0xfffaf0),

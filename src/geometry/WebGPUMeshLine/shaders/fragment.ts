@@ -3,16 +3,23 @@ import {
   Fn,
   If,
   ShaderNodeObject,
+  add,
   attribute,
   clamp,
   dot,
   float,
   floor,
+  fract,
+  max,
   mix,
   mul,
+  remap,
   screenCoordinate,
   screenSize,
   select,
+  sign,
+  sqrt,
+  sub,
   texture,
   uniform,
   varyingProperty,
@@ -28,6 +35,8 @@ import {
   strokeOpacity,
   strokeWidth,
   worldUnitsPerStrokeWidth,
+  worldTime,
+  totalLength,
 } from "../WebGPUMeshLine.js";
 import atlas from "./atlas.js";
 
@@ -147,11 +156,8 @@ const FragmentNode = Fn(() => {
   const startToFrag = vec2(glFragCoord.xy.sub(startFragment)).toVar();
   const startToEnd = vec2(endFragment.sub(startFragment)).toVar();
   const startToEndDotProduct = float(dot(startToEnd, startToFrag)).toVar();
-  const startToEndProjectionFactor = float(
-    startToEndDotProduct.div(lengthSquared(startToEnd)),
-  ).toVar();
   const startToEndProjection = vec2(
-    startToEndProjectionFactor.mul(startToEnd),
+    startToEndDotProduct.div(lengthSquared(startToEnd)).mul(startToEnd),
   ).toVar();
   const startToEndNormal = vec2(startToFrag.sub(startToEndProjection)).toVar();
 
@@ -179,101 +185,211 @@ const FragmentNode = Fn(() => {
     startToFrag.sub(startToPreviousProjection),
   ).toVar();
 
-  // const previousToStart = vec2(vStartFragment.sub(vPreviousFragment)).toVar();
-  // const previousToStartDotProduct = float(
-  //   dot(previousToStart, previousToFrag),
-  // ).toVar();
-  // const previousToStartProjectionFactor = float(
-  //   previousToStartDotProduct.div(lengthSquared(previousToStart)),
-  // ).toVar();
-  // const previousToStartProjection = vec2(
-  //   previousToStartProjectionFactor.mul(previousToStart),
-  // ).toVar();
-  // const previousToStartNormal = vec2(
-  //   previousToFrag.sub(previousToStartProjection),
-  // ).toVar();
+  const periodLength = float(2);
+  const startLength = totalLength.mul(attribute("startProportion"));
+  const endLength = totalLength.mul(attribute("endProportion"));
+  const uVec = select(
+    dot(startToFrag, startToEnd).lessThan(0),
+    vec2(0, 0),
+    select(
+      startToEndProjection.length().greaterThan(startToEnd.length()),
+      startToEnd,
+      startToEndProjection,
+    ),
+  );
+  const uFraction = uVec.length().div(startToEnd.length());
+  const discreteUFraction = floor(uFraction.div(1 / 255)).mul(1 / 255);
+  const discreteWorldTime = floor(worldTime.div(1 / 255)).mul(1 / 255);
+  const uStarFraction = texture(
+    atlas,
+    vec2(discreteUFraction.sub(discreteWorldTime).mod(1), 0),
+  )
+    .x.add(discreteWorldTime)
+    .mod(1);
 
-  const coveredByCurrentSegment = segmentCoversFragment(
-    halfWidthSquared,
-    startToEnd,
-    startToFrag,
-    endToFrag,
-    startToEndDotProduct,
-    startToEndProjection,
-    startToEndNormal,
+  const representativeFragment = mix(startFragment, endFragment, uFraction);
+  const targetFragment = mix(startFragment, endFragment, uStarFraction);
+
+  const color = select(
+    glFragCoord.xy.distance(targetFragment).lessThan(20),
+    // test.equal(127 / 255),
+    vec4(0, 1, 0, 1),
+    vec4(1, 0, 0, 1),
+  );
+  If(glFragCoord.xy.distance(targetFragment).lessThanEqual(20).not(), () =>
+    Discard(),
   );
 
-  const isLastSegment = nextFragment.sub(endFragment).length().equal(0);
-  const coveredByNextSegment = isLastSegment
-    .not()
-    .and(
-      segmentCoversFragment(
-        halfWidthSquared,
-        endToNext,
-        endToFrag,
-        nextToFrag,
-        endToNextDotProduct,
-        endToNextProjection,
-        endToNextNormal,
-      ),
-    );
+  // const targetLength = float(4);
+  // // NOTE: This seems to work for going length -> fragment
+  // const targetFragment = remap(
+  //   worldTime.mod(1),
+  //   0,
+  //   1,
+  //   startFragment,
+  //   endFragment,
+  // );
 
-  const shouldDiscardThisFragment = coveredByCurrentSegment
-    .not()
-    .or(coveredByNextSegment);
-  If(shouldDiscardThisFragment, () => Discard());
+  // const targetFullPeriod = floor(targetLength.div(periodLength));
+  // const targetFractPeriod = fract(targetLength.div(periodLength));
+  //
+  // const targetRepresentativeFragment = remap(
+  //   periodLength.mul(representativeFullPeriod),
+  //   0,
+  //   endLength,
+  //   startFragment,
+  //   endFragment,
+  // );
 
-  const startProportion = attribute("startProportion");
-  const endProportion = attribute("endProportion");
-  const proportion = mix(
-    startProportion,
-    endProportion,
-    startToEndProjectionFactor,
+  // const u = startToEndProjection.length().div(periodLength);
+  //
+  // const fragmentLength = remap(u, 0, 1, startLength, endLength);
+  // const targetPeriodLength = worldTime.mod(1).mul(periodLength);
+  //
+  // // const targetLength = worldTime.mod(endLength);
+  // const fullPeriodLength = floor(fragmentLength.div(periodLength)).mul(
+  //   periodLength,
+  // );
+  // const fractionalPeriod = fract(fragmentLength.div(periodLength))
+  //   .add(worldTime)
+  //   .mod(1);
+  // const fractionalPeriodLength = fractionalPeriod.mul(periodLength);
+  // const uStarFragment = remap(
+  //   float(0),
+  //   0,
+  //   periodLength,
+  //   startFragment,
+  //   endFragment,
+  // );
+  // const color = select(
+  //   glFragCoord.xy.distance(targetFragment).lessThan(20),
+  //   vec4(0, 1, 0, 1),
+  //   vec4(1, 0, 0, 1),
+  // );
+  // If(
+  //   glFragCoord.xy
+  //     .distance(targetRepresentativeFragment)
+  //     .lessThanEqual(20)
+  //     .not(),
+  //   () => Discard(),
+  // );
+
+  // const periodNumber = floor(targetLength.div(periodLength));
+  // const periodFract = fract(targetLength.div(periodLength));
+  // return vec4(strokeColor, fractionalPeriod);
+  return color;
+
+  // const uStarFragment = remap(
+  //   worldTime.mod(endLength),
+  //   startLength,
+  //   endLength,
+  //   startFragment,
+  //   endFragment,
+  // );
+
+  const periodStartLength = periodNumber.mul(periodLength);
+  const periodEndLength = periodNumber.add(1).mul(periodLength);
+
+  const periodStartFragment = remap(
+    periodStartLength,
+    startLength,
+    endLength,
+    startFragment,
+    endFragment,
   );
-  const periodNumber = floor(proportion.div(1 / 4));
-  const uBar = proportion.sub(periodNumber.mul(1 / 4)).mul(4);
-  const uStar = texture(atlas, vec2(uBar, 0)).x;
-  // const color = select(uStar.lessThan(1), vec4(0, 1, 0, 1), vec4(1, 0, 0, 1));
+  const periodEndFragment = remap(
+    periodEndLength,
+    startLength,
+    endLength,
+    startFragment,
+    endFragment,
+  );
+
+  const uBar = periodFract.sub(worldTime).mod(1);
+  // const uStar = texture(atlas, vec2(uBar, 0)).x;
+  // const color = select(
+  //   uStar.greaterThanEqual(0).and(uBar.lessThan(1)),
+  //   vec4(0, 1, 0, 1),
+  //   vec4(1, 0, 0, 1),
+  // );
+  //
+  // const lengthFromUBar = add(periodNumber, uBar).mul(periodLength);
+  // const lengthFromFract = add(periodNumber, periodFract).mul(periodLength);
+  // const lengthFromUStar = add(periodNumber, uStar).mul(periodLength);
+  // const uStarFragment = remap(
+  //   uStar,
+  //   0,
+  //   1,
+  //   periodStartFragment,
+  //   periodEndFragment,
+  // );
+
+  /**
+   *  [0, 1, 2, 3, 4]
+   *  [1, 2, 3, 4, 0]
+   */
+
+  // const periodNumber = floor(proportion.div(1 / 4));
+  // const uBar = proportion.sub(periodNumber.mul(1 / 4)).mul(4);
+  // const endFragmentComp = remap(
+  //   endProportion,
+  //   startProportion,
+  //   endProportion,
+  //   startFragment,
+  //   endFragment,
+  // );
+  // const color = select(
+  //   uStarFragment.distance(glFragCoord.xy).lessThanEqual(20),
+  //   // lengthFromUBar.lessThan(0.5),
+  //   // uBar.lessThan(0.5),
+  //   // periodNumber.equal(0).and(uBar.lessThan(0)),
+  //   // periodNumber.equal(0).and(uBar.sub(worldTime.mod(1)).lessThan(0)),
+  //   vec4(0, 1, 0, 1),
+  //   vec4(1, 0, 0, 1),
+  // );
 
   // NOTE: Convert uStar into a proportion
-  const uStarProportion = mul(periodNumber.add(uStar), 1 / 4);
+  // const uStarLength = periodNumber
+  //   .mul(periodLength)
+  //   .add(uStar.mul(periodLength));
   // const color = select(
   //   uStarProportion.lessThanEqual(1),
   //   vec4(0, 1, 0, 1),
   //   vec4(1, 0, 0, 1),
   // );
 
-  const uStarFragment = mix(
-    startFragment,
-    endFragment,
-    inverseMix(startProportion, endProportion, uStarProportion),
-  );
+  // const uStarFragment = mix(
+  //   startFragment,
+  //   endFragment,
+  //   inverseMix(startProportion, endProportion, uStarProportion),
+  // );
   // const color = select(
-  //   uStarFragment.distance(endFragment).equal(0),
+  //   // length.lessThan(4.2426),
+  //   lengthFromPeriod.lessThan(4.2426),
   //   vec4(0, 1, 0, 1),
   //   vec4(1, 0, 0, 1),
   // );
 
-  const uStarOnSegment = startProportion
-    .lessThanEqual(uStarProportion)
-    .and(uStarProportion.lessThan(endProportion));
-  const closeToUStar = glFragCoord.xy.distance(uStarFragment).lessThan(8);
-  const shouldIncludeFragment = uStarOnSegment.and(closeToUStar);
+  // const uStarOnSegment = startProportion
+  //   .lessThanEqual(uStarProportion)
+  //   .and(uStarProportion.lessThan(endProportion));
+  // const closeToUStar = glFragCoord.xy.distance(uStarFragment).lessThan(8);
+  // const shouldIncludeFragment = uStarOnSegment.and(closeToUStar);
 
   // If(shouldIncludeFragment.not(), () => Discard());
 
-  const color = select(
-    shouldIncludeFragment,
-    vec4(0, 1, 0, 1),
-    vec4(1, 0, 0, 1),
-  );
+  // const color = select(
+  //   shouldIncludeFragment,
+  //   vec4(0, 1, 0, 1),
+  //   vec4(1, 0, 0, 1),
+  // );
 
   // return vec4(strokeColor, strokeOpacity);
-  // return vec4(strokeColor, uStarProportion);
   // return vec4(strokeColor, uStar);
+  // return color;
   // return vec4(strokeColor, uBar);
+  // return vec4(strokeColor, length.div(8.485));
   // return textureData;
-  return color;
   // return vColor;
 });
 

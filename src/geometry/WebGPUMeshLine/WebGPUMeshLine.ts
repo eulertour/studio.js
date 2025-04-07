@@ -8,6 +8,8 @@ export const strokeColor = uniform(new THREE.Color());
 export const strokeOpacity = uniform(1.0);
 export const strokeWidth = uniform(4);
 export const worldUnitsPerStrokeWidth = 0.05;
+export const worldTime = uniform(0);
+export const totalLength = uniform(0);
 
 export default class WebGPUMeshLine extends THREE.Mesh {
   geometry: WebGPUMeshLineGeometry;
@@ -16,6 +18,7 @@ export default class WebGPUMeshLine extends THREE.Mesh {
   constructor(points: THREE.Vector3[]) {
     const geometry = new WebGPUMeshLineGeometry();
     geometry.setPoints(points);
+    totalLength.value = geometry.totalLength;
 
     const material = new THREE.MeshBasicNodeMaterial({
       transparent: true,
@@ -26,6 +29,10 @@ export default class WebGPUMeshLine extends THREE.Mesh {
     super(geometry, material);
     this.geometry = geometry;
     this.material = material;
+  }
+
+  update(dt, t) {
+    worldTime.value = t;
   }
 
   reshape(points: THREE.Vector3[]) {

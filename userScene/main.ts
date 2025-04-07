@@ -16,7 +16,11 @@ export default class Scene implements StudioScene {
     public camera: THREE.OrthographicCamera,
     public renderer: THREE.WebGPURenderer,
   ) {
-    const points = [new THREE.Vector3(-3, -3, 0), new THREE.Vector3(3, 3, 0)];
+    const points = [
+      new THREE.Vector3(-2, 0, 0),
+      new THREE.Vector3(2, 0, 0),
+      new THREE.Vector3(0, -3, 0),
+    ];
     this.line = new Geometry.Polyline(points, {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 1,
