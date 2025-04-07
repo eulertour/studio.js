@@ -4,6 +4,7 @@ import {
   If,
   ShaderNodeObject,
   attribute,
+  clamp,
   dot,
   float,
   floor,
@@ -232,31 +233,43 @@ const FragmentNode = Fn(() => {
   const periodNumber = floor(proportion.div(1 / 4));
   const uBar = proportion.sub(periodNumber.mul(1 / 4)).mul(4);
   const uStar = texture(atlas, vec2(uBar, 0)).x;
+  // const color = select(uStar.lessThan(1), vec4(0, 1, 0, 1), vec4(1, 0, 0, 1));
 
   // NOTE: Convert uStar into a proportion
-  const uStarFragment = vec2(0, 0).toVar();
-  If(uStar.distance(uBar).lessThan(0.1), () => {
-    uStarFragment.assign(
-      mix(
-        startFragment,
-        endFragment,
-        inverseMix(startProportion, endProportion, proportion),
-      ),
-    );
-  }).Else(() => Discard());
-
+  const uStarProportion = mul(periodNumber.add(uStar), 1 / 4);
   // const color = select(
-  //   uBar.distance(uStar).lessThan(0.01),
+  //   uStarProportion.lessThanEqual(1),
   //   vec4(0, 1, 0, 1),
   //   vec4(1, 0, 0, 1),
   // );
+
+  const uStarFragment = mix(
+    startFragment,
+    endFragment,
+    inverseMix(startProportion, endProportion, uStarProportion),
+  );
+  // const color = select(
+  //   uStarFragment.distance(endFragment).equal(0),
+  //   vec4(0, 1, 0, 1),
+  //   vec4(1, 0, 0, 1),
+  // );
+
+  const uStarOnSegment = startProportion
+    .lessThanEqual(uStarProportion)
+    .and(uStarProportion.lessThan(endProportion));
+  const closeToUStar = glFragCoord.xy.distance(uStarFragment).lessThan(8);
+  const shouldIncludeFragment = uStarOnSegment.and(closeToUStar);
+
+  // If(shouldIncludeFragment.not(), () => Discard());
+
   const color = select(
-    glFragCoord.xy.distance(uStarFragment).lessThan(5),
+    shouldIncludeFragment,
     vec4(0, 1, 0, 1),
     vec4(1, 0, 0, 1),
   );
 
   // return vec4(strokeColor, strokeOpacity);
+  // return vec4(strokeColor, uStarProportion);
   // return vec4(strokeColor, uStar);
   // return vec4(strokeColor, uBar);
   // return textureData;
