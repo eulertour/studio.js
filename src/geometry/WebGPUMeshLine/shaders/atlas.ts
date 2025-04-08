@@ -25,13 +25,19 @@ while (atlasIndex < size) {
   const texelsInSection = texelsPerPatternUnit * patternSection;
   if (isDashSection) {
     for (let i = 0; i < texelsInSection; i++) {
+      if (i === 0) {
+        data[0] = 0;
+        data[2] = 0;
+        data[3] = texelsInSection - 1;
+        continue;
+      }
+
       const stride = 4 * (atlasIndex + i);
       const prevData = data[stride - 4];
       if (prevData === undefined) continue;
       data[stride] = prevData + 1;
-      data[stride + 1] = 0;
       data[stride + 2] = 0;
-      data[stride + 3] = 0;
+      data[stride + 3] = texelsInSection - 1;
     }
   } else {
     for (let i = 0; i < texelsInSection / 2; i++) {
@@ -68,11 +74,11 @@ while (atlasIndex < size) {
   isDashSection = !isDashSection;
 }
 
-// const debug = [];
-// for (let i = 0; i < data.length; i += 4) {
-//   debug.push(data[i]);
-// }
-// console.log(debug);
+const debug = [];
+for (let i = 0; i < data.length; i += 4) {
+  debug.push([data[i], data[i + 2], data[i + 3]]);
+}
+console.log(debug);
 // for (let j = 0; j < size; j++) {
 //   const stride = j * 4;
 //   // const alpha = (255 * j) / (size - 1);

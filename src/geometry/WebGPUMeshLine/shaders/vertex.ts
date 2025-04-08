@@ -100,7 +100,7 @@ const VertexNode = Fn(() => {
   const cameraSpaceFragmentOffset = vec4(
     screenSpaceUnitVertexOffset
       .mul(strokeWidth)
-      .div(2)
+      .div(1)
       .mul(worldUnitsPerStrokeWidth).xy,
     0,
     0,

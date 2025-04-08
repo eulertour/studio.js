@@ -30,6 +30,7 @@ export default class Scene implements StudioScene {
       // fill: false,
     });
     scene.add(this.line);
+    // scene.add(new Geometry.Circle(2));
 
     this.animations = [
       new Animation.Animation((t) => {
