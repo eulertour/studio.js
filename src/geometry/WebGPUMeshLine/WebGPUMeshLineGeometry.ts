@@ -247,6 +247,19 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       this.#endProportion[offset + 3] = endProportion;
     }
 
+    // for (let i = 0; i < this.points.length - 2; i++) {
+    //   const nextLength = lengths[i + 2];
+    //   if (nextLength === undefined) {
+    //     throw new Error("Invalid length");
+    //   }
+    //   const nextProportion = nextLength / this.totalLength;
+    //   const offset = 4 * i;
+    //   this.#nextProportion[offset] = nextProportion;
+    //   this.#nextProportion[offset + 1] = nextProportion;
+    //   this.#nextProportion[offset + 2] = nextProportion;
+    //   this.#nextProportion[offset + 3] = nextProportion;
+    // }
+
     if (!this.#attributes) throw new Error("missing attributes");
     this.#attributes.position.needsUpdate = true;
     this.#attributes.endPosition.needsUpdate = true;
