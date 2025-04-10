@@ -31,6 +31,7 @@ export default class Scene implements StudioScene {
     });
     scene.add(this.line);
     // scene.add(new Geometry.Circle(2));
+    // scene.add(new Geometry.Square(2));
 
     this.animations = [
       new Animation.Animation((t) => {

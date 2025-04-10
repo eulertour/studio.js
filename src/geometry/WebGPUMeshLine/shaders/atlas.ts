@@ -74,11 +74,11 @@ while (atlasIndex < size) {
   isDashSection = !isDashSection;
 }
 
-const debug = [];
-for (let i = 0; i < data.length; i += 4) {
-  debug.push([data[i], data[i + 2], data[i + 3]]);
-}
-console.log(debug);
+// const debug = [];
+// for (let i = 0; i < data.length; i += 4) {
+//   debug.push([data[i], data[i + 2], data[i + 3]]);
+// }
+// console.log(debug);
 // for (let j = 0; j < size; j++) {
 //   const stride = j * 4;
 //   // const alpha = (255 * j) / (size - 1);

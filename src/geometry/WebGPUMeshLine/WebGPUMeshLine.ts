@@ -2,6 +2,7 @@ import * as THREE from "three/webgpu";
 import WebGPUMeshLineGeometry from "./WebGPUMeshLineGeometry.js";
 import VertexNode from "./shaders/vertex.js";
 import FragmentNode from "./shaders/fragment.js";
+import FragmentRougierNode from "./shaders/fragment-rougier.js";
 import { uniform } from "three/tsl";
 
 export const strokeColor = uniform(new THREE.Color());
@@ -24,7 +25,8 @@ export default class WebGPUMeshLine extends THREE.Mesh {
       transparent: true,
     });
     material.vertexNode = VertexNode();
-    material.fragmentNode = FragmentNode();
+    // material.fragmentNode = FragmentNode();
+    material.fragmentNode = FragmentRougierNode();
 
     super(geometry, material);
     this.geometry = geometry;
