@@ -238,6 +238,8 @@ const FragmentNode = Fn(() => {
   const dashStop = dx.sub(u).add(_stop);
   const lineStart = float(0);
   const lineStop = totalLength;
+  const segmentStart = startLength;
+  const segmentStop = endLength;
 
   const d = dy.toVar();
 
@@ -247,6 +249,7 @@ const FragmentNode = Fn(() => {
   const blue = vec4(0, 0, 1, 1);
   const purple = vec4(1, 0, 1, 1);
 
+  const width = float(0.2);
   If(dashStop.lessThanEqual(lineStart), () => Discard());
   If(dashStart.greaterThanEqual(lineStop), () => Discard());
 
@@ -257,7 +260,7 @@ const FragmentNode = Fn(() => {
       .and(dashStop.greaterThanEqual(lineStart)),
     () => {
       u.assign(dx.abs());
-      If(sqrt(u.mul(u).add(dy.mul(dy))).lessThanEqual(0.1), () => {
+      If(sqrt(u.mul(u).add(dy.mul(dy))).lessThanEqual(width), () => {
         color.assign(blue);
       }).Else(() => Discard());
       // color.assign(purple);
@@ -270,31 +273,37 @@ const FragmentNode = Fn(() => {
         .and(dashStart.lessThanEqual(lineStop)),
       () => {
         u.assign(dx.sub(lineStop));
-        If(sqrt(u.mul(u).add(dy.mul(dy))).lessThanEqual(0.1), () => {
+        If(sqrt(u.mul(u).add(dy.mul(dy))).lessThanEqual(width), () => {
           color.assign(blue);
         }).Else(() => Discard());
         // color.assign(purple);
       },
     )
     .ElseIf(dashType.equal(0), () => {
-      If(dy.abs().lessThanEqual(0.1), () => {
+      If(dy.abs().lessThanEqual(width), () => {
         color.assign(blue);
       }).Else(() => Discard());
     })
     .ElseIf(dashType.equal(1), () => {
       // -1
       u.assign(max(u.sub(dashCenterReferencePoint), 0));
-      If(sqrt(u.mul(u).add(dy.mul(dy))).lessThanEqual(0.1), () => {
+      If(sqrt(u.mul(u).add(dy.mul(dy))).lessThanEqual(width), () => {
         color.assign(blue);
       }).Else(() => Discard());
     })
     .ElseIf(dashType.greaterThan(0), () => {
       // +1
       u.assign(max(dashCenterReferencePoint.sub(u), 0));
-      If(sqrt(u.mul(u).add(dy.mul(dy))).lessThanEqual(0.1), () => {
+      If(sqrt(u.mul(u).add(dy.mul(dy))).lessThanEqual(width), () => {
         color.assign(blue);
       }).Else(() => Discard());
     });
+
+  // If(dashStop.lessThanEqual(segmentStart), () => Discard());
+  // If(dashStart.greaterThanEqual(segmentStop), () => Discard());
+  If(segmentStop.equal(lineStop), () => {
+    color.assign(purple);
+  });
 
   return color;
 

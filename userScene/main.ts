@@ -24,7 +24,7 @@ export default class Scene implements StudioScene {
     this.line = new Geometry.Polyline(points, {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 1,
-      strokeWidth: 4,
+      strokeWidth: 10,
       fillColor: new THREE.Color("blue"),
       fillOpacity: 0.5,
       // fill: false,
