@@ -226,16 +226,17 @@ const FragmentNode = Fn(() => {
   const dashWidth = float(0.5);
   const dashPeriod = float(3); // sum([1, 2])
   const freqPatternLength = dashPeriod.mul(dashWidth);
-  // const dashPhase = float(1);
+  // const dashPhase = float(1.5);
   const dashPhase = float(0).sub(worldTime);
   const u = dx.add(dashPhase.mul(dashWidth)).mod(freqPatternLength).toVar();
+  const u2 = dx.add(dashPhase.mul(dashWidth)).mod(freqPatternLength);
   const v = texture(atlasRougier, vec2(u.div(freqPatternLength), 0));
   const dashCenterReferencePoint = v.x.mul(255).mul(dashWidth);
   const dashType = v.y;
   const _start = v.z.mul(255).mul(dashWidth);
   const _stop = v.a.mul(255).mul(dashWidth);
-  const dashStart = dx.sub(u).add(_start);
-  const dashStop = dx.sub(u).add(_stop);
+  const dashStart = dx.sub(u2).add(_start);
+  const dashStop = dx.sub(u2).add(_stop);
   const lineStart = float(0);
   const lineStop = totalLength;
   const segmentStart = startLength;
@@ -253,6 +254,12 @@ const FragmentNode = Fn(() => {
   If(dashStop.lessThanEqual(lineStart), () => Discard());
   If(dashStart.greaterThanEqual(lineStop), () => Discard());
 
+  // // WARN: Something's up with dashStart
+  // If(dx.sub(dashStart).abs().lessThan(0.05), () => {
+  //   color.assign(purple);
+  // });
+
+  // Line start
   If(
     dx
       .lessThanEqual(lineStart)
@@ -266,6 +273,7 @@ const FragmentNode = Fn(() => {
       // color.assign(purple);
     },
   )
+    // Line end
     .ElseIf(
       dx
         .greaterThanEqual(lineStop)
@@ -279,11 +287,13 @@ const FragmentNode = Fn(() => {
         // color.assign(purple);
       },
     )
+    // Dash body
     .ElseIf(dashType.equal(0), () => {
       If(dy.abs().lessThanEqual(width), () => {
         color.assign(blue);
       }).Else(() => Discard());
     })
+    // Dash end
     .ElseIf(dashType.equal(1), () => {
       // -1
       u.assign(max(u.sub(dashCenterReferencePoint), 0));
@@ -291,6 +301,7 @@ const FragmentNode = Fn(() => {
         color.assign(blue);
       }).Else(() => Discard());
     })
+    // Dash start
     .ElseIf(dashType.greaterThan(0), () => {
       // +1
       u.assign(max(dashCenterReferencePoint.sub(u), 0));
@@ -299,31 +310,31 @@ const FragmentNode = Fn(() => {
       }).Else(() => Discard());
     });
 
-  // If(dashStop.lessThanEqual(segmentStart), () => Discard());
-  // If(dashStart.greaterThanEqual(segmentStop), () => Discard());
-  If(segmentStop.equal(lineStop), () => {
+  const segmentDx = dx.sub(segmentStart);
+  const closeToStart = sqrt(
+    segmentDx.mul(segmentDx).add(dy.mul(dy)),
+  ).lessThanEqual(width);
+
+  // WARN: idk why this doesn't work
+  If(dx.lessThanEqual(segmentStart), () => {
     color.assign(purple);
   });
 
+  // If(dx.sub(dashStop).abs().lessThan(0.05), () => {
+  //   color.assign(purple);
+  // });
+  // If(dx.sub(dashStart).abs().lessThan(0.05), () => {
+  //   color.assign(purple);
+  // });
+  // If(dx.sub(segmentStart).abs().lessThan(0.05), () => {
+  //   color.assign(purple);
+  // });
+
+  // If(_start.equal(0), () => {
+  //   color.assign(purple);
+  // });
+
   return color;
-
-  const length = mix(startLength, endLength, tangentFraction);
-  const periodNumber = floor(length.div(periodLength));
-  const periodFract = fract(length.div(periodLength));
-  const fullPeriodLength = periodNumber.mul(periodLength);
-  const fractPeriodLength = periodFract.mul(periodLength);
-
-  const testWorldTime = float(118 / 255);
-  // const testWorldTime = worldTime.div(3);
-  const discreteUBar = floor(periodFract.div(1 / 255)).mul(1 / 255);
-  const discreteWorldTime = floor(testWorldTime.div(1 / 255)).mul(1 / 255);
-  const mappedUBar = discreteUBar.sub(discreteWorldTime).mod(1);
-  const atlasData = texture(atlas, vec2(mappedUBar, 0));
-  const mappedUStar = atlasData.x;
-  const mappedStart = atlasData.z;
-  const mappedEnd = atlasData.w;
-
-  return select(v.x.lessThan(0), vec4(0, 1, 0, 1), vec4(1, 0, 0, 1));
 });
 
 export default FragmentNode;
