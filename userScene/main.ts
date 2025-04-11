@@ -17,6 +17,9 @@ export default class Scene implements StudioScene {
     public renderer: THREE.WebGPURenderer,
   ) {
     const points = [
+      // new THREE.Vector3(0, 0, 0),
+      // new THREE.Vector3(1, 0, 0),
+      // new THREE.Vector3(1, -1, 0),
       new THREE.Vector3(-2, 0, 0),
       new THREE.Vector3(2, 0, 0),
       new THREE.Vector3(0, -3, 0),
@@ -29,9 +32,14 @@ export default class Scene implements StudioScene {
       fillOpacity: 0.5,
       // fill: false,
     });
+    // const circle = new Geometry.Circle(1.4);
+    // circle.position.x = 5;
+    // circle.position.y = 1.75;
+    // const square = new Geometry.Square(2);
+    // square.position.x = -4;
     scene.add(this.line);
-    // scene.add(new Geometry.Circle(2));
-    // scene.add(new Geometry.Square(2));
+    // scene.add(circle);
+    // scene.add(square);
 
     this.animations = [
       new Animation.Animation((t) => {

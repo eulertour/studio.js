@@ -5,6 +5,7 @@ import FragmentNode from "./shaders/fragment.js";
 import FragmentRougierNode from "./shaders/fragment-rougier.js";
 import { uniform } from "three/tsl";
 
+// BUG: These should be local to the class rather than shared.
 export const strokeColor = uniform(new THREE.Color());
 export const strokeOpacity = uniform(1.0);
 export const strokeWidth = uniform(4);
@@ -35,6 +36,7 @@ export default class WebGPUMeshLine extends THREE.Mesh {
 
   update(dt, t) {
     worldTime.value = t;
+    // console.log(worldTime.value * 0.2);
   }
 
   reshape(points: THREE.Vector3[]) {
