@@ -19964,7 +19964,6 @@ declare module "three" {
     rotateZ(angle: number): Vector3;
     transformBetweenSpaces(from, to): Vector3;
   }
-
   class UpdaterRegistry {
     private namedUpdaters: Map<string, () => void>;
     private updaters: (() => void)[];
@@ -19972,7 +19971,7 @@ declare module "three" {
     constructor(owner: any);
     register(
       nameOrFunc: ((...args: any[]) => any) | string,
-      func?: (...args: any[]) => any,
+      func?: (...args: any[]) => any
     ): void;
     unregister(nameOrFunc: ((...args: any[]) => any) | string): boolean;
     has(name: string): boolean;
@@ -19983,9 +19982,23 @@ declare module "three" {
     update(dt: number, t: number): void;
     addUpdater(
       nameOrFunc: ((...args: any[]) => any) | string,
-      func?: (...args: any[]) => any,
+      func?: (...args: any[]) => any
     ): void;
     removeUpdater(nameOrFunc: ((...args: any[]) => any) | string): boolean;
+
+    vstack(buffer?: number): Object3D;
+    setScale(factor: number): Object3D;
+    setOpacity(opacity: number, config?: any): Object3D;
+    setInvisible(config?: any): Object3D;
+    setVisible(config?: any): Object3D;
+    setUpright(): Object3D;
+    recenter(center: Vector3): Object3D;
+    reorient(zRotation: number): void;
+    pointAlongCurve(t: number): Vector3;
+    addComponent<T extends Object3D, K extends string>(
+      name: K,
+      child: T
+    ): this & { [P in K]: T };
   }
 }
 
