@@ -324,6 +324,7 @@ const FragmentNode = Fn(() => {
       });
     });
 
+  // Outgoing from join
   If(segmentStart.notEqual(lineStart), () => {
     // TODO: distancePerFragment was calcuated based on the
     // 3D length of the current segment. This calculation
@@ -368,6 +369,7 @@ const FragmentNode = Fn(() => {
     });
   });
 
+  // Incoming to join
   If(segmentStop.notEqual(lineStop), () => {
     If(dashStart.greaterThanEqual(segmentStop), () => Discard());
     If(
@@ -386,6 +388,7 @@ const FragmentNode = Fn(() => {
     );
   });
 
+  // Incoming to start of closed curve
   If(
     segmentStop.equal(lineStop).and(endFragment.notEqual(nextFragment)),
     () => {
