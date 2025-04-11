@@ -253,7 +253,7 @@ const FragmentNode = Fn(() => {
   const blue = vec4(0, 0, 1, 0.5);
   const purple = vec4(1, 0, 1, 1);
 
-  const halfWidth = float(0.2);
+  const halfWidth = float(0.1);
   If(dashStop.lessThanEqual(lineStart), () => Discard());
   If(dashStart.greaterThanEqual(lineStop), () => Discard());
 

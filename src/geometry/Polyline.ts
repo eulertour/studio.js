@@ -15,7 +15,7 @@ export default class Polyline extends Shape {
   }
 
   reshape(points: Array<THREE.Vector3>, config: Style = {}) {
-    this.copyStrokeAndFill(new Polyline(points, config));
+    this.copyStroke(new Polyline(points, config));
   }
 
   static defaultConfig() {

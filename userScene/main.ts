@@ -43,12 +43,21 @@ export default class Scene implements StudioScene {
     // square.position.x = -4;
     // scene.add(square);
 
-    this.animations = [
-      new Animation.Animation((t) => {
-        // square.restyle({
-        //   strokeWidth: THREE.MathUtils.lerp(2, 6, t),
-        // });
-      }),
-    ];
+    // this.animations = [
+    //   new Animation.Animation((t) => {
+    //     this.line.reshape([
+    //       new THREE.Vector3(-2, 0, 0),
+    //       new THREE.Vector3(2 + t, t, 0),
+    //       new THREE.Vector3(0, -3, 0),
+    //     ]);
+    //   }),
+    //   new Animation.Animation((t) => {
+    //     this.line.reshape([
+    //       new THREE.Vector3(-2 - t, t, 0),
+    //       new THREE.Vector3(3, 1, 0),
+    //       new THREE.Vector3(0, -3, 0),
+    //     ]);
+    //   }),
+    // ];
   }
 }
