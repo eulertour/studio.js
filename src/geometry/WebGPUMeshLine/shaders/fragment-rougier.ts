@@ -208,6 +208,7 @@ const FragmentNode = Fn(() => {
   const distancePerFragment = endLength
     .sub(startLength)
     .div(startToEnd.length());
+  const fragmentsPerDistance = float(1).div(distancePerFragment);
 
   // const dx = mix(startLength, endLength, tangentFraction);
   const dx = startLength.add(
@@ -233,11 +234,6 @@ const FragmentNode = Fn(() => {
   const v = texture(atlasRougier, vec2(u2.div(freqPatternLength), 0));
   const dashCenterReferencePoint = v.x.mul(255).mul(dashWidth);
   const dashType = v.y;
-  // HACK: wtf does this do
-  // const closestBoundaryDashStart = v.z.mul(255).toVar();
-  // If(closestBoundaryDashStart.equal(0), () => {
-  //   closestBoundaryDashStart.assign(3);
-  // });
   const _start = v.z.mul(255).mul(dashWidth);
   const _stop = v.a.mul(255).mul(dashWidth);
   const dashStart = dx.sub(u).add(_start);
@@ -252,17 +248,12 @@ const FragmentNode = Fn(() => {
   const color = vec4(1, 0, 0, 1).toVar();
   const red = vec4(1, 0, 0, 1);
   const green = vec4(0, 1, 0, 1);
-  const blue = vec4(0, 0, 1, 1);
+  const blue = vec4(0, 0, 1, 0.5);
   const purple = vec4(1, 0, 1, 1);
 
-  const width = float(0.2);
+  const halfWidth = float(0.2);
   If(dashStop.lessThanEqual(lineStart), () => Discard());
   If(dashStart.greaterThanEqual(lineStop), () => Discard());
-
-  // // WARN: Something's up with dashStart
-  // If(dx.sub(dashStart).abs().lessThan(0.05), () => {
-  //   color.assign(purple);
-  // });
 
   // Line start
   If(
@@ -273,7 +264,7 @@ const FragmentNode = Fn(() => {
     () => {
       // u.assign(dx.abs());
       const newU = dx.abs();
-      If(sqrt(newU.mul(newU).add(dy.mul(dy))).lessThanEqual(width), () => {
+      If(sqrt(newU.mul(newU).add(dy.mul(dy))).lessThanEqual(halfWidth), () => {
         color.assign(blue);
       }).Else(() => {
         Discard();
@@ -290,9 +281,12 @@ const FragmentNode = Fn(() => {
       () => {
         // u.assign(dx.sub(lineStop));
         const newU = dx.sub(lineStop);
-        If(sqrt(newU.mul(newU).add(dy.mul(dy))).lessThanEqual(width), () => {
-          color.assign(blue);
-        }).Else(() => {
+        If(
+          sqrt(newU.mul(newU).add(dy.mul(dy))).lessThanEqual(halfWidth),
+          () => {
+            color.assign(blue);
+          },
+        ).Else(() => {
           Discard();
         });
         // color.assign(purple);
@@ -300,7 +294,7 @@ const FragmentNode = Fn(() => {
     )
     // Dash body
     .ElseIf(dashType.equal(0), () => {
-      If(dy.abs().lessThanEqual(width), () => {
+      If(dy.abs().lessThanEqual(halfWidth), () => {
         color.assign(blue);
       }).Else(() => {
         Discard();
@@ -311,7 +305,7 @@ const FragmentNode = Fn(() => {
       // -1
       const newU = max(u.sub(dashCenterReferencePoint), 0);
       // u.assign(max(u.sub(dashCenterReferencePoint), 0));
-      If(sqrt(newU.mul(newU).add(dy.mul(dy))).lessThanEqual(width), () => {
+      If(sqrt(newU.mul(newU).add(dy.mul(dy))).lessThanEqual(halfWidth), () => {
         color.assign(blue);
       }).Else(() => {
         Discard();
@@ -322,69 +316,56 @@ const FragmentNode = Fn(() => {
       // +1
       // u.assign(max(dashCenterReferencePoint.sub(u), 0));
       const newU = max(dashCenterReferencePoint.sub(u), 0);
-      If(sqrt(newU.mul(newU).add(dy.mul(dy))).lessThanEqual(width), () => {
+      If(sqrt(newU.mul(newU).add(dy.mul(dy))).lessThanEqual(halfWidth), () => {
         color.assign(blue);
       }).Else(() => {
         Discard();
       });
     });
 
-  const segmentDx = dx.sub(segmentStart);
-  const closeToStart = sqrt(
-    segmentDx.mul(segmentDx).add(dy.mul(dy)),
-  ).lessThanEqual(width);
-
   If(segmentStart.notEqual(lineStart), () => {
-    // NOTE: Do segmentCoversFragment here
-    // If(dashStart.sub(width).lessThanEqual(segmentStart.add(width)), () => {
-    //   color.assign(purple);
-    // });
-    const previousDashStart = dashStart.sub(freqPatternLength);
-    const previousDashStop = dashStop.sub(freqPatternLength);
-    const dashStart2 = dx.sub(u2).add(_start);
-    If(
-      // dashStart2
-      //   .lessThanEqual(0)
-      //   .and(v.z.mul(255).equal(0))
-      //   .and(freqPatternLength.sub(u2).lessThanEqual(width))
-      //   .and(dx.lessThanEqual(segmentStart))
-      //   .and(u2.greaterThanEqual(_start))
-      //   .and(dashStart2.lessThanEqual(segmentStart)),
-      dashStart.lessThanEqual(segmentStart),
-      () => {
-        color.assign(purple);
-      },
-    ).Else(() => {
-      // color.assign(green);
+    // TODO: distancePerFragment was calcuated based on the
+    // 3D length of the current segment. This calculation
+    // should use a new constant based on the 3D length of
+    // the previous segment.
+    If(dashStart.lessThanEqual(segmentStart), () => {
+      const previousSegmentDashStartDistance = segmentStart.sub(dashStart);
+      const previousSegmentDashStartFragment = startFragment.add(
+        startToPrevious
+          .normalize()
+          .mul(previousSegmentDashStartDistance)
+          .mul(fragmentsPerDistance),
+      );
+      const fragmentHalfWidth = halfWidth.mul(fragmentsPerDistance);
+      const halfWidthSquared = fragmentHalfWidth.mul(fragmentHalfWidth);
+      const segmentVec = startFragment.sub(previousSegmentDashStartFragment);
+      const startToFrag = glFragCoord.xy.sub(previousSegmentDashStartFragment);
+      const endToFrag = glFragCoord.xy.sub(startFragment);
+      const dotProduct = segmentVec.dot(startToFrag);
+      const segmentProjection = startToFrag
+        .dot(segmentVec)
+        .div(segmentVec.dot(segmentVec))
+        .mul(segmentVec);
+      const segmentNormal = startToFrag.sub(segmentProjection);
+      If(
+        segmentCoversFragment(
+          halfWidthSquared,
+          segmentVec,
+          startToFrag,
+          endToFrag,
+          dotProduct,
+          segmentProjection,
+          segmentNormal,
+        ),
+        () => {
+          Discard();
+        },
+      );
+      If(dx.lessThanEqual(segmentStart), () => {
+        Discard();
+      });
     });
-    // If(
-    //   u
-    //     .sub(_start)
-    //     .lessThanEqual(0.025)
-    //     .and(v.z.equal(0))
-    //     .and(u2.greaterThan(0.1)),
-    //   () => {
-    //     color.assign(purple);
-    //   },
-    // );
-    // If(dx.greaterThanEqual(dashStart), () => {
-    //   color.assign(purple);
-    // });
   });
-
-  // If(dx.sub(dashStop).abs().lessThan(0.05), () => {
-  //   color.assign(purple);
-  // });
-  // If(dx.sub(dashStart).abs().lessThan(0.05), () => {
-  //   color.assign(purple);
-  // });
-  // If(dx.sub(segmentStart).abs().lessThan(0.05), () => {
-  //   color.assign(purple);
-  // });
-
-  // If(_start.equal(0), () => {
-  //   color.assign(purple);
-  // });
 
   return color;
 });
