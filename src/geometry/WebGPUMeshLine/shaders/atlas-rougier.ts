@@ -84,7 +84,7 @@ export const buildAtlas = (pattern: number[]): THREE.DataTexture => {
     data[4 * i + 1] = dashTypeOrClosestBoundaryType;
     data[4 * i + 2] = closestBoundaryDashStart;
     data[4 * i + 3] = closestBoundaryDashEnd;
-    console.log(data[4 * i], data[4 * i + 1], data[4 * i + 2], data[4 * i + 3]);
+    // console.log(data[4 * i], data[4 * i + 1], data[4 * i + 2], data[4 * i + 3]);
   }
 
   const atlas = new THREE.DataTexture(data, texelWidth, texelHeight);

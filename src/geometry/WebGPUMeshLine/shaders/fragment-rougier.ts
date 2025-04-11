@@ -389,19 +389,23 @@ const FragmentNode = Fn(() => {
   });
 
   // Incoming to start of closed curve
-  If(
-    segmentStop.equal(lineStop).and(endFragment.notEqual(nextFragment)),
-    () => {
-      const u = dashPhase.mul(dashWidth).mod(freqPatternLength);
-      const v = texture(atlasRougier, vec2(u.div(freqPatternLength), 0));
-      const dashCenterReferencePoint = v.x.mul(255).mul(dashWidth);
-      const dashType = v.y;
-      const _start = v.z.mul(255).mul(dashWidth);
-      const _stop = v.a.mul(255).mul(dashWidth);
-      const firstSegmentDashStartDistance = max(u.negate().add(_start), 0);
-      const firstSegmentDashStopDistance = u.negate().add(_stop);
+  // NOTE: In closed curves the nextFragment for the last segment
+  // is the same as the endFragment for the first segment.
+  If(dashStart.greaterThanEqual(freqPatternLength), () => {
+    const u = dashPhase.mul(dashWidth).mod(freqPatternLength);
+    const v = texture(atlasRougier, vec2(u.div(freqPatternLength), 0));
+    const dashCenterReferencePoint = v.x.mul(255).mul(dashWidth);
+    const dashType = v.y;
+    const _start = v.z.mul(255).mul(dashWidth);
+    const _stop = v.a.mul(255).mul(dashWidth);
+    const firstSegmentDashStartDistance = max(u.negate().add(_start), 0);
+    const firstSegmentDashStopDistance = u.negate().add(_stop);
 
-      const firstSegmentStartFragment = endFragment;
+    If(firstSegmentDashStopDistance.greaterThanEqual(0), () => {
+      const firstSegmentStartFragment = varyingProperty(
+        "vec2",
+        "vFirstFragment",
+      );
       const firstSegmentEndFragment = varyingProperty(
         "vec2",
         "vSecondFragment",
@@ -455,8 +459,8 @@ const FragmentNode = Fn(() => {
           Discard();
         },
       );
-    },
-  );
+    });
+  });
 
   return color;
 });

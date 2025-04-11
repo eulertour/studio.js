@@ -19,6 +19,7 @@ import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import {
   strokeWidth,
   worldUnitsPerStrokeWidth,
+  firstPosition,
   secondPosition,
 } from "../WebGPUMeshLine.js";
 
@@ -60,6 +61,9 @@ const VertexNode = Fn(() => {
       vec4(attribute("previousPosition"), 1),
     ),
   );
+  const homogeneousFirstPosition = modelViewProjection.mul(
+    vec4(firstPosition, 1),
+  );
   const homogeneousSecondPosition = modelViewProjection.mul(
     vec4(secondPosition, 1),
   );
@@ -68,12 +72,14 @@ const VertexNode = Fn(() => {
   const clipSpaceEnd = vec4(homogeneousLinePoints[1]);
   const clipSpaceNext = vec4(homogeneousLinePoints[2]);
   const clipSpacePrevious = vec4(homogeneousLinePoints[3]);
+  const clipSpaceFirstPosition = vec4(homogeneousFirstPosition);
   const clipSpaceSecondPosition = vec4(homogeneousSecondPosition);
 
   const screenSpaceStartFragment = clipToScreenSpace(clipSpaceStart);
   const screenSpaceEndFragment = clipToScreenSpace(clipSpaceEnd);
   const screenSpaceNextFragment = clipToScreenSpace(clipSpaceNext);
   const screenSpacePreviousFragment = clipToScreenSpace(clipSpacePrevious);
+  const screenSpaceFirstPosition = clipToScreenSpace(clipSpaceFirstPosition);
   const screenSpaceSecondPosition = clipToScreenSpace(clipSpaceSecondPosition);
 
   varyingProperty("vec2", "vStartFragment").assign(screenSpaceStartFragment);
@@ -82,6 +88,7 @@ const VertexNode = Fn(() => {
   varyingProperty("vec2", "vPreviousFragment").assign(
     screenSpacePreviousFragment,
   );
+  varyingProperty("vec2", "vFirstFragment").assign(screenSpaceFirstPosition);
   varyingProperty("vec2", "vSecondFragment").assign(screenSpaceSecondPosition);
 
   const screenSpaceSegmentUnitVector = normalize(

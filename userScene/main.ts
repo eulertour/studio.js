@@ -58,6 +58,20 @@ export default class Scene implements StudioScene {
     //       new THREE.Vector3(0, -3, 0),
     //     ]);
     //   }),
+    //   new Animation.Animation((t) => {
+    //     this.line.reshape([
+    //       new THREE.Vector3(-3 + 2 * t, 1 + t, 0),
+    //       new THREE.Vector3(3, 1, 0),
+    //       new THREE.Vector3(0, -3, 0),
+    //     ]);
+    //   }),
+    //   new Animation.Animation((t) => {
+    //     this.line.reshape([
+    //       new THREE.Vector3(-1 + 3 * t, 2, 0),
+    //       new THREE.Vector3(3 - 3 * t, 1, 0),
+    //       new THREE.Vector3(3 * t, -3, 0),
+    //     ]);
+    //   }),
     // ];
   }
 }
