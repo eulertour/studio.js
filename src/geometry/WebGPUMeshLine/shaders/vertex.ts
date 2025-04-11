@@ -10,12 +10,17 @@ import {
   screenSize,
   select,
   sqrt,
+  uniform,
   varyingProperty,
   vec2,
   vec4,
 } from "three/tsl";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
-import { strokeWidth, worldUnitsPerStrokeWidth } from "../WebGPUMeshLine.js";
+import {
+  strokeWidth,
+  worldUnitsPerStrokeWidth,
+  secondPosition,
+} from "../WebGPUMeshLine.js";
 
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=defined%20clipping%20region.-,Perspective%20divide,-%5Bedit%5D
 const perspectiveDivide = Fn(
@@ -55,16 +60,21 @@ const VertexNode = Fn(() => {
       vec4(attribute("previousPosition"), 1),
     ),
   );
+  const homogeneousSecondPosition = modelViewProjection.mul(
+    vec4(secondPosition, 1),
+  );
 
   const clipSpaceStart = vec4(homogeneousLinePoints[0]);
   const clipSpaceEnd = vec4(homogeneousLinePoints[1]);
   const clipSpaceNext = vec4(homogeneousLinePoints[2]);
   const clipSpacePrevious = vec4(homogeneousLinePoints[3]);
+  const clipSpaceSecondPosition = vec4(homogeneousSecondPosition);
 
   const screenSpaceStartFragment = clipToScreenSpace(clipSpaceStart);
   const screenSpaceEndFragment = clipToScreenSpace(clipSpaceEnd);
   const screenSpaceNextFragment = clipToScreenSpace(clipSpaceNext);
   const screenSpacePreviousFragment = clipToScreenSpace(clipSpacePrevious);
+  const screenSpaceSecondPosition = clipToScreenSpace(clipSpaceSecondPosition);
 
   varyingProperty("vec2", "vStartFragment").assign(screenSpaceStartFragment);
   varyingProperty("vec2", "vEndFragment").assign(screenSpaceEndFragment);
@@ -72,6 +82,7 @@ const VertexNode = Fn(() => {
   varyingProperty("vec2", "vPreviousFragment").assign(
     screenSpacePreviousFragment,
   );
+  varyingProperty("vec2", "vSecondFragment").assign(screenSpaceSecondPosition);
 
   const screenSpaceSegmentUnitVector = normalize(
     screenSpaceEndFragment.sub(screenSpaceStartFragment),

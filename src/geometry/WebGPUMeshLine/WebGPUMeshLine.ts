@@ -12,6 +12,7 @@ export const strokeWidth = uniform(4);
 export const worldUnitsPerStrokeWidth = 0.05;
 export const worldTime = uniform(0);
 export const totalLength = uniform(0);
+export const secondPosition = uniform(new THREE.Vector3());
 
 export default class WebGPUMeshLine extends THREE.Mesh {
   geometry: WebGPUMeshLineGeometry;
@@ -21,6 +22,12 @@ export default class WebGPUMeshLine extends THREE.Mesh {
     const geometry = new WebGPUMeshLineGeometry();
     geometry.setPoints(points);
     totalLength.value = geometry.totalLength;
+
+    const secondPoint = points[1];
+    if (secondPoint === undefined) {
+      throw new Error("Invalid points array");
+    }
+    secondPosition.value.copy(secondPoint);
 
     const material = new THREE.MeshBasicNodeMaterial({
       transparent: true,

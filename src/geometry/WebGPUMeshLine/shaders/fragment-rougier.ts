@@ -68,6 +68,7 @@ const segmentCoversFragment = Fn(
   ]) => {
     const segmentStart = lengthSquared(startToFrag).lessThan(halfWidthSquared);
     const segmentEnd = lengthSquared(endToFrag).lessThan(halfWidthSquared);
+    // TODO: The segmentNormal calc leads to a subpixel render error on dashed right angles.
     const segmentStem = dotProduct
       .greaterThan(0)
       .and(lengthSquared(segmentProjection).lessThan(lengthSquared(segmentVec)))
@@ -227,7 +228,8 @@ const FragmentNode = Fn(() => {
   const dashWidth = float(0.5);
   const dashPeriod = float(3); // sum([1, 2])
   const freqPatternLength = dashPeriod.mul(dashWidth);
-  // const dashPhase = float(-2.001);
+  // TODO: Some corner error with time = 0 on a square with side length 2
+  // const dashPhase = float(0);
   const dashPhase = float(0).sub(worldTime);
   const u = dx.add(dashPhase.mul(dashWidth)).mod(freqPatternLength).toVar();
   const u2 = dx.add(dashPhase.mul(dashWidth)).mod(freqPatternLength);
@@ -269,7 +271,6 @@ const FragmentNode = Fn(() => {
       }).Else(() => {
         Discard();
       });
-      // color.assign(purple);
     },
   )
     // Line end
@@ -366,6 +367,93 @@ const FragmentNode = Fn(() => {
       });
     });
   });
+
+  If(segmentStop.notEqual(lineStop), () => {
+    If(dashStart.greaterThanEqual(segmentStop), () => Discard());
+    If(
+      dx
+        .greaterThanEqual(segmentStop)
+        .and(dashStop.greaterThanEqual(segmentStop))
+        .and(dashStart.lessThanEqual(segmentStop)),
+      () => {
+        const newU = dx.sub(segmentStop);
+        If(sqrt(newU.mul(newU).add(dy.mul(dy))).lessThan(halfWidth), () => {
+          color.assign(blue);
+        }).Else(() => {
+          Discard();
+        });
+      },
+    );
+  });
+
+  If(
+    segmentStop.equal(lineStop).and(endFragment.notEqual(nextFragment)),
+    () => {
+      const u = dashPhase.mul(dashWidth).mod(freqPatternLength);
+      const v = texture(atlasRougier, vec2(u.div(freqPatternLength), 0));
+      const dashCenterReferencePoint = v.x.mul(255).mul(dashWidth);
+      const dashType = v.y;
+      const _start = v.z.mul(255).mul(dashWidth);
+      const _stop = v.a.mul(255).mul(dashWidth);
+      const firstSegmentDashStartDistance = max(u.negate().add(_start), 0);
+      const firstSegmentDashStopDistance = u.negate().add(_stop);
+
+      const firstSegmentStartFragment = endFragment;
+      const firstSegmentEndFragment = varyingProperty(
+        "vec2",
+        "vSecondFragment",
+      );
+      const firstSegmentStartToEnd = firstSegmentEndFragment.sub(
+        firstSegmentStartFragment,
+      );
+
+      // TODO: distancePerFragment was calcuated based on the
+      // 3D length of the current segment. This calculation
+      // should use a new constant based on the 3D length of
+      // the first segment.
+      const firstSegmentDashStartFragment = firstSegmentStartFragment.add(
+        firstSegmentStartToEnd
+          .normalize()
+          .mul(firstSegmentDashStartDistance)
+          .mul(fragmentsPerDistance),
+      );
+      const firstSegmentDashEndFragment = firstSegmentStartFragment.add(
+        firstSegmentStartToEnd
+          .normalize()
+          .mul(firstSegmentDashStopDistance)
+          .mul(fragmentsPerDistance),
+      );
+
+      const fragmentHalfWidth = halfWidth.mul(fragmentsPerDistance);
+      const halfWidthSquared = fragmentHalfWidth.mul(fragmentHalfWidth);
+      const segmentVec = firstSegmentDashEndFragment.sub(
+        firstSegmentDashStartFragment,
+      );
+      const startToFrag = glFragCoord.xy.sub(firstSegmentDashStartFragment);
+      const endToFrag = glFragCoord.xy.sub(firstSegmentDashEndFragment);
+      const dotProduct = segmentVec.dot(startToFrag);
+      const segmentProjection = startToFrag
+        .dot(segmentVec)
+        .div(segmentVec.dot(segmentVec))
+        .mul(segmentVec);
+      const segmentNormal = startToFrag.sub(segmentProjection);
+
+      If(
+        segmentCoversFragment(
+          halfWidthSquared,
+          segmentVec,
+          startToFrag,
+          endToFrag,
+          dotProduct,
+          segmentProjection,
+          segmentNormal,
+        ),
+        () => {
+          Discard();
+        },
+      );
+    },
+  );
 
   return color;
 });
