@@ -21,7 +21,7 @@ import { UniformNode } from "three/webgpu";
 import * as THREE from "three/webgpu";
 import { worldTime, worldUnitsPerStrokeWidth } from "../WebGPUMeshLine.js";
 import { totalLength } from "../WebGPUMeshLineGeometry.js";
-import atlasRougier from "./atlas-rougier.js";
+import { patternAtlas } from "./atlas-rougier.js";
 
 const lengthSquared = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
   dot(vector, vector),
@@ -130,7 +130,7 @@ const FragmentNode = Fn(
     const dashPhase = float(0).sub(worldTime);
     const u = xOffset.add(dashPhase.mul(dashWidth)).mod(freqPatternLength);
     const u2 = xOffset.add(dashPhase.mul(dashWidth)).mod(freqPatternLength);
-    const v = texture(atlasRougier, vec2(u2.div(freqPatternLength), 0));
+    const v = texture(patternAtlas.atlas, vec2(u2.div(freqPatternLength), 0));
     const dashCenterReferencePoint = v.x.mul(255).mul(dashWidth);
     const dashType = v.y;
     const _start = v.z.mul(255).mul(dashWidth);
@@ -318,7 +318,7 @@ const FragmentNode = Fn(
     // is the same as the endFragment for the first segment.
     If(dashStart.greaterThanEqual(freqPatternLength), () => {
       const u = dashPhase.mul(dashWidth).mod(freqPatternLength);
-      const v = texture(atlasRougier, vec2(u.div(freqPatternLength), 0));
+      const v = texture(patternAtlas.atlas, vec2(u.div(freqPatternLength), 0));
       const _start = v.z.mul(255).mul(dashWidth);
       const _stop = v.a.mul(255).mul(dashWidth);
       const firstSegmentDashStartDistance = max(u.negate().add(_start), 0);

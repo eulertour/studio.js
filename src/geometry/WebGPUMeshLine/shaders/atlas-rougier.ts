@@ -92,5 +92,14 @@ export const buildAtlas = (pattern: number[]): THREE.DataTexture => {
   return atlas;
 };
 
-const atlas = buildAtlas([1, 2]);
-export default atlas;
+export class PatternAtlas {
+  pattern: number[];
+  atlas: THREE.DataTexture;
+
+  constructor(pattern: number[]) {
+    this.pattern = pattern;
+    this.atlas = buildAtlas(pattern);
+  }
+}
+
+export const patternAtlas = new PatternAtlas([1, 2]);
