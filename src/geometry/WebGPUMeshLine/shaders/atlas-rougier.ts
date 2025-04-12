@@ -100,6 +100,14 @@ export class PatternAtlas {
     this.pattern = pattern;
     this.atlas = buildAtlas(pattern);
   }
+
+  get period() {
+    let period = 0;
+    for (const patternSection of this.pattern) {
+      period += patternSection;
+    }
+    return period;
+  }
 }
 
 export const patternAtlas = new PatternAtlas([1, 2]);

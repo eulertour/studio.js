@@ -25,7 +25,10 @@ export default class Scene implements StudioScene {
     circle.position.y = 1.75;
     scene.add(circle);
 
-    // const square = new Geometry.Square(2);
+    // const square = new Geometry.Square(2, {
+    //   strokeOpacity: 0.75,
+    //   strokeWidth: 5,
+    // });
     // square.position.x = -4;
     // scene.add(square);
 
@@ -39,7 +42,7 @@ export default class Scene implements StudioScene {
     // ];
     // this.line = new Geometry.Polyline(points, {
     //   strokeColor: new THREE.Color("blue"),
-    //   strokeOpacity: 1,
+    //   strokeOpacity: 0.5,
     //   strokeWidth: 10,
     //   fillColor: new THREE.Color("blue"),
     //   fillOpacity: 0.5,
