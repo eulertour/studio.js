@@ -1,6 +1,6 @@
 import * as THREE from "three/webgpu";
 import { uniform } from "three/tsl";
-import RougierVertexShader from "./shaders/vertex.js";
+import { RougierVertexShader } from "./shaders/RougierVertexShader.js";
 import RougierFragmentShader from "./shaders/RougierFragmentShader.js";
 import DashAtlas from "./shaders/DashAtlas.js";
 
@@ -38,10 +38,20 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     );
 
     this.dashAtlas = new DashAtlas(dashPattern);
-    const fragmentShader = new RougierFragmentShader(this.dashAtlas, this.uniforms);
-
-    this.vertexNode = RougierVertexShader(strokeWidth);
-    this.fragmentNode = fragmentShader.node();
+    this.vertexNode = new RougierVertexShader(
+      this.uniforms.firstPosition,
+      this.uniforms.secondPosition,
+      this.uniforms.strokeWidth,
+    ).node();
+    this.fragmentNode = new RougierFragmentShader(
+      this.dashAtlas,
+      this.uniforms.strokeColor,
+      this.uniforms.strokeOpacity,
+      this.uniforms.strokeWidth,
+      this.uniforms.totalLength,
+      this.uniforms.dashLength,
+      this.uniforms.worldTime,
+    ).node();
   }
 
   createUniforms(
