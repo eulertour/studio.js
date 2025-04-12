@@ -24,6 +24,14 @@ export default class Scene implements StudioScene {
     circle.position.x = 5;
     circle.position.y = 1.75;
     scene.add(circle);
+    this.animations = [
+      new Animation.Animation((t) => {
+        circle.restyle({
+          strokeColor: new THREE.Color(1 - t, 0.5 + t, 0),
+          strokeWidth: 4 + 2 * t,
+        });
+      })
+    ]
 
     // const square = new Geometry.Square(2, {
     //   strokeOpacity: 0.75,

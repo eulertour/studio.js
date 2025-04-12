@@ -1,8 +1,7 @@
 import * as THREE from "three/webgpu";
 import { uniform } from "three/tsl";
 import RougierVertexNode from "./shaders/vertex.js";
-import { RougierFragmentNode } from "./shaders/fragment-rougier.js";
-import { PatternAtlas } from "./shaders/atlas-rougier.js";
+import { RougierFragmentShader } from "./shaders/fragment-rougier.js";
 
 export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
   strokeColor = uniform(new THREE.Color());
@@ -13,13 +12,12 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     super({ transparent: true });
     this.vertexNode = RougierVertexNode(this.strokeWidth);
 
-    const patternAtlas = new PatternAtlas([1, 2]);
-    const fragmentNode = new RougierFragmentNode(
-      patternAtlas,
+    const fragmentShader = new RougierFragmentShader(
+      [1, 2],
       this.strokeColor,
       this.strokeOpacity,
       this.strokeWidth,
     );
-    this.fragmentNode = fragmentNode.node();
+    this.fragmentNode = fragmentShader.node();
   }
 }

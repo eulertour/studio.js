@@ -109,5 +109,3 @@ export class PatternAtlas {
     return period;
   }
 }
-
-export const patternAtlas = new PatternAtlas([1, 2]);
