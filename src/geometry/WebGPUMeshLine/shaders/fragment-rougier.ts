@@ -19,10 +19,10 @@ import {
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import { UniformNode } from "three/webgpu";
 import * as THREE from "three/webgpu";
-import { worldTime, worldUnitsPerStrokeWidth } from "../WebGPUMeshLine.js";
+import { worldUnitsPerStrokeWidth } from "../WebGPUMeshLine.js";
 import { totalLength } from "../WebGPUMeshLineGeometry.js";
 import { DashAtlas } from "./atlas-rougier.js";
-import { ShaderNode, ShaderNodeFn } from "three/src/nodes/TSL.js";
+import { ShaderNodeFn } from "three/src/nodes/TSL.js";
 
 const lengthSquared = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
   dot(vector, vector),
@@ -48,7 +48,6 @@ const segmentCoversFragment = Fn(
   ]) => {
     const segmentStart = lengthSquared(startToFrag).lessThan(halfWidthSquared);
     const segmentEnd = lengthSquared(endToFrag).lessThan(halfWidthSquared);
-    // TODO: The segmentNormal calc leads to a subpixel render error on dashed right angles.
     const segmentStem = dotProduct
       .greaterThan(0)
       .and(lengthSquared(segmentProjection).lessThan(lengthSquared(segmentVec)))
@@ -94,10 +93,11 @@ export default class RougierFragmentShader {
 
   constructor(
     public dashAtlas: DashAtlas,
-    public strokeColor: ShaderNode<UniformNode<THREE.Color>, THREE.Node>,
+    public strokeColor: UniformNode<THREE.Color>,
     public strokeOpacity: UniformNode<number>,
     public strokeWidth: UniformNode<number>,
     public dashLength: UniformNode<number>,
+    public worldTime: UniformNode<number>,
   ) {
     this.node = Fn(() => {
       const startFragment = varyingProperty("vec2", "vStartFragment");

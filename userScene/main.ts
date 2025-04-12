@@ -17,7 +17,7 @@ export default class Scene implements StudioScene {
     public renderer: THREE.WebGPURenderer,
   ) {
     // const circle = new Geometry.Circle(1.4, {
-    //   strokeColor: "orange",
+    //   strokeColor: new THREE.Color("orange"),
     //   strokeOpacity: 0.75,
     //   strokeWidth: 4,
     // });

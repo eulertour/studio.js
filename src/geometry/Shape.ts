@@ -1,11 +1,9 @@
 import * as THREE from "three/webgpu";
-import MeshLine, {
-  MeshLineGeometry,
-  MeshLineMaterial,
-} from "./MeshLine/index.js";
 
 import * as Text from "../text.js";
 import WebGPUMeshLine from "./WebGPUMeshLine/index.js";
+import WebGPUMeshLineGeometry from "./WebGPUMeshLine/WebGPUMeshLineGeometry.js";
+import WebGPUMeshLineMaterial from "./WebGPUMeshLine/WebGPUMeshLineMaterial.js";
 
 export type Transform = {
   position: THREE.Vector3;
@@ -72,34 +70,15 @@ export default abstract class Shape extends THREE.Group {
     }
 
     if (config.stroke !== false) {
-      // const strokeGeometry = new MeshLineGeometry(config.arrow);
-      // strokeGeometry.setPoints(points);
-      //
-      // if (config.dashed && config.strokeDashLength === 0) {
-      //   config.strokeDashLength = 0.4;
-      // }
-      //
-      // const strokeMaterial = new MeshLineMaterial({
-      //   color: config.strokeColor,
-      //   opacity: config.strokeOpacity,
-      //   transparent: true,
-      //   side: THREE.DoubleSide,
-      //   width: config.strokeWidth,
-      //   dashLength: config.strokeDashLength,
-      //   dashOffset: config.strokeDashOffset,
-      // });
-      this.stroke = new WebGPUMeshLine(
-        points,
+      const strokeGeometry = new WebGPUMeshLineGeometry(points);
+      const strokeMaterial = new WebGPUMeshLineMaterial(
         config.strokeColor,
         config.strokeOpacity,
         config.strokeWidth,
-        0.5,
+        config.strokeDashLength,
+        [1, 1],
       );
-      // this.stroke.restyle({
-      //   color: config.strokeColor,
-      //   opacity: config.strokeOpacity,
-      //   width: config.strokeWidth,
-      // });
+      this.stroke = new THREE.Mesh(strokeGeometry, strokeMaterial);
       this.add(this.stroke);
     }
 
@@ -133,7 +112,9 @@ export default abstract class Shape extends THREE.Group {
   }
 
   update(dt: number, t: number) {
-    this.stroke?.update(dt, t);
+    if (this.stroke !== undefined) {
+      this.stroke.material.uniforms.worldTime.value = t;
+    }
   }
 
   static defaultStyle() {
@@ -143,7 +124,7 @@ export default abstract class Shape extends THREE.Group {
       strokeColor: new THREE.Color(0x000000),
       strokeOpacity: 1.0,
       strokeWidth: 4,
-      strokeDashLength: 0,
+      strokeDashLength: 0.5,
       strokeDashOffset: 0,
       dashed: false,
     };
@@ -302,13 +283,13 @@ export default abstract class Shape extends THREE.Group {
     if (this.stroke !== undefined) {
       const { strokeColor, strokeOpacity, strokeWidth } = style;
       if (strokeColor !== undefined) {
-        this.stroke.material.strokeColor.value.set(strokeColor);
+        this.stroke.material.uniforms.strokeColor.value.set(strokeColor);
       }
       if (strokeOpacity !== undefined) {
-        this.stroke.material.strokeOpacity.value = strokeOpacity;
+        this.stroke.material.uniforms.strokeOpacity.value = strokeOpacity;
       }
       if (strokeWidth !== undefined) {
-        this.stroke.material.strokeWidth.value = strokeWidth;
+        this.stroke.material.uniforms.strokeWidth.value = strokeWidth;
       }
     }
 

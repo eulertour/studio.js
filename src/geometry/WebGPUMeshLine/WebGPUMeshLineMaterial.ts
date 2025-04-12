@@ -3,22 +3,16 @@ import { uniform } from "three/tsl";
 import RougierVertexShader from "./shaders/vertex.js";
 import RougierFragmentShader from "./shaders/fragment-rougier.js";
 import { DashAtlas } from "./shaders/atlas-rougier.js";
-import { ShaderNode } from "three/src/nodes/TSL.js";
 
 type Uniforms = {
-  strokeColor: ShaderNode<THREE.UniformNode<THREE.Color>>;
-  strokeOpacity: ShaderNode<THREE.UniformNode<number>>;
-  strokeWidth: ShaderNode<THREE.UniformNode<number>>;
-  dashLength: ShaderNode<THREE.UniformNode<number>>;
+  strokeColor: THREE.UniformNode<THREE.Color>;
+  strokeOpacity: THREE.UniformNode<number>;
+  strokeWidth: THREE.UniformNode<number>;
+  dashLength: THREE.UniformNode<number>;
+  worldTime: THREE.UniformNode<number>;
 }
 
 export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
-  strokeColor = uniform(new THREE.Color());
-  strokeOpacity = uniform(1.0);
-  strokeWidth = uniform(4);
-
-  dashPattern = [1, 2];
-  dashLength = uniform(0.5);
   dashAtlas: DashAtlas
   uniforms: Uniforms;
 
@@ -36,16 +30,18 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       strokeOpacity: uniform(strokeOpacity),
       strokeWidth: uniform(strokeWidth),
       dashLength: uniform(dashLength),
+      worldTime: uniform(0),
     }
 
     this.dashAtlas = new DashAtlas(dashPattern);
-    this.vertexNode = RougierVertexShader(this.strokeWidth);
+    this.vertexNode = RougierVertexShader(strokeWidth);
     const fragmentShader = new RougierFragmentShader(
       this.dashAtlas,
       this.uniforms.strokeColor,
       this.uniforms.strokeOpacity,
       this.uniforms.strokeWidth,
       this.uniforms.dashLength,
+      this.uniforms.worldTime,
     );
     this.fragmentNode = fragmentShader.node();
   }
