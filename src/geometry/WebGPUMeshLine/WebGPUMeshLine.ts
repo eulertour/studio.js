@@ -1,56 +1,26 @@
 import * as THREE from "three/webgpu";
 import WebGPUMeshLineGeometry from "./WebGPUMeshLineGeometry.js";
-import VertexNode from "./shaders/vertex.js";
-import FragmentNode from "./shaders/fragment.js";
-import FragmentRougierNode from "./shaders/fragment-rougier.js";
 import { uniform } from "three/tsl";
+import WebGPUMeshLineMaterial from "./WebGPUMeshLineMaterial.js";
 
-// BUG: These should be local to the class rather than shared.
-export const strokeColor = uniform(new THREE.Color());
-export const strokeOpacity = uniform(1.0);
-export const strokeWidth = uniform(4);
-export const worldUnitsPerStrokeWidth = 0.05;
 export const worldTime = uniform(0);
-export const totalLength = uniform(0);
-export const firstPosition = uniform(new THREE.Vector3());
-export const secondPosition = uniform(new THREE.Vector3());
+export const worldUnitsPerStrokeWidth = 1 / 20;
 
 export default class WebGPUMeshLine extends THREE.Mesh {
   geometry: WebGPUMeshLineGeometry;
-  material: THREE.MeshBasicNodeMaterial;
+  material: WebGPUMeshLineMaterial;
 
   constructor(points: THREE.Vector3[]) {
-    const geometry = new WebGPUMeshLineGeometry();
-    geometry.setPoints(points);
-    totalLength.value = geometry.totalLength;
-
-    const firstPoint = points[0];
-    if (firstPoint === undefined) {
-      throw new Error("Invalid points array");
-    }
-    firstPosition.value.copy(firstPoint);
-
-    const secondPoint = points[1];
-    if (secondPoint === undefined) {
-      throw new Error("Invalid points array");
-    }
-    secondPosition.value.copy(secondPoint);
-
-    const material = new THREE.MeshBasicNodeMaterial({
-      transparent: true,
-    });
-    material.vertexNode = VertexNode();
-    // material.fragmentNode = FragmentNode();
-    material.fragmentNode = FragmentRougierNode();
+    const geometry = new WebGPUMeshLineGeometry(points);
+    const material = new WebGPUMeshLineMaterial();
 
     super(geometry, material);
     this.geometry = geometry;
     this.material = material;
   }
 
-  update(dt, t) {
+  update(_: number, t: number) {
     worldTime.value = t;
-    // console.log(worldTime.value * 0.2);
   }
 
   reshape(points: THREE.Vector3[]) {
@@ -60,13 +30,13 @@ export default class WebGPUMeshLine extends THREE.Mesh {
   restyle(style: { color?: THREE.Color; opacity?: number; width?: number }) {
     const { color, opacity, width } = style;
     if (color !== undefined) {
-      strokeColor.value.set(color);
+      this.material.strokeColor.value.set(color);
     }
     if (opacity !== undefined) {
-      strokeOpacity.value = opacity;
+      this.material.strokeOpacity.value = opacity;
     }
     if (width !== undefined) {
-      strokeWidth.value = width;
+      this.material.strokeWidth.value = width;
     }
   }
 }

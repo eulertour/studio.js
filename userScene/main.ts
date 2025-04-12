@@ -16,6 +16,19 @@ export default class Scene implements StudioScene {
     public camera: THREE.OrthographicCamera,
     public renderer: THREE.WebGPURenderer,
   ) {
+    const circle = new Geometry.Circle(1.4, {
+      strokeColor: "orange",
+      strokeOpacity: 0.75,
+      strokeWidth: 4,
+    });
+    circle.position.x = 5;
+    circle.position.y = 1.75;
+    scene.add(circle);
+
+    // const square = new Geometry.Square(2);
+    // square.position.x = -4;
+    // scene.add(square);
+
     // const points = [
     //   // new THREE.Vector3(0, 0, 0),
     //   // new THREE.Vector3(1, 0, 0),
@@ -33,16 +46,6 @@ export default class Scene implements StudioScene {
     //   // fill: false,
     // });
     // scene.add(this.line);
-
-    const circle = new Geometry.Circle(1.4);
-    circle.position.x = 5;
-    circle.position.y = 1.75;
-    scene.add(circle);
-
-    // const square = new Geometry.Square(2);
-    // square.position.x = -4;
-    // scene.add(square);
-
     // this.animations = [
     //   new Animation.Animation((t) => {
     //     this.line.reshape([

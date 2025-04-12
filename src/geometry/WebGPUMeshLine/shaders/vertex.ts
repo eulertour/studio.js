@@ -9,19 +9,14 @@ import {
   normalize,
   screenSize,
   select,
-  sqrt,
-  uniform,
   varyingProperty,
   vec2,
   vec4,
 } from "three/tsl";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
-import {
-  strokeWidth,
-  worldUnitsPerStrokeWidth,
-  firstPosition,
-  secondPosition,
-} from "../WebGPUMeshLine.js";
+import { worldUnitsPerStrokeWidth } from "../WebGPUMeshLine.js";
+import { firstPosition, secondPosition } from "../WebGPUMeshLineGeometry.js";
+import { UniformNode } from "three/webgpu";
 
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=defined%20clipping%20region.-,Perspective%20divide,-%5Bedit%5D
 const perspectiveDivide = Fn(
@@ -48,10 +43,7 @@ const boolToSign = Fn(([booleanValue]: [ShaderNodeObject<OperatorNode>]) =>
   float(2).mul(booleanValue.oneMinus()).sub(1),
 );
 
-const VertexNode = Fn(() => {
-  let vColor = vec4(1, 0, 0, 1);
-  varyingProperty("vec4", "vColor").assign(vColor);
-
+const VertexNode = Fn(([strokeWidth]: [UniformNode<number>]) => {
   const modelViewProjection = cameraProjectionMatrix.mul(modelViewMatrix);
   const homogeneousLinePoints = modelViewProjection.mul(
     mat4(
@@ -116,17 +108,14 @@ const VertexNode = Fn(() => {
     .mul(boolToSign(isStart))
     .add(screenSpaceSegmentUnitNormal.mul(boolToSign(isBottom)));
   const cameraSpaceFragmentOffset = vec4(
-    screenSpaceUnitVertexOffset
-      .mul(strokeWidth)
-      .div(1)
-      .mul(worldUnitsPerStrokeWidth).xy,
+    screenSpaceUnitVertexOffset.mul(strokeWidth).mul(worldUnitsPerStrokeWidth)
+      .xy,
     0,
     0,
   );
   const clipSpaceFragmentOffset = cameraProjectionMatrix.mul(
     cameraSpaceFragmentOffset,
   );
-
   const clipSpaceVertex = select(isStart, clipSpaceStart, clipSpaceEnd).add(
     clipSpaceFragmentOffset,
   );

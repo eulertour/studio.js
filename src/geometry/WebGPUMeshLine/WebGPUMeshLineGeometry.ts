@@ -1,4 +1,9 @@
 import * as THREE from "three/webgpu";
+import { uniform } from "three/tsl";
+
+export const totalLength = uniform(0);
+export const firstPosition = uniform(new THREE.Vector3());
+export const secondPosition = uniform(new THREE.Vector3());
 
 export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   readonly isMeshLineGeometry = true;
@@ -38,8 +43,12 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   #previousPointCount = 0;
   #pointCount = 0;
 
-  constructor(public arrow = false) {
+  constructor(
+    points: THREE.Vector3[],
+    public arrow = false,
+  ) {
     super();
+    this.setPoints(points);
   }
 
   setPoints(points: Array<THREE.Vector3>, updateBounds = true) {
@@ -274,6 +283,24 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       this.computeBoundingSphere();
       this.computeBoundingBox();
     }
+
+    this.#updateUniforms();
+  }
+
+  #updateUniforms() {
+    totalLength.value = this.totalLength;
+
+    const firstPoint = this.points[0];
+    if (firstPoint === undefined) {
+      throw new Error("Missing first point");
+    }
+    firstPosition.value.copy(firstPoint);
+
+    const secondPoint = this.points[1];
+    if (secondPoint === undefined) {
+      throw new Error("Missing second point");
+    }
+    secondPosition.value.copy(secondPoint);
   }
 
   #addSegment(
