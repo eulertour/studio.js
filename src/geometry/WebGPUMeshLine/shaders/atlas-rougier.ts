@@ -1,14 +1,33 @@
+import { ShaderNodeObject, uniform } from "three/tsl";
 import * as THREE from "three/webgpu";
-
-const texelWidth = 1024;
-const texelHeight = 1;
-const atlasSize = texelWidth * texelHeight;
 
 enum DashType {
   START = 1,
   BODY = 0,
   END = -1,
 }
+
+const texelWidth = 1024;
+const texelHeight = 1;
+const atlasSize = texelWidth * texelHeight;
+
+export class PatternAtlas {
+  atlas: THREE.DataTexture;
+  period: ShaderNodeObject<THREE.UniformNode<number>>;
+
+  constructor(pattern: number[]) {
+    this.period = uniform(getPeriod(pattern));
+    this.atlas = buildAtlas(pattern);
+  }
+}
+
+const getPeriod = (pattern: number[]): number => {
+  let period = 0;
+  for (const patternSection of pattern) {
+    period += patternSection;
+  }
+  return period;
+};
 
 const indexOrThrow = <T>(array: T[], i: number) => {
   const value = array[i];
@@ -18,7 +37,7 @@ const indexOrThrow = <T>(array: T[], i: number) => {
   return value;
 };
 
-export const buildAtlas = (pattern: number[]): THREE.DataTexture => {
+const buildAtlas = (pattern: number[]): THREE.DataTexture => {
   const data = new Int8Array(4 * atlasSize);
 
   if (pattern.length % 2 !== 0) {
@@ -91,21 +110,3 @@ export const buildAtlas = (pattern: number[]): THREE.DataTexture => {
   atlas.needsUpdate = true;
   return atlas;
 };
-
-export class PatternAtlas {
-  pattern: number[];
-  atlas: THREE.DataTexture;
-
-  constructor(pattern: number[]) {
-    this.pattern = pattern;
-    this.atlas = buildAtlas(pattern);
-  }
-
-  get period() {
-    let period = 0;
-    for (const patternSection of this.pattern) {
-      period += patternSection;
-    }
-    return period;
-  }
-}

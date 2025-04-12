@@ -130,7 +130,7 @@ export class RougierFragmentShader {
         .mul(sign(dot(rotate90(segmentVector), normalVector)));
 
       const dashWidth = float(0.5);
-      const dashPeriod = float(this.patternAtlas.period);
+      const dashPeriod = this.patternAtlas.period;
       const freqPatternLength = dashPeriod.mul(dashWidth);
       // TODO: Some corner error with time = 0 on a square with side length 2
       // const dashPhase = float(0);
