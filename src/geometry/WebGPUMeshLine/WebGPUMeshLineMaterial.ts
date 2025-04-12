@@ -26,8 +26,8 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     strokeColor: THREE.Color,
     strokeOpacity: number,
     strokeWidth: number,
-    dashPattern: number[],
     dashLength: number,
+    dashPattern: number[],
   ) {
     super({ transparent: true });
 
@@ -42,10 +42,10 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     this.vertexNode = RougierVertexShader(this.strokeWidth);
     const fragmentShader = new RougierFragmentShader(
       this.dashAtlas,
-      this.strokeColor,
-      this.strokeOpacity,
-      this.strokeWidth,
-      this.dashLength,
+      this.uniforms.strokeColor,
+      this.uniforms.strokeOpacity,
+      this.uniforms.strokeWidth,
+      this.uniforms.dashLength,
     );
     this.fragmentNode = fragmentShader.node();
   }

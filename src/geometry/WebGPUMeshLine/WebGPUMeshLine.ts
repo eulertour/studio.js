@@ -15,7 +15,6 @@ export default class WebGPUMeshLine extends THREE.Mesh {
     strokeColor: THREE.Color,
     strokeOpacity: number,
     strokeWidth: number,
-    dashPattern: number[],
     dashLength: number,
   ) {
     const geometry = new WebGPUMeshLineGeometry(points);
@@ -23,8 +22,8 @@ export default class WebGPUMeshLine extends THREE.Mesh {
       strokeColor,
       strokeOpacity,
       strokeWidth,
-      dashPattern = [1, 2],
-      dashLength = 0.5,
+      dashLength,
+      [1, 2],
     );
 
     super(geometry, material);
@@ -38,18 +37,5 @@ export default class WebGPUMeshLine extends THREE.Mesh {
 
   reshape(points: THREE.Vector3[]) {
     this.geometry.setPoints(points);
-  }
-
-  restyle(style: { color?: THREE.Color; opacity?: number; width?: number }) {
-    const { color, opacity, width } = style;
-    if (color !== undefined) {
-      this.material.strokeColor.value.set(color);
-    }
-    if (opacity !== undefined) {
-      this.material.strokeOpacity.value = opacity;
-    }
-    if (width !== undefined) {
-      this.material.strokeWidth.value = width;
-    }
   }
 }

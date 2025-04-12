@@ -93,7 +93,6 @@ export default abstract class Shape extends THREE.Group {
         config.strokeColor,
         config.strokeOpacity,
         config.strokeWidth,
-        [1, 2],
         0.5,
       );
       // this.stroke.restyle({
@@ -290,30 +289,27 @@ export default abstract class Shape extends THREE.Group {
     style: Style,
     config: { includeDescendents: boolean } = { includeDescendents: false },
   ): void {
-    const { fillColor, fillOpacity } = style;
-    if (fillColor !== undefined) {
-      this.fill.material.color = fillColor;
-    }
-    if (fillOpacity !== undefined) {
-      this.fill.material.opacity = fillOpacity;
+    if (this.fill !== undefined) {
+      const { fillColor, fillOpacity } = style;
+      if (fillColor !== undefined) {
+        this.fill.material.color = fillColor;
+      }
+      if (fillOpacity !== undefined) {
+        this.fill.material.opacity = fillOpacity;
+      }
     }
 
-    const { strokeColor, strokeOpacity, strokeWidth } = style;
-    this.stroke.restyle({
-      color: strokeColor,
-      opacity: strokeOpacity,
-      width: strokeWidth,
-    });
-
-    if (style.dashed === true) {
-      this.stroke.material.dashLength = 0.4;
-    }
-    const { strokeDashLength, strokeDashOffset } = style;
-    if (strokeDashLength !== undefined) {
-      this.stroke.material.dashLength = strokeDashLength;
-    }
-    if (strokeDashOffset !== undefined) {
-      this.stroke.material.dashOffset = strokeDashOffset;
+    if (this.stroke !== undefined) {
+      const { strokeColor, strokeOpacity, strokeWidth } = style;
+      if (strokeColor !== undefined) {
+        this.stroke.material.strokeColor.value.set(strokeColor);
+      }
+      if (strokeOpacity !== undefined) {
+        this.stroke.material.strokeOpacity.value = strokeOpacity;
+      }
+      if (strokeWidth !== undefined) {
+        this.stroke.material.strokeWidth.value = strokeWidth;
+      }
     }
 
     if (config.includeDescendents) {

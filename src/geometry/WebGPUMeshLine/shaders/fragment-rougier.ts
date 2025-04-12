@@ -22,7 +22,7 @@ import * as THREE from "three/webgpu";
 import { worldTime, worldUnitsPerStrokeWidth } from "../WebGPUMeshLine.js";
 import { totalLength } from "../WebGPUMeshLineGeometry.js";
 import { DashAtlas } from "./atlas-rougier.js";
-import { ShaderNodeFn } from "three/src/nodes/TSL.js";
+import { ShaderNode, ShaderNodeFn } from "three/src/nodes/TSL.js";
 
 const lengthSquared = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
   dot(vector, vector),
@@ -94,7 +94,7 @@ export default class RougierFragmentShader {
 
   constructor(
     public dashAtlas: DashAtlas,
-    public strokeColor: UniformNode<THREE.Color>,
+    public strokeColor: ShaderNode<UniformNode<THREE.Color>, THREE.Node>,
     public strokeOpacity: UniformNode<number>,
     public strokeWidth: UniformNode<number>,
     public dashLength: UniformNode<number>,
