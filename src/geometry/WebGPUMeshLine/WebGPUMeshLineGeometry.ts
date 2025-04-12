@@ -16,8 +16,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   #textureCoords = new Float32Array();
   #beforeArrow = new Float32Array();
   #arrow = new Float32Array();
-  #start = new Float32Array();
-  #bottom = new Float32Array();
+  #start = new Int8Array();
+  #bottom = new Int8Array();
   #startProportion = new Float32Array();
   #endProportion = new Float32Array();
   #indices = new Uint16Array();
@@ -30,8 +30,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     textureCoords: THREE.Float32BufferAttribute;
     beforeArrow: THREE.Float32BufferAttribute;
     arrow: THREE.Float32BufferAttribute;
-    start: THREE.Float32BufferAttribute;
-    bottom: THREE.Float32BufferAttribute;
+    start: THREE.Int8BufferAttribute;
+    bottom: THREE.Int8BufferAttribute;
     startProportion: THREE.Float32BufferAttribute;
     endProportion: THREE.Float32BufferAttribute;
     index: THREE.Uint16BufferAttribute;
@@ -304,13 +304,13 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   }
 
   #addSegment(
-    index: number,
+    segmentIndex: number,
     previous: THREE.Vector3,
     start: THREE.Vector3,
     end: THREE.Vector3,
     next: THREE.Vector3,
   ) {
-    const vertexOffset = 12 * index;
+    const vertexOffset = 12 * segmentIndex;
     let x: number;
     let y: number;
     let z: number;
@@ -327,13 +327,13 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     ({ x, y, z } = next);
     this.setVertexData(this.#nextPosition, vertexOffset, x, y, z);
 
-    const textureOffset = 4 * index;
+    const textureOffset = 4 * segmentIndex;
     this.setTextureCoords(this.#textureCoords, textureOffset);
     this.setStart(this.#start, textureOffset);
     this.setBottom(this.#bottom, textureOffset);
 
-    const indexOffset = 6 * index;
-    const nextIndex = 4 * index;
+    const indexOffset = 6 * segmentIndex;
+    const nextIndex = 4 * segmentIndex;
     this.setIndices(this.#indices, indexOffset, nextIndex);
   }
 

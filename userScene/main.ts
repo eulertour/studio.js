@@ -20,6 +20,7 @@ export default class Scene implements StudioScene {
       strokeColor: new THREE.Color("orange"),
       strokeOpacity: 0.5,
       strokeWidth: 4,
+      strokeDashLength: 2 * Math.PI / 6,
     });
     circle.position.x = 4;
     circle.position.y = 1.5;
@@ -29,7 +30,6 @@ export default class Scene implements StudioScene {
         circle.restyle({
           strokeColor: new THREE.Color(1 - t, 0.5 - 0.5 * t, 0),
           strokeWidth: 4 + 2 * t,
-          strokeDashLength: Math.PI,
         });
       }),
     ];

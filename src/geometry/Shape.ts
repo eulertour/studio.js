@@ -1,7 +1,6 @@
 import * as THREE from "three/webgpu";
 
 import * as Text from "../text.js";
-import WebGPUMeshLine from "./WebGPUMeshLine/index.js";
 import WebGPUMeshLineGeometry from "./WebGPUMeshLine/WebGPUMeshLineGeometry.js";
 import WebGPUMeshLineMaterial from "./WebGPUMeshLine/WebGPUMeshLineMaterial.js";
 

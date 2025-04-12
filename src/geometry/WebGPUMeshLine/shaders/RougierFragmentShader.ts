@@ -18,10 +18,9 @@ import {
 } from "three/tsl";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import { ShaderNodeFn } from "three/src/nodes/TSL.js";
+import { UniformNode } from "three/webgpu";
 import { UNITS_PER_STROKE_WIDTH } from "../../../constants.js";
 import DashAtlas from "./DashAtlas.js";
-import { Uniforms } from "../WebGPUMeshLineMaterial.js";
-import { UniformNode } from "three/webgpu";
 
 const lengthSquared = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
   dot(vector, vector),
