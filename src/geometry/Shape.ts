@@ -88,12 +88,19 @@ export default abstract class Shape extends THREE.Group {
       //   dashLength: config.strokeDashLength,
       //   dashOffset: config.strokeDashOffset,
       // });
-      this.stroke = new WebGPUMeshLine(points);
-      this.stroke.restyle({
-        color: config.strokeColor,
-        opacity: config.strokeOpacity,
-        width: config.strokeWidth,
-      });
+      this.stroke = new WebGPUMeshLine(
+        points,
+        config.strokeColor,
+        config.strokeOpacity,
+        config.strokeWidth,
+        [1, 2],
+        0.5,
+      );
+      // this.stroke.restyle({
+      //   color: config.strokeColor,
+      //   opacity: config.strokeOpacity,
+      //   width: config.strokeWidth,
+      // });
       this.add(this.stroke);
     }
 

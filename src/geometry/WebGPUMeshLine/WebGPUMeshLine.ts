@@ -10,9 +10,22 @@ export default class WebGPUMeshLine extends THREE.Mesh {
   geometry: WebGPUMeshLineGeometry;
   material: WebGPUMeshLineMaterial;
 
-  constructor(points: THREE.Vector3[]) {
+  constructor(
+    points: THREE.Vector3[],
+    strokeColor: THREE.Color,
+    strokeOpacity: number,
+    strokeWidth: number,
+    dashPattern: number[],
+    dashLength: number,
+  ) {
     const geometry = new WebGPUMeshLineGeometry(points);
-    const material = new WebGPUMeshLineMaterial();
+    const material = new WebGPUMeshLineMaterial(
+      strokeColor,
+      strokeOpacity,
+      strokeWidth,
+      dashPattern = [1, 2],
+      dashLength = 0.5,
+    );
 
     super(geometry, material);
     this.geometry = geometry;

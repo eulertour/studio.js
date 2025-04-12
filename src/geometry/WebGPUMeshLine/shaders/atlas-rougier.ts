@@ -11,7 +11,7 @@ const texelWidth = 1024;
 const texelHeight = 1;
 const atlasSize = texelWidth * texelHeight;
 
-export class PatternAtlas {
+export class DashAtlas {
   atlas: THREE.DataTexture;
   period: ShaderNodeObject<THREE.UniformNode<number>>;
 

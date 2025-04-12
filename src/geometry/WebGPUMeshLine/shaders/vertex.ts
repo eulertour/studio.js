@@ -43,7 +43,7 @@ const boolToSign = Fn(([booleanValue]: [ShaderNodeObject<OperatorNode>]) =>
   float(2).mul(booleanValue.oneMinus()).sub(1),
 );
 
-const VertexNode = Fn(([strokeWidth]: [UniformNode<number>]) => {
+export default Fn(([strokeWidth]: [UniformNode<number>]) => {
   const modelViewProjection = cameraProjectionMatrix.mul(modelViewMatrix);
   const homogeneousLinePoints = modelViewProjection.mul(
     mat4(
@@ -121,5 +121,3 @@ const VertexNode = Fn(([strokeWidth]: [UniformNode<number>]) => {
   );
   return clipSpaceVertex;
 });
-
-export default VertexNode;

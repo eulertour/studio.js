@@ -21,7 +21,7 @@ import { UniformNode } from "three/webgpu";
 import * as THREE from "three/webgpu";
 import { worldTime, worldUnitsPerStrokeWidth } from "../WebGPUMeshLine.js";
 import { totalLength } from "../WebGPUMeshLineGeometry.js";
-import { PatternAtlas } from "./atlas-rougier.js";
+import { DashAtlas } from "./atlas-rougier.js";
 import { ShaderNodeFn } from "three/src/nodes/TSL.js";
 
 const lengthSquared = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
@@ -89,17 +89,16 @@ const rotate90 = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
   vec2(vector.y.negate(), vector.x),
 );
 
-export class RougierFragmentShader {
+export default class RougierFragmentShader {
   node: ShaderNodeFn<[]>;
-  patternAtlas: PatternAtlas;
 
   constructor(
-    public pattern: number[],
+    public dashAtlas: DashAtlas,
     public strokeColor: UniformNode<THREE.Color>,
     public strokeOpacity: UniformNode<number>,
     public strokeWidth: UniformNode<number>,
+    public dashLength: UniformNode<number>,
   ) {
-    this.patternAtlas = new PatternAtlas(pattern);
     this.node = Fn(() => {
       const startFragment = varyingProperty("vec2", "vStartFragment");
       const endFragment = varyingProperty("vec2", "vEndFragment");
@@ -129,19 +128,18 @@ export class RougierFragmentShader {
         .mul(segmentDistancePerFragment)
         .mul(sign(dot(rotate90(segmentVector), normalVector)));
 
-      const dashWidth = float(0.5);
-      const dashPeriod = this.patternAtlas.period;
-      const freqPatternLength = dashPeriod.mul(dashWidth);
+      const dashPeriod = this.dashAtlas.period;
+      const freqPatternLength = dashPeriod.mul(dashLength);
       // TODO: Some corner error with time = 0 on a square with side length 2
       // const dashPhase = float(0);
       const dashPhase = float(0).sub(worldTime);
-      const u = xOffset.add(dashPhase.mul(dashWidth)).mod(freqPatternLength);
-      const u2 = xOffset.add(dashPhase.mul(dashWidth)).mod(freqPatternLength);
-      const v = texture(this.patternAtlas.atlas, vec2(u2.div(freqPatternLength), 0));
-      const dashCenterReferencePoint = v.x.mul(255).mul(dashWidth);
+      const u = xOffset.add(dashPhase.mul(dashLength)).mod(freqPatternLength);
+      const u2 = xOffset.add(dashPhase.mul(dashLength)).mod(freqPatternLength);
+      const v = texture(this.dashAtlas.atlas, vec2(u2.div(freqPatternLength), 0));
+      const dashCenterReferencePoint = v.x.mul(255).mul(dashLength);
       const dashType = v.y;
-      const _start = v.z.mul(255).mul(dashWidth);
-      const _stop = v.a.mul(255).mul(dashWidth);
+      const _start = v.z.mul(255).mul(dashLength);
+      const _stop = v.a.mul(255).mul(dashLength);
       const dashStart = xOffset.sub(u).add(_start);
       const dashStop = xOffset.sub(u).add(_stop);
       const lineStart = float(0);
@@ -330,13 +328,13 @@ export class RougierFragmentShader {
       // NOTE: In closed curves the nextFragment for the last segment
       // is the same as the endFragment for the first segment.
       If(dashStart.greaterThanEqual(freqPatternLength), () => {
-        const u = dashPhase.mul(dashWidth).mod(freqPatternLength);
+        const u = dashPhase.mul(dashLength).mod(freqPatternLength);
         const v = texture(
-          this.patternAtlas.atlas,
+          this.dashAtlas.atlas,
           vec2(u.div(freqPatternLength), 0),
         );
-        const _start = v.z.mul(255).mul(dashWidth);
-        const _stop = v.a.mul(255).mul(dashWidth);
+        const _start = v.z.mul(255).mul(dashLength);
+        const _stop = v.a.mul(255).mul(dashLength);
         const firstSegmentDashStartDistance = max(u.negate().add(_start), 0);
         const firstSegmentDashStopDistance = u.negate().add(_stop);
 
