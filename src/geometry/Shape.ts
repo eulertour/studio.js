@@ -72,6 +72,7 @@ export default abstract class Shape extends THREE.Group {
     if (config.stroke !== false) {
       const strokeGeometry = new WebGPUMeshLineGeometry(points);
       const strokeMaterial = new WebGPUMeshLineMaterial(
+        points,
         config.strokeColor,
         config.strokeOpacity,
         config.strokeWidth,

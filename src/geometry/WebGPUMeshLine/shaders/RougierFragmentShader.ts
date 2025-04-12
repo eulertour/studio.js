@@ -17,12 +17,10 @@ import {
   vec4,
 } from "three/tsl";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
-import { UniformNode } from "three/webgpu";
-import * as THREE from "three/webgpu";
-import { worldUnitsPerStrokeWidth } from "../WebGPUMeshLine.js";
-import { totalLength } from "../WebGPUMeshLineGeometry.js";
-import { DashAtlas } from "./atlas-rougier.js";
 import { ShaderNodeFn } from "three/src/nodes/TSL.js";
+import { worldUnitsPerStrokeWidth } from "../WebGPUMeshLine.js";
+import DashAtlas from "./DashAtlas.js";
+import { Uniforms } from "../WebGPUMeshLineMaterial.js";
 
 const lengthSquared = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
   dot(vector, vector),
@@ -91,14 +89,7 @@ const rotate90 = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
 export default class RougierFragmentShader {
   node: ShaderNodeFn<[]>;
 
-  constructor(
-    public dashAtlas: DashAtlas,
-    public strokeColor: UniformNode<THREE.Color>,
-    public strokeOpacity: UniformNode<number>,
-    public strokeWidth: UniformNode<number>,
-    public dashLength: UniformNode<number>,
-    public worldTime: UniformNode<number>,
-  ) {
+  constructor(public dashAtlas: DashAtlas, public uniforms: Uniforms) {
     this.node = Fn(() => {
       const startFragment = varyingProperty("vec2", "vStartFragment");
       const endFragment = varyingProperty("vec2", "vEndFragment");
@@ -109,8 +100,8 @@ export default class RougierFragmentShader {
       const tangentVector = basis.xy;
       const normalVector = basis.zw;
 
-      const startLength = totalLength.mul(attribute("startProportion"));
-      const endLength = totalLength.mul(attribute("endProportion"));
+      const startLength = float(this.uniforms.totalLength).mul(attribute("startProportion"));
+      const endLength = float(this.uniforms.totalLength).mul(attribute("endProportion"));
       const segmentDistancePerFragment = endLength
         .sub(startLength)
         .div(segmentVector.length());
@@ -129,21 +120,21 @@ export default class RougierFragmentShader {
         .mul(sign(dot(rotate90(segmentVector), normalVector)));
 
       const dashPeriod = this.dashAtlas.period;
-      const freqPatternLength = dashPeriod.mul(dashLength);
+      const freqPatternLength = dashPeriod.mul(this.uniforms.dashLength);
       // TODO: Some corner error with time = 0 on a square with side length 2
       // const dashPhase = float(0);
-      const dashPhase = float(0).sub(worldTime);
-      const u = xOffset.add(dashPhase.mul(dashLength)).mod(freqPatternLength);
-      const u2 = xOffset.add(dashPhase.mul(dashLength)).mod(freqPatternLength);
+      const dashPhase = float(0).sub(this.uniforms.worldTime);
+      const u = xOffset.add(dashPhase.mul(this.uniforms.dashLength)).mod(freqPatternLength);
+      const u2 = xOffset.add(dashPhase.mul(this.uniforms.dashLength)).mod(freqPatternLength);
       const v = texture(this.dashAtlas.atlas, vec2(u2.div(freqPatternLength), 0));
-      const dashCenterReferencePoint = v.x.mul(255).mul(dashLength);
+      const dashCenterReferencePoint = v.x.mul(255).mul(this.uniforms.dashLength);
       const dashType = v.y;
-      const _start = v.z.mul(255).mul(dashLength);
-      const _stop = v.a.mul(255).mul(dashLength);
+      const _start = v.z.mul(255).mul(this.uniforms.dashLength);
+      const _stop = v.a.mul(255).mul(this.uniforms.dashLength);
       const dashStart = xOffset.sub(u).add(_start);
       const dashStop = xOffset.sub(u).add(_stop);
       const lineStart = float(0);
-      const lineStop = totalLength;
+      const lineStop = this.uniforms.totalLength;
       const segmentStart = startLength;
       const segmentStop = endLength;
 
@@ -151,7 +142,7 @@ export default class RougierFragmentShader {
       const blue = vec4(0, 0, 1, 0.5);
 
       const halfWidth = float(1 / 2)
-        .mul(this.strokeWidth)
+        .mul(this.uniforms.strokeWidth)
         .mul(worldUnitsPerStrokeWidth);
       If(dashStop.lessThanEqual(lineStart), () => {
         Discard();
@@ -328,13 +319,13 @@ export default class RougierFragmentShader {
       // NOTE: In closed curves the nextFragment for the last segment
       // is the same as the endFragment for the first segment.
       If(dashStart.greaterThanEqual(freqPatternLength), () => {
-        const u = dashPhase.mul(dashLength).mod(freqPatternLength);
+        const u = dashPhase.mul(this.uniforms.dashLength).mod(freqPatternLength);
         const v = texture(
           this.dashAtlas.atlas,
           vec2(u.div(freqPatternLength), 0),
         );
-        const _start = v.z.mul(255).mul(dashLength);
-        const _stop = v.a.mul(255).mul(dashLength);
+        const _start = v.z.mul(255).mul(this.uniforms.dashLength);
+        const _stop = v.a.mul(255).mul(this.uniforms.dashLength);
         const firstSegmentDashStartDistance = max(u.negate().add(_start), 0);
         const firstSegmentDashStopDistance = u.negate().add(_stop);
 
@@ -400,7 +391,7 @@ export default class RougierFragmentShader {
       });
 
       // return color;
-      return vec4(this.strokeColor, this.strokeOpacity);
+      return vec4(this.uniforms.strokeColor, this.uniforms.strokeOpacity);
     });
   }
 }
