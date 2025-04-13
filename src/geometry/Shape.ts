@@ -32,7 +32,7 @@ const getFillGeometry = (points: Array<THREE.Vector3>) => {
 };
 
 type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
-type Stroke = WebGPUMeshLine;
+type Stroke = THREE.Mesh<WebGPUMeshLineGeometry, WebGPUMeshLineMaterial>;
 
 /**
  * An abstract class representing a generalized shape.
@@ -264,15 +264,15 @@ export default abstract class Shape extends THREE.Group {
     if (this.fill !== undefined) {
       style.fillColor = this.fill.material.color;
       style.fillOpacity = this.fill.material.opacity;
-    };
+    }
 
     if (this.stroke !== undefined) {
-      style.strokeColor = this.stroke.material.uniforms.strokeColor.value;
-      style.strokeOpacity = this.stroke.material.uniforms.strokeOpacity.value;
-      style.strokeWidth = this.stroke.material.uniforms.strokeWidth.value;
+      style.strokeColor = this.stroke.material.uniforms.color.value;
+      style.strokeOpacity = this.stroke.material.uniforms.opacity.value;
+      style.strokeWidth = this.stroke.material.uniforms.width.value;
       style.strokeDashLength = this.stroke.material.uniforms.dashLength.value;
       style.strokeDashSpeed = this.stroke.material.dashSpeed;
-    };
+    }
 
     return style;
   }
@@ -292,15 +292,16 @@ export default abstract class Shape extends THREE.Group {
     }
 
     if (this.stroke !== undefined) {
-      const { strokeColor, strokeOpacity, strokeWidth, strokeDashLength} = style;
+      const { strokeColor, strokeOpacity, strokeWidth, strokeDashLength } =
+        style;
       if (strokeColor !== undefined) {
-        this.stroke.material.uniforms.strokeColor.value.set(strokeColor);
+        this.stroke.material.uniforms.color.value.set(strokeColor);
       }
       if (strokeOpacity !== undefined) {
-        this.stroke.material.uniforms.strokeOpacity.value = strokeOpacity;
+        this.stroke.material.uniforms.opacity.value = strokeOpacity;
       }
       if (strokeWidth !== undefined) {
-        this.stroke.material.uniforms.strokeWidth.value = strokeWidth;
+        this.stroke.material.uniforms.width.value = strokeWidth;
       }
       if (strokeDashLength !== undefined) {
         this.stroke.material.uniforms.dashLength.value = strokeDashLength;

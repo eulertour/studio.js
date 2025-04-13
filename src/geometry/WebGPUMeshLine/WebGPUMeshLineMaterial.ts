@@ -5,12 +5,12 @@ import RougierFragmentShader from "./shaders/FragmentShader.js";
 import DashAtlas from "./shaders/DashAtlas.js";
 
 export type Uniforms = {
-  firstPosition: THREE.UniformNode<THREE.Vector3>;
-  secondPosition: THREE.UniformNode<THREE.Vector3>;
-  strokeColor: THREE.UniformNode<THREE.Color>;
-  strokeOpacity: THREE.UniformNode<number>;
-  strokeWidth: THREE.UniformNode<number>;
-  strokeLength: THREE.UniformNode<number>;
+  firstPoint: THREE.UniformNode<THREE.Vector3>;
+  secondPoint: THREE.UniformNode<THREE.Vector3>;
+  color: THREE.UniformNode<THREE.Color>;
+  opacity: THREE.UniformNode<number>;
+  width: THREE.UniformNode<number>;
+  length: THREE.UniformNode<number>;
   dashLength: THREE.UniformNode<number>;
   dashOffset: THREE.UniformNode<number>;
 };
@@ -18,37 +18,39 @@ export type Uniforms = {
 export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
   dashAtlas: DashAtlas;
   uniforms: Uniforms;
+  dashSpeed: number;
 
   constructor(
     points: THREE.Vector3[],
-    strokeColor: THREE.Color,
-    strokeOpacity: number,
-    strokeWidth: number,
+    color: THREE.Color,
+    opacity: number,
+    width: number,
     dashLength: number,
-    public dashSpeed: number,
+    dashSpeed: number,
     dashPattern = [1, 1],
   ) {
     super({ transparent: true });
+    this.dashSpeed = dashSpeed;
 
     this.dashAtlas = new DashAtlas(dashPattern);
     this.uniforms = this.createUniforms(
       points,
-      strokeColor,
-      strokeOpacity,
-      strokeWidth,
+      color,
+      opacity,
+      width,
       dashLength,
     );
     this.vertexNode = new RougierVertexShader(
-      this.uniforms.firstPosition,
-      this.uniforms.secondPosition,
-      this.uniforms.strokeWidth,
+      this.uniforms.firstPoint,
+      this.uniforms.secondPoint,
+      this.uniforms.width,
     ).node();
     this.fragmentNode = new RougierFragmentShader(
       this.dashAtlas,
-      this.uniforms.strokeColor,
-      this.uniforms.strokeOpacity,
-      this.uniforms.strokeWidth,
-      this.uniforms.strokeLength,
+      this.uniforms.color,
+      this.uniforms.opacity,
+      this.uniforms.width,
+      this.uniforms.length,
       this.uniforms.dashLength,
       this.uniforms.dashOffset,
     ).node();
@@ -84,12 +86,12 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     }
 
     return {
-      firstPosition: uniform(firstPoint),
-      secondPosition: uniform(secondPoint),
-      strokeColor: uniform(strokeColor),
-      strokeOpacity: uniform(strokeOpacity),
-      strokeWidth: uniform(strokeWidth),
-      strokeLength: uniform(strokeLength),
+      firstPoint: uniform(firstPoint),
+      secondPoint: uniform(secondPoint),
+      color: uniform(strokeColor),
+      opacity: uniform(strokeOpacity),
+      width: uniform(strokeWidth),
+      length: uniform(strokeLength),
       dashLength: uniform(dashLength),
       dashOffset: uniform(0),
     };
