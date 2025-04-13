@@ -21,6 +21,7 @@ export default class Scene implements StudioScene {
       strokeOpacity: 0.5,
       strokeWidth: 4,
       strokeDashLength: 2 * Math.PI / 6,
+      strokeDashSpeed: 1,
     });
     circle.position.x = 4;
     circle.position.y = 1.5;
@@ -30,6 +31,7 @@ export default class Scene implements StudioScene {
         circle.restyle({
           strokeColor: new THREE.Color(1 - t, 0.5 - 0.5 * t, 0),
           strokeWidth: 4 + 2 * t,
+          strokeDashLength: 2 * Math.PI / (6 + t),
         });
       }),
     ];
@@ -52,7 +54,8 @@ export default class Scene implements StudioScene {
     // this.line = new Geometry.Polyline(points, {
     //   strokeColor: new THREE.Color("blue"),
     //   strokeOpacity: 0.5,
-    //   strokeWidth: 10,
+    //   strokeWidth: 4,
+    //   strokeDashLength: 1,
     //   fillColor: new THREE.Color("blue"),
     //   fillOpacity: 0.5,
     //   // fill: false,

@@ -1,6 +1,7 @@
 import {
   Fn,
   ShaderNodeObject,
+  add,
   attribute,
   cameraProjectionMatrix,
   float,
@@ -16,7 +17,6 @@ import {
 import { ShaderNodeFn } from "three/src/nodes/TSL.js";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import { UNITS_PER_STROKE_WIDTH } from "../../../constants.js";
-import { Uniforms } from "../WebGPUMeshLineMaterial.js";
 import { UniformNode } from "three/webgpu";
 import { Vector3 } from "three";
 
@@ -81,8 +81,8 @@ export class RougierVertexShader {
       const screenSpaceEndFragment = clipToScreenSpace(clipSpaceEnd);
       const screenSpaceNextFragment = clipToScreenSpace(clipSpaceNext);
       const screenSpacePreviousFragment = clipToScreenSpace(clipSpacePrevious);
-      const screenSpaceFirstPosition = clipToScreenSpace(clipSpaceFirstPosition);
-      const screenSpaceSecondPosition = clipToScreenSpace(clipSpaceSecondPosition);
+      const screenSpaceFirstFragment = clipToScreenSpace(clipSpaceFirstPosition);
+      const screenSpaceSecondFragment = clipToScreenSpace(clipSpaceSecondPosition);
 
       varyingProperty("vec2", "vStartFragment").assign(screenSpaceStartFragment);
       varyingProperty("vec2", "vEndFragment").assign(screenSpaceEndFragment);
@@ -90,46 +90,45 @@ export class RougierVertexShader {
       varyingProperty("vec2", "vPreviousFragment").assign(
         screenSpacePreviousFragment,
       );
-      varyingProperty("vec2", "vFirstFragment").assign(screenSpaceFirstPosition);
-      varyingProperty("vec2", "vSecondFragment").assign(screenSpaceSecondPosition);
+      varyingProperty("vec2", "vFirstFragment").assign(screenSpaceFirstFragment);
+      varyingProperty("vec2", "vSecondFragment").assign(screenSpaceSecondFragment);
 
-      const screenSpaceSegmentUnitVector = normalize(
+      const screenSpaceUnitTangent = normalize(
         screenSpaceEndFragment.sub(screenSpaceStartFragment),
       );
-      const screenSpaceSegmentUnitNormal = vec2(
-        screenSpaceSegmentUnitVector.y.negate(),
-        screenSpaceSegmentUnitVector.x,
+      const screenSpaceUnitNormal = vec2(
+        screenSpaceUnitTangent.y.negate(),
+        screenSpaceUnitTangent.x,
       );
 
       const isStart = attribute("start");
       const isBottom = attribute("bottom");
 
       // NOTE: This is the vector offset from the start or end of the current
-      // segment to a corner of the polygon representing it. It's represented
+      // segment to a corner of the polygon containing it. It's represented
       // by the diagonal lines in the diagram below. The components parallel
-      // and normal to the segment vector are equal and each have length 1.
-      // Accordingly, the legnth of this vector is sqrt(2).
+      // and normal to the tangent vector are equal and each have length 1.
+      // The length of the vector is sqrt(2).
       // +-------------------+
       // |\                 /|
       // | +---------------+ |
       // |/                 \|
       // +-------------------+
-      const screenSpaceUnitVertexOffset = screenSpaceSegmentUnitVector
-        .mul(boolToSign(isStart))
-        .add(screenSpaceSegmentUnitNormal.mul(boolToSign(isBottom)));
-      const cameraSpaceFragmentOffset = vec4(
-        screenSpaceUnitVertexOffset.mul(strokeWidth).mul(UNITS_PER_STROKE_WIDTH)
-          .xy,
+      const screenSpaceUnitOffset = add(
+        screenSpaceUnitTangent.mul(boolToSign(isStart)),
+        screenSpaceUnitNormal.mul(boolToSign(isBottom)),
+      );
+      const cameraSpaceVertexOffset = vec4(
+        screenSpaceUnitOffset.mul(strokeWidth).mul(UNITS_PER_STROKE_WIDTH / 2),
         0,
         0,
       );
-      const clipSpaceFragmentOffset = cameraProjectionMatrix.mul(
-        cameraSpaceFragmentOffset,
+      const clipSpaceVertexOffset = cameraProjectionMatrix.mul(cameraSpaceVertexOffset);
+
+      return add(
+        select(isStart, clipSpaceStart, clipSpaceEnd),
+        clipSpaceVertexOffset,
       );
-      const clipSpaceVertex = select(isStart, clipSpaceStart, clipSpaceEnd).add(
-        clipSpaceFragmentOffset,
-      );
-      return clipSpaceVertex;
     });
   }
 }

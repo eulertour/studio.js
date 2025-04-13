@@ -17,7 +17,7 @@ export type Style = {
   strokeOpacity?: number;
   strokeWidth?: number;
   strokeDashLength?: number;
-  strokeDashOffset?: number;
+  strokeDashSpeed?: number;
   dashed?: boolean;
 };
 
@@ -76,7 +76,7 @@ export default abstract class Shape extends THREE.Group {
         config.strokeOpacity,
         config.strokeWidth,
         config.strokeDashLength,
-        [1, 1],
+        config.strokeDashSpeed,
       );
       this.stroke = new THREE.Mesh(strokeGeometry, strokeMaterial);
       this.add(this.stroke);
@@ -113,7 +113,7 @@ export default abstract class Shape extends THREE.Group {
 
   update(dt: number, t: number) {
     if (this.stroke !== undefined) {
-      this.stroke.material.uniforms.dashOffset.value = t;
+      this.stroke.material.update(t);
     }
   }
 
@@ -125,7 +125,7 @@ export default abstract class Shape extends THREE.Group {
       strokeOpacity: 1.0,
       strokeWidth: 4,
       strokeDashLength: 0.5,
-      strokeDashOffset: 0,
+      strokeDashSpeed: 1,
       dashed: false,
     };
   }
@@ -281,7 +281,7 @@ export default abstract class Shape extends THREE.Group {
     }
 
     if (this.stroke !== undefined) {
-      const { strokeColor, strokeOpacity, strokeWidth } = style;
+      const { strokeColor, strokeOpacity, strokeWidth, strokeDashLength} = style;
       if (strokeColor !== undefined) {
         this.stroke.material.uniforms.strokeColor.value.set(strokeColor);
       }
@@ -290,6 +290,9 @@ export default abstract class Shape extends THREE.Group {
       }
       if (strokeWidth !== undefined) {
         this.stroke.material.uniforms.strokeWidth.value = strokeWidth;
+      }
+      if (strokeDashLength !== undefined) {
+        this.stroke.material.uniforms.dashLength.value = strokeDashLength;
       }
     }
 

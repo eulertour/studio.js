@@ -25,7 +25,8 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     strokeOpacity: number,
     strokeWidth: number,
     dashLength: number,
-    dashPattern: number[],
+    public dashSpeed: number,
+    dashPattern = [1, 1],
   ) {
     super({ transparent: true });
 
@@ -85,5 +86,9 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       dashOffset: uniform(0),
       totalLength: uniform(totalLength),
     };
+  }
+
+  update(t: number) {
+    this.uniforms.dashOffset.value = t * this.dashSpeed;
   }
 }

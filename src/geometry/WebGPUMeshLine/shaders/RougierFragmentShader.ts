@@ -16,6 +16,7 @@ import {
   vec2,
   vec4,
 } from "three/tsl";
+import * as THREE from "three/webgpu"
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import { ShaderNodeFn } from "three/src/nodes/TSL.js";
 import { UniformNode } from "three/webgpu";
@@ -91,7 +92,7 @@ export default class RougierFragmentShader {
 
   constructor(
     public dashAtlas: DashAtlas,
-    strokeColor: UniformNode<number>,
+    strokeColor: UniformNode<THREE.Color>,
     strokeOpacity: UniformNode<number>,
     strokeWidth: UniformNode<number>,
     totalLength: UniformNode<number>,
@@ -128,11 +129,14 @@ export default class RougierFragmentShader {
         .mul(sign(dot(rotate90(segmentVector), normalVector)));
 
       const dashPeriod = this.dashAtlas.period;
-      const freqPatternLength = dashPeriod.mul(dashLength);
+      const patternLength = dashPeriod.mul(dashLength);
       // TODO: Some corner error with time = 0 on a square with side length 2
-      const u = xOffset.sub(dashOffset).mod(freqPatternLength);
-      const u2 = xOffset.sub(dashOffset).mod(freqPatternLength);
-      const v = texture(this.dashAtlas.atlas, vec2(u2.div(freqPatternLength), 0));
+      const u = xOffset.sub(dashOffset).mod(patternLength);
+      const u2 = xOffset.sub(dashOffset).mod(patternLength);
+      const v = texture(
+        this.dashAtlas.atlas,
+        vec2(u2.div(patternLength), 0),
+      );
       const dashCenterReferencePoint = v.x.mul(255).mul(dashLength);
       const dashType = v.y;
       const _start = v.z.mul(255).mul(dashLength);
@@ -143,9 +147,6 @@ export default class RougierFragmentShader {
       const lineStop = totalLength;
       const segmentStart = startLength;
       const segmentStop = endLength;
-
-      const color = vec4(1, 0, 0, 1).toVar();
-      const blue = vec4(0, 0, 1, 0.5);
 
       const halfWidth = float(1 / 2)
         .mul(strokeWidth)
@@ -167,15 +168,12 @@ export default class RougierFragmentShader {
           // u.assign(dx.abs());
           const newU = xOffset.abs();
           If(
-            sqrt(newU.mul(newU).add(yOffset.mul(yOffset))).lessThanEqual(
-              halfWidth,
-            ),
+            sqrt(newU.mul(newU).add(yOffset.mul(yOffset)))
+              .greaterThanEqual(halfWidth),
             () => {
-              color.assign(blue);
+              Discard();
             },
-          ).Else(() => {
-            Discard();
-          });
+          );
         },
       )
         // Line end
@@ -188,23 +186,19 @@ export default class RougierFragmentShader {
             // u.assign(dx.sub(lineStop));
             const newU = xOffset.sub(lineStop);
             If(
-              sqrt(newU.mul(newU).add(yOffset.mul(yOffset))).lessThanEqual(
-                halfWidth,
-              ),
+              sqrt(newU.mul(newU).add(yOffset.mul(yOffset)))
+                .greaterThanEqual(halfWidth)
+                ,
               () => {
-                color.assign(blue);
+                Discard();
               },
-            ).Else(() => {
-              Discard();
-            });
+            );
             // color.assign(purple);
           },
         )
         // Dash body
         .ElseIf(dashType.equal(0), () => {
-          If(yOffset.abs().lessThanEqual(halfWidth), () => {
-            color.assign(blue);
-          }).Else(() => {
+          If(yOffset.abs().greaterThanEqual(halfWidth), () => {
             Discard();
           });
         })
@@ -214,15 +208,13 @@ export default class RougierFragmentShader {
           const newU = max(u.sub(dashCenterReferencePoint), 0);
           // u.assign(max(u.sub(dashCenterReferencePoint), 0));
           If(
-            sqrt(newU.mul(newU).add(yOffset.mul(yOffset))).lessThanEqual(
-              halfWidth,
-            ),
+            sqrt(newU.mul(newU).add(yOffset.mul(yOffset)))
+              .greaterThanEqual(halfWidth)
+              ,
             () => {
-              color.assign(blue);
+              Discard();
             },
-          ).Else(() => {
-            Discard();
-          });
+          );
         })
         // Dash start
         .ElseIf(dashType.greaterThan(0), () => {
@@ -230,15 +222,13 @@ export default class RougierFragmentShader {
           // u.assign(max(dashCenterReferencePoint.sub(u), 0));
           const newU = max(dashCenterReferencePoint.sub(u), 0);
           If(
-            sqrt(newU.mul(newU).add(yOffset.mul(yOffset))).lessThanEqual(
-              halfWidth,
-            ),
+            sqrt(newU.mul(newU).add(yOffset.mul(yOffset)))
+              .greaterThanEqual(halfWidth)
+              ,
             () => {
-              color.assign(blue);
+              Discard();
             },
-          ).Else(() => {
-            Discard();
-          });
+          );
         });
 
       // Outgoing from join
@@ -308,15 +298,12 @@ export default class RougierFragmentShader {
           () => {
             const newU = xOffset.sub(segmentStop);
             If(
-              sqrt(newU.mul(newU).add(yOffset.mul(yOffset))).lessThan(
-                halfWidth,
-              ),
+              sqrt(newU.mul(newU).add(yOffset.mul(yOffset)))
+                .greaterThan(halfWidth),
               () => {
-                color.assign(blue);
+                Discard();
               },
-            ).Else(() => {
-              Discard();
-            });
+            );
           },
         );
       });
@@ -324,11 +311,11 @@ export default class RougierFragmentShader {
       // Incoming to start of closed curve
       // NOTE: In closed curves the nextFragment for the last segment
       // is the same as the endFragment for the first segment.
-      If(dashStart.greaterThanEqual(freqPatternLength), () => {
-        const u = dashOffset.negate().mod(freqPatternLength);
+      If(dashStart.greaterThanEqual(patternLength), () => {
+        const u = float(dashOffset).negate().mod(patternLength);
         const v = texture(
           this.dashAtlas.atlas,
-          vec2(u.div(freqPatternLength), 0),
+          vec2(u.div(patternLength), 0),
         );
         const _start = v.z.mul(255).mul(dashLength);
         const _stop = v.a.mul(255).mul(dashLength);
@@ -400,4 +387,3 @@ export default class RougierFragmentShader {
     });
   }
 }
-
