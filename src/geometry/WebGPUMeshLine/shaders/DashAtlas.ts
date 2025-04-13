@@ -37,26 +37,29 @@ export default class DashAtlas {
     return period;
   }
 
-  generateAtlasData(pattern: number[]) {
-    const data = new Int8Array(4 * ATLAS_RESOLUTION);
-
-    if (pattern.length % 2 !== 0) {
-      throw new Error("Dash pattern length must be a multiple of 2");
-    }
-
+  computeSegmentBoundaries(pattern: number[]) {
     let segmentBoundaries: number[] = [];
     let currentPosition = 0;
     for (let i = 0; i < pattern.length + 2; i += 2) {
       let onSegmentLength = indexOrThrow(pattern, i % pattern.length);
       let offSegmentLength = indexOrThrow(pattern, (i + 1) % pattern.length);
-      segmentBoundaries.push(currentPosition, currentPosition + onSegmentLength);
+      segmentBoundaries.push(
+        currentPosition,
+        currentPosition + onSegmentLength,
+      );
       currentPosition += onSegmentLength + offSegmentLength;
     }
+    return segmentBoundaries;
+  }
 
-    let period = 0;
-    for (const patternLength of pattern) {
-      period += patternLength;
+  generateAtlasData(pattern: number[]) {
+    if (pattern.length % 2 !== 0) {
+      throw new Error("Dash pattern length must be a multiple of 2");
     }
+
+    const data = new Int8Array(4 * ATLAS_RESOLUTION);
+    const period = this.getPeriod(pattern);
+    const segmentBoundaries = this.computeSegmentBoundaries(pattern);
 
     for (let i = 0; i < ATLAS_RESOLUTION; i++) {
       const xPosition = period * (i / (ATLAS_RESOLUTION - 1));
