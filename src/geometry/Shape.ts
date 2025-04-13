@@ -258,14 +258,23 @@ export default abstract class Shape extends THREE.Group {
     return [this.points];
   }
 
-  getStyle(): Style {
-    return {
-      fillColor: this.fill.material.color,
-      fillOpacity: this.fill.material.opacity,
-      strokeColor: this.stroke.material.color,
-      strokeOpacity: this.stroke.material.opacity,
-      strokeWidth: this.stroke.material.width,
+  getStyle() {
+    const style: Style = {};
+
+    if (this.fill !== undefined) {
+      style.fillColor = this.fill.material.color;
+      style.fillOpacity = this.fill.material.opacity;
     };
+
+    if (this.stroke !== undefined) {
+      style.strokeColor = this.stroke.material.uniforms.strokeColor.value;
+      style.strokeOpacity = this.stroke.material.uniforms.strokeOpacity.value;
+      style.strokeWidth = this.stroke.material.uniforms.strokeWidth.value;
+      style.strokeDashLength = this.stroke.material.uniforms.dashLength.value;
+      style.strokeDashSpeed = this.stroke.material.dashSpeed;
+    };
+
+    return style;
   }
 
   restyle(

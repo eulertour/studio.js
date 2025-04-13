@@ -69,6 +69,7 @@ export default class Scene implements StudioScene {
       strokeOpacity: 0.5,
       strokeWidth: 4,
       strokeDashLength: 1,
+      strokeDashSpeed: 1,
       fillColor: new THREE.Color("blue"),
       fillOpacity: 0.5,
       // fill: false,
