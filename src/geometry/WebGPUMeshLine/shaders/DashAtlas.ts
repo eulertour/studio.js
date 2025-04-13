@@ -106,7 +106,12 @@ export default class DashAtlas {
       data[4 * i + 1] = dashTypeOrClosestBoundaryType;
       data[4 * i + 2] = closestBoundaryDashStart;
       data[4 * i + 3] = closestBoundaryDashEnd;
-      // console.log(data[4 * i], data[4 * i + 1], data[4 * i + 2], data[4 * i + 3]);
+      // console.log(
+      //   data[4 * i],
+      //   data[4 * i + 1],
+      //   data[4 * i + 2],
+      //   data[4 * i + 3],
+      // );
     }
 
     return data;

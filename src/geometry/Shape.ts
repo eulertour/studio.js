@@ -165,6 +165,8 @@ export default abstract class Shape extends THREE.Group {
   copyStroke(shape: Shape) {
     this.stroke.geometry.dispose();
     this.stroke.geometry = shape.stroke.geometry;
+    this.stroke.material.dispose();
+    this.stroke.material = shape.stroke.material;
   }
 
   copyFill(shape: Shape) {

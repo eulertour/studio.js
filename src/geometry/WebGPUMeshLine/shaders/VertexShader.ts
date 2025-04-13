@@ -81,17 +81,27 @@ export class RougierVertexShader {
       const screenSpaceEndFragment = clipToScreenSpace(clipSpaceEnd);
       const screenSpaceNextFragment = clipToScreenSpace(clipSpaceNext);
       const screenSpacePreviousFragment = clipToScreenSpace(clipSpacePrevious);
-      const screenSpaceFirstFragment = clipToScreenSpace(clipSpaceFirstPosition);
-      const screenSpaceSecondFragment = clipToScreenSpace(clipSpaceSecondPosition);
+      const screenSpaceFirstFragment = clipToScreenSpace(
+        clipSpaceFirstPosition,
+      );
+      const screenSpaceSecondFragment = clipToScreenSpace(
+        clipSpaceSecondPosition,
+      );
 
-      varyingProperty("vec2", "vStartFragment").assign(screenSpaceStartFragment);
+      varyingProperty("vec2", "vStartFragment").assign(
+        screenSpaceStartFragment,
+      );
       varyingProperty("vec2", "vEndFragment").assign(screenSpaceEndFragment);
       varyingProperty("vec2", "vNextFragment").assign(screenSpaceNextFragment);
       varyingProperty("vec2", "vPreviousFragment").assign(
         screenSpacePreviousFragment,
       );
-      varyingProperty("vec2", "vFirstFragment").assign(screenSpaceFirstFragment);
-      varyingProperty("vec2", "vSecondFragment").assign(screenSpaceSecondFragment);
+      varyingProperty("vec2", "vFirstFragment").assign(
+        screenSpaceFirstFragment,
+      );
+      varyingProperty("vec2", "vSecondFragment").assign(
+        screenSpaceSecondFragment,
+      );
 
       const screenSpaceUnitTangent = normalize(
         screenSpaceEndFragment.sub(screenSpaceStartFragment),
@@ -119,11 +129,13 @@ export class RougierVertexShader {
         screenSpaceUnitNormal.mul(boolToSign(isBottom)),
       );
       const cameraSpaceVertexOffset = vec4(
-        screenSpaceUnitOffset.mul(strokeWidth).mul(UNITS_PER_STROKE_WIDTH / 2),
+        screenSpaceUnitOffset.mul(strokeWidth).mul(UNITS_PER_STROKE_WIDTH),
         0,
         0,
       );
-      const clipSpaceVertexOffset = cameraProjectionMatrix.mul(cameraSpaceVertexOffset);
+      const clipSpaceVertexOffset = cameraProjectionMatrix.mul(
+        cameraSpaceVertexOffset,
+      );
 
       return add(
         select(isStart, clipSpaceStart, clipSpaceEnd),
@@ -132,3 +144,4 @@ export class RougierVertexShader {
     });
   }
 }
+

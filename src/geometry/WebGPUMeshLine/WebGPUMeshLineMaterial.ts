@@ -10,13 +10,13 @@ export type Uniforms = {
   strokeColor: THREE.UniformNode<THREE.Color>;
   strokeOpacity: THREE.UniformNode<number>;
   strokeWidth: THREE.UniformNode<number>;
+  strokeLength: THREE.UniformNode<number>;
   dashLength: THREE.UniformNode<number>;
   dashOffset: THREE.UniformNode<number>;
-  totalLength: THREE.UniformNode<number>;
-}
+};
 
 export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
-  dashAtlas: DashAtlas
+  dashAtlas: DashAtlas;
   uniforms: Uniforms;
 
   constructor(
@@ -49,7 +49,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       this.uniforms.strokeColor,
       this.uniforms.strokeOpacity,
       this.uniforms.strokeWidth,
-      this.uniforms.totalLength,
+      this.uniforms.strokeLength,
       this.uniforms.dashLength,
       this.uniforms.dashOffset,
     ).node();
@@ -62,19 +62,27 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     strokeWidth: number,
     dashLength: number,
   ): Uniforms {
-    let totalLength = 0;
+    let strokeLength = 0;
     for (let i = 0; i < points.length - 1; i++) {
       const currentPoint = points[i];
       const nextPoint = points[i + 1];
-      if (currentPoint === undefined) { throw new Error("Error iterating over points") }
-      if (nextPoint === undefined) { throw new Error("Error iterating over points") }
-      totalLength += currentPoint.distanceTo(nextPoint);
+      if (currentPoint === undefined) {
+        throw new Error("Error iterating over points");
+      }
+      if (nextPoint === undefined) {
+        throw new Error("Error iterating over points");
+      }
+      strokeLength += currentPoint.distanceTo(nextPoint);
     }
 
     const firstPoint = points[0];
     const secondPoint = points[1];
-    if (firstPoint === undefined) { throw new Error("Error reading first point") }
-    if (secondPoint === undefined) { throw new Error("Error reading second point") }
+    if (firstPoint === undefined) {
+      throw new Error("Error reading first point");
+    }
+    if (secondPoint === undefined) {
+      throw new Error("Error reading second point");
+    }
 
     return {
       firstPosition: uniform(firstPoint),
@@ -82,9 +90,9 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       strokeColor: uniform(strokeColor),
       strokeOpacity: uniform(strokeOpacity),
       strokeWidth: uniform(strokeWidth),
+      strokeLength: uniform(strokeLength),
       dashLength: uniform(dashLength),
       dashOffset: uniform(0),
-      totalLength: uniform(totalLength),
     };
   }
 
