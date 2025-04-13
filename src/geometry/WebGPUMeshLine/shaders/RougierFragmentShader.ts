@@ -96,7 +96,7 @@ export default class RougierFragmentShader {
     strokeWidth: UniformNode<number>,
     totalLength: UniformNode<number>,
     dashLength: UniformNode<number>,
-    worldTime: UniformNode<number>,
+    dashOffset: UniformNode<number>,
   ) {
     this.node = Fn(() => {
       const startFragment = varyingProperty("vec2", "vStartFragment");
@@ -130,10 +130,8 @@ export default class RougierFragmentShader {
       const dashPeriod = this.dashAtlas.period;
       const freqPatternLength = dashPeriod.mul(dashLength);
       // TODO: Some corner error with time = 0 on a square with side length 2
-      // const dashPhase = float(0);
-      const dashPhase = float(0).sub(worldTime);
-      const u = xOffset.add(dashPhase.mul(dashLength)).mod(freqPatternLength);
-      const u2 = xOffset.add(dashPhase.mul(dashLength)).mod(freqPatternLength);
+      const u = xOffset.sub(dashOffset).mod(freqPatternLength);
+      const u2 = xOffset.sub(dashOffset).mod(freqPatternLength);
       const v = texture(this.dashAtlas.atlas, vec2(u2.div(freqPatternLength), 0));
       const dashCenterReferencePoint = v.x.mul(255).mul(dashLength);
       const dashType = v.y;
@@ -327,7 +325,7 @@ export default class RougierFragmentShader {
       // NOTE: In closed curves the nextFragment for the last segment
       // is the same as the endFragment for the first segment.
       If(dashStart.greaterThanEqual(freqPatternLength), () => {
-        const u = dashPhase.mul(dashLength).mod(freqPatternLength);
+        const u = dashOffset.negate().mod(freqPatternLength);
         const v = texture(
           this.dashAtlas.atlas,
           vec2(u.div(freqPatternLength), 0),

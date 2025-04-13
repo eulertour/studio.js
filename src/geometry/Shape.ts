@@ -113,7 +113,7 @@ export default abstract class Shape extends THREE.Group {
 
   update(dt: number, t: number) {
     if (this.stroke !== undefined) {
-      this.stroke.material.uniforms.worldTime.value = t;
+      this.stroke.material.uniforms.dashOffset.value = t;
     }
   }
 

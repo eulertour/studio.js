@@ -11,7 +11,7 @@ export type Uniforms = {
   strokeOpacity: THREE.UniformNode<number>;
   strokeWidth: THREE.UniformNode<number>;
   dashLength: THREE.UniformNode<number>;
-  worldTime: THREE.UniformNode<number>;
+  dashOffset: THREE.UniformNode<number>;
   totalLength: THREE.UniformNode<number>;
 }
 
@@ -50,7 +50,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       this.uniforms.strokeWidth,
       this.uniforms.totalLength,
       this.uniforms.dashLength,
-      this.uniforms.worldTime,
+      this.uniforms.dashOffset,
     ).node();
   }
 
@@ -82,7 +82,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       strokeOpacity: uniform(strokeOpacity),
       strokeWidth: uniform(strokeWidth),
       dashLength: uniform(dashLength),
-      worldTime: uniform(0),
+      dashOffset: uniform(0),
       totalLength: uniform(totalLength),
     };
   }
