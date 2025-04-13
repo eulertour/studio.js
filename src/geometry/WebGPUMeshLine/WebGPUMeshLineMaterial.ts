@@ -1,7 +1,7 @@
 import * as THREE from "three/webgpu";
 import { uniform } from "three/tsl";
-import { RougierVertexShader } from "./shaders/RougierVertexShader.js";
-import RougierFragmentShader from "./shaders/RougierFragmentShader.js";
+import { RougierVertexShader } from "./shaders/VertexShader.js";
+import RougierFragmentShader from "./shaders/FragmentShader.js";
 import DashAtlas from "./shaders/DashAtlas.js";
 
 export type Uniforms = {

@@ -287,7 +287,7 @@ export default class RougierFragmentShader {
 
       // Incoming to join
       If(segmentStop.notEqual(lineStop), () => {
-        If(dashStart.greaterThanEqual(segmentStop), () => {
+        If(dashStart.greaterThan(segmentStop), () => {
           Discard();
         });
         If(
