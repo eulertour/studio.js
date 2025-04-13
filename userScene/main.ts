@@ -20,7 +20,7 @@ export default class Scene implements StudioScene {
       // fillColor: new THREE.Color("blue"),
       // fillOpacity: 0.75,
       strokeColor: new THREE.Color("orange"),
-      strokeOpacity: 0.5,
+      strokeOpacity: 0.85,
       strokeWidth: 4,
       strokeDashLength: 2 * Math.PI / 6,
       strokeDashSpeed: 1,
@@ -39,7 +39,8 @@ export default class Scene implements StudioScene {
     // ];
 
     const square = new Geometry.Square(2, {
-      strokeOpacity: 0.75,
+      strokeColor: new THREE.Color("purple"),
+      strokeOpacity: 0.85,
       strokeWidth: 5,
       // strokeDashSpeed: 1,
       strokeDashLength: 0.5,
@@ -56,6 +57,20 @@ export default class Scene implements StudioScene {
     square2.position.set(-4, -2, 0)
     scene.add(square2);
 
+    const line2 = new Geometry.Polyline([
+      new THREE.Vector3(0, -2, 0),
+      new THREE.Vector3(0, 2, 0),
+      new THREE.Vector3(0, -2, 0),
+    ], {
+      strokeColor: new THREE.Color("purple"),
+      strokeOpacity: 0.85,
+      strokeWidth: 5,
+      strokeDashLength: 0.5,
+      strokeDashSpeed: 1,
+    });
+    line2.position.set(-2, -1, 0)
+    scene.add(line2);
+
     const points = [
       // new THREE.Vector3(0, 0, 0),
       // new THREE.Vector3(1, 0, 0),
@@ -66,9 +81,9 @@ export default class Scene implements StudioScene {
     ];
     this.line = new Geometry.Polyline(points, {
       strokeColor: new THREE.Color("blue"),
-      strokeOpacity: 0.5,
-      strokeWidth: 4,
-      strokeDashLength: 1,
+      strokeOpacity: 0.85,
+      strokeWidth: 7,
+      strokeDashLength: 0.75,
       strokeDashSpeed: 1,
       fillColor: new THREE.Color("blue"),
       fillOpacity: 0.5,
@@ -108,7 +123,7 @@ export default class Scene implements StudioScene {
       }),
       new Animation.Animation((t) => {
         this.line.reshape([
-          new THREE.Vector3(-1 + 3 * t, 2, 0),
+          new THREE.Vector3(-1 + 2 * t, 2, 0),
           new THREE.Vector3(3 - 3 * t, 1, 0),
           new THREE.Vector3(3 * t, -3, 0),
         ]);

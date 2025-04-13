@@ -30,6 +30,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
   ) {
     super({ transparent: true });
 
+    this.dashAtlas = new DashAtlas(dashPattern);
     this.uniforms = this.createUniforms(
       points,
       strokeColor,
@@ -37,8 +38,6 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       strokeWidth,
       dashLength,
     );
-
-    this.dashAtlas = new DashAtlas(dashPattern);
     this.vertexNode = new RougierVertexShader(
       this.uniforms.firstPosition,
       this.uniforms.secondPosition,
@@ -98,5 +97,10 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
 
   update(t: number) {
     this.uniforms.dashOffset.value = t * this.dashSpeed;
+  }
+
+  dispose() {
+    super.dispose();
+    this.dashAtlas.atlas.dispose();
   }
 }

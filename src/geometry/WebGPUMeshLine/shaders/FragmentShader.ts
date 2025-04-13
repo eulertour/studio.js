@@ -3,11 +3,13 @@ import {
   Fn,
   If,
   ShaderNodeObject,
+  abs,
   add,
   attribute,
   dot,
   float,
   max,
+  or,
   screenCoordinate,
   screenSize,
   sign,
@@ -126,10 +128,6 @@ export default class RougierFragmentShader {
           .mul(segmentDistancePerFragment)
           .mul(sign(dot(segmentVector, tangentVector))),
       );
-      const normalOffset = normalVector
-        .length()
-        .mul(segmentDistancePerFragment)
-        .mul(sign(dot(rotate90(segmentVector), normalVector)));
 
       const patternLength = this.dashAtlas.period.mul(dashLength);
       const patternOffset = strokeOffset.sub(dashOffset).mod(patternLength);
@@ -155,13 +153,20 @@ export default class RougierFragmentShader {
       const segmentStop = endLength;
       const halfWidth = float(strokeWidth).mul(UNITS_PER_STROKE_WIDTH / 2);
 
-      If(referenceDashStopStrokeOffset.lessThan(strokeStart), () => {
-        Discard();
-      });
-      If(referenceDashStartStrokeOffset.greaterThan(strokeEnd), () => {
-        Discard();
-      });
+      If(
+        or(
+          referenceDashStopStrokeOffset.lessThan(strokeStart),
+          referenceDashStartStrokeOffset.greaterThan(strokeEnd),
+        ),
+        () => {
+          Discard();
+        },
+      );
 
+      const dy = normalVector
+        .length()
+        .mul(segmentDistancePerFragment)
+        .mul(sign(dot(rotate90(segmentVector), normalVector)));
       // Stroke start
       If(
         strokeOffset
@@ -170,7 +175,6 @@ export default class RougierFragmentShader {
           .and(strokeStart.lessThanEqual(referenceDashStopStrokeOffset)),
         () => {
           const dx = strokeStart.sub(strokeOffset);
-          const dy = normalOffset;
           If(vec2(dx, dy).length().greaterThan(halfWidth), () => {
             Discard();
           });
@@ -184,58 +188,41 @@ export default class RougierFragmentShader {
             .and(strokeEnd.lessThanEqual(referenceDashStopStrokeOffset)),
           () => {
             const dx = strokeOffset.sub(strokeEnd);
-            const dy = normalOffset;
-            If(vec2(dx, dy).length().greaterThanEqual(halfWidth), () => {
+            If(vec2(dx, dy).length().greaterThan(halfWidth), () => {
               Discard();
             });
           },
         )
-        // Dash body
-        .ElseIf(referencePointType.equal(0), () => {
-          If(normalOffset.abs().greaterThanEqual(halfWidth), () => {
+        // NOTE: The start, body, and end dash types are represented
+        // in the DataTexture as +1, 0, and -1, respectively. These
+        // values become 1/255, 0, and 1 when read in the fragment shader.
+        //
+        // Dash end
+        .ElseIf(referencePointType.equal(1), () => {
+          const dx = max(patternOffset.sub(referencePointPatternOffset), 0);
+          If(vec2(dx, dy).length().greaterThan(halfWidth), () => {
             Discard();
           });
         })
-        // Dash end
-        .ElseIf(referencePointType.equal(1), () => {
-          // -1
-          const newU = max(patternOffset.sub(referencePointPatternOffset), 0);
-          // u.assign(max(u.sub(dashCenterReferencePoint), 0));
-          If(
-            sqrt(
-              newU.mul(newU).add(normalOffset.mul(normalOffset)),
-            ).greaterThanEqual(halfWidth),
-            () => {
-              Discard();
-            },
-          );
+        // Dash body
+        .ElseIf(referencePointType.equal(0), () => {
+          If(abs(dy).greaterThanEqual(halfWidth), () => {
+            Discard();
+          });
         })
         // Dash start
         .ElseIf(referencePointType.greaterThan(0), () => {
-          // +1
-          // u.assign(max(dashCenterReferencePoint.sub(u), 0));
-          const newU = max(referencePointPatternOffset.sub(patternOffset), 0);
-          If(
-            sqrt(
-              newU.mul(newU).add(normalOffset.mul(normalOffset)),
-            ).greaterThanEqual(halfWidth),
-            () => {
-              Discard();
-            },
-          );
+          const dx = max(referencePointPatternOffset.sub(patternOffset), 0);
+          If(vec2(dx, dy).length().greaterThan(halfWidth), () => {
+            Discard();
+          });
         });
 
       // Outgoing from join
       If(segmentStart.notEqual(strokeStart), () => {
-        // TODO: distancePerFragment was calcuated based on the
-        // 3D length of the current segment. This calculation
-        // should use a new constant based on the 3D length of
-        // the previous segment.
         If(referenceDashStartStrokeOffset.lessThanEqual(segmentStart), () => {
           const previousFragment = varyingProperty("vec2", "vPreviousFragment");
-          const startToPrevious = vec2(
-            previousFragment.sub(startFragment),
-          ).toVar();
+          const startToPrevious = vec2(previousFragment.sub(startFragment));
 
           const previousSegmentDashStartDistance = segmentStart.sub(
             referenceDashStartStrokeOffset,
@@ -294,9 +281,7 @@ export default class RougierFragmentShader {
           () => {
             const newU = strokeOffset.sub(segmentStop);
             If(
-              sqrt(
-                newU.mul(newU).add(normalOffset.mul(normalOffset)),
-              ).greaterThan(halfWidth),
+              sqrt(newU.mul(newU).add(dy.mul(dy))).greaterThan(halfWidth),
               () => {
                 Discard();
               },
@@ -329,10 +314,6 @@ export default class RougierFragmentShader {
             firstSegmentStartFragment,
           );
 
-          // TODO: distancePerFragment was calcuated based on the
-          // 3D length of the current segment. This calculation
-          // should use a new constant based on the 3D length of
-          // the first segment.
           const firstSegmentDashStartFragment = firstSegmentStartFragment.add(
             firstSegmentStartToEnd
               .normalize()
