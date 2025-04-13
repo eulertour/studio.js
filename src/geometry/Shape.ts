@@ -111,7 +111,7 @@ export default abstract class Shape extends THREE.Group {
     label.moveNextTo(this, direction);
   }
 
-  update(dt: number, t: number) {
+  update(_: number, t: number) {
     if (this.stroke !== undefined) {
       this.stroke.material.update(t);
     }

@@ -1,15 +1,13 @@
 import * as THREE from "three/webgpu";
 import { ShaderNodeObject, uniform } from "three/tsl";
 
+const ATLAS_RESOLUTION = 1024;
+
 enum DashType {
   START = 1,
   BODY = 0,
   END = -1,
 }
-
-const texelWidth = 1024;
-const texelHeight = 1;
-const atlasSize = texelWidth * texelHeight;
 
 const indexOrThrow = <T>(array: T[], i: number) => {
   const value = array[i];
@@ -27,7 +25,7 @@ export default class DashAtlas {
     this.period = uniform(this.getPeriod(pattern));
 
     const atlasData = this.generateAtlasData(pattern);
-    this.atlas = new THREE.DataTexture(atlasData, texelWidth, texelHeight);
+    this.atlas = new THREE.DataTexture(atlasData, ATLAS_RESOLUTION, 1);
     this.atlas.needsUpdate = true;
   }
 
@@ -40,7 +38,7 @@ export default class DashAtlas {
   }
 
   generateAtlasData(pattern: number[]) {
-    const data = new Int8Array(4 * atlasSize);
+    const data = new Int8Array(4 * ATLAS_RESOLUTION);
 
     if (pattern.length % 2 !== 0) {
       throw new Error("Dash pattern length must be a multiple of 2");
@@ -60,8 +58,8 @@ export default class DashAtlas {
       period += patternLength;
     }
 
-    for (let i = 0; i < texelWidth; i++) {
-      const xPosition = period * (i / (texelWidth - 1));
+    for (let i = 0; i < ATLAS_RESOLUTION; i++) {
+      const xPosition = period * (i / (ATLAS_RESOLUTION - 1));
 
       let closestBoundaryIndex = -1;
       let closestBoundaryDistance = Infinity;
