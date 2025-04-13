@@ -26,39 +26,43 @@ import { UniformNode } from "three/webgpu";
 import { UNITS_PER_STROKE_WIDTH } from "../../../constants.js";
 import DashAtlas from "./DashAtlas.js";
 
+// This returns [cssViewportWidth, cssViewportHeight] * devicePixelRatio.
+// If the css dimensions are 1280x720, this returns
+// [1280, 720] * devicePixelRatio, which may be [1408, 792].
+const glFragCoord = Fn(() =>
+  vec2(screenCoordinate.x, screenSize.y.sub(screenCoordinate.y)),
+);
+
+const rotate90 = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
+  vec2(vector.y.negate(), vector.x),
+);
+
 const lengthSquared = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
   dot(vector, vector),
 );
 
-const segmentCoversFragment = Fn(
-  ([
-    halfWidthSquared,
-    segmentVec,
-    startToFrag,
-    endToFrag,
-    dotProduct,
-    segmentProjection,
-    segmentNormal,
-  ]: [
-    ShaderNodeObject<OperatorNode>,
-    ShaderNodeObject<OperatorNode>,
-    ShaderNodeObject<OperatorNode>,
-    ShaderNodeObject<OperatorNode>,
-    ShaderNodeObject<OperatorNode>,
+const projectOntoVector = Fn(
+  ([vectorToProject, vectorToProjectOnto]: [
     ShaderNodeObject<OperatorNode>,
     ShaderNodeObject<OperatorNode>,
   ]) => {
-    const segmentStart = lengthSquared(startToFrag).lessThan(halfWidthSquared);
-    const segmentEnd = lengthSquared(endToFrag).lessThan(halfWidthSquared);
-    const segmentStem = dotProduct
-      .greaterThan(0)
-      .and(lengthSquared(segmentProjection).lessThan(lengthSquared(segmentVec)))
-      .and(lengthSquared(segmentNormal).lessThan(halfWidthSquared));
-    return segmentStem.or(segmentStart).or(segmentEnd);
+    const projectionUnitVector = vectorToProjectOnto.normalize();
+    return vectorToProject.dot(projectionUnitVector).mul(projectionUnitVector);
   },
 );
 
-const segmentCoversFragment2 = Fn(
+const transformToBasis = Fn(
+  ([input, basis]: [
+    ShaderNodeObject<OperatorNode>,
+    ShaderNodeObject<OperatorNode>,
+  ]) => {
+    const tangent = projectOntoVector(input, basis);
+    const normal = input.sub(tangent);
+    return vec4(tangent, normal);
+  },
+);
+
+const segmentCoversFragment = Fn(
   ([fragment, start, end, halfWidth]: [
     ShaderNodeObject<OperatorNode>,
     ShaderNodeObject<OperatorNode>,
@@ -86,38 +90,6 @@ const segmentCoversFragment2 = Fn(
 
     return coveredByStem.or(coveredByStart).or(coveredByEnd);
   },
-);
-
-// [cssViewportWidth, cssViewportHeight, ?] * devicePixelRatio
-// [1280, 720] * devicePixelRatio
-// [1408, 792]
-const glFragCoord = Fn(() =>
-  vec2(screenCoordinate.x, screenSize.y.sub(screenCoordinate.y)),
-);
-
-const projectOntoVector = Fn(
-  ([vectorToProject, vectorToProjectOnto]: [
-    ShaderNodeObject<OperatorNode>,
-    ShaderNodeObject<OperatorNode>,
-  ]) => {
-    const bHat = vectorToProjectOnto.normalize();
-    return vectorToProject.dot(bHat).mul(bHat);
-  },
-);
-
-const transformToBasis = Fn(
-  ([input, basis]: [
-    ShaderNodeObject<OperatorNode>,
-    ShaderNodeObject<OperatorNode>,
-  ]) => {
-    const tangent = projectOntoVector(input, basis);
-    const normal = input.sub(tangent);
-    return vec4(tangent, normal);
-  },
-);
-
-const rotate90 = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
-  vec2(vector.y.negate(), vector.x),
 );
 
 export default class RougierFragmentShader {
@@ -240,7 +212,7 @@ export default class RougierFragmentShader {
         })
         // Dash body
         .ElseIf(referencePointType.equal(0), () => {
-          If(abs(dy).greaterThanEqual(halfWidth), () => {
+          If(abs(dy).greaterThan(halfWidth), () => {
             Discard();
           });
         })
@@ -275,7 +247,7 @@ export default class RougierFragmentShader {
               .mul(segmentFragmentsPerDistance),
           );
           If(
-            segmentCoversFragment2(
+            segmentCoversFragment(
               glFragCoord(),
               previousSegmentDashStartFragment,
               startFragment,
@@ -309,14 +281,25 @@ export default class RougierFragmentShader {
 
       // Incoming to start of closed curve
       If(referenceDashStartStrokeOffset.greaterThanEqual(patternLength), () => {
-        const u = float(dashOffset).negate().mod(patternLength);
-        const v = texture(this.dashAtlas.atlas, vec2(u.div(patternLength), 0));
-        const _start = v.z.mul(255).mul(dashLength);
-        const _stop = v.a.mul(255).mul(dashLength);
-        const firstSegmentDashStartDistance = max(u.negate().add(_start), 0);
-        const firstSegmentDashStopDistance = u.negate().add(_stop);
+        const startPointPatternOffset = float(dashOffset)
+          .negate()
+          .mod(patternLength);
 
-        If(firstSegmentDashStopDistance.greaterThanEqual(0), () => {
+        const u0 = startPointPatternOffset.div(patternLength);
+        const uStar0 = texture(this.dashAtlas.atlas, vec2(u0, 0));
+
+        const firstDashStartPatternOffset = uStar0.z.mul(255).mul(dashLength);
+        const firstDashStopPatternOffset = uStar0.w.mul(255).mul(dashLength);
+
+        const firstDashStartStrokeOffset = max(
+          startPointPatternOffset.negate().add(firstDashStartPatternOffset),
+          0,
+        );
+        const firstDashStopStrokeOffset = startPointPatternOffset
+          .negate()
+          .add(firstDashStopPatternOffset);
+
+        If(firstDashStopStrokeOffset.greaterThanEqual(0), () => {
           const firstSegmentStartFragment = varyingProperty(
             "vec2",
             "vFirstFragment",
@@ -328,43 +311,25 @@ export default class RougierFragmentShader {
           const firstSegmentStartToEnd = firstSegmentEndFragment.sub(
             firstSegmentStartFragment,
           );
-
           const firstSegmentDashStartFragment = firstSegmentStartFragment.add(
             firstSegmentStartToEnd
               .normalize()
-              .mul(firstSegmentDashStartDistance)
+              .mul(firstDashStartStrokeOffset)
               .mul(segmentFragmentsPerDistance),
           );
           const firstSegmentDashEndFragment = firstSegmentStartFragment.add(
             firstSegmentStartToEnd
               .normalize()
-              .mul(firstSegmentDashStopDistance)
+              .mul(firstDashStopStrokeOffset)
               .mul(segmentFragmentsPerDistance),
           );
 
-          const fragmentHalfWidth = halfWidth.mul(segmentFragmentsPerDistance);
-          const halfWidthSquared = fragmentHalfWidth.mul(fragmentHalfWidth);
-          const segmentVec = firstSegmentDashEndFragment.sub(
-            firstSegmentDashStartFragment,
-          );
-          const startToFrag = glFragCoord().sub(firstSegmentDashStartFragment);
-          const endToFrag = glFragCoord().sub(firstSegmentDashEndFragment);
-          const dotProduct = segmentVec.dot(startToFrag);
-          const segmentProjection = startToFrag
-            .dot(segmentVec)
-            .div(segmentVec.dot(segmentVec))
-            .mul(segmentVec);
-          const segmentNormal = startToFrag.sub(segmentProjection);
-
           If(
             segmentCoversFragment(
-              halfWidthSquared,
-              segmentVec,
-              startToFrag,
-              endToFrag,
-              dotProduct,
-              segmentProjection,
-              segmentNormal,
+              glFragCoord(),
+              firstSegmentDashStartFragment,
+              firstSegmentDashEndFragment,
+              halfWidth.mul(segmentFragmentsPerDistance),
             ),
             () => {
               Discard();
