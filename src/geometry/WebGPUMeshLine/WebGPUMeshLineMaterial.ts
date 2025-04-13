@@ -1,7 +1,7 @@
 import * as THREE from "three/webgpu";
 import { uniform } from "three/tsl";
-import { RougierVertexShader } from "./shaders/VertexShader.js";
-import RougierFragmentShader from "./shaders/FragmentShader.js";
+import VertexShader from "./shaders/VertexShader.js";
+import FragmentShader from "./shaders/FragmentShader.js";
 import DashAtlas from "./shaders/DashAtlas.js";
 
 export type Uniforms = {
@@ -40,12 +40,12 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       width,
       dashLength,
     );
-    this.vertexNode = new RougierVertexShader(
+    this.vertexNode = new VertexShader(
       this.uniforms.firstPoint,
       this.uniforms.secondPoint,
       this.uniforms.width,
     ).node();
-    this.fragmentNode = new RougierFragmentShader(
+    this.fragmentNode = new FragmentShader(
       this.dashAtlas,
       this.uniforms.color,
       this.uniforms.opacity,
@@ -58,12 +58,12 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
 
   createUniforms(
     points: THREE.Vector3[],
-    strokeColor: THREE.Color,
-    strokeOpacity: number,
-    strokeWidth: number,
+    color: THREE.Color,
+    opacity: number,
+    width: number,
     dashLength: number,
   ): Uniforms {
-    let strokeLength = 0;
+    let length = 0;
     for (let i = 0; i < points.length - 1; i++) {
       const currentPoint = points[i];
       const nextPoint = points[i + 1];
@@ -73,7 +73,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       if (nextPoint === undefined) {
         throw new Error("Error iterating over points");
       }
-      strokeLength += currentPoint.distanceTo(nextPoint);
+      length += currentPoint.distanceTo(nextPoint);
     }
 
     const firstPoint = points[0];
@@ -88,10 +88,10 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     return {
       firstPoint: uniform(firstPoint),
       secondPoint: uniform(secondPoint),
-      color: uniform(strokeColor),
-      opacity: uniform(strokeOpacity),
-      width: uniform(strokeWidth),
-      length: uniform(strokeLength),
+      color: uniform(color),
+      opacity: uniform(opacity),
+      width: uniform(width),
+      length: uniform(length),
       dashLength: uniform(dashLength),
       dashOffset: uniform(0),
     };

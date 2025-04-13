@@ -45,7 +45,7 @@ const boolToSign = Fn(([booleanValue]: [ShaderNodeObject<OperatorNode>]) =>
   float(2).mul(booleanValue.oneMinus()).sub(1),
 );
 
-export class RougierVertexShader {
+export default class RougierVertexShader {
   node: ShaderNodeFn<[]>;
 
   constructor(
@@ -144,4 +144,3 @@ export class RougierVertexShader {
     });
   }
 }
-
