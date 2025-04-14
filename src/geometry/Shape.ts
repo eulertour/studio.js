@@ -1,8 +1,9 @@
 import * as THREE from "three/webgpu";
 
 import * as Text from "../text.js";
-import WebGPUMeshLineGeometry from "./WebGPUMeshLine/WebGPUMeshLineGeometry.js";
-import WebGPUMeshLineMaterial from "./WebGPUMeshLine/WebGPUMeshLineMaterial.js";
+import WebGPUMeshLineGeometry from "./WebGPUMeshLine/Geometry.js";
+import WebGPUMeshLineMaterial from "./WebGPUMeshLine/Material.js";
+import WebGPUMeshLine from "./WebGPUMeshLine/index.js";
 
 export type Transform = {
   position: THREE.Vector3;
@@ -32,7 +33,7 @@ const getFillGeometry = (points: Array<THREE.Vector3>) => {
 };
 
 type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
-type Stroke = THREE.Mesh<WebGPUMeshLineGeometry, WebGPUMeshLineMaterial>;
+type Stroke = WebGPUMeshLine
 
 /**
  * An abstract class representing a generalized shape.
@@ -69,16 +70,13 @@ export default abstract class Shape extends THREE.Group {
     }
 
     if (config.stroke !== false) {
-      const strokeGeometry = new WebGPUMeshLineGeometry(points);
-      const strokeMaterial = new WebGPUMeshLineMaterial(
-        points,
-        config.strokeColor,
-        config.strokeOpacity,
-        config.strokeWidth,
-        config.strokeDashLength,
-        config.strokeDashSpeed,
-      );
-      this.stroke = new THREE.Mesh(strokeGeometry, strokeMaterial);
+      this.stroke = new WebGPUMeshLine(points, {
+        color: config.strokeColor,
+        opacity: config.strokeOpacity,
+        width: config.strokeWidth,
+        dashLength: config.strokeDashLength,
+        dashSpeed: config.strokeDashSpeed,
+      })
       this.add(this.stroke);
     }
 

@@ -44,13 +44,13 @@ const rotate90 = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
   vec2(vector.y.negate(), vector.x),
 );
 
-export default class RougierVertexShader {
+export default class VertexShader {
   node: ShaderNodeFn<[]>;
 
   constructor(
     firstPosition: UniformNode<Vector3>,
     secondPosition: UniformNode<Vector3>,
-    strokeWidth: UniformNode<number>,
+    width: UniformNode<number>,
   ) {
     this.node = Fn(() => {
       const modelViewProjection = cameraProjectionMatrix.mul(modelViewMatrix);
@@ -107,7 +107,7 @@ export default class RougierVertexShader {
         attribute("vertexOffset"),
       );
       const cameraSpaceVertexOffset = vec4(
-        unitOffset.mul(strokeWidth).mul(UNITS_PER_STROKE_WIDTH),
+        unitOffset.mul(width).mul(UNITS_PER_STROKE_WIDTH),
         0,
         0,
       );

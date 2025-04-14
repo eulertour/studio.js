@@ -92,15 +92,15 @@ const segmentCoversFragment = Fn(
   },
 );
 
-export default class RougierFragmentShader {
+export default class FragmentShader {
   node: ShaderNodeFn<[]>;
 
   constructor(
     public dashAtlas: DashAtlas,
-    strokeColor: UniformNode<THREE.Color>,
-    strokeOpacity: UniformNode<number>,
-    strokeWidth: UniformNode<number>,
-    strokeLength: UniformNode<number>,
+    color: UniformNode<THREE.Color>,
+    opacity: UniformNode<number>,
+    width: UniformNode<number>,
+    strokeEnd: UniformNode<number>,
     dashLength: UniformNode<number>,
     dashOffset: UniformNode<number>,
   ) {
@@ -114,17 +114,17 @@ export default class RougierFragmentShader {
       const tangentVector = components.xy;
       const normalVector = components.zw;
 
-      const start = attribute("startLength");
-      const end = attribute("endLength");
-      const segmentDistancePerFragment = end
-        .sub(start)
+      const segmentStart = attribute("startLength");
+      const segmentEnd = attribute("endLength");
+      const segmentDistancePerFragment = segmentEnd
+        .sub(segmentStart)
         .div(segmentVector.length());
       const segmentFragmentsPerDistance = float(1).div(
         segmentDistancePerFragment,
       );
 
       const offset = add(
-        start,
+        segmentStart,
         tangentVector
           .length()
           .mul(segmentDistancePerFragment)
@@ -140,10 +140,7 @@ export default class RougierFragmentShader {
       const referenceDashEnd = referenceDashData.z;
       const referencePointType = referenceDashData.w;
 
-      const strokeEnd = float(strokeLength);
-      const segmentStart = start;
-      const segmentEnd = end;
-      const halfWidth = float(strokeWidth).mul(UNITS_PER_STROKE_WIDTH / 2);
+      const halfWidth = float(width).mul(UNITS_PER_STROKE_WIDTH / 2);
       const halfWidthSquared = mul(halfWidth, halfWidth);
       const dy = normalVector
         .length()
@@ -153,7 +150,7 @@ export default class RougierFragmentShader {
       If(
         or(
           referenceDashEnd.lessThan(0),
-          strokeEnd.lessThan(referenceDashStart),
+          float(strokeEnd).lessThan(referenceDashStart),
         ),
         () => {
           Discard();
@@ -175,10 +172,10 @@ export default class RougierFragmentShader {
       )
         // Stroke end
         .ElseIf(
-          strokeEnd
+          float(strokeEnd)
             .lessThanEqual(offset)
             .and(referenceDashStart.lessThanEqual(strokeEnd))
-            .and(strokeEnd.lessThanEqual(referenceDashEnd)),
+            .and(float(strokeEnd).lessThanEqual(referenceDashEnd)),
           () => {
             const dx = offset.sub(strokeEnd);
             If(
@@ -271,7 +268,7 @@ export default class RougierFragmentShader {
 
       // Incoming to start of closed curve
       const patternLength = this.dashAtlas.period.mul(dashLength);
-      If(float(strokeLength).sub(offset).lessThanEqual(patternLength), () => {
+      If(float(strokeEnd).sub(offset).lessThanEqual(patternLength), () => {
         const startPointReferenceDashData = this.getReferenceDashData(
           0,
           dashOffset,
@@ -323,7 +320,7 @@ export default class RougierFragmentShader {
         });
       });
 
-      return vec4(strokeColor, strokeOpacity);
+      return vec4(color, opacity);
     });
   }
 

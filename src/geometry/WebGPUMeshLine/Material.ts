@@ -28,8 +28,8 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     width: number,
     dashLength: number,
     dashSpeed: number,
-    dashPattern = [1, 1],
-    threeDimensions = true,
+    dashPattern: number[],
+    threeDimensions: boolean,
   ) {
     super({
       transparent: true,
