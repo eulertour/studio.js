@@ -46,9 +46,9 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       dashLength,
     );
     this.vertexNode = new VertexShader(
+      this.uniforms.width,
       this.uniforms.firstPoint,
       this.uniforms.secondPoint,
-      this.uniforms.width,
     ).node();
     this.fragmentNode = new FragmentShader(
       this.dashAtlas,

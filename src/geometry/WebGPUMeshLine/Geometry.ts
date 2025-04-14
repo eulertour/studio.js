@@ -11,6 +11,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   prevPosition = new Float32Array();
   startLength = new Float32Array();
   endLength = new Float32Array();
+  prevLength = new Float32Array();
   vertexOffset = new Float32Array();
   indices = new Uint16Array();
 
@@ -41,6 +42,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.prevPosition = new Float32Array(12 * numberOfSegments);
     this.startLength = new Float32Array(4 * numberOfSegments);
     this.endLength = new Float32Array(4 * numberOfSegments);
+    this.prevLength = new Float32Array(4 * numberOfSegments);
     this.vertexOffset = new Float32Array(8 * numberOfSegments);
     this.indices = new Uint16Array(6 * numberOfSegments);
 
@@ -49,6 +51,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     const prevPositionBuffer = new THREE.BufferAttribute(this.prevPosition, 3);
     const startLengthBuffer = new THREE.BufferAttribute(this.startLength, 1);
     const endLengthBuffer = new THREE.BufferAttribute(this.endLength, 1);
+    const prevLengthBuffer = new THREE.BufferAttribute(this.prevLength, 1);
     const vertexOffsetBuffer = new THREE.BufferAttribute(this.vertexOffset, 2);
     const indexBuffer = new THREE.BufferAttribute(this.indices, 1);
 
@@ -57,6 +60,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.setAttribute("prevPosition", prevPositionBuffer);
     this.setAttribute("startLength", startLengthBuffer);
     this.setAttribute("endLength", endLengthBuffer);
+    this.setAttribute("prevLength", prevLengthBuffer);
     this.setAttribute("vertexOffset", vertexOffsetBuffer);
     this.setIndex(indexBuffer);
 
@@ -69,6 +73,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.getAttribute("prevPosition").needsUpdate = true;
     this.getAttribute("startLength").needsUpdate = true;
     this.getAttribute("endLength").needsUpdate = true;
+    this.getAttribute("prevLength").needsUpdate = true;
     this.getAttribute("vertexOffset").needsUpdate = sizeChanged;
     if (this.index !== null) {
       this.index.needsUpdate = sizeChanged;
@@ -165,12 +170,13 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   fillLengths(points: THREE.Vector3[]) {
     const segmentCount = points.length - 1;
     for (let i = 0; i < segmentCount; i++) {
-      const startPosition = indexOrThrow(points, i);
-      const endPosition = indexOrThrow(points, i + 1);
+      const startPoint = indexOrThrow(points, i);
+      const endPoint = indexOrThrow(points, i + 1);
 
-      const startLengthIndex = Math.max(4 * i - 1, 0);
-      const startLength = bufferIndexOrThrow(this.endLength, startLengthIndex);
-      const endLength = startLength + startPosition.distanceTo(endPosition);
+      const prevArrayOffset = Math.max(4 * (i - 1), 0);
+      const startLength = bufferIndexOrThrow(this.endLength, prevArrayOffset);
+      const endLength = startLength + startPoint.distanceTo(endPoint);
+      const prevLength = bufferIndexOrThrow(this.startLength, prevArrayOffset);
 
       const arrayOffset = 4 * i;
       this.startLength[arrayOffset] = startLength;
@@ -181,6 +187,10 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       this.endLength[arrayOffset + 1] = endLength;
       this.endLength[arrayOffset + 2] = endLength;
       this.endLength[arrayOffset + 3] = endLength;
+      this.prevLength[arrayOffset] = prevLength;
+      this.prevLength[arrayOffset + 1] = prevLength;
+      this.prevLength[arrayOffset + 2] = prevLength;
+      this.prevLength[arrayOffset + 3] = prevLength;
     }
   }
 

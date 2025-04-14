@@ -6,6 +6,7 @@ import {
   abs,
   add,
   attribute,
+  div,
   dot,
   float,
   max,
@@ -119,9 +120,6 @@ export default class FragmentShader {
       const segmentDistancePerFragment = segmentEnd
         .sub(segmentStart)
         .div(segmentVector.length());
-      const segmentFragmentsPerDistance = float(1).div(
-        segmentDistancePerFragment,
-      );
 
       const offset = add(
         segmentStart,
@@ -211,11 +209,6 @@ export default class FragmentShader {
           });
         });
 
-      // TODO: The conversion factor between fragments and distance
-      // was calculated based on the 3D length of the current
-      // segment. Conversions for other segments should be based on
-      // the 3D lengths of the those segments.
-      //
       // Outgoing from join
       If(segmentStart.notEqual(0), () => {
         If(referenceDashStart.lessThanEqual(segmentStart), () => {
@@ -224,21 +217,24 @@ export default class FragmentShader {
           });
           const previousFragment = varyingProperty("vec2", "vPreviousFragment");
           const startToPrevious = vec2(previousFragment.sub(startFragment));
-          const previousSegmentDashStartDistance = segmentStart.sub(
-            referenceDashStart,
+          const previousSegmentDashStartDistance =
+            segmentStart.sub(referenceDashStart);
+          const previousSegmentFragmentsPerDistance = div(
+            startToPrevious.length(),
+            segmentStart.sub(attribute("prevLength")),
           );
           const previousSegmentDashStartFragment = startFragment.add(
             startToPrevious
               .normalize()
               .mul(previousSegmentDashStartDistance)
-              .mul(segmentFragmentsPerDistance),
+              .mul(previousSegmentFragmentsPerDistance),
           );
           If(
             segmentCoversFragment(
               glFragCoord(),
               previousSegmentDashStartFragment,
               startFragment,
-              halfWidth.mul(segmentFragmentsPerDistance),
+              halfWidth.mul(previousSegmentFragmentsPerDistance),
             ),
             () => {
               Discard();
@@ -293,17 +289,21 @@ export default class FragmentShader {
           const firstSegmentStartToEnd = firstSegmentEndFragment.sub(
             firstSegmentStartFragment,
           );
+          const firstSegmentFragmentsPerDistance = div(
+            firstSegmentStartToEnd.length(),
+            varyingProperty("float", "vFirstSegmentLength"),
+          );
           const firstSegmentDashStartFragment = firstSegmentStartFragment.add(
             firstSegmentStartToEnd
               .normalize()
               .mul(startPointReferenceDashStart)
-              .mul(segmentFragmentsPerDistance),
+              .mul(firstSegmentFragmentsPerDistance),
           );
           const firstSegmentDashEndFragment = firstSegmentStartFragment.add(
             firstSegmentStartToEnd
               .normalize()
               .mul(startPointReferenceDashEnd)
-              .mul(segmentFragmentsPerDistance),
+              .mul(firstSegmentFragmentsPerDistance),
           );
 
           If(
@@ -311,7 +311,7 @@ export default class FragmentShader {
               glFragCoord(),
               firstSegmentDashStartFragment,
               firstSegmentDashEndFragment,
-              halfWidth.mul(segmentFragmentsPerDistance),
+              halfWidth.mul(firstSegmentFragmentsPerDistance),
             ),
             () => {
               Discard();

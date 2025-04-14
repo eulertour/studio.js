@@ -3,6 +3,7 @@ import {
   ShaderNodeObject,
   attribute,
   cameraProjectionMatrix,
+  distance,
   mat2,
   mat4,
   modelViewMatrix,
@@ -48,9 +49,9 @@ export default class VertexShader {
   node: ShaderNodeFn<[]>;
 
   constructor(
+    width: UniformNode<number>,
     firstPosition: UniformNode<Vector3>,
     secondPosition: UniformNode<Vector3>,
-    width: UniformNode<number>,
   ) {
     this.node = Fn(() => {
       const modelViewProjection = cameraProjectionMatrix.mul(modelViewMatrix);
@@ -88,6 +89,9 @@ export default class VertexShader {
       varyingProperty("vec2", "vPreviousFragment").assign(previousFragment);
       varyingProperty("vec2", "vFirstFragment").assign(firstFragment);
       varyingProperty("vec2", "vSecondFragment").assign(secondFragment);
+      varyingProperty("float", "vFirstSegmentLength").assign(
+        distance(firstPosition, secondPosition),
+      );
 
       const tangent = endFragment.sub(startFragment);
       const unitTangent = normalize(tangent);
