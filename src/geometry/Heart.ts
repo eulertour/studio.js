@@ -102,12 +102,19 @@ export default class Heart extends Shape {
       if (this.fill) {
         this.fill.geometry.dispose();
         const shape = new THREE.Shape();
-        shape.moveTo(newPoints[0].x, newPoints[0].y);
-        for (const point of newPoints.slice(1)) {
-          shape.lineTo(point.x, point.y);
+        
+        if (newPoints.length > 0 && newPoints[0]) {
+          shape.moveTo(newPoints[0].x, newPoints[0].y);
+          
+          for (const point of newPoints.slice(1)) {
+            if (point) {
+              shape.lineTo(point.x, point.y);
+            }
+          }
+          
+          shape.closePath();
+          this.fill.geometry = new THREE.ShapeGeometry(shape);
         }
-        shape.closePath();
-        this.fill.geometry = new THREE.ShapeGeometry(shape);
       }
     }
     
