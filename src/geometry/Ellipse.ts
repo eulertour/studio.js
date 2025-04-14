@@ -24,8 +24,8 @@ export default class Ellipse extends Shape {
 
         for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
             const angle = i;
-            const x = radiusA * Math.cos(angle);
-            const y = radiusB * Math.sin(angle);
+            const x = radiusB * Math.cos(angle);
+            const y = radiusA * Math.sin(angle);
             points.push(new THREE.Vector3(x, y, 0));
         }
         
@@ -77,6 +77,6 @@ export default class Ellipse extends Shape {
  * 
  * Example:
  * 
- * const ellipse = new Geometry.Ellipse(radiusA, radiusB)
+ * const ellipse = new Geometry.Ellipse(radiusA (aka height), radiusB (aka width))
  * 
  */
