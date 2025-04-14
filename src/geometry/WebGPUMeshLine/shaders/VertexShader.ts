@@ -59,27 +59,27 @@ export default class RougierVertexShader {
         mat4(
           vec4(attribute("position"), 1),
           vec4(attribute("endPosition"), 1),
-          vec4(attribute("nextPosition"), 1),
           vec4(attribute("previousPosition"), 1),
+          vec4(0, 0, 0, 0),
         ),
       );
-      const homogeneousFirstPosition = modelViewProjection.mul(
-        vec4(firstPosition, 1),
-      );
-      const homogeneousSecondPosition = modelViewProjection.mul(
-        vec4(secondPosition, 1),
+      const homogeneousFirstSegment = modelViewProjection.mul(
+        mat4(
+          vec4(firstPosition, 1),
+          vec4(secondPosition, 1),
+          vec4(0, 0, 0, 0),
+          vec4(0, 0, 0, 0),
+        ),
       );
 
       const clipSpaceStart = vec4(homogeneousLinePoints[0]);
       const clipSpaceEnd = vec4(homogeneousLinePoints[1]);
-      const clipSpaceNext = vec4(homogeneousLinePoints[2]);
-      const clipSpacePrevious = vec4(homogeneousLinePoints[3]);
-      const clipSpaceFirstPosition = vec4(homogeneousFirstPosition);
-      const clipSpaceSecondPosition = vec4(homogeneousSecondPosition);
+      const clipSpacePrevious = vec4(homogeneousLinePoints[2]);
+      const clipSpaceFirstPosition = vec4(homogeneousFirstSegment[0]);
+      const clipSpaceSecondPosition = vec4(homogeneousFirstSegment[1]);
 
       const screenSpaceStartFragment = clipToScreenSpace(clipSpaceStart);
       const screenSpaceEndFragment = clipToScreenSpace(clipSpaceEnd);
-      const screenSpaceNextFragment = clipToScreenSpace(clipSpaceNext);
       const screenSpacePreviousFragment = clipToScreenSpace(clipSpacePrevious);
       const screenSpaceFirstFragment = clipToScreenSpace(
         clipSpaceFirstPosition,
@@ -92,7 +92,6 @@ export default class RougierVertexShader {
         screenSpaceStartFragment,
       );
       varyingProperty("vec2", "vEndFragment").assign(screenSpaceEndFragment);
-      varyingProperty("vec2", "vNextFragment").assign(screenSpaceNextFragment);
       varyingProperty("vec2", "vPreviousFragment").assign(
         screenSpacePreviousFragment,
       );
