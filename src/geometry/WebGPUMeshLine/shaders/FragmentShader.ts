@@ -114,8 +114,8 @@ export default class RougierFragmentShader {
       const tangentVector = basis.xy;
       const normalVector = basis.zw;
 
-      const startLength = float(strokeLength).mul(attribute("startProportion"));
-      const endLength = float(strokeLength).mul(attribute("endProportion"));
+      const startLength = attribute("startLength");
+      const endLength = attribute("endLength");
       const segmentDistancePerFragment = endLength
         .sub(startLength)
         .div(segmentVector.length());

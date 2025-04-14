@@ -12,12 +12,13 @@ interface Attributes extends Record<string, THREE.BufferAttribute> {
   arrow: THREE.Float32BufferAttribute;
   start: THREE.Float32BufferAttribute;
   bottom: THREE.Float32BufferAttribute;
-  startProportion: THREE.Float32BufferAttribute;
-  endProportion: THREE.Float32BufferAttribute;
+  startLength: THREE.Float32BufferAttribute;
+  endLength: THREE.Float32BufferAttribute;
   index: THREE.Uint16BufferAttribute;
 }
 
 export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
+  points: THREE.Vector3[];
   attributes: Attributes;
 
   position = new Float32Array();
@@ -29,22 +30,22 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   arrow = new Float32Array();
   start = new Float32Array();
   bottom = new Float32Array();
-  startProportion = new Float32Array();
-  endProportion = new Float32Array();
+  startLength = new Float32Array();
+  endLength = new Float32Array();
   indices = new Uint16Array();
 
-  constructor(public points: THREE.Vector3[]) {
+  constructor(points: THREE.Vector3[]) {
     super();
+    this.points = points;
     this.attributes = this.allocateNewBuffers(points.length);
     this.fillBuffersFromPoints(points);
     this.setAttributes(this.attributes);
   }
 
   fillBuffersFromPoints(points: Array<THREE.Vector3>, updateBounds = true) {
-    const sizeChanged = this.points.length !== points.length;
-    this.points = points;
+    const sizeChanged = this.position.length / 12 + 1 !== points.length;
 
-    const lengths = new Float32Array(this.points.length);
+    const lengths = new Array(points.length);
     lengths[0] = 0;
 
     const firstPoint = points.at(0);
@@ -72,9 +73,9 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     ) {
       throw new Error("point missing");
     }
-    this.addSegment(0, lengths, previousLength);
+    this.addSegment(0, points, lengths);
 
-    for (let i = 1; i < this.points.length - 2; i++) {
+    for (let i = 1; i < points.length - 2; i++) {
       const previousPosition = points[i - 1];
       const position = points[i];
       const endPosition = points[i + 1];
@@ -89,7 +90,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       ) {
         throw new Error("point missing");
       }
-      this.addSegment(i, lengths, previousLength);
+      this.addSegment(i, points, lengths);
     }
 
     // Handle the case where the first and last points are the same.
@@ -110,50 +111,30 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     position = points.at(-2);
     endPosition = points.at(-1);
     previousLength = lengths.at(-2);
-    if (
-      previousPosition === undefined ||
-      position === undefined ||
-      endPosition === undefined ||
-      nextPosition === undefined ||
-      previousLength === undefined
-    ) {
+    if (previousLength === undefined) {
       throw new Error("point missing");
     }
-    this.addSegment(points.length - 2, lengths, previousLength);
-
-    if (this.arrow) {
-      this.textureCoords[4 * (points.length - 3)] = 9; // 8 * 1 + 2 * 0 + 1;
-      this.textureCoords[4 * (points.length - 3) + 1] = 8; // 8 * 1 + 2 * 0 + 0;
-      this.textureCoords[4 * (points.length - 3) + 2] = 10; // 8 * 1 + 2 * 1 + 0;
-      this.textureCoords[4 * (points.length - 3) + 3] = 11; // 8 * 1 + 2 * 1 + 1;
-
-      this.textureCoords[4 * (points.length - 2)] = 5; // 4 * 1 + 2 * 0 + 1;
-      this.textureCoords[4 * (points.length - 2) + 1] = 4; // 4 * 1 + 2 * 0 + 0;
-      this.textureCoords[4 * (points.length - 2) + 2] = 6; // 4 * 1 + 2 * 1 + 0;
-      this.textureCoords[4 * (points.length - 2) + 3] = 7; // 4 * 1 + 2 * 1 + 1;
-    }
+    this.addSegment(points.length - 2, points, lengths);
 
     const totalLength = lengths.at(-1);
     if (totalLength === undefined) {
       throw new Error("Invalid length");
     }
-    for (let i = 0; i < this.points.length - 1; i++) {
+    for (let i = 0; i < points.length - 1; i++) {
       const startLength = lengths[i];
       const endLength = lengths[i + 1];
       if (startLength === undefined || endLength === undefined) {
         throw new Error("Invalid length");
       }
-      const startProportion = startLength / totalLength;
-      const endProportion = endLength / totalLength;
       const offset = 4 * i;
-      this.startProportion[offset] = startProportion;
-      this.startProportion[offset + 1] = startProportion;
-      this.startProportion[offset + 2] = startProportion;
-      this.startProportion[offset + 3] = startProportion;
-      this.endProportion[offset] = endProportion;
-      this.endProportion[offset + 1] = endProportion;
-      this.endProportion[offset + 2] = endProportion;
-      this.endProportion[offset + 3] = endProportion;
+      this.startLength[offset] = startLength;
+      this.startLength[offset + 1] = startLength;
+      this.startLength[offset + 2] = startLength;
+      this.startLength[offset + 3] = startLength;
+      this.endLength[offset] = endLength;
+      this.endLength[offset + 1] = endLength;
+      this.endLength[offset + 2] = endLength;
+      this.endLength[offset + 3] = endLength;
     }
 
     if (!this.attributes) throw new Error("missing attributes");
@@ -162,8 +143,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.attributes.nextPosition.needsUpdate = true;
     this.attributes.previousPosition.needsUpdate = true;
     this.attributes.textureCoords.needsUpdate = sizeChanged;
-    this.attributes.startProportion.needsUpdate = true;
-    this.attributes.endProportion.needsUpdate = true;
+    this.attributes.startLength.needsUpdate = true;
+    this.attributes.endLength.needsUpdate = true;
     this.attributes.index.needsUpdate = sizeChanged;
 
     if (updateBounds) {
@@ -174,56 +155,56 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
 
   addSegment(
     segmentIndex: number,
-    lengths: Float32Array,
-    previousLength: number,
+    points: THREE.Vector3[],
+    lengths: number[],
   ) {
     let previousPosition: THREE.Vector3;
     if (segmentIndex === 0) {
-      previousPosition = indexOrThrow(this.points, 0);
-    } else if (1 <= segmentIndex && segmentIndex < this.points.length - 2) {
-      previousPosition = indexOrThrow(this.points, segmentIndex - 1);
+      previousPosition = indexOrThrow(points, 0);
+    } else if (1 <= segmentIndex && segmentIndex < points.length - 2) {
+      previousPosition = indexOrThrow(points, segmentIndex - 1);
     } else {
-      if (this.points.length < 3) {
-        previousPosition = indexOrThrow(this.points, this.points.length - 2);
+      if (points.length < 3) {
+        previousPosition = indexOrThrow(points, points.length - 2);
       } else {
-        previousPosition = indexOrThrow(this.points, this.points.length - 3);
+        previousPosition = indexOrThrow(points, points.length - 3);
       }
     }
 
     let startPosition: THREE.Vector3;
     if (segmentIndex === 0) {
-      startPosition = indexOrThrow(this.points, 0);
-    } else if (1 <= segmentIndex && segmentIndex < this.points.length - 2) {
-      startPosition = indexOrThrow(this.points, segmentIndex);
+      startPosition = indexOrThrow(points, 0);
+    } else if (1 <= segmentIndex && segmentIndex < points.length - 2) {
+      startPosition = indexOrThrow(points, segmentIndex);
     } else {
-      startPosition = indexOrThrow(this.points, this.points.length - 2);
+      startPosition = indexOrThrow(points, points.length - 2);
     }
 
     let endPosition: THREE.Vector3;
     if (segmentIndex === 0) {
-      endPosition = indexOrThrow(this.points, 1);
-    } else if (1 <= segmentIndex && segmentIndex < this.points.length - 2) {
-      endPosition = indexOrThrow(this.points, segmentIndex + 1);
+      endPosition = indexOrThrow(points, 1);
+    } else if (1 <= segmentIndex && segmentIndex < points.length - 2) {
+      endPosition = indexOrThrow(points, segmentIndex + 1);
     } else {
-      endPosition = indexOrThrow(this.points, this.points.length - 1);
+      endPosition = indexOrThrow(points, points.length - 1);
     }
 
     let nextPosition: THREE.Vector3;
     if (segmentIndex === 0) {
-      nextPosition = indexOrThrow(this.points, this.points.length < 3 ? 1 : 2);
-    } else if (1 <= segmentIndex && segmentIndex < this.points.length - 2) {
-      nextPosition = indexOrThrow(this.points, segmentIndex + 1);
+      nextPosition = indexOrThrow(points, points.length < 3 ? 1 : 2);
+    } else if (1 <= segmentIndex && segmentIndex < points.length - 2) {
+      nextPosition = indexOrThrow(points, segmentIndex + 1);
     } else {
       const strokeIsClosed =
         new THREE.Vector3()
           .subVectors(
-            indexOrThrow(this.points, 0),
-            indexOrThrow(this.points, this.points.length - 1),
+            indexOrThrow(points, 0),
+            indexOrThrow(points, points.length - 1),
           )
           .length() < ERROR_THRESHOLD;
       nextPosition = indexOrThrow(
-        this.points,
-        strokeIsClosed ? 1 : this.points.length - 1,
+        points,
+        strokeIsClosed ? 1 : points.length - 1,
       );
     }
 
@@ -244,17 +225,29 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     ({ x, y, z } = nextPosition);
     this.setVertexData(this.nextPosition, vertexOffset, x, y, z);
 
-    const textureOffset = 4 * segmentIndex;
-    this.setTextureCoords(this.textureCoords, textureOffset);
-    this.setStart(this.start, textureOffset);
-    this.setBottom(this.bottom, textureOffset);
+    const offset = 4 * segmentIndex;
+    this.setTextureCoords(this.textureCoords, offset);
+    this.setStart(this.start, offset);
+    this.setBottom(this.bottom, offset);
 
     lengths[segmentIndex + 1] =
-      previousLength +
+      indexOrThrow(lengths, segmentIndex) +
       ((startPosition.x - endPosition.x) ** 2 +
         (startPosition.y - endPosition.y) ** 2 +
         (startPosition.z - endPosition.z) ** 2) **
         0.5;
+
+    const startLength = indexOrThrow(lengths, segmentIndex);
+    const endLength = indexOrThrow(lengths, segmentIndex + 1);
+
+    this.startLength[offset] = startLength;
+    this.startLength[offset + 1] = startLength;
+    this.startLength[offset + 2] = startLength;
+    this.startLength[offset + 3] = startLength;
+    this.endLength[offset] = endLength;
+    this.endLength[offset + 1] = endLength;
+    this.endLength[offset + 2] = endLength;
+    this.endLength[offset + 3] = endLength;
 
     const indexOffset = 6 * segmentIndex;
     const nextIndex = 4 * segmentIndex;
@@ -275,8 +268,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.arrow = new Float32Array(4 * numberOfSegments);
     this.start = new Float32Array(4 * numberOfSegments);
     this.bottom = new Float32Array(4 * numberOfSegments);
-    this.startProportion = new Float32Array(4 * numberOfSegments);
-    this.endProportion = new Float32Array(4 * numberOfSegments);
+    this.startLength = new Float32Array(4 * numberOfSegments);
+    this.endLength = new Float32Array(4 * numberOfSegments);
     this.indices = new Uint16Array(6 * numberOfSegments);
 
     return {
@@ -289,8 +282,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       arrow: new THREE.BufferAttribute(this.arrow, 1),
       start: new THREE.BufferAttribute(this.start, 1),
       bottom: new THREE.BufferAttribute(this.bottom, 1),
-      startProportion: new THREE.BufferAttribute(this.startProportion, 1),
-      endProportion: new THREE.BufferAttribute(this.endProportion, 1),
+      startLength: new THREE.BufferAttribute(this.startLength, 1),
+      endLength: new THREE.BufferAttribute(this.endLength, 1),
       index: new THREE.BufferAttribute(this.indices, 1),
     };
   }
@@ -305,8 +298,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.setAttribute("arrow", attributes.arrow);
     this.setAttribute("start", attributes.start);
     this.setAttribute("bottom", attributes.bottom);
-    this.setAttribute("startProportion", attributes.startProportion);
-    this.setAttribute("endProportion", attributes.endProportion);
+    this.setAttribute("startLength", attributes.startLength);
+    this.setAttribute("endLength", attributes.endLength);
     this.setIndex(attributes.index);
   }
 
