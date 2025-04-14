@@ -110,8 +110,8 @@ export default class RougierVertexShader {
         screenSpaceUnitTangent.x,
       );
 
-      const isStart = attribute("start");
-      const isBottom = attribute("bottom");
+      const isStart = attribute("isStart");
+      const isBottom = attribute("isBottom");
 
       // NOTE: This is the vector offset from the start or end of the current
       // segment to a corner of the polygon containing it. It's represented
