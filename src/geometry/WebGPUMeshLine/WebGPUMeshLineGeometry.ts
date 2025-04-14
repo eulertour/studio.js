@@ -158,6 +158,10 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     points: THREE.Vector3[],
     lengths: number[],
   ) {
+    let x: number;
+    let y: number;
+    let z: number;
+
     let previousPosition: THREE.Vector3;
     if (segmentIndex === 0) {
       previousPosition = indexOrThrow(points, 0);
@@ -170,6 +174,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
         previousPosition = indexOrThrow(points, points.length - 3);
       }
     }
+    ({ x, y, z } = previousPosition);
+    this.writeTripleToSegment(this.previousPosition, segmentIndex, x, y, z);
 
     let startPosition: THREE.Vector3;
     if (segmentIndex === 0) {
@@ -179,6 +185,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     } else {
       startPosition = indexOrThrow(points, points.length - 2);
     }
+    ({ x, y, z } = startPosition);
+    this.writeTripleToSegment(this.position, segmentIndex, x, y, z);
 
     let endPosition: THREE.Vector3;
     if (segmentIndex === 0) {
@@ -188,6 +196,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     } else {
       endPosition = indexOrThrow(points, points.length - 1);
     }
+    ({ x, y, z } = endPosition);
+    this.writeTripleToSegment(this.endPosition, segmentIndex, x, y, z);
 
     let nextPosition: THREE.Vector3;
     if (segmentIndex === 0) {
@@ -207,23 +217,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
         strokeIsClosed ? 1 : points.length - 1,
       );
     }
-
-    const vertexOffset = 12 * segmentIndex;
-    let x: number;
-    let y: number;
-    let z: number;
-
-    ({ x, y, z } = previousPosition);
-    this.setVertexData(this.previousPosition, vertexOffset, x, y, z);
-
-    ({ x, y, z } = startPosition);
-    this.setVertexData(this.position, vertexOffset, startPosition.x, y, z);
-
-    ({ x, y, z } = endPosition);
-    this.setVertexData(this.endPosition, vertexOffset, x, y, z);
-
     ({ x, y, z } = nextPosition);
-    this.setVertexData(this.nextPosition, vertexOffset, x, y, z);
+    this.writeTripleToSegment(this.nextPosition, segmentIndex, x, y, z);
 
     const offset = 4 * segmentIndex;
     this.setTextureCoords(this.textureCoords, offset);
@@ -303,25 +298,25 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.setIndex(attributes.index);
   }
 
-  setVertexData(
+  writeTripleToSegment(
     array: WritableArrayLike<number>,
     offset: number,
     x: number,
     y: number,
     z: number,
   ) {
-    array[offset] = x;
-    array[offset + 1] = y;
-    array[offset + 2] = z;
-    array[offset + 3] = x;
-    array[offset + 4] = y;
-    array[offset + 5] = z;
-    array[offset + 6] = x;
-    array[offset + 7] = y;
-    array[offset + 8] = z;
-    array[offset + 9] = x;
-    array[offset + 10] = y;
-    array[offset + 11] = z;
+    array[12 * offset] = x;
+    array[12 * offset + 1] = y;
+    array[12 * offset + 2] = z;
+    array[12 * offset + 3] = x;
+    array[12 * offset + 4] = y;
+    array[12 * offset + 5] = z;
+    array[12 * offset + 6] = x;
+    array[12 * offset + 7] = y;
+    array[12 * offset + 8] = z;
+    array[12 * offset + 9] = x;
+    array[12 * offset + 10] = y;
+    array[12 * offset + 11] = z;
   }
 
   // These are used to specify where each vertex falls on the line.
