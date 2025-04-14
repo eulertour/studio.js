@@ -47,11 +47,26 @@ export default class Polygon extends Shape {
     return { points: this.points };
   }
 
+  
   static fromAttributes(attributes: PolygonAttributes): Polygon {
     const { points } = attributes;
     return new Polygon(points);
   }
-
+  
+  area() {
+    let area = 0;
+    if (this.points.length === 3) {
+      const point0 = this.points[0];
+      const point1 = this.points[1];
+      const point2 = this.points[2];
+      
+      if (!point0 || !point1 || !point2) return 0;
+      
+      const midpoint = point2.clone().add(point0).divideScalar(2);
+      area = 0.5 * point0.distanceTo(point2) * point1.distanceTo(midpoint);
+    }
+    return area;
+  }
   get attributeData() {
     return [];
   }
