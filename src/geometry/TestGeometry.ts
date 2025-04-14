@@ -16,10 +16,7 @@ geometry.setAttribute(
 );
 geometry.setAttribute(
   "position",
-  new THREE.Float32BufferAttribute(
-    [-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0],
-    3,
-  ),
+  new THREE.Float32BufferAttribute([-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0], 3),
 );
 geometry.setAttribute(
   "endPosition",
@@ -30,11 +27,8 @@ geometry.setAttribute(
   new THREE.Float32BufferAttribute([1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0], 3),
 );
 geometry.setAttribute(
-  "previousPosition",
-  new THREE.Float32BufferAttribute(
-    [-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0],
-    3,
-  ),
+  "prevPosition",
+  new THREE.Float32BufferAttribute([-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0], 3),
 );
 geometry.setAttribute(
   "textureCoords",
@@ -66,4 +60,3 @@ geometry.setAttribute(
 );
 geometry.setIndex(new THREE.Uint16BufferAttribute([0, 1, 2, 0, 2, 3], 1));
 export default geometry;
-

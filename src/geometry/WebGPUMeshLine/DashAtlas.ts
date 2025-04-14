@@ -1,6 +1,6 @@
 import * as THREE from "three/webgpu";
 import { ShaderNodeObject, uniform } from "three/tsl";
-import { indexOrThrow } from "../../../utils.js";
+import { indexOrThrow } from "../../utils.js";
 
 const ATLAS_RESOLUTION = 1024;
 

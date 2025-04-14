@@ -1,45 +1,32 @@
 import * as THREE from "three/webgpu";
-import { indexOrThrow } from "../../utils.js";
-
-interface Attributes extends Record<string, THREE.BufferAttribute> {
-  position: THREE.Float32BufferAttribute;
-  endPosition: THREE.Float32BufferAttribute;
-  previousPosition: THREE.Float32BufferAttribute;
-  vertexOffset: THREE.Float32BufferAttribute;
-  startLength: THREE.Float32BufferAttribute;
-  endLength: THREE.Float32BufferAttribute;
-  index: THREE.Uint16BufferAttribute;
-}
+import { indexOrThrow, bufferIndexOrThrow } from "../../utils.js";
 
 export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
-  attributes: Attributes;
-
   // NOTE: The vertexOffset attribute is used to expand the segments
   // between consecutive points into quads in the vertex shader. The
   // other attributes are duplicated across each vertex in a segment
   // to be used in the fragment shader.
   position = new Float32Array();
   endPosition = new Float32Array();
-  previousPosition = new Float32Array();
-  vertexOffset = new Float32Array();
+  prevPosition = new Float32Array();
   startLength = new Float32Array();
   endLength = new Float32Array();
+  vertexOffset = new Float32Array();
   indices = new Uint16Array();
 
   constructor(points: THREE.Vector3[]) {
     super();
-    this.attributes = this.allocateNewBuffers(points.length - 1);
     this.setPoints(points);
-    this.setAttributes(this.attributes);
   }
 
   setPoints(points: Array<THREE.Vector3>, updateBounds = true) {
     const sizeChanged = this.position.length / 12 + 1 !== points.length;
     if (sizeChanged) {
-      this.attributes = this.allocateNewBuffers(points.length - 1);
+      this.allocateNewBuffers(points.length - 1);
+    } else {
+      this.setNeedsUpdate(false);
     }
     this.fillBuffers(points);
-    this.setNeedsUpdate(sizeChanged);
     if (updateBounds) {
       this.computeBoundingSphere();
       this.computeBoundingBox();
@@ -49,81 +36,60 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   allocateNewBuffers(numberOfSegments: number) {
     this.dispose();
 
-    this.previousPosition = new Float32Array(12 * numberOfSegments);
     this.position = new Float32Array(12 * numberOfSegments);
     this.endPosition = new Float32Array(12 * numberOfSegments);
-    this.vertexOffset = new Float32Array(8 * numberOfSegments);
+    this.prevPosition = new Float32Array(12 * numberOfSegments);
     this.startLength = new Float32Array(4 * numberOfSegments);
     this.endLength = new Float32Array(4 * numberOfSegments);
+    this.vertexOffset = new Float32Array(8 * numberOfSegments);
     this.indices = new Uint16Array(6 * numberOfSegments);
 
-    return {
-      previousPosition: new THREE.BufferAttribute(this.previousPosition, 3),
-      position: new THREE.BufferAttribute(this.position, 3),
-      endPosition: new THREE.BufferAttribute(this.endPosition, 3),
-      vertexOffset: new THREE.BufferAttribute(this.vertexOffset, 2),
-      startLength: new THREE.BufferAttribute(this.startLength, 1),
-      endLength: new THREE.BufferAttribute(this.endLength, 1),
-      index: new THREE.BufferAttribute(this.indices, 1),
-    };
+    const positionBuffer = new THREE.BufferAttribute(this.position, 3);
+    const endPositionBuffer = new THREE.BufferAttribute(this.endPosition, 3);
+    const prevPositionBuffer = new THREE.BufferAttribute(this.prevPosition, 3);
+    const startLengthBuffer = new THREE.BufferAttribute(this.startLength, 1);
+    const endLengthBuffer = new THREE.BufferAttribute(this.endLength, 1);
+    const vertexOffsetBuffer = new THREE.BufferAttribute(this.vertexOffset, 2);
+    const indexBuffer = new THREE.BufferAttribute(this.indices, 1);
+
+    this.setAttribute("position", positionBuffer);
+    this.setAttribute("endPosition", endPositionBuffer);
+    this.setAttribute("prevPosition", prevPositionBuffer);
+    this.setAttribute("startLength", startLengthBuffer);
+    this.setAttribute("endLength", endLengthBuffer);
+    this.setAttribute("vertexOffset", vertexOffsetBuffer);
+    this.setIndex(indexBuffer);
+
+    this.setNeedsUpdate(true);
   }
 
-  setAttributes(attributes: Attributes) {
-    this.setAttribute("position", attributes.position);
-    this.setAttribute("endPosition", attributes.endPosition);
-    this.setAttribute("previousPosition", attributes.previousPosition);
-    this.setAttribute("vertexOffset", attributes.vertexOffset);
-    this.setAttribute("startLength", attributes.startLength);
-    this.setAttribute("endLength", attributes.endLength);
-    this.setIndex(attributes.index);
+  setNeedsUpdate(sizeChanged: boolean) {
+    this.getAttribute("position").needsUpdate = true;
+    this.getAttribute("endPosition").needsUpdate = true;
+    this.getAttribute("prevPosition").needsUpdate = true;
+    this.getAttribute("startLength").needsUpdate = true;
+    this.getAttribute("endLength").needsUpdate = true;
+    this.getAttribute("vertexOffset").needsUpdate = sizeChanged;
+    if (this.index !== null) {
+      this.index.needsUpdate = sizeChanged;
+    }
   }
 
   fillBuffers(points: THREE.Vector3[]) {
-    this.fillPreviousPosition(points);
-    this.fillStartPosition(points);
-    this.fillEndPosition(points);
-    this.fillVertexOffset(points.length - 1);
+    this.fillPoints(points);
+    this.fillVertexOffsets(points.length - 1);
     this.fillLengths(points);
     this.fillIndices(points.length - 1);
   }
 
-  fillPreviousPosition(points: THREE.Vector3[]) {
-    for (
-      let segmentIndex = 0;
-      segmentIndex < points.length - 1;
-      segmentIndex++
-    ) {
-      const previousPosition = indexOrThrow(
-        points,
-        Math.max(segmentIndex - 1, 0),
-      );
-      this.writeVector3ToSegment(
-        this.previousPosition,
-        segmentIndex,
-        previousPosition,
-      );
-    }
-  }
-
-  fillStartPosition(points: THREE.Vector3[]) {
-    for (
-      let segmentIndex = 0;
-      segmentIndex < points.length - 1;
-      segmentIndex++
-    ) {
-      const startPosition = indexOrThrow(points, segmentIndex);
-      this.writeVector3ToSegment(this.position, segmentIndex, startPosition);
-    }
-  }
-
-  fillEndPosition(points: THREE.Vector3[]) {
-    for (
-      let segmentIndex = 0;
-      segmentIndex < points.length - 1;
-      segmentIndex++
-    ) {
-      const endPosition = indexOrThrow(points, segmentIndex + 1);
-      this.writeVector3ToSegment(this.endPosition, segmentIndex, endPosition);
+  fillPoints(points: THREE.Vector3[]) {
+    for (let i = 0; i < points.length - 1; i++) {
+      const startPoint = indexOrThrow(points, i);
+      const endPoint = indexOrThrow(points, i + 1);
+      const prevPoint = indexOrThrow(points, Math.max(i - 1, 0));
+      this.writeVector3ToSegment(this.position, i, startPoint);
+      this.writeVector3ToSegment(this.endPosition, i, endPoint);
+      this.writeVector3ToSegment(this.prevPosition, i, prevPoint);
     }
   }
 
@@ -148,23 +114,24 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     array[arrayOffset + 11] = z;
   }
 
-  // NOTE: The vertices specifying a segment are ordered
-  // according to this diagram.
+  // NOTE: This diagram shows the ordering of the vertices
+  // that define a segment together with the vertexOffsets
+  // written to each one.
   // y ^
-  //   |                  3
-  // 0 *-----------------*
-  //   |                 |
-  //   |                 |
-  //   |                 |
+  //   |1, (-1, 1)        3, (1, 1)
+  //   *-----------------*
+  //   |\               /|
+  //   | *-------------* |
+  //   |/               \|
   //   *-----------------*--> x
-  // 1                   2
-  fillVertexOffset(segmentCount: number) {
-    for (let segmentIndex = 0; segmentIndex < segmentCount; segmentIndex++) {
-      const arrayOffset = 8 * segmentIndex;
+  //  0, (-1, -1)         2, (1, -1)
+  fillVertexOffsets(segmentCount: number) {
+    for (let i = 0; i < segmentCount; i++) {
+      const arrayOffset = 8 * i;
       this.vertexOffset[arrayOffset] = -1;
-      this.vertexOffset[arrayOffset + 1] = 1;
+      this.vertexOffset[arrayOffset + 1] = -1;
       this.vertexOffset[arrayOffset + 2] = -1;
-      this.vertexOffset[arrayOffset + 3] = -1;
+      this.vertexOffset[arrayOffset + 3] = 1;
       this.vertexOffset[arrayOffset + 4] = 1;
       this.vertexOffset[arrayOffset + 5] = -1;
       this.vertexOffset[arrayOffset + 6] = 1;
@@ -173,22 +140,23 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   }
 
   // NOTE: The indices are chosen to construct the segment
-  // as shown here.
-  // 0, 3              5
+  // as shown here. The order is important because only the
+  // front side of 3D lines is rendered.
+  // 1, 3              5
   // *-----------------*
   // |                 |
   // |                 |
   // |                 |
   // *-----------------*
-  // 1                 2, 4
+  // 2                 0, 4
   fillIndices(segmentCount: number) {
-    for (let segmentIndex = 0; segmentIndex < segmentCount; segmentIndex++) {
-      const arrayOffset = 6 * segmentIndex;
-      const nextIndex = 4 * segmentIndex;
-      this.indices[arrayOffset] = nextIndex;
+    for (let i = 0; i < segmentCount; i++) {
+      const arrayOffset = 6 * i;
+      const nextIndex = 4 * i;
+      this.indices[arrayOffset] = nextIndex + 2;
       this.indices[arrayOffset + 1] = nextIndex + 1;
-      this.indices[arrayOffset + 2] = nextIndex + 2;
-      this.indices[arrayOffset + 3] = nextIndex;
+      this.indices[arrayOffset + 2] = nextIndex + 0;
+      this.indices[arrayOffset + 3] = nextIndex + 1;
       this.indices[arrayOffset + 4] = nextIndex + 2;
       this.indices[arrayOffset + 5] = nextIndex + 3;
     }
@@ -196,18 +164,15 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
 
   fillLengths(points: THREE.Vector3[]) {
     const segmentCount = points.length - 1;
-    for (let segmentIndex = 0; segmentIndex < segmentCount; segmentIndex++) {
-      const startPosition = indexOrThrow(points, segmentIndex);
-      const endPosition = indexOrThrow(points, segmentIndex + 1);
+    for (let i = 0; i < segmentCount; i++) {
+      const startPosition = indexOrThrow(points, i);
+      const endPosition = indexOrThrow(points, i + 1);
 
-      const startLength =
-        segmentIndex === 0 ? 0 : this.endLength[4 * segmentIndex - 1];
-      if (startLength === undefined) {
-        throw new Error("Invalid array access");
-      }
+      const startLengthIndex = Math.max(4 * i - 1, 0);
+      const startLength = bufferIndexOrThrow(this.endLength, startLengthIndex);
       const endLength = startLength + startPosition.distanceTo(endPosition);
 
-      const arrayOffset = 4 * segmentIndex;
+      const arrayOffset = 4 * i;
       this.startLength[arrayOffset] = startLength;
       this.startLength[arrayOffset + 1] = startLength;
       this.startLength[arrayOffset + 2] = startLength;
@@ -217,15 +182,6 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       this.endLength[arrayOffset + 2] = endLength;
       this.endLength[arrayOffset + 3] = endLength;
     }
-  }
-
-  setNeedsUpdate(sizeChanged: boolean) {
-    this.attributes.position.needsUpdate = true;
-    this.attributes.endPosition.needsUpdate = true;
-    this.attributes.previousPosition.needsUpdate = true;
-    this.attributes.startLength.needsUpdate = true;
-    this.attributes.endLength.needsUpdate = true;
-    this.attributes.index.needsUpdate = sizeChanged;
   }
 
   computeBoundingSphere(): void {

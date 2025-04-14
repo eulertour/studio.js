@@ -1,8 +1,8 @@
 import * as THREE from "three/webgpu";
 import { uniform } from "three/tsl";
-import VertexShader from "./shaders/VertexShader.js";
-import FragmentShader from "./shaders/FragmentShader.js";
-import DashAtlas from "./shaders/DashAtlas.js";
+import VertexShader from "./shaders/Vertex.js";
+import FragmentShader from "./shaders/Fragment.js";
+import DashAtlas from "./DashAtlas.js";
 import { indexOrThrow } from "../../utils.js";
 
 export type Uniforms = {
@@ -29,8 +29,12 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     dashLength: number,
     dashSpeed: number,
     dashPattern = [1, 1],
+    threeDimensions = true,
   ) {
-    super({ transparent: true });
+    super({
+      transparent: true,
+      side: threeDimensions ? THREE.FrontSide : THREE.DoubleSide,
+    });
     this.dashSpeed = dashSpeed;
 
     this.dashAtlas = new DashAtlas(dashPattern);

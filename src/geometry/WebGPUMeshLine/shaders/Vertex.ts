@@ -58,7 +58,7 @@ export default class RougierVertexShader {
         mat4(
           vec4(attribute("position"), 1),
           vec4(attribute("endPosition"), 1),
-          vec4(attribute("previousPosition"), 1),
+          vec4(attribute("prevPosition"), 1),
           vec4(0, 0, 0, 0),
         ),
       );
@@ -98,11 +98,11 @@ export default class RougierVertexShader {
       // below. The components tangent and normal to the segment
       // vector are equal and each have length 1. The length of the
       // vector is sqrt(2).
-      // +-------------------+
+      // *-------------------*
       // |\                 /|
-      // | +---------------+ |
+      // | *---------------* |
       // |/                 \|
-      // +-------------------+
+      // *-------------------*
       const unitOffset = mat2(unitTangent, unitNormal).mul(
         attribute("vertexOffset"),
       );

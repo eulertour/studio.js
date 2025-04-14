@@ -635,6 +635,14 @@ const indexOrThrow = <T>(array: T[], i: number) => {
   return value;
 };
 
+const bufferIndexOrThrow = (array: Float32Array, i: number) => {
+  const value = array[i];
+  if (value === undefined) {
+    throw new Error("Invalid array access");
+  }
+  return value;
+};
+
 class ShapeFromCurves {
   adjacentThreshold = 0.0001;
   segmentClosestToPoint = new THREE.Vector3();
@@ -868,6 +876,7 @@ export {
   pointAlongCurve,
   positiveAngleTo,
   indexOrThrow,
+  bufferIndexOrThrow,
   ShapeFromCurves,
   BUFFER,
   RIGHT,

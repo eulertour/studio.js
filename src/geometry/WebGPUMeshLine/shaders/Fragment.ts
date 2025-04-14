@@ -24,7 +24,7 @@ import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import { ShaderNodeFn } from "three/src/nodes/TSL.js";
 import { UniformNode } from "three/webgpu";
 import { UNITS_PER_STROKE_WIDTH } from "../../../constants.js";
-import DashAtlas from "./DashAtlas.js";
+import DashAtlas from "../DashAtlas.js";
 
 // This returns [cssViewportWidth, cssViewportHeight] * devicePixelRatio.
 // If the css dimensions are 1280x720, this returns

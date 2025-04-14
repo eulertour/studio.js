@@ -334,7 +334,7 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
     this.setAttribute("position", this.#attributes.position);
     this.setAttribute("endPosition", this.#attributes.endPosition);
     this.setAttribute("nextPosition", this.#attributes.nextPosition);
-    this.setAttribute("previousPosition", this.#attributes.previousPosition);
+    this.setAttribute("prevPosition", this.#attributes.previousPosition);
     this.setAttribute("textureCoords", this.#attributes.textureCoords);
     this.setAttribute("beforeArrow", this.#attributes.beforeArrow);
     this.setAttribute("arrow", this.#attributes.arrow);
@@ -376,10 +376,10 @@ export default class MeshLineGeometry extends THREE.BufferGeometry {
   //   *-----------------*--> x
   // 1                   2
   setTextureCoords(array: WritableArrayLike<number>, offset: number) {
-    array[offset] = 1;        // 8 * 0 + 4 * 0 + 2 * 0 + 1;
+    array[offset] = 1; // 8 * 0 + 4 * 0 + 2 * 0 + 1;
     // array[offset + 1] = 0; // 8 * 0 + 4 * 0 + 2 * 0 + 0;
-    array[offset + 2] = 2;    // 8 * 0 + 4 * 0 + 2 * 1 + 0;
-    array[offset + 3] = 3;    // 8 * 0 + 4 * 0 + 2 * 1 + 1;
+    array[offset + 2] = 2; // 8 * 0 + 4 * 0 + 2 * 1 + 0;
+    array[offset + 3] = 3; // 8 * 0 + 4 * 0 + 2 * 1 + 1;
   }
 
   setStart(array: WritableArrayLike<number>, offset: number) {
