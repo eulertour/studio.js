@@ -3,6 +3,7 @@ import { uniform } from "three/tsl";
 import VertexShader from "./shaders/VertexShader.js";
 import FragmentShader from "./shaders/FragmentShader.js";
 import DashAtlas from "./shaders/DashAtlas.js";
+import { indexOrThrow } from "../../utils.js";
 
 export type Uniforms = {
   firstPoint: THREE.UniformNode<THREE.Vector3>;
@@ -13,6 +14,7 @@ export type Uniforms = {
   length: THREE.UniformNode<number>;
   dashLength: THREE.UniformNode<number>;
   dashOffset: THREE.UniformNode<number>;
+  patternLength: THREE.UniformNode<number>;
 };
 
 export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
@@ -53,6 +55,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       this.uniforms.length,
       this.uniforms.dashLength,
       this.uniforms.dashOffset,
+      this.uniforms.patternLength,
     ).node();
   }
 
@@ -65,26 +68,13 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
   ): Uniforms {
     let length = 0;
     for (let i = 0; i < points.length - 1; i++) {
-      const currentPoint = points[i];
-      const nextPoint = points[i + 1];
-      if (currentPoint === undefined) {
-        throw new Error("Error iterating over points");
-      }
-      if (nextPoint === undefined) {
-        throw new Error("Error iterating over points");
-      }
+      const currentPoint = indexOrThrow(points, i);
+      const nextPoint = indexOrThrow(points, i + 1);
       length += currentPoint.distanceTo(nextPoint);
     }
 
-    const firstPoint = points[0];
-    const secondPoint = points[1];
-    if (firstPoint === undefined) {
-      throw new Error("Error reading first point");
-    }
-    if (secondPoint === undefined) {
-      throw new Error("Error reading second point");
-    }
-
+    const firstPoint = indexOrThrow(points, 0);
+    const secondPoint = indexOrThrow(points, 1);
     return {
       firstPoint: uniform(firstPoint),
       secondPoint: uniform(secondPoint),
@@ -94,6 +84,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       length: uniform(length),
       dashLength: uniform(dashLength),
       dashOffset: uniform(0),
+      patternLength: uniform(dashLength * this.dashAtlas.period.value),
     };
   }
 

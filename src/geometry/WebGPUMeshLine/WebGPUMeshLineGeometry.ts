@@ -48,93 +48,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     const lengths = new Array(points.length);
     lengths[0] = 0;
 
-    const firstPoint = points.at(0);
-    const lastPoint = points.at(-1);
-    if (firstPoint === undefined || lastPoint === undefined) {
-      throw new Error("invalid endpoints");
-    }
-
-    // NOTE: If the first and last points are the same, the previous point
-    // for the first segment is the first point of the last segment.
-    let previousPosition =
-      firstPoint.distanceTo(lastPoint) < 0.001 ? points.at(-1) : points.at(0);
-
-    let nextPosition = points.length < 3 ? points[1] : points[2];
-
-    let position = points[0];
-    let endPosition = points[1];
-    let previousLength = lengths[0];
-    if (
-      previousPosition === undefined ||
-      position === undefined ||
-      endPosition === undefined ||
-      nextPosition === undefined ||
-      previousLength === undefined
-    ) {
-      throw new Error("point missing");
-    }
-    this.addSegment(0, points, lengths);
-
-    for (let i = 1; i < points.length - 2; i++) {
-      const previousPosition = points[i - 1];
-      const position = points[i];
-      const endPosition = points[i + 1];
-      const nextPosition = points[i + 2];
-      const previousLength = lengths[i];
-      if (
-        previousPosition === undefined ||
-        position === undefined ||
-        endPosition === undefined ||
-        nextPosition === undefined ||
-        previousLength === undefined
-      ) {
-        throw new Error("point missing");
-      }
-      this.addSegment(i, points, lengths);
-    }
-
-    // Handle the case where the first and last points are the same.
-    if (
-      new THREE.Vector3().subVectors(firstPoint, lastPoint).length() < 0.001
-    ) {
-      nextPosition = points.at(1);
-    } else {
-      nextPosition = points.at(-1);
-    }
-
-    if (points.length < 3) {
-      previousPosition = points.at(-2);
-    } else {
-      previousPosition = points.at(-3);
-    }
-
-    position = points.at(-2);
-    endPosition = points.at(-1);
-    previousLength = lengths.at(-2);
-    if (previousLength === undefined) {
-      throw new Error("point missing");
-    }
-    this.addSegment(points.length - 2, points, lengths);
-
-    const totalLength = lengths.at(-1);
-    if (totalLength === undefined) {
-      throw new Error("Invalid length");
-    }
     for (let i = 0; i < points.length - 1; i++) {
-      const startLength = lengths[i];
-      const endLength = lengths[i + 1];
-      if (startLength === undefined || endLength === undefined) {
-        throw new Error("Invalid length");
-      }
-      const offset = 4 * i;
-      this.startLength[offset] = startLength;
-      this.startLength[offset + 1] = startLength;
-      this.startLength[offset + 2] = startLength;
-      this.startLength[offset + 3] = startLength;
-      this.endLength[offset] = endLength;
-      this.endLength[offset + 1] = endLength;
-      this.endLength[offset + 2] = endLength;
-      this.endLength[offset + 3] = endLength;
+      this.addSegment(i, points);
     }
 
     if (!this.attributes) throw new Error("missing attributes");
@@ -153,49 +68,20 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     }
   }
 
-  addSegment(
-    segmentIndex: number,
-    points: THREE.Vector3[],
-    lengths: number[],
-  ) {
+  addSegment(segmentIndex: number, points: THREE.Vector3[]) {
     let x: number;
     let y: number;
     let z: number;
 
-    let previousPosition: THREE.Vector3;
-    if (segmentIndex === 0) {
-      previousPosition = indexOrThrow(points, 0);
-    } else if (1 <= segmentIndex && segmentIndex < points.length - 2) {
-      previousPosition = indexOrThrow(points, segmentIndex - 1);
-    } else {
-      if (points.length < 3) {
-        previousPosition = indexOrThrow(points, points.length - 2);
-      } else {
-        previousPosition = indexOrThrow(points, points.length - 3);
-      }
-    }
+    const previousPosition = indexOrThrow(points, Math.max(segmentIndex - 1, 0));
     ({ x, y, z } = previousPosition);
     this.writeTripleToSegment(this.previousPosition, segmentIndex, x, y, z);
 
-    let startPosition: THREE.Vector3;
-    if (segmentIndex === 0) {
-      startPosition = indexOrThrow(points, 0);
-    } else if (1 <= segmentIndex && segmentIndex < points.length - 2) {
-      startPosition = indexOrThrow(points, segmentIndex);
-    } else {
-      startPosition = indexOrThrow(points, points.length - 2);
-    }
+    const startPosition = indexOrThrow(points, segmentIndex);
     ({ x, y, z } = startPosition);
     this.writeTripleToSegment(this.position, segmentIndex, x, y, z);
 
-    let endPosition: THREE.Vector3;
-    if (segmentIndex === 0) {
-      endPosition = indexOrThrow(points, 1);
-    } else if (1 <= segmentIndex && segmentIndex < points.length - 2) {
-      endPosition = indexOrThrow(points, segmentIndex + 1);
-    } else {
-      endPosition = indexOrThrow(points, points.length - 1);
-    }
+    const endPosition = indexOrThrow(points, segmentIndex + 1);
     ({ x, y, z } = endPosition);
     this.writeTripleToSegment(this.endPosition, segmentIndex, x, y, z);
 
@@ -225,15 +111,13 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.setStart(this.start, offset);
     this.setBottom(this.bottom, offset);
 
-    lengths[segmentIndex + 1] =
-      indexOrThrow(lengths, segmentIndex) +
-      ((startPosition.x - endPosition.x) ** 2 +
-        (startPosition.y - endPosition.y) ** 2 +
-        (startPosition.z - endPosition.z) ** 2) **
-        0.5;
-
-    const startLength = indexOrThrow(lengths, segmentIndex);
-    const endLength = indexOrThrow(lengths, segmentIndex + 1);
+    const startLength = segmentIndex === 0
+      ? 0
+      : this.endLength[offset - 1];
+    if (startLength === undefined) {
+      throw new Error("Invalid array access");
+    }
+    const endLength = startLength + startPosition.distanceTo(endPosition);
 
     this.startLength[offset] = startLength;
     this.startLength[offset + 1] = startLength;

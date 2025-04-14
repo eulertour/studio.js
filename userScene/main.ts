@@ -71,6 +71,20 @@ export default class Scene implements StudioScene {
     line2.position.set(-2, -1, 0)
     scene.add(line2);
 
+    // WARN: This causes a render warning.
+    const line3 = new Geometry.Line(
+      new THREE.Vector3(4, -2, 0),
+      new THREE.Vector3(0, 2, 0),
+      {
+        strokeColor: new THREE.Color("purple"),
+        strokeOpacity: 0.85,
+        strokeWidth: 5,
+        strokeDashLength: 0.5,
+        strokeDashSpeed: 1,
+      },
+    )
+    scene.add(line3);
+
     const points = [
       // new THREE.Vector3(0, 0, 0),
       // new THREE.Vector3(1, 0, 0),
