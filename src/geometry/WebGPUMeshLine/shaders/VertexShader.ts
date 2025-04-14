@@ -1,10 +1,9 @@
 import {
   Fn,
   ShaderNodeObject,
-  add,
   attribute,
   cameraProjectionMatrix,
-  float,
+  mat2,
   mat4,
   modelViewMatrix,
   normalize,
@@ -41,8 +40,8 @@ const clipToScreenSpace = Fn(
   },
 );
 
-const boolToSign = Fn(([booleanValue]: [ShaderNodeObject<OperatorNode>]) =>
-  float(2).mul(booleanValue.oneMinus()).sub(1),
+const rotate90 = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
+  vec2(vector.y.negate(), vector.x),
 );
 
 export default class RougierVertexShader {
@@ -55,7 +54,7 @@ export default class RougierVertexShader {
   ) {
     this.node = Fn(() => {
       const modelViewProjection = cameraProjectionMatrix.mul(modelViewMatrix);
-      const homogeneousLinePoints = modelViewProjection.mul(
+      const clipSpaceLinePoints = modelViewProjection.mul(
         mat4(
           vec4(attribute("position"), 1),
           vec4(attribute("endPosition"), 1),
@@ -63,7 +62,7 @@ export default class RougierVertexShader {
           vec4(0, 0, 0, 0),
         ),
       );
-      const homogeneousFirstSegment = modelViewProjection.mul(
+      const clipSpaceFirstSegment = modelViewProjection.mul(
         mat4(
           vec4(firstPosition, 1),
           vec4(secondPosition, 1),
@@ -72,63 +71,43 @@ export default class RougierVertexShader {
         ),
       );
 
-      const clipSpaceStart = vec4(homogeneousLinePoints[0]);
-      const clipSpaceEnd = vec4(homogeneousLinePoints[1]);
-      const clipSpacePrevious = vec4(homogeneousLinePoints[2]);
-      const clipSpaceFirstPosition = vec4(homogeneousFirstSegment[0]);
-      const clipSpaceSecondPosition = vec4(homogeneousFirstSegment[1]);
+      const clipSpaceStart = vec4(clipSpaceLinePoints[0]);
+      const clipSpaceEnd = vec4(clipSpaceLinePoints[1]);
+      const clipSpacePrevious = vec4(clipSpaceLinePoints[2]);
+      const clipSpaceFirstPosition = vec4(clipSpaceFirstSegment[0]);
+      const clipSpaceSecondPosition = vec4(clipSpaceFirstSegment[1]);
 
-      const screenSpaceStartFragment = clipToScreenSpace(clipSpaceStart);
-      const screenSpaceEndFragment = clipToScreenSpace(clipSpaceEnd);
-      const screenSpacePreviousFragment = clipToScreenSpace(clipSpacePrevious);
-      const screenSpaceFirstFragment = clipToScreenSpace(
-        clipSpaceFirstPosition,
-      );
-      const screenSpaceSecondFragment = clipToScreenSpace(
-        clipSpaceSecondPosition,
-      );
+      const startFragment = clipToScreenSpace(clipSpaceStart);
+      const endFragment = clipToScreenSpace(clipSpaceEnd);
+      const previousFragment = clipToScreenSpace(clipSpacePrevious);
+      const firstFragment = clipToScreenSpace(clipSpaceFirstPosition);
+      const secondFragment = clipToScreenSpace(clipSpaceSecondPosition);
 
-      varyingProperty("vec2", "vStartFragment").assign(
-        screenSpaceStartFragment,
-      );
-      varyingProperty("vec2", "vEndFragment").assign(screenSpaceEndFragment);
-      varyingProperty("vec2", "vPreviousFragment").assign(
-        screenSpacePreviousFragment,
-      );
-      varyingProperty("vec2", "vFirstFragment").assign(
-        screenSpaceFirstFragment,
-      );
-      varyingProperty("vec2", "vSecondFragment").assign(
-        screenSpaceSecondFragment,
-      );
+      varyingProperty("vec2", "vStartFragment").assign(startFragment);
+      varyingProperty("vec2", "vEndFragment").assign(endFragment);
+      varyingProperty("vec2", "vPreviousFragment").assign(previousFragment);
+      varyingProperty("vec2", "vFirstFragment").assign(firstFragment);
+      varyingProperty("vec2", "vSecondFragment").assign(secondFragment);
 
-      const screenSpaceUnitTangent = normalize(
-        screenSpaceEndFragment.sub(screenSpaceStartFragment),
-      );
-      const screenSpaceUnitNormal = vec2(
-        screenSpaceUnitTangent.y.negate(),
-        screenSpaceUnitTangent.x,
-      );
-
-      const isStart = attribute("isStart");
-      const isBottom = attribute("isBottom");
-
-      // NOTE: This is the vector offset from the start or end of the current
-      // segment to a corner of the polygon containing it. It's represented
-      // by the diagonal lines in the diagram below. The components parallel
-      // and normal to the tangent vector are equal and each have length 1.
-      // The length of the vector is sqrt(2).
+      const tangent = endFragment.sub(startFragment);
+      const unitTangent = normalize(tangent);
+      const unitNormal = rotate90(unitTangent);
+      // NOTE: This is the vector offset from the start or end of the
+      // current segment to a corner of the quadrilateral containing
+      // it. It's represented by the diagonal lines in the diagram
+      // below. The components tangent and normal to the segment
+      // vector are equal and each have length 1. The length of the
+      // vector is sqrt(2).
       // +-------------------+
       // |\                 /|
       // | +---------------+ |
       // |/                 \|
       // +-------------------+
-      const screenSpaceUnitOffset = add(
-        screenSpaceUnitTangent.mul(boolToSign(isStart)),
-        screenSpaceUnitNormal.mul(boolToSign(isBottom)),
+      const unitOffset = mat2(unitTangent, unitNormal).mul(
+        attribute("vertexOffset"),
       );
       const cameraSpaceVertexOffset = vec4(
-        screenSpaceUnitOffset.mul(strokeWidth).mul(UNITS_PER_STROKE_WIDTH),
+        unitOffset.mul(strokeWidth).mul(UNITS_PER_STROKE_WIDTH),
         0,
         0,
       );
@@ -136,10 +115,11 @@ export default class RougierVertexShader {
         cameraSpaceVertexOffset,
       );
 
-      return add(
-        select(isStart, clipSpaceStart, clipSpaceEnd),
-        clipSpaceVertexOffset,
-      );
+      return select(
+        attribute("vertexOffset").x.equal(-1),
+        clipSpaceStart,
+        clipSpaceEnd,
+      ).add(clipSpaceVertexOffset);
     });
   }
 }
