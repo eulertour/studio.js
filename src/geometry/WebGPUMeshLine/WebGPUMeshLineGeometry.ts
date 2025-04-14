@@ -1,108 +1,48 @@
 import * as THREE from "three/webgpu";
-import { uniform } from "three/tsl";
+import { indexOrThrow } from "../../utils.js";
+import { ERROR_THRESHOLD } from "../../constants.js";
 
-export const totalLength = uniform(0);
-export const firstPosition = uniform(new THREE.Vector3());
-export const secondPosition = uniform(new THREE.Vector3());
+interface Attributes extends Record<string, THREE.BufferAttribute> {
+  position: THREE.Float32BufferAttribute;
+  endPosition: THREE.Float32BufferAttribute;
+  nextPosition: THREE.Float32BufferAttribute;
+  previousPosition: THREE.Float32BufferAttribute;
+  textureCoords: THREE.Float32BufferAttribute;
+  beforeArrow: THREE.Float32BufferAttribute;
+  arrow: THREE.Float32BufferAttribute;
+  start: THREE.Float32BufferAttribute;
+  bottom: THREE.Float32BufferAttribute;
+  startProportion: THREE.Float32BufferAttribute;
+  endProportion: THREE.Float32BufferAttribute;
+  index: THREE.Uint16BufferAttribute;
+}
 
 export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
-  readonly isMeshLineGeometry = true;
-  override readonly type = "MeshLineGeometry";
+  attributes: Attributes;
 
-  #position = new Float32Array();
-  #endPosition = new Float32Array();
-  #nextPosition = new Float32Array();
-  #previousPosition = new Float32Array();
-  #textureCoords = new Float32Array();
-  #beforeArrow = new Float32Array();
-  #arrow = new Float32Array();
-  #start = new Int8Array();
-  #bottom = new Int8Array();
-  #startProportion = new Float32Array();
-  #endProportion = new Float32Array();
-  #indices = new Uint16Array();
+  position = new Float32Array();
+  endPosition = new Float32Array();
+  nextPosition = new Float32Array();
+  previousPosition = new Float32Array();
+  textureCoords = new Float32Array();
+  beforeArrow = new Float32Array();
+  arrow = new Float32Array();
+  start = new Float32Array();
+  bottom = new Float32Array();
+  startProportion = new Float32Array();
+  endProportion = new Float32Array();
+  indices = new Uint16Array();
 
-  #attributes: {
-    position: THREE.Float32BufferAttribute;
-    endPosition: THREE.Float32BufferAttribute;
-    nextPosition: THREE.Float32BufferAttribute;
-    previousPosition: THREE.Float32BufferAttribute;
-    textureCoords: THREE.Float32BufferAttribute;
-    beforeArrow: THREE.Float32BufferAttribute;
-    arrow: THREE.Float32BufferAttribute;
-    start: THREE.Int8BufferAttribute;
-    bottom: THREE.Int8BufferAttribute;
-    startProportion: THREE.Float32BufferAttribute;
-    endProportion: THREE.Float32BufferAttribute;
-    index: THREE.Uint16BufferAttribute;
-  } | null = null;
-
-  points: THREE.Vector3[];
-  totalLength: number;
-
-  #previousPointCount = 0;
-  #pointCount = 0;
-
-  constructor(
-    points: THREE.Vector3[],
-    public arrow = false,
-  ) {
+  constructor(public points: THREE.Vector3[]) {
     super();
-    this.setPoints(points);
+    this.attributes = this.allocateNewBuffers(points.length);
+    this.fillBuffersFromPoints(points);
+    this.setAttributes(this.attributes);
   }
 
-  setPoints(points: Array<THREE.Vector3>, updateBounds = true) {
-    const arrowLength = 0.3;
-    if (this.arrow) {
-      // Find the index of the last point that is at least arrowLength away from the end.
-      let arrowIndex = 0;
-      for (let i = points.length - 2; i >= 0; i--) {
-        const point = points[i];
-        if (point.distanceTo(points[points.length - 1]) >= arrowLength) {
-          arrowIndex = i;
-          break;
-        }
-      }
-
-      // Find the point that is arrowLength away from the end.
-      const aVec = points[arrowIndex];
-      const bVec = points[points.length - 1];
-      const vVec = new THREE.Vector3().subVectors(points[arrowIndex + 1], aVec);
-      const d = arrowLength;
-      const a = vVec.dot(vVec);
-      const b = 2 * (aVec.dot(vVec) - bVec.dot(vVec));
-      const c = aVec.dot(aVec) - 2 * aVec.dot(bVec) + bVec.dot(bVec) - d * d;
-      const rootDiscriminant = Math.sqrt(b * b - 4 * a * c);
-      const t1 = (-b + rootDiscriminant) / (2 * a);
-      const t2 = (-b - rootDiscriminant) / (2 * a);
-      let t;
-      if (0 <= t1 && t1 <= 1) {
-        t = t1;
-      } else if (0 <= t2 && t2 <= 1) {
-        t = t2;
-      } else {
-        console.error(points);
-        throw new Error("Error creating arrow from points: No valid solution");
-      }
-      points.splice(
-        arrowIndex + 1,
-        points.length - arrowIndex - 1,
-        aVec.clone().add(vVec.clone().multiplyScalar(t)),
-        points.at(-1),
-      );
-    }
-
+  fillBuffersFromPoints(points: Array<THREE.Vector3>, updateBounds = true) {
+    const sizeChanged = this.points.length !== points.length;
     this.points = points;
-    this.#pointCount = points.length;
-
-    const pointCount = this.#pointCount;
-    const sizeChanged = this.#previousPointCount !== pointCount;
-
-    if (!this.#attributes || sizeChanged) {
-      this.#makeNewBuffers(pointCount);
-    }
-
-    this.#previousPointCount = pointCount;
 
     const lengths = new Float32Array(this.points.length);
     lengths[0] = 0;
@@ -113,22 +53,12 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       throw new Error("invalid endpoints");
     }
 
-    // Handle the case where the first and last points are the same.
-    let previousPosition: THREE.Vector3 | undefined;
-    if (
-      new THREE.Vector3().subVectors(firstPoint, lastPoint).length() < 0.001
-    ) {
-      previousPosition = points.at(-1);
-    } else {
-      previousPosition = points.at(0);
-    }
+    // NOTE: If the first and last points are the same, the previous point
+    // for the first segment is the first point of the last segment.
+    let previousPosition =
+      firstPoint.distanceTo(lastPoint) < 0.001 ? points.at(-1) : points.at(0);
 
-    let nextPosition: THREE.Vector3 | undefined;
-    if (points.length < 3) {
-      nextPosition = points[1];
-    } else {
-      nextPosition = points[2];
-    }
+    let nextPosition = points.length < 3 ? points[1] : points[2];
 
     let position = points[0];
     let endPosition = points[1];
@@ -142,13 +72,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     ) {
       throw new Error("point missing");
     }
-    lengths[1] =
-      previousLength +
-      ((position.x - endPosition.x) ** 2 +
-        (position.y - endPosition.y) ** 2 +
-        (position.z - endPosition.z) ** 2) **
-        0.5;
-    this.#addSegment(0, previousPosition, position, endPosition, nextPosition);
+    this.addSegment(0, lengths, previousLength);
 
     for (let i = 1; i < this.points.length - 2; i++) {
       const previousPosition = points[i - 1];
@@ -165,19 +89,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       ) {
         throw new Error("point missing");
       }
-      lengths[i + 1] =
-        previousLength +
-        ((position.x - endPosition.x) ** 2 +
-          (position.y - endPosition.y) ** 2 +
-          (position.z - endPosition.z) ** 2) **
-          0.5;
-      this.#addSegment(
-        i,
-        previousPosition,
-        position,
-        endPosition,
-        nextPosition,
-      );
+      this.addSegment(i, lengths, previousLength);
     }
 
     // Handle the case where the first and last points are the same.
@@ -207,34 +119,22 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     ) {
       throw new Error("point missing");
     }
-    lengths[this.points.length - 1] =
-      previousLength +
-      ((position.x - endPosition.x) ** 2 +
-        (position.y - endPosition.y) ** 2 +
-        (position.z - endPosition.z) ** 2) **
-        0.5;
-    this.#addSegment(
-      points.length - 2,
-      previousPosition,
-      position,
-      endPosition,
-      nextPosition,
-    );
+    this.addSegment(points.length - 2, lengths, previousLength);
 
     if (this.arrow) {
-      this.#textureCoords[4 * (points.length - 3)] = 9; // 8 * 1 + 2 * 0 + 1;
-      this.#textureCoords[4 * (points.length - 3) + 1] = 8; // 8 * 1 + 2 * 0 + 0;
-      this.#textureCoords[4 * (points.length - 3) + 2] = 10; // 8 * 1 + 2 * 1 + 0;
-      this.#textureCoords[4 * (points.length - 3) + 3] = 11; // 8 * 1 + 2 * 1 + 1;
+      this.textureCoords[4 * (points.length - 3)] = 9; // 8 * 1 + 2 * 0 + 1;
+      this.textureCoords[4 * (points.length - 3) + 1] = 8; // 8 * 1 + 2 * 0 + 0;
+      this.textureCoords[4 * (points.length - 3) + 2] = 10; // 8 * 1 + 2 * 1 + 0;
+      this.textureCoords[4 * (points.length - 3) + 3] = 11; // 8 * 1 + 2 * 1 + 1;
 
-      this.#textureCoords[4 * (points.length - 2)] = 5; // 4 * 1 + 2 * 0 + 1;
-      this.#textureCoords[4 * (points.length - 2) + 1] = 4; // 4 * 1 + 2 * 0 + 0;
-      this.#textureCoords[4 * (points.length - 2) + 2] = 6; // 4 * 1 + 2 * 1 + 0;
-      this.#textureCoords[4 * (points.length - 2) + 3] = 7; // 4 * 1 + 2 * 1 + 1;
+      this.textureCoords[4 * (points.length - 2)] = 5; // 4 * 1 + 2 * 0 + 1;
+      this.textureCoords[4 * (points.length - 2) + 1] = 4; // 4 * 1 + 2 * 0 + 0;
+      this.textureCoords[4 * (points.length - 2) + 2] = 6; // 4 * 1 + 2 * 1 + 0;
+      this.textureCoords[4 * (points.length - 2) + 3] = 7; // 4 * 1 + 2 * 1 + 1;
     }
 
-    this.totalLength = lengths.at(-1);
-    if (this.totalLength === undefined) {
+    const totalLength = lengths.at(-1);
+    if (totalLength === undefined) {
       throw new Error("Invalid length");
     }
     for (let i = 0; i < this.points.length - 1; i++) {
@@ -243,145 +143,171 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       if (startLength === undefined || endLength === undefined) {
         throw new Error("Invalid length");
       }
-      const startProportion = startLength / this.totalLength;
-      const endProportion = endLength / this.totalLength;
+      const startProportion = startLength / totalLength;
+      const endProportion = endLength / totalLength;
       const offset = 4 * i;
-      this.#startProportion[offset] = startProportion;
-      this.#startProportion[offset + 1] = startProportion;
-      this.#startProportion[offset + 2] = startProportion;
-      this.#startProportion[offset + 3] = startProportion;
-      this.#endProportion[offset] = endProportion;
-      this.#endProportion[offset + 1] = endProportion;
-      this.#endProportion[offset + 2] = endProportion;
-      this.#endProportion[offset + 3] = endProportion;
+      this.startProportion[offset] = startProportion;
+      this.startProportion[offset + 1] = startProportion;
+      this.startProportion[offset + 2] = startProportion;
+      this.startProportion[offset + 3] = startProportion;
+      this.endProportion[offset] = endProportion;
+      this.endProportion[offset + 1] = endProportion;
+      this.endProportion[offset + 2] = endProportion;
+      this.endProportion[offset + 3] = endProportion;
     }
 
-    // for (let i = 0; i < this.points.length - 2; i++) {
-    //   const nextLength = lengths[i + 2];
-    //   if (nextLength === undefined) {
-    //     throw new Error("Invalid length");
-    //   }
-    //   const nextProportion = nextLength / this.totalLength;
-    //   const offset = 4 * i;
-    //   this.#nextProportion[offset] = nextProportion;
-    //   this.#nextProportion[offset + 1] = nextProportion;
-    //   this.#nextProportion[offset + 2] = nextProportion;
-    //   this.#nextProportion[offset + 3] = nextProportion;
-    // }
-
-    if (!this.#attributes) throw new Error("missing attributes");
-    this.#attributes.position.needsUpdate = true;
-    this.#attributes.endPosition.needsUpdate = true;
-    this.#attributes.nextPosition.needsUpdate = true;
-    this.#attributes.previousPosition.needsUpdate = true;
-    this.#attributes.textureCoords.needsUpdate = sizeChanged;
-    this.#attributes.startProportion.needsUpdate = true;
-    this.#attributes.endProportion.needsUpdate = true;
-    this.#attributes.index.needsUpdate = sizeChanged;
+    if (!this.attributes) throw new Error("missing attributes");
+    this.attributes.position.needsUpdate = true;
+    this.attributes.endPosition.needsUpdate = true;
+    this.attributes.nextPosition.needsUpdate = true;
+    this.attributes.previousPosition.needsUpdate = true;
+    this.attributes.textureCoords.needsUpdate = sizeChanged;
+    this.attributes.startProportion.needsUpdate = true;
+    this.attributes.endProportion.needsUpdate = true;
+    this.attributes.index.needsUpdate = sizeChanged;
 
     if (updateBounds) {
       this.computeBoundingSphere();
       this.computeBoundingBox();
     }
-
-    this.#updateUniforms();
   }
 
-  #updateUniforms() {
-    totalLength.value = this.totalLength;
-
-    const firstPoint = this.points[0];
-    if (firstPoint === undefined) {
-      throw new Error("Missing first point");
-    }
-    firstPosition.value.copy(firstPoint);
-
-    const secondPoint = this.points[1];
-    if (secondPoint === undefined) {
-      throw new Error("Missing second point");
-    }
-    secondPosition.value.copy(secondPoint);
-  }
-
-  #addSegment(
+  addSegment(
     segmentIndex: number,
-    previous: THREE.Vector3,
-    start: THREE.Vector3,
-    end: THREE.Vector3,
-    next: THREE.Vector3,
+    lengths: Float32Array,
+    previousLength: number,
   ) {
+    let previousPosition: THREE.Vector3;
+    if (segmentIndex === 0) {
+      previousPosition = indexOrThrow(this.points, 0);
+    } else if (1 <= segmentIndex && segmentIndex < this.points.length - 2) {
+      previousPosition = indexOrThrow(this.points, segmentIndex - 1);
+    } else {
+      if (this.points.length < 3) {
+        previousPosition = indexOrThrow(this.points, this.points.length - 2);
+      } else {
+        previousPosition = indexOrThrow(this.points, this.points.length - 3);
+      }
+    }
+
+    let startPosition: THREE.Vector3;
+    if (segmentIndex === 0) {
+      startPosition = indexOrThrow(this.points, 0);
+    } else if (1 <= segmentIndex && segmentIndex < this.points.length - 2) {
+      startPosition = indexOrThrow(this.points, segmentIndex);
+    } else {
+      startPosition = indexOrThrow(this.points, this.points.length - 2);
+    }
+
+    let endPosition: THREE.Vector3;
+    if (segmentIndex === 0) {
+      endPosition = indexOrThrow(this.points, 1);
+    } else if (1 <= segmentIndex && segmentIndex < this.points.length - 2) {
+      endPosition = indexOrThrow(this.points, segmentIndex + 1);
+    } else {
+      endPosition = indexOrThrow(this.points, this.points.length - 1);
+    }
+
+    let nextPosition: THREE.Vector3;
+    if (segmentIndex === 0) {
+      nextPosition = indexOrThrow(this.points, this.points.length < 3 ? 1 : 2);
+    } else if (1 <= segmentIndex && segmentIndex < this.points.length - 2) {
+      nextPosition = indexOrThrow(this.points, segmentIndex + 1);
+    } else {
+      const strokeIsClosed =
+        new THREE.Vector3()
+          .subVectors(
+            indexOrThrow(this.points, 0),
+            indexOrThrow(this.points, this.points.length - 1),
+          )
+          .length() < ERROR_THRESHOLD;
+      nextPosition = indexOrThrow(
+        this.points,
+        strokeIsClosed ? 1 : this.points.length - 1,
+      );
+    }
+
     const vertexOffset = 12 * segmentIndex;
     let x: number;
     let y: number;
     let z: number;
 
-    ({ x, y, z } = previous);
-    this.setVertexData(this.#previousPosition, vertexOffset, x, y, z);
+    ({ x, y, z } = previousPosition);
+    this.setVertexData(this.previousPosition, vertexOffset, x, y, z);
 
-    ({ x, y, z } = start);
-    this.setVertexData(this.#position, vertexOffset, x, y, z);
+    ({ x, y, z } = startPosition);
+    this.setVertexData(this.position, vertexOffset, startPosition.x, y, z);
 
-    ({ x, y, z } = end);
-    this.setVertexData(this.#endPosition, vertexOffset, x, y, z);
+    ({ x, y, z } = endPosition);
+    this.setVertexData(this.endPosition, vertexOffset, x, y, z);
 
-    ({ x, y, z } = next);
-    this.setVertexData(this.#nextPosition, vertexOffset, x, y, z);
+    ({ x, y, z } = nextPosition);
+    this.setVertexData(this.nextPosition, vertexOffset, x, y, z);
 
     const textureOffset = 4 * segmentIndex;
-    this.setTextureCoords(this.#textureCoords, textureOffset);
-    this.setStart(this.#start, textureOffset);
-    this.setBottom(this.#bottom, textureOffset);
+    this.setTextureCoords(this.textureCoords, textureOffset);
+    this.setStart(this.start, textureOffset);
+    this.setBottom(this.bottom, textureOffset);
+
+    lengths[segmentIndex + 1] =
+      previousLength +
+      ((startPosition.x - endPosition.x) ** 2 +
+        (startPosition.y - endPosition.y) ** 2 +
+        (startPosition.z - endPosition.z) ** 2) **
+        0.5;
 
     const indexOffset = 6 * segmentIndex;
     const nextIndex = 4 * segmentIndex;
-    this.setIndices(this.#indices, indexOffset, nextIndex);
+    this.setIndices(this.indices, indexOffset, nextIndex);
   }
 
-  #makeNewBuffers(pointCount: number) {
+  allocateNewBuffers(numberOfPoints: number) {
     // Remove the previous buffers from the GPU
     this.dispose();
 
-    const rectCount = pointCount - 1;
-    this.#previousPosition = new Float32Array(12 * rectCount);
-    this.#position = new Float32Array(12 * rectCount);
-    this.#endPosition = new Float32Array(12 * rectCount);
-    this.#nextPosition = new Float32Array(12 * rectCount);
-    this.#textureCoords = new Float32Array(4 * rectCount);
-    this.#beforeArrow = new Float32Array(4 * rectCount);
-    this.#arrow = new Float32Array(4 * rectCount);
-    this.#start = new Float32Array(4 * rectCount);
-    this.#bottom = new Float32Array(4 * rectCount);
-    this.#startProportion = new Float32Array(4 * rectCount);
-    this.#endProportion = new Float32Array(4 * rectCount);
-    this.#indices = new Uint16Array(6 * rectCount);
+    const numberOfSegments = numberOfPoints - 1;
+    this.previousPosition = new Float32Array(12 * numberOfSegments);
+    this.position = new Float32Array(12 * numberOfSegments);
+    this.endPosition = new Float32Array(12 * numberOfSegments);
+    this.nextPosition = new Float32Array(12 * numberOfSegments);
+    this.textureCoords = new Float32Array(4 * numberOfSegments);
+    this.beforeArrow = new Float32Array(4 * numberOfSegments);
+    this.arrow = new Float32Array(4 * numberOfSegments);
+    this.start = new Float32Array(4 * numberOfSegments);
+    this.bottom = new Float32Array(4 * numberOfSegments);
+    this.startProportion = new Float32Array(4 * numberOfSegments);
+    this.endProportion = new Float32Array(4 * numberOfSegments);
+    this.indices = new Uint16Array(6 * numberOfSegments);
 
-    this.#attributes = {
-      previousPosition: new THREE.BufferAttribute(this.#previousPosition, 3),
-      position: new THREE.BufferAttribute(this.#position, 3),
-      endPosition: new THREE.BufferAttribute(this.#endPosition, 3),
-      nextPosition: new THREE.BufferAttribute(this.#nextPosition, 3),
-      textureCoords: new THREE.BufferAttribute(this.#textureCoords, 1),
-      beforeArrow: new THREE.BufferAttribute(this.#beforeArrow, 1),
-      arrow: new THREE.BufferAttribute(this.#arrow, 1),
-      start: new THREE.BufferAttribute(this.#start, 1),
-      bottom: new THREE.BufferAttribute(this.#bottom, 1),
-      startProportion: new THREE.BufferAttribute(this.#startProportion, 1),
-      endProportion: new THREE.BufferAttribute(this.#endProportion, 1),
-      index: new THREE.BufferAttribute(this.#indices, 1),
+    return {
+      previousPosition: new THREE.BufferAttribute(this.previousPosition, 3),
+      position: new THREE.BufferAttribute(this.position, 3),
+      endPosition: new THREE.BufferAttribute(this.endPosition, 3),
+      nextPosition: new THREE.BufferAttribute(this.nextPosition, 3),
+      textureCoords: new THREE.BufferAttribute(this.textureCoords, 1),
+      beforeArrow: new THREE.BufferAttribute(this.beforeArrow, 1),
+      arrow: new THREE.BufferAttribute(this.arrow, 1),
+      start: new THREE.BufferAttribute(this.start, 1),
+      bottom: new THREE.BufferAttribute(this.bottom, 1),
+      startProportion: new THREE.BufferAttribute(this.startProportion, 1),
+      endProportion: new THREE.BufferAttribute(this.endProportion, 1),
+      index: new THREE.BufferAttribute(this.indices, 1),
     };
+  }
 
-    this.setAttribute("position", this.#attributes.position);
-    this.setAttribute("endPosition", this.#attributes.endPosition);
-    this.setAttribute("nextPosition", this.#attributes.nextPosition);
-    this.setAttribute("previousPosition", this.#attributes.previousPosition);
-    this.setAttribute("textureCoords", this.#attributes.textureCoords);
-    this.setAttribute("beforeArrow", this.#attributes.beforeArrow);
-    this.setAttribute("arrow", this.#attributes.arrow);
-    this.setAttribute("start", this.#attributes.start);
-    this.setAttribute("bottom", this.#attributes.bottom);
-    this.setAttribute("startProportion", this.#attributes.startProportion);
-    this.setAttribute("endProportion", this.#attributes.endProportion);
-    this.setIndex(this.#attributes.index);
+  setAttributes(attributes: Attributes) {
+    this.setAttribute("position", attributes.position);
+    this.setAttribute("endPosition", attributes.endPosition);
+    this.setAttribute("nextPosition", attributes.nextPosition);
+    this.setAttribute("previousPosition", attributes.previousPosition);
+    this.setAttribute("textureCoords", attributes.textureCoords);
+    this.setAttribute("beforeArrow", attributes.beforeArrow);
+    this.setAttribute("arrow", attributes.arrow);
+    this.setAttribute("start", attributes.start);
+    this.setAttribute("bottom", attributes.bottom);
+    this.setAttribute("startProportion", attributes.startProportion);
+    this.setAttribute("endProportion", attributes.endProportion);
+    this.setIndex(attributes.index);
   }
 
   setVertexData(

@@ -627,6 +627,14 @@ const positiveAngleTo = (a: THREE.Vector3, b: THREE.Vector3) => {
   return angle;
 };
 
+const indexOrThrow = <T>(array: T[], i: number) => {
+  const value = array[i];
+  if (value === undefined) {
+    throw new Error("Invalid array access");
+  }
+  return value;
+};
+
 class ShapeFromCurves {
   adjacentThreshold = 0.0001;
   segmentClosestToPoint = new THREE.Vector3();
@@ -859,6 +867,7 @@ export {
   intersectionsBetween,
   pointAlongCurve,
   positiveAngleTo,
+  indexOrThrow,
   ShapeFromCurves,
   BUFFER,
   RIGHT,

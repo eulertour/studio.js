@@ -1,5 +1,6 @@
 import * as THREE from "three/webgpu";
 import { ShaderNodeObject, uniform } from "three/tsl";
+import { indexOrThrow } from "../../../utils.js";
 
 const ATLAS_RESOLUTION = 1024;
 
@@ -8,14 +9,6 @@ enum DashType {
   BODY = 0,
   END = -1,
 }
-
-const indexOrThrow = <T>(array: T[], i: number) => {
-  const value = array[i];
-  if (value === undefined) {
-    throw new Error("Invalid array access");
-  }
-  return value;
-};
 
 export default class DashAtlas {
   atlas: THREE.DataTexture;
