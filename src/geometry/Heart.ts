@@ -21,8 +21,8 @@ export default class Heart extends Shape {
     const yOffset = 0.2;
     
     // Generate heart curve using parametric equations
-    for (let t = 0; t <= 2 * Math.PI + ERROR_THRESHOLD; t += 0.1) {
-      // Heart parametric equations
+    for (let t = 0; t <= 2 * Math.PI + ERROR_THRESHOLD; t += 0.1) { 
+      // Alternative heart equation:
     //   const x = size * Math.sqrt(2) * Math.pow(Math.sin(t), 3);
     //   const y = size * (
     //       2 * Math.cos(t)
