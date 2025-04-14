@@ -17,7 +17,6 @@ import {
   texture,
   varyingProperty,
   vec2,
-  vec3,
   vec4,
 } from "three/tsl";
 import * as THREE from "three/webgpu";
@@ -115,36 +114,35 @@ export default class RougierFragmentShader {
       const tangentVector = components.xy;
       const normalVector = components.zw;
 
-      const startLength = attribute("startLength");
-      const endLength = attribute("endLength");
-      const segmentDistancePerFragment = endLength
-        .sub(startLength)
+      const start = attribute("startLength");
+      const end = attribute("endLength");
+      const segmentDistancePerFragment = end
+        .sub(start)
         .div(segmentVector.length());
       const segmentFragmentsPerDistance = float(1).div(
         segmentDistancePerFragment,
       );
 
       const offset = add(
-        startLength,
+        start,
         tangentVector
           .length()
           .mul(segmentDistancePerFragment)
           .mul(sign(dot(segmentVector, tangentVector))),
       );
-      const patternLength = this.dashAtlas.period.mul(dashLength);
       const referenceDashData = this.getReferenceDashData(
         offset,
         dashOffset,
         dashLength,
       );
-      const referencePointOffset = referenceDashData.x;
-      const referenceDashStartOffset = referenceDashData.y;
-      const referenceDashEndOffset = referenceDashData.z;
+      const referencePoint = referenceDashData.x;
+      const referenceDashStart = referenceDashData.y;
+      const referenceDashEnd = referenceDashData.z;
       const referencePointType = referenceDashData.w;
 
       const strokeEnd = float(strokeLength);
-      const segmentStart = startLength;
-      const segmentEnd = endLength;
+      const segmentStart = start;
+      const segmentEnd = end;
       const halfWidth = float(strokeWidth).mul(UNITS_PER_STROKE_WIDTH / 2);
       const halfWidthSquared = mul(halfWidth, halfWidth);
       const dy = normalVector
@@ -154,8 +152,8 @@ export default class RougierFragmentShader {
 
       If(
         or(
-          referenceDashEndOffset.lessThan(0),
-          strokeEnd.lessThan(referenceDashStartOffset),
+          referenceDashEnd.lessThan(0),
+          strokeEnd.lessThan(referenceDashStart),
         ),
         () => {
           Discard();
@@ -166,8 +164,8 @@ export default class RougierFragmentShader {
       If(
         offset
           .lessThanEqual(0)
-          .and(referenceDashStartOffset.lessThanEqual(0))
-          .and(float(0).lessThanEqual(referenceDashEndOffset)),
+          .and(referenceDashStart.lessThanEqual(0))
+          .and(float(0).lessThanEqual(referenceDashEnd)),
         () => {
           const dx = float(0).sub(offset);
           If(lengthSquared(vec2(dx, dy)).greaterThan(halfWidthSquared), () => {
@@ -179,8 +177,8 @@ export default class RougierFragmentShader {
         .ElseIf(
           strokeEnd
             .lessThanEqual(offset)
-            .and(referenceDashStartOffset.lessThanEqual(strokeEnd))
-            .and(strokeEnd.lessThanEqual(referenceDashEndOffset)),
+            .and(referenceDashStart.lessThanEqual(strokeEnd))
+            .and(strokeEnd.lessThanEqual(referenceDashEnd)),
           () => {
             const dx = offset.sub(strokeEnd);
             If(
@@ -197,7 +195,7 @@ export default class RougierFragmentShader {
         //
         // Dash end
         .ElseIf(referencePointType.equal(1), () => {
-          const dx = max(offset.sub(referencePointOffset), 0);
+          const dx = max(offset.sub(referencePoint), 0);
           If(lengthSquared(vec2(dx, dy)).greaterThan(halfWidthSquared), () => {
             Discard();
           });
@@ -210,7 +208,7 @@ export default class RougierFragmentShader {
         })
         // Dash start
         .ElseIf(referencePointType.greaterThan(0), () => {
-          const dx = max(referencePointOffset.sub(offset), 0);
+          const dx = max(referencePoint.sub(offset), 0);
           If(lengthSquared(vec2(dx, dy)).greaterThan(halfWidthSquared), () => {
             Discard();
           });
@@ -223,14 +221,14 @@ export default class RougierFragmentShader {
       //
       // Outgoing from join
       If(segmentStart.notEqual(0), () => {
-        If(referenceDashStartOffset.lessThanEqual(segmentStart), () => {
+        If(referenceDashStart.lessThanEqual(segmentStart), () => {
           If(offset.lessThanEqual(segmentStart), () => {
             Discard();
           });
           const previousFragment = varyingProperty("vec2", "vPreviousFragment");
           const startToPrevious = vec2(previousFragment.sub(startFragment));
           const previousSegmentDashStartDistance = segmentStart.sub(
-            referenceDashStartOffset,
+            referenceDashStart,
           );
           const previousSegmentDashStartFragment = startFragment.add(
             startToPrevious
@@ -254,14 +252,14 @@ export default class RougierFragmentShader {
 
       // Incoming to join
       If(segmentEnd.notEqual(strokeEnd), () => {
-        If(segmentEnd.lessThan(referenceDashStartOffset), () => {
+        If(segmentEnd.lessThan(referenceDashStart), () => {
           Discard();
         });
         If(
           segmentEnd
             .lessThanEqual(offset)
-            .and(referenceDashStartOffset.lessThanEqual(segmentEnd))
-            .and(segmentEnd.lessThanEqual(referenceDashEndOffset)),
+            .and(referenceDashStart.lessThanEqual(segmentEnd))
+            .and(segmentEnd.lessThanEqual(referenceDashEnd)),
           () => {
             const dx = offset.sub(segmentEnd);
             If(vec2(dx, dy).length().greaterThan(halfWidth), () => {
@@ -272,6 +270,7 @@ export default class RougierFragmentShader {
       });
 
       // Incoming to start of closed curve
+      const patternLength = this.dashAtlas.period.mul(dashLength);
       If(float(strokeLength).sub(offset).lessThanEqual(patternLength), () => {
         const startPointReferenceDashData = this.getReferenceDashData(
           0,
@@ -279,13 +278,13 @@ export default class RougierFragmentShader {
           dashLength,
         );
 
-        const startPointReferenceDashStartOffset = max(
+        const startPointReferenceDashStart = max(
           startPointReferenceDashData.y,
           0,
         );
-        const startPointReferenceDashEndOffset = startPointReferenceDashData.z;
+        const startPointReferenceDashEnd = startPointReferenceDashData.z;
 
-        If(startPointReferenceDashEndOffset.greaterThan(0), () => {
+        If(startPointReferenceDashEnd.greaterThan(0), () => {
           const firstSegmentStartFragment = varyingProperty(
             "vec2",
             "vFirstFragment",
@@ -300,13 +299,13 @@ export default class RougierFragmentShader {
           const firstSegmentDashStartFragment = firstSegmentStartFragment.add(
             firstSegmentStartToEnd
               .normalize()
-              .mul(startPointReferenceDashStartOffset)
+              .mul(startPointReferenceDashStart)
               .mul(segmentFragmentsPerDistance),
           );
           const firstSegmentDashEndFragment = firstSegmentStartFragment.add(
             firstSegmentStartToEnd
               .normalize()
-              .mul(startPointReferenceDashEndOffset)
+              .mul(startPointReferenceDashEnd)
               .mul(segmentFragmentsPerDistance),
           );
 
@@ -329,13 +328,13 @@ export default class RougierFragmentShader {
   }
 
   getReferenceDashData = Fn(
-    ([strokeOffset, dashOffset, dashLength]: [
+    ([offset, dashOffset, dashLength]: [
       ShaderNodeObject<OperatorNode>,
       ShaderNodeObject<OperatorNode>,
       ShaderNodeObject<OperatorNode>,
     ]) => {
       const patternLength = this.dashAtlas.period.mul(dashLength);
-      const patternOffset = strokeOffset.sub(dashOffset).mod(patternLength);
+      const patternOffset = offset.sub(dashOffset).mod(patternLength);
 
       const u = patternOffset.div(patternLength);
       const uStar = texture(this.dashAtlas.atlas, vec2(u, 0));
@@ -345,20 +344,20 @@ export default class RougierFragmentShader {
       const referenceDashStartPatternOffset = uStar.z.mul(255).mul(dashLength);
       const referenceDashEndPatternOffset = uStar.w.mul(255).mul(dashLength);
 
-      const referencePointOffset = strokeOffset
+      const referencePoint = offset
         .sub(patternOffset)
         .add(referencePointPatternOffset);
-      const referenceDashStartOffset = strokeOffset
+      const referenceDashStart = offset
         .sub(patternOffset)
         .add(referenceDashStartPatternOffset);
-      const referenceDashEndOffset = strokeOffset
+      const referenceDashEnd = offset
         .sub(patternOffset)
         .add(referenceDashEndPatternOffset);
 
       return vec4(
-        referencePointOffset,
-        referenceDashStartOffset,
-        referenceDashEndOffset,
+        referencePoint,
+        referenceDashStart,
+        referenceDashEnd,
         referencePointType,
       );
     },

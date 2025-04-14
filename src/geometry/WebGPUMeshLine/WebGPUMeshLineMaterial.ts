@@ -14,7 +14,6 @@ export type Uniforms = {
   length: THREE.UniformNode<number>;
   dashLength: THREE.UniformNode<number>;
   dashOffset: THREE.UniformNode<number>;
-  patternLength: THREE.UniformNode<number>;
 };
 
 export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
@@ -55,7 +54,6 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       this.uniforms.length,
       this.uniforms.dashLength,
       this.uniforms.dashOffset,
-      this.uniforms.patternLength,
     ).node();
   }
 
@@ -84,7 +82,6 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       length: uniform(length),
       dashLength: uniform(dashLength),
       dashOffset: uniform(0),
-      patternLength: uniform(dashLength * this.dashAtlas.period.value),
     };
   }
 
