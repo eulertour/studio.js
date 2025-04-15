@@ -14,6 +14,7 @@ import {
   or,
   screenCoordinate,
   screenSize,
+  select,
   sign,
   texture,
   varyingProperty,
@@ -128,10 +129,11 @@ export default class FragmentShader {
           .mul(segmentDistancePerFragment)
           .mul(sign(dot(segmentVector, tangentVector))),
       );
-      const referenceDashData = this.getReferenceDashData(
-        offset,
-        dashOffset,
-        dashLength,
+
+      const referenceDashData = select(
+        float(dashLength).equal(0),
+        vec4(0, 0, strokeEnd, 0),
+        this.getReferenceDashData(offset, dashOffset, dashLength),
       );
       const referencePoint = referenceDashData.x;
       const referenceDashStart = referenceDashData.y;
@@ -183,18 +185,19 @@ export default class FragmentShader {
               },
             );
           },
-        )
-        // NOTE: The start, body, and end dash types are represented
-        // in the DataTexture as +1, 0, and -1, respectively. These
-        // values become 1/255, 0, and 1 when read in the fragment shader.
-        //
-        // Dash end
-        .ElseIf(referencePointType.equal(1), () => {
-          const dx = max(offset.sub(referencePoint), 0);
-          If(lengthSquared(vec2(dx, dy)).greaterThan(halfWidthSquared), () => {
-            Discard();
-          });
-        })
+        );
+
+      // NOTE: The start, body, and end dash types are represented
+      // in the DataTexture as +1, 0, and -1, respectively. These
+      // values become 1/255, 0, and 1 when read in the fragment shader.
+      //
+      // Dash end
+      If(referencePointType.equal(1), () => {
+        const dx = max(offset.sub(referencePoint), 0);
+        If(lengthSquared(vec2(dx, dy)).greaterThan(halfWidthSquared), () => {
+          Discard();
+        });
+      })
         // Dash body
         .ElseIf(referencePointType.equal(0), () => {
           If(abs(dy).greaterThan(halfWidth), () => {
@@ -264,20 +267,24 @@ export default class FragmentShader {
 
       // Incoming to start of closed curve
       const patternLength = this.dashAtlas.period.mul(dashLength);
-      If(float(strokeEnd).sub(offset).lessThanEqual(patternLength), () => {
-        const startPointReferenceDashData = this.getReferenceDashData(
-          0,
-          dashOffset,
-          dashLength,
-        );
+      If(
+        or(
+          float(strokeEnd).sub(offset).lessThanEqual(patternLength),
+          patternLength.equal(0).and(segmentStart.notEqual(0)),
+        ),
+        () => {
+          const startPointReferenceDashData = this.getReferenceDashData(
+            0,
+            dashOffset,
+            dashLength,
+          );
 
-        const startPointReferenceDashStart = max(
-          startPointReferenceDashData.y,
-          0,
-        );
-        const startPointReferenceDashEnd = startPointReferenceDashData.z;
+          const startPointReferenceDashStart = max(
+            startPointReferenceDashData.y,
+            0,
+          );
+          const startPointReferenceDashEnd = startPointReferenceDashData.z;
 
-        If(startPointReferenceDashEnd.greaterThan(0), () => {
           const firstSegmentStartFragment = varyingProperty(
             "vec2",
             "vFirstFragment",
@@ -286,6 +293,7 @@ export default class FragmentShader {
             "vec2",
             "vSecondFragment",
           );
+
           const firstSegmentStartToEnd = firstSegmentEndFragment.sub(
             firstSegmentStartFragment,
           );
@@ -293,32 +301,46 @@ export default class FragmentShader {
             firstSegmentStartToEnd.length(),
             varyingProperty("float", "vFirstSegmentLength"),
           );
-          const firstSegmentDashStartFragment = firstSegmentStartFragment.add(
-            firstSegmentStartToEnd
-              .normalize()
-              .mul(startPointReferenceDashStart)
-              .mul(firstSegmentFragmentsPerDistance),
-          );
-          const firstSegmentDashEndFragment = firstSegmentStartFragment.add(
-            firstSegmentStartToEnd
-              .normalize()
-              .mul(startPointReferenceDashEnd)
-              .mul(firstSegmentFragmentsPerDistance),
-          );
 
-          If(
-            segmentCoversFragment(
-              glFragCoord(),
-              firstSegmentDashStartFragment,
-              firstSegmentDashEndFragment,
-              halfWidth.mul(firstSegmentFragmentsPerDistance),
-            ),
-            () => {
-              Discard();
-            },
-          );
-        });
-      });
+          If(float(dashLength).equal(0), () => {
+            If(
+              segmentCoversFragment(
+                glFragCoord(),
+                firstSegmentStartFragment,
+                firstSegmentEndFragment,
+                halfWidth.mul(firstSegmentFragmentsPerDistance),
+              ),
+              () => {
+                Discard();
+              },
+            );
+          }).ElseIf(startPointReferenceDashEnd.greaterThan(0), () => {
+            const firstSegmentDashStartFragment = firstSegmentStartFragment.add(
+              firstSegmentStartToEnd
+                .normalize()
+                .mul(startPointReferenceDashStart)
+                .mul(firstSegmentFragmentsPerDistance),
+            );
+            const firstSegmentDashEndFragment = firstSegmentStartFragment.add(
+              firstSegmentStartToEnd
+                .normalize()
+                .mul(startPointReferenceDashEnd)
+                .mul(firstSegmentFragmentsPerDistance),
+            );
+            If(
+              segmentCoversFragment(
+                glFragCoord(),
+                firstSegmentDashStartFragment,
+                firstSegmentDashEndFragment,
+                halfWidth.mul(firstSegmentFragmentsPerDistance),
+              ),
+              () => {
+                Discard();
+              },
+            );
+          });
+        },
+      );
 
       return vec4(color, opacity);
     });

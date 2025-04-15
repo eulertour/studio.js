@@ -22,7 +22,7 @@ export default class Scene implements StudioScene {
       strokeColor: new THREE.Color("orange"),
       strokeOpacity: 0.85,
       strokeWidth: 4,
-      strokeDashLength: 2 * Math.PI / 6,
+      // strokeDashLength: (2 * Math.PI) / 6,
       strokeDashSpeed: 1,
     });
     circle.position.x = 4;
@@ -42,10 +42,9 @@ export default class Scene implements StudioScene {
       strokeColor: new THREE.Color("purple"),
       strokeOpacity: 0.85,
       strokeWidth: 5,
-      // strokeDashSpeed: 1,
       strokeDashLength: 0.5,
     });
-    square.position.set(-4, 2, 0)
+    square.position.set(-4, 2, 0);
     scene.add(square);
 
     const square2 = new Geometry.Square(2, {
@@ -54,21 +53,32 @@ export default class Scene implements StudioScene {
       strokeDashSpeed: 1,
       strokeDashLength: 0.5,
     });
-    square2.position.set(-4, -2, 0)
+    square2.position.set(-4, -2, 0);
     scene.add(square2);
 
-    const line2 = new Geometry.Polyline([
-      new THREE.Vector3(0, -2, 0),
-      new THREE.Vector3(0, 2, 0),
-      new THREE.Vector3(0, -2, 0),
-    ], {
+    const square3 = new Geometry.Square(2, {
       strokeColor: new THREE.Color("purple"),
       strokeOpacity: 0.85,
       strokeWidth: 5,
-      strokeDashLength: 0.5,
-      strokeDashSpeed: 1,
+      strokeDashLength: 0.0,
     });
-    line2.position.set(-2, -1, 0)
+    scene.add(square3);
+
+    const line2 = new Geometry.Polyline(
+      [
+        new THREE.Vector3(0, -2, 0),
+        new THREE.Vector3(0, 2, 0),
+        new THREE.Vector3(0, -2, 0),
+      ],
+      {
+        strokeColor: new THREE.Color("purple"),
+        strokeOpacity: 0.85,
+        strokeWidth: 5,
+        strokeDashLength: 0.5,
+        strokeDashSpeed: 1,
+      },
+    );
+    line2.position.set(-2, -1, 0);
     scene.add(line2);
 
     // WARN: This causes a render warning.
@@ -82,7 +92,7 @@ export default class Scene implements StudioScene {
         strokeDashLength: 0.5,
         strokeDashSpeed: 1,
       },
-    )
+    );
     scene.add(line3);
 
     const points = [
@@ -117,7 +127,7 @@ export default class Scene implements StudioScene {
           circle.restyle({
             strokeColor: new THREE.Color(1 - t, 0.5 - 0.5 * t, 0),
             strokeWidth: 4 + 2 * t,
-            strokeDashLength: 2 * Math.PI / (6 + t),
+            strokeDashLength: (2 * Math.PI) / (6 + t),
           });
         }),
       ],
