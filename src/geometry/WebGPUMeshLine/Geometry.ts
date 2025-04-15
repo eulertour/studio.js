@@ -160,7 +160,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       const nextIndex = 4 * i;
       this.indices[arrayOffset] = nextIndex + 2;
       this.indices[arrayOffset + 1] = nextIndex + 1;
-      this.indices[arrayOffset + 2] = nextIndex + 0;
+      this.indices[arrayOffset + 2] = nextIndex;
       this.indices[arrayOffset + 3] = nextIndex + 1;
       this.indices[arrayOffset + 4] = nextIndex + 2;
       this.indices[arrayOffset + 5] = nextIndex + 3;
@@ -209,22 +209,17 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     let y: number | undefined;
     let z: number | undefined;
     for (let i = 0; i < this.position.length; i += 12) {
-      x = this.position[i];
-      y = this.position[i + 1];
-      z = this.position[i + 2];
-      if (x === undefined || y === undefined || z === undefined) {
-        throw new Error("Invalid array access");
-      }
+      x = bufferIndexOrThrow(this.position, i);
+      y = bufferIndexOrThrow(this.position, i + 1);
+      z = bufferIndexOrThrow(this.position, i + 2);
       center.add({ x, y, z });
     }
 
     const arrayOffset = this.position.length - 12;
-    x = this.endPosition[arrayOffset];
-    y = this.endPosition[arrayOffset + 1];
-    z = this.endPosition[arrayOffset + 2];
-    if (x === undefined || y === undefined || z === undefined) {
-      throw new Error("Invalid array access");
-    }
+    x = bufferIndexOrThrow(this.endPosition, arrayOffset);
+    y = bufferIndexOrThrow(this.endPosition, arrayOffset + 1);
+    z = bufferIndexOrThrow(this.endPosition, arrayOffset + 2);
+    center.add({ x, y, z });
 
     center.divideScalar(this.position.length / 12 + 1);
   }
@@ -236,22 +231,16 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     let y: number | undefined;
     let z: number | undefined;
     for (let i = 0; i < this.position.length; i += 12) {
-      x = this.position[i];
-      y = this.position[i + 1];
-      z = this.position[i + 2];
-      if (x === undefined || y === undefined || z === undefined) {
-        throw new Error("Invalid array access");
-      }
+      x = bufferIndexOrThrow(this.position, i);
+      y = bufferIndexOrThrow(this.position, i + 1);
+      z = bufferIndexOrThrow(this.position, i + 2);
       radius = Math.max(radius, center.distanceTo({ x, y, z }));
     }
 
     const arrayOffset = this.position.length - 12;
-    x = this.endPosition[arrayOffset];
-    y = this.endPosition[arrayOffset + 1];
-    z = this.endPosition[arrayOffset + 2];
-    if (x === undefined || y === undefined || z === undefined) {
-      throw new Error("Invalid array access");
-    }
+    x = bufferIndexOrThrow(this.endPosition, arrayOffset);
+    y = bufferIndexOrThrow(this.endPosition, arrayOffset + 1);
+    z = bufferIndexOrThrow(this.endPosition, arrayOffset + 2);
     radius = Math.max(radius, center.distanceTo({ x, y, z }));
 
     return radius;

@@ -36,7 +36,6 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       side: threeDimensions ? THREE.FrontSide : THREE.DoubleSide,
     });
     this.dashSpeed = dashSpeed;
-
     this.dashAtlas = new DashAtlas(dashPattern);
     this.uniforms = this.createUniforms(
       points,
