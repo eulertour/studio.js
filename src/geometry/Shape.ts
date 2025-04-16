@@ -122,7 +122,7 @@ export default abstract class Shape extends THREE.Group {
       strokeColor: new THREE.Color(0x000000),
       strokeOpacity: 1.0,
       strokeWidth: 4,
-      strokeDashLength: 0.5,
+      strokeDashLength: 0.0,
       strokeDashSpeed: 0,
       dashed: false,
     };

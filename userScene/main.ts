@@ -16,18 +16,22 @@ export default class Scene implements StudioScene {
     public camera: THREE.OrthographicCamera,
     public renderer: THREE.WebGPURenderer,
   ) {
-    const circle = new Geometry.Circle(2, {
+    const screenWidth = camera.right - camera.left;
+    const screenHeight = camera.top - camera.bottom;
+
+    const circle = new Geometry.Circle(1.5, {
       // fillColor: new THREE.Color("blue"),
       // fillOpacity: 0.75,
       strokeColor: new THREE.Color("orange"),
       strokeOpacity: 0.85,
       strokeWidth: 4,
-      // strokeDashLength: (2 * Math.PI) / 6,
+      strokeDashLength: (2 * Math.PI * 1.5) / 5,
       strokeDashSpeed: 1,
     });
-    circle.position.x = 4;
-    circle.position.y = 1.5;
+    circle.position.x = -screenWidth / 3;
+    circle.position.y = screenHeight / 4;
     scene.add(circle);
+
     // this.animations = [
     //   new Animation.Animation((t) => {
     //     circle.restyle({
@@ -44,7 +48,8 @@ export default class Scene implements StudioScene {
       strokeWidth: 5,
       strokeDashLength: 0.5,
     });
-    square.position.set(-4, 2, 0);
+    square.position.x = 0;
+    square.position.y = screenHeight / 4;
     scene.add(square);
 
     const square2 = new Geometry.Square(2, {
@@ -53,22 +58,23 @@ export default class Scene implements StudioScene {
       strokeDashSpeed: 1,
       strokeDashLength: 0.5,
     });
-    square2.position.set(-4, -2, 0);
+    square2.position.x = screenWidth / 3;
+    square2.position.y = screenHeight / 4;
     scene.add(square2);
 
     const square3 = new Geometry.Square(2, {
       strokeColor: new THREE.Color("purple"),
-      strokeOpacity: 0.85,
-      strokeWidth: 5,
-      strokeDashLength: 0.0,
+      strokeOpacity: 1,
     });
+    square3.position.x = -screenWidth / 3;
+    square3.position.y = -screenHeight / 4;
     scene.add(square3);
 
     const line2 = new Geometry.Polyline(
       [
-        new THREE.Vector3(0, -2, 0),
-        new THREE.Vector3(0, 2, 0),
-        new THREE.Vector3(0, -2, 0),
+        new THREE.Vector3(0, -1.5, 0),
+        new THREE.Vector3(0, 1.5, 0),
+        new THREE.Vector3(0, -1.5, 0),
       ],
       {
         strokeColor: new THREE.Color("purple"),
@@ -78,13 +84,14 @@ export default class Scene implements StudioScene {
         strokeDashSpeed: 1,
       },
     );
-    line2.position.set(-2, -1, 0);
+    line2.position.x = screenWidth / 3;
+    line2.position.y = -screenHeight / 4;
     scene.add(line2);
 
     // WARN: This causes a render warning.
     const line3 = new Geometry.Line(
-      new THREE.Vector3(4, -2, 0),
-      new THREE.Vector3(0, 2, 0),
+      new THREE.Vector3(-1.5, 1.5, 0),
+      new THREE.Vector3(1.5, -1.5, 0),
       {
         strokeColor: new THREE.Color("purple"),
         strokeOpacity: 0.85,
@@ -93,6 +100,8 @@ export default class Scene implements StudioScene {
         strokeDashSpeed: 1,
       },
     );
+    line3.position.x = 0;
+    line3.position.y = -screenHeight / 4;
     scene.add(line3);
 
     const points = [
@@ -127,7 +136,7 @@ export default class Scene implements StudioScene {
           circle.restyle({
             strokeColor: new THREE.Color(1 - t, 0.5 - 0.5 * t, 0),
             strokeWidth: 4 + 2 * t,
-            strokeDashLength: (2 * Math.PI) / (6 + t),
+            strokeDashLength: (2 * Math.PI * 1.5) / (8 + 2 * t),
           });
         }),
       ],
