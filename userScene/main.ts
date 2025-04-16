@@ -1,3 +1,4 @@
+import { cos } from "three/tsl";
 import {
   Geometry,
   Animation,
@@ -9,7 +10,7 @@ import * as THREE from "three/webgpu";
 export default class Scene implements StudioScene {
   animations?: Array<AnimationRepresentation>;
   line: Geometry.Polyline;
-  square: Geometry.Square;
+  square3: Geometry.Square;
 
   constructor(
     public scene: THREE.Scene,
@@ -62,13 +63,15 @@ export default class Scene implements StudioScene {
     square2.position.y = screenHeight / 4;
     scene.add(square2);
 
-    const square3 = new Geometry.Square(2, {
+    this.square3 = new Geometry.Square(2, {
       strokeColor: new THREE.Color("purple"),
       strokeOpacity: 1,
+      strokeWidth: 6,
+      // strokeDashLength: 0.5,
     });
-    square3.position.x = -screenWidth / 3;
-    square3.position.y = -screenHeight / 4;
-    scene.add(square3);
+    this.square3.position.x = -screenWidth / 3;
+    this.square3.position.y = -screenHeight / 4;
+    scene.add(this.square3);
 
     const line2 = new Geometry.Polyline(
       [
@@ -162,5 +165,21 @@ export default class Scene implements StudioScene {
         ]);
       }),
     ];
+  }
+
+  update(_, t: number) {
+    const frequency = 1 / 8;
+    const sinValue = Math.sin(2 * Math.PI * t * frequency);
+    const cosValue = Math.cos(2 * Math.PI * t * frequency);
+    const sinProportion = 0.5 + 0.5 * sinValue;
+    const cosProportion = 0.5 + 0.5 * cosValue;
+    this.square3.restyle({
+      strokeProportion: {
+        start: Math.min(sinProportion, cosProportion),
+        end: Math.max(sinProportion, cosProportion),
+        // start: 0.25 + 0.05 * Math.sin(2 * Math.PI * t * frequency),
+        // end: 0.5
+      }
+    });
   }
 }

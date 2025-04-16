@@ -60,7 +60,7 @@ export default class VertexShader {
           vec4(attribute("position"), 1),
           vec4(attribute("endPosition"), 1),
           vec4(attribute("prevPosition"), 1),
-          vec4(0, 0, 0, 0),
+          vec4(attribute("nextPosition"), 1),
         ),
       );
       const clipSpaceFirstSegment = modelViewProjection.mul(
@@ -75,18 +75,21 @@ export default class VertexShader {
       const clipSpaceStart = vec4(clipSpaceLinePoints[0]);
       const clipSpaceEnd = vec4(clipSpaceLinePoints[1]);
       const clipSpacePrevious = vec4(clipSpaceLinePoints[2]);
+      const clipSpaceNext = vec4(clipSpaceLinePoints[3]);
       const clipSpaceFirstPosition = vec4(clipSpaceFirstSegment[0]);
       const clipSpaceSecondPosition = vec4(clipSpaceFirstSegment[1]);
 
       const startFragment = clipToScreenSpace(clipSpaceStart);
       const endFragment = clipToScreenSpace(clipSpaceEnd);
       const previousFragment = clipToScreenSpace(clipSpacePrevious);
+      const nextFragment = clipToScreenSpace(clipSpaceNext);
       const firstFragment = clipToScreenSpace(clipSpaceFirstPosition);
       const secondFragment = clipToScreenSpace(clipSpaceSecondPosition);
 
       varyingProperty("vec2", "vStartFragment").assign(startFragment);
       varyingProperty("vec2", "vEndFragment").assign(endFragment);
       varyingProperty("vec2", "vPreviousFragment").assign(previousFragment);
+      varyingProperty("vec2", "vNextFragment").assign(nextFragment);
       varyingProperty("vec2", "vFirstFragment").assign(firstFragment);
       varyingProperty("vec2", "vSecondFragment").assign(secondFragment);
       varyingProperty("float", "vFirstSegmentLength").assign(

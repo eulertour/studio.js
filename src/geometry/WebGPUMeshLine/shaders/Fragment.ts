@@ -105,6 +105,8 @@ export default class FragmentShader {
     strokeEnd: UniformNode<number>,
     dashLength: UniformNode<number>,
     dashOffset: UniformNode<number>,
+    startProportion: UniformNode<number>,
+    endProportion: UniformNode<number>,
   ) {
     this.node = Fn(() => {
       const startFragment = varyingProperty("vec2", "vStartFragment");
@@ -116,8 +118,8 @@ export default class FragmentShader {
       const tangentVector = components.xy;
       const normalVector = components.zw;
 
-      const segmentStart = attribute("startLength");
-      const segmentEnd = attribute("endLength");
+      const segmentStart = attribute("positionOffset").x;
+      const segmentEnd = attribute("positionOffset").y;
       const segmentDistancePerFragment = segmentEnd
         .sub(segmentStart)
         .div(segmentVector.length());
@@ -222,9 +224,10 @@ export default class FragmentShader {
           const startToPrevious = vec2(previousFragment.sub(startFragment));
           const previousSegmentDashStartDistance =
             segmentStart.sub(referenceDashStart);
+          const previousSegmentStart = attribute("positionOffset").z;
           const previousSegmentFragmentsPerDistance = div(
             startToPrevious.length(),
-            segmentStart.sub(attribute("prevLength")),
+            segmentStart.sub(previousSegmentStart),
           );
           const previousSegmentDashStartFragment = startFragment.add(
             startToPrevious
@@ -303,6 +306,7 @@ export default class FragmentShader {
           );
 
           If(float(dashLength).equal(0), () => {
+            // TODO: Change this to fix the stitch when a draw range is used
             If(
               segmentCoversFragment(
                 glFragCoord(),
@@ -342,6 +346,110 @@ export default class FragmentShader {
         },
       );
 
+      // End of draw range
+      const endPoint = float(strokeEnd).mul(endProportion);
+      If(patternLength.equal(0), () => {
+        If(endPoint.lessThanEqual(offset), () => {
+          const dx = offset.sub(endPoint);
+          If(vec2(dx, dy).length().greaterThan(halfWidth), () => {
+            Discard();
+          });
+        });
+      }).Else(() => {
+        If(endPoint.lessThanEqual(referenceDashStart), () => {
+          Discard();
+        }).ElseIf(endPoint.lessThanEqual(offset), () => {
+          const dx = offset.sub(endPoint);
+          If(vec2(dx, dy).length().greaterThan(halfWidth), () => {
+            Discard();
+          });
+        });
+      });
+
+      const testColor = vec4(1, 0, 0, 1).toVar();
+      // Start of draw range
+      const startPoint = float(strokeEnd).mul(startProportion);
+      If(patternLength.equal(0).or(true), () => {
+        If(segmentEnd.lessThanEqual(startPoint), () => {
+          const nextFragment = varyingProperty("vec2", "vNextFragment");
+          const endToNext = vec2(nextFragment.sub(endFragment));
+          const nextSegmentStartPointDistance = startPoint.sub(segmentEnd);
+          const nextSegmentEnd = attribute("positionOffset").w;
+          const nextSegmentFragmentsPerDistance = div(
+            endToNext.length(),
+            nextSegmentEnd.sub(segmentEnd),
+          );
+          const nextSegmentStartPointFragment = endFragment.add(
+            endToNext
+              .normalize()
+              .mul(nextSegmentStartPointDistance)
+              .mul(nextSegmentFragmentsPerDistance),
+          );
+          If(
+            segmentCoversFragment(
+              glFragCoord(),
+              nextSegmentStartPointFragment,
+              nextFragment,
+              halfWidth.mul(nextSegmentFragmentsPerDistance),
+            ).not(),
+            () => {
+              Discard();
+            },
+          );
+          // Discard();
+        })
+          .ElseIf(
+            segmentStart
+              .lessThanEqual(startPoint)
+              .and(startPoint.lessThanEqual(segmentEnd)),
+            () => {
+              If(offset.lessThanEqual(startPoint), () => {
+                const dx = startPoint.sub(offset);
+                If(vec2(dx, dy).length().greaterThan(halfWidth), () => {
+                  const nextFragment = varyingProperty("vec2", "vNextFragment");
+                  const endToNext = vec2(nextFragment.sub(endFragment));
+                  const nextSegmentStartPointDistance =
+                    startPoint.sub(segmentEnd);
+                  const nextSegmentEnd = attribute("positionOffset").w;
+                  const nextSegmentFragmentsPerDistance = div(
+                    endToNext.length(),
+                    nextSegmentEnd.sub(segmentEnd),
+                  );
+                  const nextSegmentStartPointFragment = endFragment.add(
+                    endToNext
+                      .normalize()
+                      .mul(nextSegmentStartPointDistance)
+                      .mul(nextSegmentFragmentsPerDistance),
+                  );
+                  If(
+                    segmentCoversFragment(
+                      glFragCoord(),
+                      nextSegmentStartPointFragment,
+                      nextFragment,
+                      halfWidth.mul(nextSegmentFragmentsPerDistance),
+                    ).not(),
+                    () => {
+                      Discard();
+                    },
+                  );
+                });
+              });
+            },
+          )
+          .Else(/* startPoint.lessThanEqual(segmentStart) ,*/ () => {});
+
+        // // NOTE: This pair of conditions doesn't work
+        // If(offset.lessThan(startPoint), () => {
+        //   const dx = offset.sub(startPoint);
+        //   If(vec2(dx, dy).length().greaterThan(halfWidth), () => {
+        //     Discard();
+        //   });
+        // }).Else(() => {
+        //   testColor.assign(vec4(0, 1, 0, 1));
+        // });
+      });
+
+      return testColor;
       return vec4(color, opacity);
     });
   }

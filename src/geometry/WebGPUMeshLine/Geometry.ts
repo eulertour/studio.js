@@ -9,9 +9,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   position = new Float32Array();
   endPosition = new Float32Array();
   prevPosition = new Float32Array();
-  startLength = new Float32Array();
-  endLength = new Float32Array();
-  prevLength = new Float32Array();
+  nextPosition = new Float32Array();
+  positionOffset = new Float32Array();
   vertexOffset = new Float32Array();
   indices = new Uint16Array();
 
@@ -40,27 +39,27 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.position = new Float32Array(12 * numberOfSegments);
     this.endPosition = new Float32Array(12 * numberOfSegments);
     this.prevPosition = new Float32Array(12 * numberOfSegments);
-    this.startLength = new Float32Array(4 * numberOfSegments);
-    this.endLength = new Float32Array(4 * numberOfSegments);
-    this.prevLength = new Float32Array(4 * numberOfSegments);
+    this.nextPosition = new Float32Array(12 * numberOfSegments);
+    this.positionOffset = new Float32Array(16 * numberOfSegments);
     this.vertexOffset = new Float32Array(8 * numberOfSegments);
     this.indices = new Uint16Array(6 * numberOfSegments);
 
     const positionBuffer = new THREE.BufferAttribute(this.position, 3);
     const endPositionBuffer = new THREE.BufferAttribute(this.endPosition, 3);
     const prevPositionBuffer = new THREE.BufferAttribute(this.prevPosition, 3);
-    const startLengthBuffer = new THREE.BufferAttribute(this.startLength, 1);
-    const endLengthBuffer = new THREE.BufferAttribute(this.endLength, 1);
-    const prevLengthBuffer = new THREE.BufferAttribute(this.prevLength, 1);
+    const nextPositionBuffer = new THREE.BufferAttribute(this.nextPosition, 3);
+    const positionOffsetBuffer = new THREE.BufferAttribute(
+      this.positionOffset,
+      4,
+    );
     const vertexOffsetBuffer = new THREE.BufferAttribute(this.vertexOffset, 2);
     const indexBuffer = new THREE.BufferAttribute(this.indices, 1);
 
     this.setAttribute("position", positionBuffer);
     this.setAttribute("endPosition", endPositionBuffer);
     this.setAttribute("prevPosition", prevPositionBuffer);
-    this.setAttribute("startLength", startLengthBuffer);
-    this.setAttribute("endLength", endLengthBuffer);
-    this.setAttribute("prevLength", prevLengthBuffer);
+    this.setAttribute("nextPosition", nextPositionBuffer);
+    this.setAttribute("positionOffset", positionOffsetBuffer);
     this.setAttribute("vertexOffset", vertexOffsetBuffer);
     this.setIndex(indexBuffer);
 
@@ -71,9 +70,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.getAttribute("position").needsUpdate = true;
     this.getAttribute("endPosition").needsUpdate = true;
     this.getAttribute("prevPosition").needsUpdate = true;
-    this.getAttribute("startLength").needsUpdate = true;
-    this.getAttribute("endLength").needsUpdate = true;
-    this.getAttribute("prevLength").needsUpdate = true;
+    this.getAttribute("nextPosition").needsUpdate = true;
+    this.getAttribute("positionOffset").needsUpdate = true;
     this.getAttribute("vertexOffset").needsUpdate = sizeChanged;
     if (this.index !== null) {
       this.index.needsUpdate = sizeChanged;
@@ -92,9 +90,14 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       const startPoint = indexOrThrow(points, i);
       const endPoint = indexOrThrow(points, i + 1);
       const prevPoint = indexOrThrow(points, Math.max(i - 1, 0));
+      const nextPoint = indexOrThrow(
+        points,
+        Math.min(i + 2, points.length - 1),
+      );
       this.writeVector3ToSegment(this.position, i, startPoint);
       this.writeVector3ToSegment(this.endPosition, i, endPoint);
       this.writeVector3ToSegment(this.prevPosition, i, prevPoint);
+      this.writeVector3ToSegment(this.nextPosition, i, nextPoint);
     }
   }
 
@@ -172,25 +175,40 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     for (let i = 0; i < segmentCount; i++) {
       const startPoint = indexOrThrow(points, i);
       const endPoint = indexOrThrow(points, i + 1);
+      const nextPoint = indexOrThrow(
+        points,
+        Math.min(i + 2, points.length - 1),
+      );
 
-      const prevArrayOffset = Math.max(4 * (i - 1), 0);
-      const startLength = bufferIndexOrThrow(this.endLength, prevArrayOffset);
+      const prevArrayOffset = Math.max(16 * (i - 1), 0);
+      const startLength = bufferIndexOrThrow(
+        this.positionOffset,
+        prevArrayOffset + 1,
+      );
       const endLength = startLength + startPoint.distanceTo(endPoint);
-      const prevLength = bufferIndexOrThrow(this.startLength, prevArrayOffset);
+      const prevLength = bufferIndexOrThrow(
+        this.positionOffset,
+        prevArrayOffset,
+      );
+      const nextLength = endLength + endPoint.distanceTo(nextPoint);
 
-      const arrayOffset = 4 * i;
-      this.startLength[arrayOffset] = startLength;
-      this.startLength[arrayOffset + 1] = startLength;
-      this.startLength[arrayOffset + 2] = startLength;
-      this.startLength[arrayOffset + 3] = startLength;
-      this.endLength[arrayOffset] = endLength;
-      this.endLength[arrayOffset + 1] = endLength;
-      this.endLength[arrayOffset + 2] = endLength;
-      this.endLength[arrayOffset + 3] = endLength;
-      this.prevLength[arrayOffset] = prevLength;
-      this.prevLength[arrayOffset + 1] = prevLength;
-      this.prevLength[arrayOffset + 2] = prevLength;
-      this.prevLength[arrayOffset + 3] = prevLength;
+      const arrayOffset2 = 16 * i;
+      this.positionOffset[arrayOffset2] = startLength;
+      this.positionOffset[arrayOffset2 + 1] = endLength;
+      this.positionOffset[arrayOffset2 + 2] = prevLength;
+      this.positionOffset[arrayOffset2 + 3] = nextLength;
+      this.positionOffset[arrayOffset2 + 4] = startLength;
+      this.positionOffset[arrayOffset2 + 5] = endLength;
+      this.positionOffset[arrayOffset2 + 6] = prevLength;
+      this.positionOffset[arrayOffset2 + 7] = nextLength;
+      this.positionOffset[arrayOffset2 + 8] = startLength;
+      this.positionOffset[arrayOffset2 + 9] = endLength;
+      this.positionOffset[arrayOffset2 + 10] = prevLength;
+      this.positionOffset[arrayOffset2 + 11] = nextLength;
+      this.positionOffset[arrayOffset2 + 12] = startLength;
+      this.positionOffset[arrayOffset2 + 13] = endLength;
+      this.positionOffset[arrayOffset2 + 14] = prevLength;
+      this.positionOffset[arrayOffset2 + 15] = nextLength;
     }
   }
 

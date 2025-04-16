@@ -1,26 +1,12 @@
 import * as THREE from "three/webgpu";
-
 import * as Text from "../text.js";
-import WebGPUMeshLineGeometry from "./WebGPUMeshLine/Geometry.js";
-import WebGPUMeshLineMaterial from "./WebGPUMeshLine/Material.js";
 import WebGPUMeshLine from "./WebGPUMeshLine/index.js";
-
-export type Transform = {
-  position: THREE.Vector3;
-  rotation: THREE.Euler;
-  scale: THREE.Vector3;
-};
-
-export type Style = {
-  fillColor?: THREE.Color;
-  fillOpacity?: number;
-  strokeColor?: THREE.Color;
-  strokeOpacity?: number;
-  strokeWidth?: number;
-  strokeDashLength?: number;
-  strokeDashSpeed?: number;
-  dashed?: boolean;
-};
+import {
+  Style,
+  Transform,
+  strokeProportionConfigToData,
+  styleToData,
+} from "./utils.js";
 
 const getFillGeometry = (points: Array<THREE.Vector3>) => {
   const shape = new THREE.Shape();
@@ -33,7 +19,7 @@ const getFillGeometry = (points: Array<THREE.Vector3>) => {
 };
 
 type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
-type Stroke = WebGPUMeshLine
+type Stroke = WebGPUMeshLine;
 
 /**
  * An abstract class representing a generalized shape.
@@ -46,7 +32,7 @@ export default abstract class Shape extends THREE.Group {
 
   constructor(
     points: Array<THREE.Vector3>,
-    config: Style & {
+    userConfig: Style & {
       arrow?: boolean;
       stroke?: boolean;
       fill?: boolean;
@@ -55,7 +41,15 @@ export default abstract class Shape extends THREE.Group {
     } = {},
   ) {
     super();
-    config = Object.assign(Shape.defaultStyle(), config);
+    const config = {
+      ...Shape.defaultStyleData(),
+      ...styleToData(userConfig),
+      arrow: userConfig.arrow ?? false,
+      stroke: userConfig.stroke ?? true,
+      fill: userConfig.fill ?? true,
+      closed: userConfig.closed ?? false,
+      fillPoints: userConfig.fillPoints ?? points,
+    };
 
     if (config.fill !== false) {
       const fillGeometry = getFillGeometry(config.fillPoints ?? points);
@@ -76,7 +70,9 @@ export default abstract class Shape extends THREE.Group {
         width: config.strokeWidth,
         dashLength: config.strokeDashLength,
         dashSpeed: config.strokeDashSpeed,
-      })
+        startProportion: config.strokeStartProportion,
+        endProportion: config.strokeEndProportion,
+      });
       this.add(this.stroke);
     }
 
@@ -115,7 +111,7 @@ export default abstract class Shape extends THREE.Group {
     }
   }
 
-  static defaultStyle() {
+  static defaultStyleData() {
     return {
       fillColor: new THREE.Color(0xfffaf0),
       fillOpacity: 0.0,
@@ -124,6 +120,8 @@ export default abstract class Shape extends THREE.Group {
       strokeWidth: 4,
       strokeDashLength: 0.0,
       strokeDashSpeed: 0,
+      strokeStartProportion: 0,
+      strokeEndProportion: 1,
       dashed: false,
     };
   }
@@ -290,8 +288,13 @@ export default abstract class Shape extends THREE.Group {
     }
 
     if (this.stroke !== undefined) {
-      const { strokeColor, strokeOpacity, strokeWidth, strokeDashLength } =
-        style;
+      const {
+        strokeColor,
+        strokeOpacity,
+        strokeWidth,
+        strokeDashLength,
+        strokeProportion,
+      } = style;
       if (strokeColor !== undefined) {
         this.stroke.material.uniforms.color.value.set(strokeColor);
       }
@@ -303,6 +306,13 @@ export default abstract class Shape extends THREE.Group {
       }
       if (strokeDashLength !== undefined) {
         this.stroke.material.uniforms.dashLength.value = strokeDashLength;
+      }
+      if (strokeProportion !== undefined) {
+        const { strokeStartProportion, strokeEndProportion } =
+          strokeProportionConfigToData(strokeProportion);
+        this.stroke.material.uniforms.startProportion.value =
+          strokeStartProportion;
+        this.stroke.material.uniforms.endProportion.value = strokeEndProportion;
       }
     }
 
