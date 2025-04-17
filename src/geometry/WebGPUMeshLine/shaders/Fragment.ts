@@ -10,6 +10,7 @@ import {
   dot,
   float,
   max,
+  min,
   mul,
   or,
   screenCoordinate,
@@ -270,10 +271,12 @@ export default class FragmentShader {
 
       // Incoming to start of closed curve
       const patternLength = this.dashAtlas.period.mul(dashLength);
+      const drawStart = float(strokeEnd).mul(startProportion);
+      const drawEnd = float(strokeEnd).mul(endProportion);
       If(
         or(
           float(strokeEnd).sub(offset).lessThanEqual(patternLength),
-          patternLength.equal(0).and(segmentStart.notEqual(0)),
+          float(dashLength).equal(0).and(segmentStart.notEqual(0)),
         ),
         () => {
           const startPointReferenceDashData = this.getReferenceDashData(
@@ -296,28 +299,47 @@ export default class FragmentShader {
             "vec2",
             "vSecondFragment",
           );
-
           const firstSegmentStartToEnd = firstSegmentEndFragment.sub(
             firstSegmentStartFragment,
           );
+
+          const firstSegmentLength = varyingProperty(
+            "float",
+            "vFirstSegmentLength",
+          );
           const firstSegmentFragmentsPerDistance = div(
             firstSegmentStartToEnd.length(),
-            varyingProperty("float", "vFirstSegmentLength"),
+            firstSegmentLength,
           );
 
           If(float(dashLength).equal(0), () => {
             // TODO: Change this to fix the stitch when a draw range is used
-            If(
-              segmentCoversFragment(
-                glFragCoord(),
-                firstSegmentStartFragment,
-                firstSegmentEndFragment,
-                halfWidth.mul(firstSegmentFragmentsPerDistance),
-              ),
-              () => {
-                Discard();
-              },
-            );
+            If(drawStart.lessThanEqual(firstSegmentLength), () => {
+              const firstSegmentDrawStartFragment =
+                firstSegmentStartFragment.add(
+                  firstSegmentStartToEnd
+                    .normalize()
+                    .mul(drawStart)
+                    .mul(firstSegmentFragmentsPerDistance),
+                );
+              const firstSegmentDrawEndFragment = firstSegmentStartFragment.add(
+                firstSegmentStartToEnd
+                  .normalize()
+                  .mul(min(drawEnd, firstSegmentLength))
+                  .mul(firstSegmentFragmentsPerDistance),
+              );
+              If(
+                segmentCoversFragment(
+                  glFragCoord(),
+                  firstSegmentDrawStartFragment,
+                  firstSegmentDrawEndFragment,
+                  halfWidth.mul(firstSegmentFragmentsPerDistance),
+                ),
+                () => {
+                  Discard();
+                },
+              );
+            });
           }).ElseIf(startPointReferenceDashEnd.greaterThan(0), () => {
             const firstSegmentDashStartFragment = firstSegmentStartFragment.add(
               firstSegmentStartToEnd
@@ -347,19 +369,18 @@ export default class FragmentShader {
       );
 
       // End of draw range
-      const endPoint = float(strokeEnd).mul(endProportion);
-      If(patternLength.equal(0), () => {
-        If(endPoint.lessThanEqual(offset), () => {
-          const dx = offset.sub(endPoint);
+      If(float(dashLength).equal(0), () => {
+        If(drawEnd.lessThanEqual(offset), () => {
+          const dx = offset.sub(drawEnd);
           If(vec2(dx, dy).length().greaterThan(halfWidth), () => {
             Discard();
           });
         });
       }).Else(() => {
-        If(endPoint.lessThanEqual(referenceDashStart), () => {
+        If(drawEnd.lessThanEqual(referenceDashStart), () => {
           Discard();
-        }).ElseIf(endPoint.lessThanEqual(offset), () => {
-          const dx = offset.sub(endPoint);
+        }).ElseIf(drawEnd.lessThanEqual(offset), () => {
+          const dx = offset.sub(drawEnd);
           If(vec2(dx, dy).length().greaterThan(halfWidth), () => {
             Discard();
           });
@@ -368,12 +389,11 @@ export default class FragmentShader {
 
       const testColor = vec4(1, 0, 0, 1).toVar();
       // Start of draw range
-      const startPoint = float(strokeEnd).mul(startProportion);
-      If(patternLength.equal(0).or(true), () => {
-        If(segmentEnd.lessThanEqual(startPoint), () => {
+      If(float(dashLength).equal(0).or(true), () => {
+        If(segmentEnd.lessThanEqual(drawStart), () => {
           const nextFragment = varyingProperty("vec2", "vNextFragment");
           const endToNext = vec2(nextFragment.sub(endFragment));
-          const nextSegmentStartPointDistance = startPoint.sub(segmentEnd);
+          const nextSegmentStartPointDistance = drawStart.sub(segmentEnd);
           const nextSegmentEnd = attribute("positionOffset").w;
           const nextSegmentFragmentsPerDistance = div(
             endToNext.length(),
@@ -400,16 +420,16 @@ export default class FragmentShader {
         })
           .ElseIf(
             segmentStart
-              .lessThanEqual(startPoint)
-              .and(startPoint.lessThanEqual(segmentEnd)),
+              .lessThanEqual(drawStart)
+              .and(drawStart.lessThanEqual(segmentEnd)),
             () => {
-              If(offset.lessThanEqual(startPoint), () => {
-                const dx = startPoint.sub(offset);
+              If(offset.lessThanEqual(drawStart), () => {
+                const dx = drawStart.sub(offset);
                 If(vec2(dx, dy).length().greaterThan(halfWidth), () => {
                   const nextFragment = varyingProperty("vec2", "vNextFragment");
                   const endToNext = vec2(nextFragment.sub(endFragment));
                   const nextSegmentStartPointDistance =
-                    startPoint.sub(segmentEnd);
+                    drawStart.sub(segmentEnd);
                   const nextSegmentEnd = attribute("positionOffset").w;
                   const nextSegmentFragmentsPerDistance = div(
                     endToNext.length(),
@@ -449,7 +469,7 @@ export default class FragmentShader {
         // });
       });
 
-      return testColor;
+      // return testColor;
       return vec4(color, opacity);
     });
   }

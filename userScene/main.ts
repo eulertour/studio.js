@@ -65,13 +65,22 @@ export default class Scene implements StudioScene {
 
     this.square3 = new Geometry.Square(2, {
       strokeColor: new THREE.Color("purple"),
-      strokeOpacity: 1,
+      strokeOpacity: 0.85,
       strokeWidth: 6,
       // strokeDashLength: 0.5,
     });
     this.square3.position.x = -screenWidth / 3;
     this.square3.position.y = -screenHeight / 4;
     scene.add(this.square3);
+
+    const line4 = new Geometry.Line(
+      new THREE.Vector3(0, -1, 0),
+      new THREE.Vector3(0, 1, 0), {
+      }
+    );
+    line4.position.x = screenWidth / 3 + 1;
+    line4.position.y = -screenHeight / 4;
+    scene.add(line4);
 
     const line2 = new Geometry.Polyline(
       [
