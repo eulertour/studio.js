@@ -273,10 +273,19 @@ export default class FragmentShader {
       const patternLength = this.dashAtlas.period.mul(dashLength);
       const drawStart = float(strokeEnd).mul(startProportion);
       const drawEnd = float(strokeEnd).mul(endProportion);
+      const isFirstSegment = segmentStart.equal(0);
+      const testColor = vec4(1, 0, 0, 1).toVar();
+      // If(float(dashLength).equal(0).and(isFirstSegment.not()), () => {
+      //   testColor.assign(vec4(0, 1, 0, 1));
+      // });
       If(
         or(
-          float(strokeEnd).sub(offset).lessThanEqual(patternLength),
-          float(dashLength).equal(0).and(segmentStart.notEqual(0)),
+          float(dashLength)
+            .notEqual(0)
+            .and(float(strokeEnd).sub(offset).lessThanEqual(patternLength)),
+          // false,
+          float(dashLength).equal(0).and(isFirstSegment.not()),
+          // false,
         ),
         () => {
           const startPointReferenceDashData = this.getReferenceDashData(
@@ -328,6 +337,7 @@ export default class FragmentShader {
                   .mul(min(drawEnd, firstSegmentLength))
                   .mul(firstSegmentFragmentsPerDistance),
               );
+              // testColor.assign(vec4(0, 1, 0, 1));
               If(
                 segmentCoversFragment(
                   glFragCoord(),
@@ -387,7 +397,6 @@ export default class FragmentShader {
         });
       });
 
-      const testColor = vec4(1, 0, 0, 1).toVar();
       // Start of draw range
       If(float(dashLength).equal(0).or(true), () => {
         If(segmentEnd.lessThanEqual(drawStart), () => {
