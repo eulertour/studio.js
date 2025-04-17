@@ -9,8 +9,17 @@ import * as THREE from "three/webgpu";
 export default class Scene implements StudioScene {
   animations?: Array<AnimationRepresentation>;
   line: Geometry.Polyline;
-  square3: Geometry.Square;
   line4: Geometry.Line;
+
+  solidStrokeRange: THREE.Group;
+  solidClosedStartEndRange: Geometry.Square;
+  solidClosedStartRange: Geometry.Square;
+  solidClosedEndRange: Geometry.Square;
+
+  dashedStrokeRange: THREE.Group;
+  dashedClosedStartEndRange: Geometry.Square;
+  dashedClosedStartRange: Geometry.Square;
+  dashedClosedEndRange: Geometry.Square;
 
   constructor(
     public scene: THREE.Scene,
@@ -19,6 +28,49 @@ export default class Scene implements StudioScene {
   ) {
     const screenWidth = camera.right - camera.left;
     const screenHeight = camera.top - camera.bottom;
+
+    const firstRow = screenHeight / 4;
+    const secondRow = -screenHeight / 4;
+    const firstColumn = -3 * screenWidth / 8;
+    const secondColumn = -screenWidth / 8;
+    const thirdColumn = screenWidth / 8;
+    const fourthColumn = 3 * screenWidth / 8;
+
+    this.solidStrokeRange = new THREE.Group();
+    this.solidStrokeRange.position.set(firstColumn, firstRow, 0);
+    const solidStrokeRangeStyle = {
+      strokeColor: new THREE.Color("purple"),
+      strokeOpacity: 0.85,
+    };
+
+    this.solidClosedStartRange = new Geometry.Square(1, solidStrokeRangeStyle);
+    this.solidClosedEndRange = new Geometry.Square(2, solidStrokeRangeStyle);
+    this.solidClosedStartEndRange = new Geometry.Square(3, solidStrokeRangeStyle);
+
+    this.solidStrokeRange.add(this.solidClosedStartRange);
+    this.solidStrokeRange.add(this.solidClosedEndRange);
+    this.solidStrokeRange.add(this.solidClosedStartEndRange);
+    scene.add(this.solidStrokeRange);
+
+
+    this.dashedStrokeRange = new THREE.Group();
+    this.dashedStrokeRange.position.set(firstColumn, secondRow, 0);
+    const dashedStrokeRangeStyle = {
+      strokeColor: new THREE.Color("blue"),
+      strokeOpacity: 0.85,
+      strokeDashLength: 0.5
+    };
+
+    this.dashedClosedStartRange = new Geometry.Square(1, dashedStrokeRangeStyle);
+    this.dashedClosedEndRange = new Geometry.Square(2, dashedStrokeRangeStyle);
+    this.dashedClosedStartEndRange = new Geometry.Square(3, dashedStrokeRangeStyle);
+
+    this.dashedStrokeRange.add(this.dashedClosedStartRange);
+    this.dashedStrokeRange.add(this.dashedClosedEndRange);
+    this.dashedStrokeRange.add(this.dashedClosedStartEndRange);
+    scene.add(this.dashedStrokeRange);
+
+
 
     const circle = new Geometry.Circle(1.5, {
       // fillColor: new THREE.Color("blue"),
@@ -62,26 +114,6 @@ export default class Scene implements StudioScene {
     square2.position.x = screenWidth / 3;
     square2.position.y = screenHeight / 4;
     scene.add(square2);
-
-    this.square3 = new Geometry.Square(2, {
-      strokeColor: new THREE.Color("purple"),
-      strokeOpacity: 0.85,
-      strokeWidth: 6,
-      // strokeDashLength: 0.5,
-    });
-    this.square3.position.x = -screenWidth / 3;
-    this.square3.position.y = -screenHeight / 4;
-    scene.add(this.square3);
-
-    const square4 = new Geometry.Square(1, {
-      strokeColor: new THREE.Color("purple"),
-      strokeOpacity: 0.85,
-      strokeWidth: 6,
-      // strokeDashLength: 0.5,
-    });
-    square4.position.x = -screenWidth / 3;
-    square4.position.y = -screenHeight / 4;
-    scene.add(square4);
 
     this.line4 = new Geometry.Line(
       new THREE.Vector3(0, 1, 0),
@@ -188,19 +220,54 @@ export default class Scene implements StudioScene {
   }
 
   update(_, t: number) {
-    const frequency = 1 / 8;
+    const frequency = 1 / 16;
     const sinValue = Math.sin(2 * Math.PI * t * frequency);
     const cosValue = Math.cos(2 * Math.PI * t * frequency);
     const sinProportion = 0.5 + 0.5 * sinValue;
     const cosProportion = 0.5 + 0.5 * cosValue;
-    this.square3.restyle({
+
+    this.solidClosedStartRange.restyle({
+      strokeProportion: {
+        start: 0,
+        end: sinProportion,
+      }
+    });
+
+    this.solidClosedEndRange.restyle({
+      strokeProportion: {
+        start: sinProportion,
+        end: 1,
+      }
+    });
+
+    this.solidClosedStartEndRange.restyle({
       strokeProportion: {
         start: Math.min(sinProportion, cosProportion),
         end: Math.max(sinProportion, cosProportion),
-        // start: 0.25 + 0.05 * Math.sin(2 * Math.PI * t * frequency),
-        // end: 0.5
       }
     });
+
+    this.dashedClosedStartRange.restyle({
+      strokeProportion: {
+        start: 0,
+        end: sinProportion,
+      }
+    });
+
+    this.dashedClosedEndRange.restyle({
+      strokeProportion: {
+        start: sinProportion,
+        end: 1,
+      }
+    });
+
+    this.dashedClosedStartEndRange.restyle({
+      strokeProportion: {
+        start: Math.min(sinProportion, cosProportion),
+        end: Math.max(sinProportion, cosProportion),
+      }
+    });
+
     this.line4.restyle({
       strokeProportion: {
         start: sinProportion,
