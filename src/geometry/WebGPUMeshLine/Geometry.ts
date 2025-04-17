@@ -210,7 +210,6 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       this.positionOffset[arrayOffset2 + 14] = prevLength;
       this.positionOffset[arrayOffset2 + 15] = nextLength;
     }
-    console.log(this.positionOffset[0]);
   }
 
   computeBoundingSphere(): void {

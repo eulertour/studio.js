@@ -220,7 +220,8 @@ export default class Scene implements StudioScene {
   }
 
   update(_, t: number) {
-    const frequency = 1 / 16;
+    // t = 10.6
+    const frequency = 1 / 8;
     const sinValue = Math.sin(2 * Math.PI * t * frequency);
     const cosValue = Math.cos(2 * Math.PI * t * frequency);
     const sinProportion = 0.5 + 0.5 * sinValue;
