@@ -6726,6 +6726,899 @@
             },
             {
               "kind": "Class",
+              "canonicalReference": "@eulertour/studio!Geometry.Ellipse:class",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "export default class Ellipse extends "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Shape",
+                  "canonicalReference": "@eulertour/studio!Geometry.Shape:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": " "
+                }
+              ],
+              "fileUrlPath": "src/geometry/Ellipse.ts",
+              "releaseTag": "Public",
+              "isAbstract": false,
+              "name": "Ellipse",
+              "preserveMemberOrder": false,
+              "members": [
+                {
+                  "kind": "Constructor",
+                  "canonicalReference": "@eulertour/studio!Geometry.Ellipse:constructor(1)",
+                  "docComment": "/**\n * Constructs a new instance of the `Ellipse` class\n */\n",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "constructor(radiusA?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", radiusB?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", config?: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Style",
+                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ");"
+                    }
+                  ],
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "radiusA",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": true
+                    },
+                    {
+                      "parameterName": "radiusB",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 3,
+                        "endIndex": 4
+                      },
+                      "isOptional": true
+                    },
+                    {
+                      "parameterName": "config",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 5,
+                        "endIndex": 6
+                      },
+                      "isOptional": true
+                    }
+                  ]
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Geometry.Ellipse#attributeData:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "get attributeData(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{\n        attribute: string;\n        type: string;\n        default: number;\n    }[]"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": true,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "attributeData",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Ellipse.fromAttributes:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static fromAttributes(attributes: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "EllipseAttributes",
+                      "canonicalReference": "@eulertour/studio!~EllipseAttributes:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "): "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Ellipse",
+                      "canonicalReference": "@eulertour/studio!Geometry.Ellipse:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": true,
+                  "returnTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "attributes",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": false
+                    }
+                  ],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "fromAttributes"
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Ellipse#getAttributes:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "getAttributes(): "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "EllipseAttributes",
+                      "canonicalReference": "@eulertour/studio!~EllipseAttributes:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "getAttributes"
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Ellipse#getCloneAttributes:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "getCloneAttributes(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number[]"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "getCloneAttributes"
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Geometry.Ellipse#radiusA:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "radiusA: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "radiusA",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Geometry.Ellipse#radiusB:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "radiusB: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "radiusB",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.Ellipse#reshape:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "reshape(radiusA: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", radiusB: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", config?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "{}"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "void"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 7,
+                    "endIndex": 8
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "radiusA",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": false
+                    },
+                    {
+                      "parameterName": "radiusB",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 3,
+                        "endIndex": 4
+                      },
+                      "isOptional": false
+                    },
+                    {
+                      "parameterName": "config",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 5,
+                        "endIndex": 6
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "reshape"
+                }
+              ],
+              "extendsTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "implementsTokenRanges": []
+            },
+            {
+              "kind": "Class",
+              "canonicalReference": "@eulertour/studio!Geometry.EllipseArc:class",
+              "docComment": "/**\n * EllipseArc\n *\n * @example\n *\n * ellipseArc.ts\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "export default class EllipseArc extends "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Shape",
+                  "canonicalReference": "@eulertour/studio!Geometry.Shape:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": " "
+                }
+              ],
+              "fileUrlPath": "src/geometry/EllipseArc.ts",
+              "releaseTag": "Public",
+              "isAbstract": false,
+              "name": "EllipseArc",
+              "preserveMemberOrder": false,
+              "members": [
+                {
+                  "kind": "Constructor",
+                  "canonicalReference": "@eulertour/studio!Geometry.EllipseArc:constructor(1)",
+                  "docComment": "/**\n * Constructs a new instance of the `EllipseArc` class\n */\n",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "constructor(radiusA?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", radiusB?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", angle?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", config?: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Style",
+                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": " & {\n        closed?: boolean;\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ");"
+                    }
+                  ],
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "radiusA",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": true
+                    },
+                    {
+                      "parameterName": "radiusB",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 3,
+                        "endIndex": 4
+                      },
+                      "isOptional": true
+                    },
+                    {
+                      "parameterName": "angle",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 5,
+                        "endIndex": 6
+                      },
+                      "isOptional": true
+                    },
+                    {
+                      "parameterName": "config",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 7,
+                        "endIndex": 9
+                      },
+                      "isOptional": true
+                    }
+                  ]
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Geometry.EllipseArc#angle:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "angle: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "angle",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Geometry.EllipseArc#attributeData:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "get attributeData(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "({\n        attribute: string;\n        type: string;\n        default: number;\n    } | {\n        attribute: string;\n        type: string;\n        default: boolean;\n    })[]"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": true,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "attributeData",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Geometry.EllipseArc#closed:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "closed: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "boolean"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "closed",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.EllipseArc.fromAttributes:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "static fromAttributes(attributes: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "EllipseArcAttributes",
+                      "canonicalReference": "@eulertour/studio!~EllipseArcAttributes:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "): "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "EllipseArc",
+                      "canonicalReference": "@eulertour/studio!Geometry.EllipseArc:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": true,
+                  "returnTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "attributes",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": false
+                    }
+                  ],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "fromAttributes"
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.EllipseArc#getAttributes:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "getAttributes(): "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "EllipseArcAttributes",
+                      "canonicalReference": "@eulertour/studio!~EllipseArcAttributes:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "getAttributes"
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.EllipseArc#getCloneAttributes:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "getCloneAttributes(): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "(number | boolean)[]"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "getCloneAttributes"
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.EllipseArc#getDimensions:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "getDimensions(): "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "THREE.Vector2",
+                      "canonicalReference": "@types/three!Vector2:class"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "getDimensions"
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Geometry.EllipseArc#radiusA:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "radiusA: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "radiusA",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Property",
+                  "canonicalReference": "@eulertour/studio!Geometry.EllipseArc#radiusB:member",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "radiusB: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isReadonly": false,
+                  "isOptional": false,
+                  "releaseTag": "Public",
+                  "name": "radiusB",
+                  "propertyTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isStatic": false,
+                  "isProtected": false,
+                  "isAbstract": false
+                },
+                {
+                  "kind": "Method",
+                  "canonicalReference": "@eulertour/studio!Geometry.EllipseArc#reshape:member(1)",
+                  "docComment": "",
+                  "excerptTokens": [
+                    {
+                      "kind": "Content",
+                      "text": "reshape(radiusA?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", radiusB?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", angle?: "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "number"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ", config?: "
+                    },
+                    {
+                      "kind": "Reference",
+                      "text": "Style",
+                      "canonicalReference": "@eulertour/studio!Geometry.Style:type"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": " & {\n        closed?: boolean;\n    }"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "): "
+                    },
+                    {
+                      "kind": "Content",
+                      "text": "void"
+                    },
+                    {
+                      "kind": "Content",
+                      "text": ";"
+                    }
+                  ],
+                  "isStatic": false,
+                  "returnTypeTokenRange": {
+                    "startIndex": 10,
+                    "endIndex": 11
+                  },
+                  "releaseTag": "Public",
+                  "isProtected": false,
+                  "overloadIndex": 1,
+                  "parameters": [
+                    {
+                      "parameterName": "radiusA",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 1,
+                        "endIndex": 2
+                      },
+                      "isOptional": true
+                    },
+                    {
+                      "parameterName": "radiusB",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 3,
+                        "endIndex": 4
+                      },
+                      "isOptional": true
+                    },
+                    {
+                      "parameterName": "angle",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 5,
+                        "endIndex": 6
+                      },
+                      "isOptional": true
+                    },
+                    {
+                      "parameterName": "config",
+                      "parameterTypeTokenRange": {
+                        "startIndex": 7,
+                        "endIndex": 9
+                      },
+                      "isOptional": true
+                    }
+                  ],
+                  "isOptional": false,
+                  "isAbstract": false,
+                  "name": "reshape"
+                }
+              ],
+              "extendsTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "implementsTokenRanges": []
+            },
+            {
+              "kind": "Class",
               "canonicalReference": "@eulertour/studio!Geometry.Line:class",
               "docComment": "/**\n * A segment between two points.\n *\n * @example\n *\n * line.ts\n */\n",
               "excerptTokens": [

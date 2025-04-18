@@ -5,8 +5,10 @@ export { default as Arrow } from "./Arrow.js";
 export { default as Polygon } from "./Polygon.js";
 export { default as Polyline } from "./Polyline.js";
 export { default as Arc } from "./Arc.js";
+export { default as EllipseArc } from "./EllipseArc.js";
 export { default as Circle } from "./Circle.js";
 export { default as Point } from "./Point.js";
 export { default as Rectangle } from "./Rectangle.js";
 export { default as Square } from "./Square.js";
+export { default as Ellipse } from "./Ellipse.js";
 //# sourceMappingURL=index.d.ts.map

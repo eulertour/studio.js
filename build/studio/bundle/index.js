@@ -55342,6 +55342,30 @@ const getArcPoints = (radius, angle, config = {}) => {
     }
     return points;
 };
+const getEllipseArcPoints = (radiusA, radiusB, angle, config = {}) => {
+    let points = [];
+    let negative = false;
+    if (angle < 0) {
+        negative = true;
+        angle *= -1;
+    }
+    if (angle > 0) {
+        for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
+            points.push(new THREE.Vector3(radiusA * Math.cos(i), radiusB * Math.sin(i) * (negative ? -1 : 1), 0));
+        }
+    }
+    else {
+        points.push(new THREE.Vector3(radiusB, radiusA, 0), new THREE.Vector3(radiusB, radiusA, 0));
+    }
+    if (config.closed) {
+        points = [
+            new THREE.Vector3(0, 0, 0),
+            ...points,
+            new THREE.Vector3(0, 0, 0),
+        ];
+    }
+    return points;
+};
 
 /**
  * An arc.
@@ -55423,6 +55447,103 @@ class Arc extends Shape {
     }
     getDimensions() {
         const worldDiameter = 2 * this.radius * this.scale.x;
+        return new THREE.Vector2(worldDiameter, worldDiameter);
+    }
+}
+
+/**
+ * EllipseArc
+ *
+ * @example ellipseArc.ts
+ */
+class EllipseArc extends Shape {
+    constructor(radiusA = 1, radiusB = 2, angle = Math.PI / 2, config = {}) {
+        config = { ...Arc.defaultConfig(), ...config };
+        let points = getEllipseArcPoints(radiusA, radiusB, angle, { closed: config.closed });
+        super(points, config);
+        Object.defineProperty(this, "radiusA", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: radiusA
+        });
+        Object.defineProperty(this, "radiusB", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: radiusB
+        });
+        Object.defineProperty(this, "angle", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: angle
+        });
+        Object.defineProperty(this, "closed", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this.closed = config.closed ?? false;
+        if (this.closed) {
+            this.curveEndIndices = [
+                [0, 1],
+                [1, points.length - 2],
+                [points.length - 2, points.length - 1],
+            ];
+        }
+        else {
+            this.curveEndIndices = [[0, points.length - 1]];
+        }
+    }
+    reshape(radiusA = 1, radiusB = 2, angle = Math.PI / 2, config = {}) {
+        this.radiusA = radiusA;
+        this.radiusB = radiusB;
+        this.angle = angle;
+        this.copyStrokeAndFill(new EllipseArc(radiusA, radiusB, angle, config));
+    }
+    getCloneAttributes() {
+        return [this.radiusA, this.radiusB, this.angle, this.closed];
+    }
+    getAttributes() {
+        return {
+            radiusA: this.radiusA,
+            radiusB: this.radiusB,
+            angle: this.angle,
+            closed: this.closed,
+        };
+    }
+    static fromAttributes(attributes) {
+        const { radiusA, radiusB, angle, closed } = attributes;
+        return new EllipseArc(radiusA, radiusB, angle, { closed });
+    }
+    get attributeData() {
+        return [
+            {
+                attribute: "radiusA",
+                type: "number",
+                default: 1,
+            },
+            {
+                attribute: "radiusB",
+                type: "number",
+                default: 2,
+            },
+            {
+                attribute: "angle",
+                type: "angle",
+                default: 45,
+            },
+            {
+                attribute: "closed",
+                type: "boolean",
+                default: false,
+            },
+        ];
+    }
+    getDimensions() {
+        const worldDiameter = 2 * this.radiusB * this.scale.x;
         return new THREE.Vector2(worldDiameter, worldDiameter);
     }
 }
@@ -55827,11 +55948,74 @@ class Square extends Rectangle {
     }
 }
 
+class Ellipse extends Shape {
+    constructor(radiusA = 2, radiusB = 1, config = {}) {
+        const angle = 2 * Math.PI;
+        let points = [];
+        for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
+            const angle = i;
+            const x = radiusA * Math.cos(angle);
+            const y = radiusB * Math.sin(angle);
+            points.push(new THREE.Vector3(x, y, 0));
+        }
+        super(points, {
+            ...Ellipse.defaultConfig(),
+            ...config,
+        });
+        Object.defineProperty(this, "radiusA", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: radiusA
+        });
+        Object.defineProperty(this, "radiusB", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: radiusB
+        });
+    }
+    reshape(radiusA, radiusB, config = {}) {
+        this.radiusA = radiusA;
+        this.radiusB = radiusB;
+        this.copyStrokeAndFill(new Ellipse(radiusA, radiusB, config));
+    }
+    getCloneAttributes() {
+        return [this.radiusA, this.radiusB];
+    }
+    getAttributes() {
+        return {
+            radiusA: this.radiusA,
+            radiusB: this.radiusB,
+        };
+    }
+    static fromAttributes(attributes) {
+        const { radiusA, radiusB } = attributes;
+        return new Ellipse(radiusA, radiusB);
+    }
+    get attributeData() {
+        return [
+            {
+                attribute: "radiusA",
+                type: "number",
+                default: 1,
+            },
+            {
+                attribute: "radiusB",
+                type: "number",
+                default: 2,
+            },
+        ];
+    }
+}
+
 var index$2 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     Arc: Arc,
     Arrow: Arrow,
     Circle: Circle,
+    Ellipse: Ellipse,
+    EllipseArc: EllipseArc,
     Line: Line,
     MeshLine: MeshLine,
     Point: Point,

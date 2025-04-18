@@ -235,6 +235,43 @@ declare class Arc extends Shape {
     getDimensions(): THREE.Vector2;
 }
 
+type EllipseArcAttributes = {
+    radiusA: number;
+    radiusB: number;
+    angle: number;
+    closed: boolean;
+};
+/**
+ * EllipseArc
+ *
+ * @example ellipseArc.ts
+ */
+declare class EllipseArc extends Shape {
+    radiusA: number;
+    radiusB: number;
+    angle: number;
+    closed: boolean;
+    constructor(radiusA?: number, radiusB?: number, angle?: number, config?: Style & {
+        closed?: boolean;
+    });
+    reshape(radiusA?: number, radiusB?: number, angle?: number, config?: Style & {
+        closed?: boolean;
+    }): void;
+    getCloneAttributes(): (number | boolean)[];
+    getAttributes(): EllipseArcAttributes;
+    static fromAttributes(attributes: EllipseArcAttributes): EllipseArc;
+    get attributeData(): ({
+        attribute: string;
+        type: string;
+        default: number;
+    } | {
+        attribute: string;
+        type: string;
+        default: boolean;
+    })[];
+    getDimensions(): THREE.Vector2;
+}
+
 type CircleAttributes = {
     radius: number;
 };
@@ -355,6 +392,25 @@ declare class Square extends Rectangle {
     }[];
 }
 
+type EllipseAttributes = {
+    radiusA: number;
+    radiusB: number;
+};
+declare class Ellipse extends Shape {
+    radiusA: number;
+    radiusB: number;
+    constructor(radiusA?: number, radiusB?: number, config?: Style);
+    reshape(radiusA: number, radiusB: number, config?: {}): void;
+    getCloneAttributes(): number[];
+    getAttributes(): EllipseAttributes;
+    static fromAttributes(attributes: EllipseAttributes): Ellipse;
+    get attributeData(): {
+        attribute: string;
+        type: string;
+        default: number;
+    }[];
+}
+
 //# sourceMappingURL=index.d.ts.map
 
 type index_d$2_Arc = Arc;
@@ -363,6 +419,10 @@ type index_d$2_Arrow = Arrow;
 declare const index_d$2_Arrow: typeof Arrow;
 type index_d$2_Circle = Circle;
 declare const index_d$2_Circle: typeof Circle;
+type index_d$2_Ellipse = Ellipse;
+declare const index_d$2_Ellipse: typeof Ellipse;
+type index_d$2_EllipseArc = EllipseArc;
+declare const index_d$2_EllipseArc: typeof EllipseArc;
 type index_d$2_Line = Line;
 declare const index_d$2_Line: typeof Line;
 type index_d$2_MeshLine = MeshLine;
@@ -381,7 +441,7 @@ type index_d$2_Square = Square;
 declare const index_d$2_Square: typeof Square;
 type index_d$2_Style = Style;
 declare namespace index_d$2 {
-  export { index_d$2_Arc as Arc, index_d$2_Arrow as Arrow, index_d$2_Circle as Circle, index_d$2_Line as Line, index_d$2_MeshLine as MeshLine, index_d$2_Point as Point, index_d$2_Polygon as Polygon, index_d$2_Polyline as Polyline, index_d$2_Rectangle as Rectangle, index_d$2_Shape as Shape, index_d$2_Square as Square, type index_d$2_Style as Style };
+  export { index_d$2_Arc as Arc, index_d$2_Arrow as Arrow, index_d$2_Circle as Circle, index_d$2_Ellipse as Ellipse, index_d$2_EllipseArc as EllipseArc, index_d$2_Line as Line, index_d$2_MeshLine as MeshLine, index_d$2_Point as Point, index_d$2_Polygon as Polygon, index_d$2_Polyline as Polyline, index_d$2_Rectangle as Rectangle, index_d$2_Shape as Shape, index_d$2_Square as Square, type index_d$2_Style as Style };
 }
 
 declare const BUFFER = 0.5;
