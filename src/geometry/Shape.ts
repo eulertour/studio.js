@@ -70,6 +70,7 @@ export default abstract class Shape extends THREE.Group {
         width: config.strokeWidth,
         dashLength: config.strokeDashLength,
         dashSpeed: config.strokeDashSpeed,
+        dashOffset: config.strokeDashOffset,
         startProportion: config.strokeStartProportion,
         endProportion: config.strokeEndProportion,
       });
@@ -120,6 +121,7 @@ export default abstract class Shape extends THREE.Group {
       strokeWidth: 4,
       strokeDashLength: 0.0,
       strokeDashSpeed: 0,
+      strokeDashOffset: 0,
       strokeStartProportion: 0,
       strokeEndProportion: 1,
       dashed: false,
@@ -268,6 +270,7 @@ export default abstract class Shape extends THREE.Group {
       style.strokeWidth = this.stroke.material.uniforms.width.value;
       style.strokeDashLength = this.stroke.material.uniforms.dashLength.value;
       style.strokeDashSpeed = this.stroke.material.dashSpeed;
+      style.strokeDashOffset = this.stroke.material.dashOffset;
     }
 
     return style;
@@ -294,6 +297,7 @@ export default abstract class Shape extends THREE.Group {
         strokeWidth,
         strokeDashLength,
         strokeDashSpeed,
+        strokeDashOffset,
         strokeProportion,
       } = style;
       if (strokeColor !== undefined) {
@@ -310,6 +314,9 @@ export default abstract class Shape extends THREE.Group {
       }
       if (strokeDashSpeed !== undefined) {
         this.stroke.material.dashSpeed = strokeDashSpeed;
+      }
+      if (strokeDashOffset !== undefined) {
+        this.stroke.material.uniforms.dashOffset.value = strokeDashOffset;
       }
       if (strokeProportion !== undefined) {
         const { strokeStartProportion, strokeEndProportion } =

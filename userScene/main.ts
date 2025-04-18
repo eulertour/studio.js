@@ -119,8 +119,8 @@ export default class Scene implements StudioScene {
     const dashedMovingStrokeRangeStyle = {
       strokeColor: new THREE.Color("red"),
       strokeOpacity: 0.85,
-      strokeDashLength: 0.5,
       strokeDashSpeed: 1,
+      strokeDashLength: 0.5,
     };
 
     this.dashedMovingClosedStartRange = new Geometry.Square(
@@ -297,5 +297,6 @@ export default class Scene implements StudioScene {
     });
 
     this.line.reshape(sinPoints(t));
+    // this.line.restyle({ strokeDashOffset: t });
   }
 }

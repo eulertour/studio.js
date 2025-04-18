@@ -25,6 +25,7 @@ export type Style = {
   strokeWidth?: number;
   strokeDashLength?: number;
   strokeDashSpeed?: number;
+  strokeDashOffset?: number;
   strokeProportion?: StrokeProportionConfig;
   dashed?: boolean;
 };
@@ -37,6 +38,7 @@ type StyleData = {
   strokeWidth?: number;
   strokeDashLength?: number;
   strokeDashSpeed?: number;
+  strokeDashOffset?: number;
   strokeStartProportion?: number;
   strokeEndProportion?: number;
 };
@@ -103,6 +105,9 @@ export const styleToData = (style: Style): StyleData => {
   }
   if (style.strokeDashSpeed !== undefined) {
     data.strokeDashSpeed = style.strokeDashSpeed;
+  }
+  if (style.strokeDashOffset !== undefined) {
+    data.strokeDashOffset = style.strokeDashOffset;
   }
   if (style.strokeProportion !== undefined) {
     const { strokeStartProportion, strokeEndProportion } =

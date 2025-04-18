@@ -32,6 +32,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     dashLength: number,
     dashSpeed: number,
     dashPattern: number[],
+    dashOffset: number,
     startProportion: number,
     endProportion: number,
     threeDimensions: boolean,
@@ -48,6 +49,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       opacity,
       width,
       dashLength,
+      dashOffset,
       startProportion,
       endProportion,
     );
@@ -75,6 +77,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     opacity: number,
     width: number,
     dashLength: number,
+    dashOffset: number,
     startProportion: number,
     endProportion: number,
   ): Uniforms {
@@ -95,13 +98,16 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       width: uniform(width),
       length: uniform(length),
       dashLength: uniform(dashLength),
-      dashOffset: uniform(0),
+      dashOffset: uniform(dashOffset),
       startProportion: uniform(startProportion),
       endProportion: uniform(endProportion),
     };
   }
 
   update(dt: number) {
+    if (this.dashSpeed === 0) {
+      return;
+    }
     const currentCycleLength =
       this.dashAtlas.period.value * this.uniforms.dashLength.value;
     const offsetChange = dt * this.dashSpeed;

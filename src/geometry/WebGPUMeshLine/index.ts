@@ -9,6 +9,7 @@ interface Config {
   dashLength?: number;
   dashSpeed?: number;
   dashPattern?: Array<number>;
+  dashOffset?: number;
   startProportion?: number;
   endProportion?: number;
   threeDimensions?: boolean;
@@ -21,6 +22,7 @@ const defaultConfig: Required<Config> = {
   dashLength: 1,
   dashSpeed: 1,
   dashPattern: [1, 1],
+  dashOffset: 0,
   startProportion: 0,
   endProportion: 1,
   threeDimensions: true,
@@ -38,6 +40,7 @@ export default class WebGPUMeshLine extends THREE.Mesh {
       config.dashLength,
       config.dashSpeed,
       config.dashPattern,
+      config.dashOffset,
       config.startProportion,
       config.endProportion,
       config.threeDimensions,
