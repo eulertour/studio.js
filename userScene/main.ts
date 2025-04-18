@@ -21,6 +21,10 @@ export default class Scene implements StudioScene {
   dashedClosedStartRange: Geometry.Square;
   dashedClosedEndRange: Geometry.Square;
 
+  dashedMovingClosed: THREE.Group;
+  dashedMovingClosedCircle: Geometry.Circle;
+  dashedMovingClosedSquare: Geometry.Square;
+
   constructor(
     public scene: THREE.Scene,
     public camera: THREE.OrthographicCamera,
@@ -70,20 +74,26 @@ export default class Scene implements StudioScene {
     this.dashedStrokeRange.add(this.dashedClosedStartEndRange);
     scene.add(this.dashedStrokeRange);
 
-
-
-    const circle = new Geometry.Circle(1.5, {
-      // fillColor: new THREE.Color("blue"),
-      // fillOpacity: 0.75,
+    this.dashedMovingClosed = new THREE.Group();
+    this.dashedMovingClosed.position.set(secondColumn, firstRow, 0);
+    const dashedMovingClosedStyle = {
       strokeColor: new THREE.Color("orange"),
       strokeOpacity: 0.85,
-      strokeWidth: 4,
-      strokeDashLength: (2 * Math.PI * 1.5) / 5,
       strokeDashSpeed: 1,
+    };
+
+    this.dashedMovingClosedCircle = new Geometry.Circle(1.5, {
+      ...dashedMovingClosedStyle,
+      strokeDashLength: (2 * Math.PI * 1.5) / 8,
     });
-    circle.position.x = -screenWidth / 3;
-    circle.position.y = screenHeight / 4;
-    scene.add(circle);
+    this.dashedMovingClosedSquare = new Geometry.Square(1.5, {
+      ...dashedMovingClosedStyle,
+      strokeDashLength: 1,
+    });
+
+    this.dashedMovingClosed.add(this.dashedMovingClosedCircle);
+    this.dashedMovingClosed.add(this.dashedMovingClosedSquare);
+    scene.add(this.dashedMovingClosed);
 
     // this.animations = [
     //   new Animation.Animation((t) => {
@@ -94,16 +104,6 @@ export default class Scene implements StudioScene {
     //     });
     //   }),
     // ];
-
-    const square = new Geometry.Square(2, {
-      strokeColor: new THREE.Color("purple"),
-      strokeOpacity: 0.85,
-      strokeWidth: 5,
-      strokeDashLength: 0.5,
-    });
-    square.position.x = 0;
-    square.position.y = screenHeight / 4;
-    scene.add(square);
 
     const square2 = new Geometry.Square(2, {
       strokeOpacity: 0.75,
@@ -187,13 +187,13 @@ export default class Scene implements StudioScene {
             new THREE.Vector3(0, -3, 0),
           ]);
         }),
-        new Animation.Animation((t) => {
-          circle.restyle({
-            strokeColor: new THREE.Color(1 - t, 0.5 - 0.5 * t, 0),
-            strokeWidth: 4 + 2 * t,
-            strokeDashLength: (2 * Math.PI * 1.5) / (8 + 2 * t),
-          });
-        }),
+        // new Animation.Animation((t) => {
+        //   this.dashedMovingClosedCircle.restyle({
+        //     strokeColor: new THREE.Color(1 - t, 0.5 - 0.5 * t, 0),
+        //     strokeWidth: 4 + 2 * t,
+        //     // strokeDashLength: (2 * Math.PI * 1.5) / (8 + 2 * t),
+        //   });
+        // }),
       ],
       new Animation.Animation((t) => {
         this.line.reshape([
@@ -268,6 +268,26 @@ export default class Scene implements StudioScene {
         end: Math.max(sinProportion, cosProportion),
       }
     });
+
+    const quarter = t % 8;
+    if (quarter < 2) {
+      const t0 = quarter / 2;
+      this.dashedMovingClosedCircle.restyle({
+        strokeDashLength: (2 * Math.PI * 1.5) / (8 - 2 * t0),
+      });
+    } else if (quarter < 4) {
+      // do nothing
+    } else if (quarter < 6) {
+      const t0 = (quarter - 4) / 2;
+      this.dashedMovingClosedCircle.restyle({
+        strokeDashLength: (2 * Math.PI * 1.5) / (6 + 2 * t0),
+      });
+    } else {
+      // do nothing
+    }
+    // this.dashedMovingClosedCircle.restyle({
+    //   strokeDashLength: (2 * Math.PI * 1.5) / (8),
+    // });
 
     this.line4.restyle({
       strokeProportion: {

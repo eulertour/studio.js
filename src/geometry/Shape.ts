@@ -105,9 +105,9 @@ export default abstract class Shape extends THREE.Group {
     label.moveNextTo(this, direction);
   }
 
-  update(_: number, t: number) {
+  update(dt: number, _: number) {
     if (this.stroke !== undefined) {
-      this.stroke.material.update(t);
+      this.stroke.material.update(dt);
     }
   }
 
@@ -293,6 +293,7 @@ export default abstract class Shape extends THREE.Group {
         strokeOpacity,
         strokeWidth,
         strokeDashLength,
+        strokeDashSpeed,
         strokeProportion,
       } = style;
       if (strokeColor !== undefined) {
@@ -306,6 +307,9 @@ export default abstract class Shape extends THREE.Group {
       }
       if (strokeDashLength !== undefined) {
         this.stroke.material.uniforms.dashLength.value = strokeDashLength;
+      }
+      if (strokeDashSpeed !== undefined) {
+        this.stroke.material.dashSpeed = strokeDashSpeed;
       }
       if (strokeProportion !== undefined) {
         const { strokeStartProportion, strokeEndProportion } =

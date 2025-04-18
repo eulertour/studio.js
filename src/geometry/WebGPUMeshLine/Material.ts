@@ -22,6 +22,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
   dashAtlas: DashAtlas;
   uniforms: Uniforms;
   dashSpeed: number;
+  previousDashOffset = 0;
 
   constructor(
     points: THREE.Vector3[],
@@ -100,8 +101,14 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     };
   }
 
-  update(t: number) {
-    this.uniforms.dashOffset.value = t * this.dashSpeed;
+  update(dt: number) {
+    const currentCycleLength =
+      this.dashAtlas.period.value * this.uniforms.dashLength.value;
+    const offsetChange = dt * this.dashSpeed;
+    let newOffset =
+      (this.previousDashOffset + offsetChange) % currentCycleLength;
+    this.uniforms.dashOffset.value = newOffset;
+    this.previousDashOffset = newOffset;
   }
 
   dispose() {
