@@ -330,7 +330,6 @@ export default class FragmentShader {
                   .mul(min(drawEnd, firstSegmentLength))
                   .mul(firstSegmentFragmentsPerDistance),
               );
-              // testColor.assign(vec4(0, 1, 0, 1));
               If(
                 segmentCoversFragment(
                   glFragCoord(),
@@ -347,13 +346,13 @@ export default class FragmentShader {
             const firstSegmentDashStartFragment = firstSegmentStartFragment.add(
               firstSegmentStartToEnd
                 .normalize()
-                .mul(startPointReferenceDashStart)
+                .mul(max(drawStart, startPointReferenceDashStart))
                 .mul(firstSegmentFragmentsPerDistance),
             );
             const firstSegmentDashEndFragment = firstSegmentStartFragment.add(
               firstSegmentStartToEnd
                 .normalize()
-                .mul(startPointReferenceDashEnd)
+                .mul(max(drawStart, startPointReferenceDashEnd))
                 .mul(firstSegmentFragmentsPerDistance),
             );
             If(
