@@ -12,6 +12,7 @@ interface Config {
   dashOffset?: number;
   startProportion?: number;
   endProportion?: number;
+  arrow?: boolean;
   threeDimensions?: boolean;
 }
 
@@ -25,13 +26,14 @@ const defaultConfig: Required<Config> = {
   dashOffset: 0,
   startProportion: 0,
   endProportion: 1,
+  arrow: false,
   threeDimensions: true,
 };
 
 export default class WebGPUMeshLine extends THREE.Mesh {
   constructor(points: Array<THREE.Vector3>, inputConfig: Config = {}) {
     const config = { ...defaultConfig, ...inputConfig };
-    const geometry = new WebGPUMeshLineGeometry(points);
+    const geometry = new WebGPUMeshLineGeometry(points, config.arrow);
     const material = new WebGPUMeshLineMaterial(
       points,
       config.color,
@@ -48,4 +50,3 @@ export default class WebGPUMeshLine extends THREE.Mesh {
     super(geometry, material);
   }
 }
-

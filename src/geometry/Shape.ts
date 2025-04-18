@@ -73,6 +73,7 @@ export default abstract class Shape extends THREE.Group {
         dashOffset: config.strokeDashOffset,
         startProportion: config.strokeStartProportion,
         endProportion: config.strokeEndProportion,
+        arrow: config.strokeArrow,
       });
       this.add(this.stroke);
     }
@@ -124,6 +125,7 @@ export default abstract class Shape extends THREE.Group {
       strokeDashOffset: 0,
       strokeStartProportion: 0,
       strokeEndProportion: 1,
+      strokeArrow: false,
       dashed: false,
     };
   }

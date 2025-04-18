@@ -15,7 +15,7 @@ const sinPoints = (t: number) => {
 
 export default class Scene implements StudioScene {
   animations?: Array<AnimationRepresentation>;
-  line: Geometry.Polyline;
+  sine: Geometry.Polyline;
 
   solidClosedStrokeRange: THREE.Group;
   solidClosedStartEndRange: Geometry.Square;
@@ -39,6 +39,8 @@ export default class Scene implements StudioScene {
   dashedMovingClosed: THREE.Group;
   dashedStaticClosed: THREE.Group;
   solidStaticClosed: THREE.Group;
+
+  arrow: Geometry.Line;
 
   constructor(
     public scene: THREE.Scene,
@@ -183,19 +185,26 @@ export default class Scene implements StudioScene {
     this.solidStaticClosed.add(square1, square2, square3);
     scene.add(this.solidStaticClosed);
 
-    this.line = new Geometry.Polyline(sinPoints(0), {
+    this.sine = new Geometry.Polyline(sinPoints(0), {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 0.85,
       strokeDashLength: 0.35,
       strokeDashSpeed: 1,
     });
-    scene.add(this.line);
+    scene.add(this.sine);
+
+    this.arrow = new Geometry.Line(
+      new THREE.Vector3(-3, 0, 0),
+      new THREE.Vector3(3, 0, 0),
+      { strokeArrow: true },
+    );
+    scene.add(this.arrow);
 
     this.solidStaticClosed.position.set(firstColumn, firstRow, 0);
     this.dashedStaticClosed.position.set(firstColumn, secondRow, 0);
     this.solidClosedStrokeRange.position.set(secondColumn, firstRow, 0);
     this.dashedMovingDynamic.position.set(thirdColumn, firstRow, 0);
-    this.line.position.set(fourthColumn, firstRow, 0);
+    this.sine.position.set(fourthColumn, firstRow, 0);
     this.dashedClosedStrokeRange.position.set(secondColumn, secondRow, 0);
     this.dashedMovingStrokeRange.position.set(thirdColumn, secondRow, 0);
     this.dashedMovingClosed.position.set(fourthColumn, secondRow, 0);
@@ -296,7 +305,7 @@ export default class Scene implements StudioScene {
       },
     });
 
-    this.line.reshape(sinPoints(t));
+    this.sine.reshape(sinPoints(t));
     // this.line.restyle({ strokeDashOffset: t });
   }
 }

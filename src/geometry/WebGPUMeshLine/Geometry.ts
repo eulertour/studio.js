@@ -14,7 +14,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   vertexOffset = new Float32Array();
   indices = new Uint16Array();
 
-  constructor(points: THREE.Vector3[]) {
+  constructor(points: THREE.Vector3[], arrow = false) {
+    console.log(arrow);
     super();
     this.setPoints(points);
   }
