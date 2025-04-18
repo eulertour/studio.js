@@ -122,6 +122,31 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     array[arrayOffset + 11] = z;
   }
 
+  writeVector4ToSegment(
+    array: WritableArrayLike<number>,
+    segmentIndex: number,
+    v: THREE.Vector4Like,
+  ) {
+    const { x, y, z, w } = v;
+    const arrayOffset = 16 * segmentIndex;
+    array[arrayOffset] = x;
+    array[arrayOffset + 1] = y;
+    array[arrayOffset + 2] = z;
+    array[arrayOffset + 3] = w;
+    array[arrayOffset + 4] = x;
+    array[arrayOffset + 5] = y;
+    array[arrayOffset + 6] = z;
+    array[arrayOffset + 7] = w;
+    array[arrayOffset + 8] = x;
+    array[arrayOffset + 9] = y;
+    array[arrayOffset + 10] = z;
+    array[arrayOffset + 11] = w;
+    array[arrayOffset + 12] = x;
+    array[arrayOffset + 13] = y;
+    array[arrayOffset + 14] = z;
+    array[arrayOffset + 15] = w;
+  }
+
   // NOTE: This diagram shows the ordering of the vertices
   // that define a segment together with the vertexOffsets
   // written to each one.
@@ -171,44 +196,75 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   }
 
   fillLengths(points: THREE.Vector3[]) {
+    const startPoint = indexOrThrow(points, 0);
+    let endPoint = indexOrThrow(points, 1);
+    let nextPoint = indexOrThrow(points, Math.min(2, points.length - 1));
+    let prevLength = 0;
+    let startLength = 0;
+    let endLength = startPoint.distanceTo(endPoint);
+    let nextLength = endLength + endPoint.distanceTo(nextPoint);
+
+    this.writeVector4ToSegment(this.positionOffset, 0, {
+      x: startLength,
+      y: endLength,
+      z: prevLength,
+      w: nextLength,
+    });
+
     const segmentCount = points.length - 1;
-    for (let i = 0; i < segmentCount; i++) {
-      const startPoint = indexOrThrow(points, i);
+    for (let i = 1; i < segmentCount - 1; i++) {
       const endPoint = indexOrThrow(points, i + 1);
       const nextPoint = indexOrThrow(
         points,
         Math.min(i + 2, points.length - 1),
       );
 
-      const prevArrayOffset = Math.max(16 * (i - 1), 0);
-      const startLength = bufferIndexOrThrow(
-        this.positionOffset,
-        prevArrayOffset + 1,
-      );
-      const endLength = startLength + startPoint.distanceTo(endPoint);
+      const prevArrayOffset = 16 * (i - 1);
       const prevLength = bufferIndexOrThrow(
         this.positionOffset,
         prevArrayOffset,
       );
+      const startLength = bufferIndexOrThrow(
+        this.positionOffset,
+        prevArrayOffset + 1,
+      );
+      const endLength = bufferIndexOrThrow(
+        this.positionOffset,
+        prevArrayOffset + 3,
+      );
       const nextLength = endLength + endPoint.distanceTo(nextPoint);
 
-      const arrayOffset2 = 16 * i;
-      this.positionOffset[arrayOffset2] = startLength;
-      this.positionOffset[arrayOffset2 + 1] = endLength;
-      this.positionOffset[arrayOffset2 + 2] = prevLength;
-      this.positionOffset[arrayOffset2 + 3] = nextLength;
-      this.positionOffset[arrayOffset2 + 4] = startLength;
-      this.positionOffset[arrayOffset2 + 5] = endLength;
-      this.positionOffset[arrayOffset2 + 6] = prevLength;
-      this.positionOffset[arrayOffset2 + 7] = nextLength;
-      this.positionOffset[arrayOffset2 + 8] = startLength;
-      this.positionOffset[arrayOffset2 + 9] = endLength;
-      this.positionOffset[arrayOffset2 + 10] = prevLength;
-      this.positionOffset[arrayOffset2 + 11] = nextLength;
-      this.positionOffset[arrayOffset2 + 12] = startLength;
-      this.positionOffset[arrayOffset2 + 13] = endLength;
-      this.positionOffset[arrayOffset2 + 14] = prevLength;
-      this.positionOffset[arrayOffset2 + 15] = nextLength;
+      this.writeVector4ToSegment(this.positionOffset, i, {
+        x: startLength,
+        y: endLength,
+        z: prevLength,
+        w: nextLength,
+      });
+    }
+
+    if (segmentCount > 1) {
+      const lastIndex = segmentCount - 1;
+      endPoint = indexOrThrow(points, lastIndex + 1);
+      nextPoint = indexOrThrow(
+        points,
+        Math.min(lastIndex + 2, points.length - 1),
+      );
+
+      const prevArrayOffset = 16 * (lastIndex - 1);
+      prevLength = bufferIndexOrThrow(this.positionOffset, prevArrayOffset);
+      startLength = bufferIndexOrThrow(
+        this.positionOffset,
+        prevArrayOffset + 1,
+      );
+      endLength = bufferIndexOrThrow(this.positionOffset, prevArrayOffset + 3);
+      nextLength = endLength + endPoint.distanceTo(nextPoint);
+
+      this.writeVector4ToSegment(this.positionOffset, lastIndex, {
+        x: startLength,
+        y: endLength,
+        z: prevLength,
+        w: nextLength,
+      });
     }
   }
 
