@@ -16,6 +16,7 @@ export type Uniforms = {
   dashOffset: THREE.UniformNode<number>;
   startProportion: THREE.UniformNode<number>;
   endProportion: THREE.UniformNode<number>;
+  arrow: THREE.UniformNode<number>;
 };
 
 export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
@@ -35,6 +36,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     dashOffset: number,
     startProportion: number,
     endProportion: number,
+    arrow: boolean,
     threeDimensions: boolean,
   ) {
     super({
@@ -52,6 +54,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       dashOffset,
       startProportion,
       endProportion,
+      arrow,
     );
     this.vertexNode = new VertexShader(
       this.uniforms.width,
@@ -68,6 +71,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       this.uniforms.dashOffset,
       this.uniforms.startProportion,
       this.uniforms.endProportion,
+      this.uniforms.arrow,
     ).node();
   }
 
@@ -80,6 +84,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     dashOffset: number,
     startProportion: number,
     endProportion: number,
+    arrow: boolean,
   ): Uniforms {
     let length = 0;
     for (let i = 0; i < points.length - 1; i++) {
@@ -101,6 +106,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       dashOffset: uniform(dashOffset),
       startProportion: uniform(startProportion),
       endProportion: uniform(endProportion),
+      arrow: uniform(arrow ? 1 : 0),
     };
   }
 

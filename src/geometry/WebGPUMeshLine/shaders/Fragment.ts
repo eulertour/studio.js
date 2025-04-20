@@ -108,6 +108,7 @@ export default class FragmentShader {
     dashOffset: UniformNode<number>,
     startProportion: UniformNode<number>,
     endProportion: UniformNode<number>,
+    arrow: UniformNode<boolean>,
   ) {
     this.node = Fn(() => {
       const startFragment = varyingProperty("vec2", "vStartFragment");
@@ -390,10 +391,6 @@ export default class FragmentShader {
       });
 
       // Start of draw range
-      const red = vec4(1, 0, 0, 1);
-      const green = vec4(0, 1, 0, 1);
-      const blue = vec4(0, 0, 1, 1);
-      const purple = vec4(1, 0, 1, 1);
       const testColor = vec4(color, opacity).toVar();
       If(float(dashLength).equal(0), () => {
         If(segmentEnd.lessThanEqual(drawStart), () => {
@@ -530,6 +527,15 @@ export default class FragmentShader {
         //   // No dash pattern will cause this fragment
         //   // to be discarded.
         // });
+      });
+
+      const red = vec4(1, 0, 0, 1);
+      const green = vec4(0, 1, 0, 1);
+      const blue = vec4(0, 0, 1, 1);
+      const purple = vec4(1, 0, 1, 1);
+      // Arrows
+      If(arrow, () => {
+        testColor.assign(red);
       });
 
       return testColor;

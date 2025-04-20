@@ -45,6 +45,7 @@ export default class WebGPUMeshLine extends THREE.Mesh {
       config.dashOffset,
       config.startProportion,
       config.endProportion,
+      config.arrow,
       config.threeDimensions,
     );
     super(geometry, material);
