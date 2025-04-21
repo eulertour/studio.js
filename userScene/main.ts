@@ -40,7 +40,7 @@ export default class Scene implements StudioScene {
   dashedStaticClosed: THREE.Group;
   solidStaticClosed: THREE.Group;
 
-  arrow: Geometry.Line;
+  arrow: Geometry.Polyline;
 
   constructor(
     public scene: THREE.Scene,
@@ -193,9 +193,13 @@ export default class Scene implements StudioScene {
     });
     scene.add(this.sine);
 
-    this.arrow = new Geometry.Line(
-      new THREE.Vector3(-3, 0, 0),
-      new THREE.Vector3(3, 0, 0),
+    // TODO: Test with arrows with 1 and >1 segments
+    this.arrow = new Geometry.Polyline(
+      [
+        new THREE.Vector3(-3, 0, 0),
+        new THREE.Vector3(3, 0, 0),
+        // new THREE.Vector3(3.1, 0.1, 0),
+      ],
       { strokeArrow: true },
     );
     scene.add(this.arrow);

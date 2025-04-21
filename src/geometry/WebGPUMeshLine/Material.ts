@@ -87,7 +87,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     arrow: boolean,
   ): Uniforms {
     let length = 0;
-    for (let i = 0; i < points.length - 1; i++) {
+    for (let i = 0; i < points.length - 2; i++) {
       const currentPoint = indexOrThrow(points, i);
       const nextPoint = indexOrThrow(points, i + 1);
       length += currentPoint.distanceTo(nextPoint);

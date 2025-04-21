@@ -14,8 +14,18 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   vertexOffset = new Float32Array();
   indices = new Uint16Array();
 
-  constructor(points: THREE.Vector3[], arrow = false) {
+  constructor(
+    points: THREE.Vector3[],
+    public isArrow,
+  ) {
     super();
+    // This segment has data but isn't rendered
+    const lastPoint = indexOrThrow(points, points.length - 1);
+    const newPoint = lastPoint
+      .clone()
+      .setX(lastPoint.x - 1)
+      .setY(lastPoint.y + 1);
+    points.push(newPoint);
     this.setPoints(points);
   }
 
@@ -86,18 +96,30 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   }
 
   fillPoints(points: THREE.Vector3[]) {
-    for (let i = 0; i < points.length - 1; i++) {
+    for (let i = 0; i < points.length - 2; i++) {
       const startPoint = indexOrThrow(points, i);
       const endPoint = indexOrThrow(points, i + 1);
       const prevPoint = indexOrThrow(points, Math.max(i - 1, 0));
       const nextPoint = indexOrThrow(
         points,
-        Math.min(i + 2, points.length - 1),
+        Math.min(i + 2, points.length - 2),
       );
       this.writeVector3ToSegment(this.position, i, startPoint);
       this.writeVector3ToSegment(this.endPosition, i, endPoint);
       this.writeVector3ToSegment(this.prevPosition, i, prevPoint);
       this.writeVector3ToSegment(this.nextPosition, i, nextPoint);
+    }
+
+    if (this.isArrow) {
+      const segmentIndex = points.length - 2;
+      const startPoint = indexOrThrow(points, segmentIndex);
+      const endPoint = indexOrThrow(points, segmentIndex + 1);
+      const prevPoint = startPoint;
+      const nextPoint = endPoint;
+      this.writeVector3ToSegment(this.position, segmentIndex, startPoint);
+      this.writeVector3ToSegment(this.endPosition, segmentIndex, endPoint);
+      this.writeVector3ToSegment(this.prevPosition, segmentIndex, prevPoint);
+      this.writeVector3ToSegment(this.nextPosition, segmentIndex, nextPoint);
     }
   }
 
@@ -198,7 +220,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   fillLengths(points: THREE.Vector3[]) {
     const startPoint = indexOrThrow(points, 0);
     let endPoint = indexOrThrow(points, 1);
-    let nextPoint = indexOrThrow(points, Math.min(2, points.length - 1));
+    let nextPoint = indexOrThrow(points, Math.min(2, points.length - 2));
     let prevLength = 0;
     let startLength = 0;
     let endLength = startPoint.distanceTo(endPoint);
@@ -211,12 +233,12 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       w: nextLength,
     });
 
-    const segmentCount = points.length - 1;
+    const segmentCount = points.length - 2;
     for (let i = 1; i < segmentCount - 1; i++) {
       const endPoint = indexOrThrow(points, i + 1);
       const nextPoint = indexOrThrow(
         points,
-        Math.min(i + 2, points.length - 1),
+        Math.min(i + 2, points.length - 2),
       );
 
       const prevArrayOffset = 16 * (i - 1);
@@ -247,7 +269,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       endPoint = indexOrThrow(points, lastIndex + 1);
       nextPoint = indexOrThrow(
         points,
-        Math.min(lastIndex + 2, points.length - 1),
+        Math.min(lastIndex + 2, points.length - 2),
       );
 
       const prevArrayOffset = 16 * (lastIndex - 1);
@@ -264,6 +286,21 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
         y: endLength,
         z: prevLength,
         w: nextLength,
+      });
+    }
+
+    if (this.isArrow) {
+      const arrowStartLength = 0;
+      const arrowEndLength = indexOrThrow(points, points.length - 2).distanceTo(
+        indexOrThrow(points, points.length - 1),
+      );
+      const arrowPrevLength = arrowStartLength;
+      const arrowNextLength = arrowEndLength;
+      this.writeVector4ToSegment(this.positionOffset, points.length - 2, {
+        x: arrowStartLength,
+        y: arrowEndLength,
+        z: arrowPrevLength,
+        w: arrowNextLength,
       });
     }
   }
