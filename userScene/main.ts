@@ -40,7 +40,8 @@ export default class Scene implements StudioScene {
   dashedStaticClosed: THREE.Group;
   solidStaticClosed: THREE.Group;
 
-  arrow: Geometry.Polyline;
+  singleSegmentArrow: Geometry.Line;
+  multiSegmentArrow: Geometry.Polyline;
 
   constructor(
     public scene: THREE.Scene,
@@ -73,7 +74,6 @@ export default class Scene implements StudioScene {
     this.solidClosedStrokeRange.add(this.solidClosedStartRange);
     this.solidClosedStrokeRange.add(this.solidClosedEndRange);
     this.solidClosedStrokeRange.add(this.solidClosedStartEndRange);
-    scene.add(this.solidClosedStrokeRange);
 
     this.dashedClosedStrokeRange = new THREE.Group();
     const dashedStrokeRangeStyle = {
@@ -95,7 +95,6 @@ export default class Scene implements StudioScene {
     this.dashedClosedStrokeRange.add(this.dashedClosedStartRange);
     this.dashedClosedStrokeRange.add(this.dashedClosedEndRange);
     this.dashedClosedStrokeRange.add(this.dashedClosedStartEndRange);
-    scene.add(this.dashedClosedStrokeRange);
 
     this.dashedMovingDynamic = new THREE.Group();
     const dashedMovingDynamicClosedStyle = {
@@ -115,7 +114,6 @@ export default class Scene implements StudioScene {
 
     this.dashedMovingDynamic.add(this.dashedMovingDynamicClosedCircle);
     this.dashedMovingDynamic.add(this.dashedMovingDynamicClosedSquare);
-    scene.add(this.dashedMovingDynamic);
 
     this.dashedMovingStrokeRange = new THREE.Group();
     const dashedMovingStrokeRangeStyle = {
@@ -141,7 +139,6 @@ export default class Scene implements StudioScene {
     this.dashedMovingStrokeRange.add(this.dashedMovingClosedStartRange);
     this.dashedMovingStrokeRange.add(this.dashedMovingClosedEndRange);
     this.dashedMovingStrokeRange.add(this.dashedMovingClosedStartEndRange);
-    scene.add(this.dashedMovingStrokeRange);
 
     this.dashedMovingClosed = new THREE.Group();
     const dashedMovingClosedStyle = {
@@ -156,7 +153,6 @@ export default class Scene implements StudioScene {
     let square3 = new Geometry.Square(3, dashedMovingClosedStyle);
 
     this.dashedMovingClosed.add(square1, square2, square3);
-    scene.add(this.dashedMovingClosed);
 
     this.dashedStaticClosed = new THREE.Group();
     const dashedStaticClosedStyle = {
@@ -170,7 +166,6 @@ export default class Scene implements StudioScene {
     square3 = new Geometry.Square(3, dashedStaticClosedStyle);
 
     this.dashedStaticClosed.add(square1, square2, square3);
-    scene.add(this.dashedStaticClosed);
 
     this.solidStaticClosed = new THREE.Group();
     const solidStaticClosedStyle = {
@@ -183,7 +178,6 @@ export default class Scene implements StudioScene {
     square3 = new Geometry.Square(3, solidStaticClosedStyle);
 
     this.solidStaticClosed.add(square1, square2, square3);
-    scene.add(this.solidStaticClosed);
 
     this.sine = new Geometry.Polyline(sinPoints(0), {
       strokeColor: new THREE.Color("blue"),
@@ -191,18 +185,6 @@ export default class Scene implements StudioScene {
       strokeDashLength: 0.35,
       strokeDashSpeed: 1,
     });
-    scene.add(this.sine);
-
-    // TODO: Test with arrows with 1 and >1 segments
-    this.arrow = new Geometry.Polyline(
-      [
-        new THREE.Vector3(-3, 0, 0),
-        new THREE.Vector3(3, 0, 0),
-        // new THREE.Vector3(3.1, 0.1, 0),
-      ],
-      { strokeArrow: true },
-    );
-    scene.add(this.arrow);
 
     this.solidStaticClosed.position.set(firstColumn, firstRow, 0);
     this.dashedStaticClosed.position.set(firstColumn, secondRow, 0);
@@ -212,6 +194,42 @@ export default class Scene implements StudioScene {
     this.dashedClosedStrokeRange.position.set(secondColumn, secondRow, 0);
     this.dashedMovingStrokeRange.position.set(thirdColumn, secondRow, 0);
     this.dashedMovingClosed.position.set(fourthColumn, secondRow, 0);
+
+    const withoutArrow = new THREE.Group();
+    withoutArrow.scale.set(0.5, 0.5, 1);
+    withoutArrow.position.set(-3.4, 2, 0);
+    withoutArrow.add(
+      this.solidStaticClosed,
+      this.solidClosedStrokeRange,
+      this.dashedClosedStrokeRange,
+      this.dashedMovingDynamic,
+      this.dashedMovingStrokeRange,
+      this.dashedMovingClosed,
+      this.dashedStaticClosed,
+      this.sine,
+    );
+    scene.add(withoutArrow);
+
+    const withArrow = new THREE.Group();
+    withArrow.position.set(-2, 0, 0);
+
+    this.singleSegmentArrow = new Geometry.Line(
+      new THREE.Vector3(-3, 0, 0),
+      new THREE.Vector3(3, 0, 0),
+      { strokeArrow: true },
+    );
+    this.multiSegmentArrow = new Geometry.Polyline(
+      [
+        new THREE.Vector3(-4, 0, 0),
+        new THREE.Vector3(-4, -1, 0),
+        new THREE.Vector3(4.5, -1, 0),
+      ],
+      { strokeArrow: true },
+    );
+
+    withArrow.add(this.singleSegmentArrow, this.multiSegmentArrow);
+    withArrow.position.set(0, -2, 0);
+    scene.add(withArrow);
 
     this.animations = [];
   }

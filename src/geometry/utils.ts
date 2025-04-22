@@ -6,7 +6,7 @@ export type Transform = {
   scale: THREE.Vector3;
 };
 
-type StrokeProportionConfig =
+export type StrokeProportionConfig =
   | number
   | (
       | { start: number }

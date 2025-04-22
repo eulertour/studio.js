@@ -1,9 +1,11 @@
 import {
   Fn,
+  If,
   ShaderNodeObject,
   attribute,
   cameraProjectionMatrix,
   distance,
+  float,
   mat2,
   mat4,
   modelViewMatrix,
@@ -19,6 +21,8 @@ import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import { UNITS_PER_STROKE_WIDTH } from "../../../constants.js";
 import { UniformNode } from "three/webgpu";
 import { Vector3 } from "three";
+
+const SQRT_2 = 1.4142135624;
 
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=defined%20clipping%20region.-,Perspective%20divide,-%5Bedit%5D
 const perspectiveDivide = Fn(
@@ -101,18 +105,26 @@ export default class VertexShader {
       const unitNormal = rotate90(unitTangent);
       // NOTE: This is the vector offset from the start or end of the
       // current segment to a corner of the quadrilateral containing
-      // it. It's represented by the diagonal lines in the diagram
-      // below. The components tangent and normal to the segment
-      // vector are equal and each have length 1. The length of the
-      // vector is sqrt(2).
+      // it (scaled by 2 for segments that compose an arrow). It's
+      // represented by the diagonal lines in the diagram below. The
+      // components tangent and normal to the segment vector are equal
+      // and each have length 1 (or 2). The length of the vector is
+      // sqrt(2).
       // *-------------------*
       // |\                 /|
       // | *---------------* |
       // |/                 \|
       // *-------------------*
-      const unitOffset = mat2(unitTangent, unitNormal).mul(
-        attribute("vertexOffset"),
-      );
+      varyingProperty("vec4", "vTestColor").assign(vec4(1, 0, 0, 1));
+      const rawVertexOffset = attribute("vertexOffset");
+      const isArrow = rawVertexOffset.lengthSq().greaterThan(2);
+      const vertexOffset = rawVertexOffset.normalize().mul(SQRT_2);
+
+      If(isArrow, () => {
+        varyingProperty("vec4", "vTestColor").assign(vec4(0, 0, 1, 1));
+      });
+
+      const unitOffset = mat2(unitTangent, unitNormal).mul(vertexOffset);
       const cameraSpaceVertexOffset = vec4(
         unitOffset.mul(width).mul(UNITS_PER_STROKE_WIDTH),
         0,
@@ -123,7 +135,7 @@ export default class VertexShader {
       );
 
       return select(
-        attribute("vertexOffset").x.equal(-1),
+        vertexOffset.x.lessThan(0),
         clipSpaceStart,
         clipSpaceEnd,
       ).add(clipSpaceVertexOffset);

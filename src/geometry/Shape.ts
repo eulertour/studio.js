@@ -1,12 +1,7 @@
 import * as THREE from "three/webgpu";
 import * as Text from "../text.js";
 import WebGPUMeshLine from "./WebGPUMeshLine/index.js";
-import {
-  Style,
-  Transform,
-  strokeProportionConfigToData,
-  styleToData,
-} from "./utils.js";
+import { Style, Transform, styleToData } from "./utils.js";
 
 const getFillGeometry = (points: Array<THREE.Vector3>) => {
   const shape = new THREE.Shape();
@@ -293,7 +288,7 @@ export default abstract class Shape extends THREE.Group {
     }
 
     if (this.stroke !== undefined) {
-      const {
+      const strokeStyle = (({
         strokeColor,
         strokeOpacity,
         strokeWidth,
@@ -301,32 +296,16 @@ export default abstract class Shape extends THREE.Group {
         strokeDashSpeed,
         strokeDashOffset,
         strokeProportion,
-      } = style;
-      if (strokeColor !== undefined) {
-        this.stroke.material.uniforms.color.value.set(strokeColor);
-      }
-      if (strokeOpacity !== undefined) {
-        this.stroke.material.uniforms.opacity.value = strokeOpacity;
-      }
-      if (strokeWidth !== undefined) {
-        this.stroke.material.uniforms.width.value = strokeWidth;
-      }
-      if (strokeDashLength !== undefined) {
-        this.stroke.material.uniforms.dashLength.value = strokeDashLength;
-      }
-      if (strokeDashSpeed !== undefined) {
-        this.stroke.material.dashSpeed = strokeDashSpeed;
-      }
-      if (strokeDashOffset !== undefined) {
-        this.stroke.material.uniforms.dashOffset.value = strokeDashOffset;
-      }
-      if (strokeProportion !== undefined) {
-        const { strokeStartProportion, strokeEndProportion } =
-          strokeProportionConfigToData(strokeProportion);
-        this.stroke.material.uniforms.startProportion.value =
-          strokeStartProportion;
-        this.stroke.material.uniforms.endProportion.value = strokeEndProportion;
-      }
+      }) => ({
+        strokeColor,
+        strokeOpacity,
+        strokeWidth,
+        strokeDashLength,
+        strokeDashSpeed,
+        strokeDashOffset,
+        strokeProportion,
+      }))(style);
+      this.stroke.restyle(strokeStyle);
     }
 
     if (config.includeDescendents) {

@@ -4,20 +4,7 @@ import VertexShader from "./shaders/Vertex.js";
 import FragmentShader from "./shaders/Fragment.js";
 import DashAtlas from "./DashAtlas.js";
 import { indexOrThrow } from "../../utils.js";
-
-export type Uniforms = {
-  firstPoint: THREE.UniformNode<THREE.Vector3>;
-  secondPoint: THREE.UniformNode<THREE.Vector3>;
-  color: THREE.UniformNode<THREE.Color>;
-  opacity: THREE.UniformNode<number>;
-  width: THREE.UniformNode<number>;
-  length: THREE.UniformNode<number>;
-  dashLength: THREE.UniformNode<number>;
-  dashOffset: THREE.UniformNode<number>;
-  startProportion: THREE.UniformNode<number>;
-  endProportion: THREE.UniformNode<number>;
-  arrow: THREE.UniformNode<number>;
-};
+import { Uniforms } from "./index.js";
 
 export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
   dashAtlas: DashAtlas;
@@ -26,17 +13,9 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
   previousDashOffset = 0;
 
   constructor(
-    points: THREE.Vector3[],
-    color: THREE.Color,
-    opacity: number,
-    width: number,
-    dashLength: number,
+    uniforms: Uniforms,
     dashSpeed: number,
     dashPattern: number[],
-    dashOffset: number,
-    startProportion: number,
-    endProportion: number,
-    arrow: boolean,
     threeDimensions: boolean,
   ) {
     super({
@@ -45,17 +24,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
     });
     this.dashSpeed = dashSpeed;
     this.dashAtlas = new DashAtlas(dashPattern);
-    this.uniforms = this.createUniforms(
-      points,
-      color,
-      opacity,
-      width,
-      dashLength,
-      dashOffset,
-      startProportion,
-      endProportion,
-      arrow,
-    );
+    this.uniforms = uniforms;
     this.vertexNode = new VertexShader(
       this.uniforms.width,
       this.uniforms.firstPoint,
@@ -73,41 +42,6 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       this.uniforms.endProportion,
       this.uniforms.arrow,
     ).node();
-  }
-
-  createUniforms(
-    points: THREE.Vector3[],
-    color: THREE.Color,
-    opacity: number,
-    width: number,
-    dashLength: number,
-    dashOffset: number,
-    startProportion: number,
-    endProportion: number,
-    arrow: boolean,
-  ): Uniforms {
-    let length = 0;
-    for (let i = 0; i < points.length - 2; i++) {
-      const currentPoint = indexOrThrow(points, i);
-      const nextPoint = indexOrThrow(points, i + 1);
-      length += currentPoint.distanceTo(nextPoint);
-    }
-
-    const firstPoint = indexOrThrow(points, 0);
-    const secondPoint = indexOrThrow(points, 1);
-    return {
-      firstPoint: uniform(firstPoint),
-      secondPoint: uniform(secondPoint),
-      color: uniform(color),
-      opacity: uniform(opacity),
-      width: uniform(width),
-      length: uniform(length),
-      dashLength: uniform(dashLength),
-      dashOffset: uniform(dashOffset),
-      startProportion: uniform(startProportion),
-      endProportion: uniform(endProportion),
-      arrow: uniform(arrow ? 1 : 0),
-    };
   }
 
   update(dt: number) {

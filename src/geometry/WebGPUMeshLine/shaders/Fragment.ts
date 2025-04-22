@@ -108,7 +108,7 @@ export default class FragmentShader {
     dashOffset: UniformNode<number>,
     startProportion: UniformNode<number>,
     endProportion: UniformNode<number>,
-    arrow: UniformNode<boolean>,
+    arrow: UniformNode<number>,
   ) {
     this.node = Fn(() => {
       const startFragment = varyingProperty("vec2", "vStartFragment");
@@ -535,7 +535,7 @@ export default class FragmentShader {
       const purple = vec4(1, 0, 1, 1);
       // Arrows
       If(arrow, () => {
-        testColor.assign(red);
+        testColor.assign(varyingProperty("vec4", "vTestColor"));
       });
 
       return testColor;

@@ -16,7 +16,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
 
   constructor(
     points: THREE.Vector3[],
-    public isArrow,
+    public isArrow: boolean,
   ) {
     super();
     // This segment has data but isn't rendered
@@ -181,7 +181,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   //   *-----------------*--> x
   //  0, (-1, -1)         2, (1, -1)
   fillVertexOffsets(segmentCount: number) {
-    for (let i = 0; i < segmentCount; i++) {
+    let i = 0;
+    for (i = 0; i < segmentCount - 1; i++) {
       const arrayOffset = 8 * i;
       this.vertexOffset[arrayOffset] = -1;
       this.vertexOffset[arrayOffset + 1] = -1;
@@ -192,6 +193,16 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       this.vertexOffset[arrayOffset + 6] = 1;
       this.vertexOffset[arrayOffset + 7] = 1;
     }
+
+    const arrayOffset = 8 * i;
+    this.vertexOffset[arrayOffset] = -2;
+    this.vertexOffset[arrayOffset + 1] = -2;
+    this.vertexOffset[arrayOffset + 2] = -2;
+    this.vertexOffset[arrayOffset + 3] = 2;
+    this.vertexOffset[arrayOffset + 4] = 2;
+    this.vertexOffset[arrayOffset + 5] = -2;
+    this.vertexOffset[arrayOffset + 6] = 2;
+    this.vertexOffset[arrayOffset + 7] = 2;
   }
 
   // NOTE: The indices are chosen to construct the segment
