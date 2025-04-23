@@ -29,6 +29,9 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       this.uniforms.width,
       this.uniforms.firstPoint,
       this.uniforms.secondPoint,
+      this.uniforms.arrowSegmentStart,
+      this.uniforms.arrowSegmentEnd,
+      this.uniforms.arrowSegmentProportion,
     ).node();
     this.fragmentNode = new FragmentShader(
       this.dashAtlas,

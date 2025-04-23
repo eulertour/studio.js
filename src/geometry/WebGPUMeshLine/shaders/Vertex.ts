@@ -5,7 +5,6 @@ import {
   attribute,
   cameraProjectionMatrix,
   distance,
-  float,
   mat2,
   mat4,
   modelViewMatrix,
@@ -21,6 +20,7 @@ import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import { UNITS_PER_STROKE_WIDTH } from "../../../constants.js";
 import { UniformNode } from "three/webgpu";
 import { Vector3 } from "three";
+import { lerp } from "three/src/math/MathUtils.js";
 
 const SQRT_2 = 1.4142135624;
 
@@ -56,6 +56,9 @@ export default class VertexShader {
     width: UniformNode<number>,
     firstPosition: UniformNode<Vector3>,
     secondPosition: UniformNode<Vector3>,
+    arrowSegmentStart: UniformNode<Vector3>,
+    arrowSegmentEnd: UniformNode<Vector3>,
+    arrowSegmentProportion: UniformNode<number>,
   ) {
     this.node = Fn(() => {
       const modelViewProjection = cameraProjectionMatrix.mul(modelViewMatrix);
@@ -67,12 +70,12 @@ export default class VertexShader {
           vec4(attribute("nextPosition"), 1),
         ),
       );
-      const clipSpaceFirstSegment = modelViewProjection.mul(
+      const clipSpaceSegments = modelViewProjection.mul(
         mat4(
           vec4(firstPosition, 1),
           vec4(secondPosition, 1),
-          vec4(0, 0, 0, 0),
-          vec4(0, 0, 0, 0),
+          vec4(arrowSegmentStart, 1),
+          vec4(arrowSegmentEnd, 1),
         ),
       );
 
@@ -80,8 +83,10 @@ export default class VertexShader {
       const clipSpaceEnd = vec4(clipSpaceLinePoints[1]);
       const clipSpacePrevious = vec4(clipSpaceLinePoints[2]);
       const clipSpaceNext = vec4(clipSpaceLinePoints[3]);
-      const clipSpaceFirstPosition = vec4(clipSpaceFirstSegment[0]);
-      const clipSpaceSecondPosition = vec4(clipSpaceFirstSegment[1]);
+      const clipSpaceFirstPosition = vec4(clipSpaceSegments[0]);
+      const clipSpaceSecondPosition = vec4(clipSpaceSegments[1]);
+      const clipSpaceArrowSegmentStart = vec4(clipSpaceSegments[2]);
+      const clipSpaceArrowSegmentEnd = vec4(clipSpaceSegments[3]);
 
       const startFragment = clipToScreenSpace(clipSpaceStart);
       const endFragment = clipToScreenSpace(clipSpaceEnd);
@@ -89,6 +94,12 @@ export default class VertexShader {
       const nextFragment = clipToScreenSpace(clipSpaceNext);
       const firstFragment = clipToScreenSpace(clipSpaceFirstPosition);
       const secondFragment = clipToScreenSpace(clipSpaceSecondPosition);
+      const arrowSegmentStartFragment = clipToScreenSpace(
+        clipSpaceArrowSegmentStart,
+      );
+      const arrowSegmentEndFragment = clipToScreenSpace(
+        clipSpaceArrowSegmentEnd,
+      );
 
       varyingProperty("vec2", "vStartFragment").assign(startFragment);
       varyingProperty("vec2", "vEndFragment").assign(endFragment);
@@ -123,6 +134,14 @@ export default class VertexShader {
       If(isArrow, () => {
         varyingProperty("vec4", "vTestColor").assign(vec4(0, 0, 1, 1));
       });
+      const arrowTangent = arrowSegmentEndFragment.sub(
+        arrowSegmentStartFragment,
+      );
+      const arrowUnitTangent = normalize(arrowTangent);
+      const arrowUnitNormal = rotate90(arrowUnitTangent);
+      const clipSpaceArrowTip = clipSpaceArrowSegmentStart.add(
+        arrowTangent.mul(arrowSegmentProportion),
+      );
 
       const unitOffset = mat2(unitTangent, unitNormal).mul(vertexOffset);
       const cameraSpaceVertexOffset = vec4(
@@ -134,11 +153,13 @@ export default class VertexShader {
         cameraSpaceVertexOffset,
       );
 
-      return select(
-        vertexOffset.x.lessThan(0),
-        clipSpaceStart,
-        clipSpaceEnd,
-      ).add(clipSpaceVertexOffset);
+      const linePointVertex = select(
+        isArrow,
+        select(vertexOffset.x.lessThan(0), clipSpaceStart, clipSpaceEnd),
+        select(vertexOffset.x.lessThan(0), clipSpaceStart, clipSpaceEnd),
+      );
+
+      return linePointVertex.add(clipSpaceVertexOffset);
     });
   }
 }
