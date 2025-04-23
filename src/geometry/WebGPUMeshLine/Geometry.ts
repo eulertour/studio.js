@@ -1,5 +1,7 @@
 import * as THREE from "three/webgpu";
 import { indexOrThrow, bufferIndexOrThrow } from "../../utils.js";
+import { UniformNode } from "three/webgpu";
+import { Uniforms } from "./index.js";
 
 export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   // NOTE: The vertexOffset attribute is used to expand the segments
@@ -27,6 +29,57 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       .setY(lastPoint.y + 1);
     points.push(newPoint);
     this.setPoints(points);
+  }
+
+  getPoint(index: number, output: THREE.Vector3) {
+    const bufferOffset = 12 * index;
+    const x = bufferIndexOrThrow(this.position, bufferOffset);
+    const y = bufferIndexOrThrow(this.position, bufferOffset + 1);
+    const z = bufferIndexOrThrow(this.position, bufferOffset + 2);
+    output.set(x, y, z);
+  }
+
+  getLength(index: number) {
+    // Exclude segments for the arrow
+    const lastSegmentIndex = this.positionOffset.length / 16 - 2;
+    if (index === lastSegmentIndex + 1) {
+      return bufferIndexOrThrow(this.positionOffset, 16 * lastSegmentIndex + 1);
+    } else {
+      const bufferOffset = 16 * index;
+      return bufferIndexOrThrow(this.positionOffset, bufferOffset);
+    }
+  }
+
+  get numPoints() {
+    // Exclude segments for the arrow
+    return this.positionOffset.length / 16 + 1 - 1;
+  }
+
+  get length() {
+    // Exclude segments for the arrow
+    const lastSegmentIndex = this.positionOffset.length / 16 - 2;
+    // Return the endLength of the last segment
+    return bufferIndexOrThrow(this.positionOffset, 16 * lastSegmentIndex + 1);
+  }
+
+  fillArrowSegmentData(proportion: number, output: Uniforms) {
+    const totalLength = this.length;
+    // PERF: This could be done with binary search.
+    for (let i = 0; i < this.numPoints - 1; i++) {
+      const startProportion = this.getLength(i) / totalLength;
+      const endProportion = this.getLength(i + 1) / totalLength;
+      if (startProportion <= proportion && proportion <= endProportion) {
+        this.getPoint(i, output.arrowSegmentStart.value);
+        this.getPoint(i + 1, output.arrowSegmentEnd.value);
+        output.arrowSegmentProportion.value = THREE.MathUtils.inverseLerp(
+          startProportion,
+          endProportion,
+          proportion,
+        );
+        return;
+      }
+    }
+    throw new Error(`Invalid arrow proportion ${proportion}`);
   }
 
   setPoints(points: Array<THREE.Vector3>, updateBounds = true) {

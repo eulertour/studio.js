@@ -6,7 +6,6 @@ import {
   StrokeProportionConfig,
 } from "../utils.js";
 import { uniform } from "three/tsl";
-import { indexOrThrow } from "../../utils.js";
 
 export type Uniforms = {
   firstPoint: THREE.UniformNode<THREE.Vector3>;
@@ -20,6 +19,9 @@ export type Uniforms = {
   startProportion: THREE.UniformNode<number>;
   endProportion: THREE.UniformNode<number>;
   arrow: THREE.UniformNode<number>;
+  arrowSegmentStart: THREE.UniformNode<THREE.Vector3>;
+  arrowSegmentEnd: THREE.UniformNode<THREE.Vector3>;
+  arrowSegmentProportion: THREE.UniformNode<number>;
 };
 
 interface StrokeStyle {
@@ -61,7 +63,7 @@ const defaultConfig: Required<Config> = {
 };
 
 const createUniforms = (
-  points: THREE.Vector3[],
+  geometry: WebGPUMeshLineGeometry,
   color: THREE.Color,
   opacity: number,
   width: number,
@@ -71,29 +73,30 @@ const createUniforms = (
   endProportion: number,
   arrow: boolean,
 ): Uniforms => {
-  let length = 0;
-  for (let i = 0; i < points.length - 2; i++) {
-    const currentPoint = indexOrThrow(points, i);
-    const nextPoint = indexOrThrow(points, i + 1);
-    length += currentPoint.distanceTo(nextPoint);
-  }
-
-  // TODO: Update this after finishing arrow geometry
-  const firstPoint = indexOrThrow(points, 0);
-  const secondPoint = indexOrThrow(points, 1);
-  return {
-    firstPoint: uniform(firstPoint),
-    secondPoint: uniform(secondPoint),
+  const uniforms = {
+    firstPoint: uniform(new THREE.Vector3()),
+    secondPoint: uniform(new THREE.Vector3()),
     color: uniform(color),
     opacity: uniform(opacity),
     width: uniform(width),
-    length: uniform(length),
+    length: uniform(geometry.length),
     dashLength: uniform(dashLength),
     dashOffset: uniform(dashOffset),
     startProportion: uniform(startProportion),
     endProportion: uniform(endProportion),
     arrow: uniform(arrow ? 1 : 0),
+    arrowSegmentStart: uniform(new THREE.Vector3()),
+    arrowSegmentEnd: uniform(new THREE.Vector3()),
+    arrowSegmentProportion: uniform(0),
   };
+
+  // TODO: Update this after finishing arrow geometry
+  geometry.getPoint(0, uniforms.firstPoint.value);
+  geometry.getPoint(1, uniforms.secondPoint.value);
+  if (arrow) {
+    geometry.fillArrowSegmentData(endProportion, uniforms);
+  }
+  return uniforms;
 };
 
 export default class WebGPUMeshLine extends THREE.Mesh {
@@ -101,7 +104,7 @@ export default class WebGPUMeshLine extends THREE.Mesh {
     const config = { ...defaultConfig, ...inputConfig };
     const geometry = new WebGPUMeshLineGeometry(points, config.arrow);
     const uniforms = createUniforms(
-      points,
+      geometry,
       config.color,
       config.opacity,
       config.width,
@@ -153,6 +156,10 @@ export default class WebGPUMeshLine extends THREE.Mesh {
         strokeProportionConfigToData(strokeProportion);
       this.material.uniforms.startProportion.value = strokeStartProportion;
       this.material.uniforms.endProportion.value = strokeEndProportion;
+      this.geometry.fillArrowSegmentData(
+        strokeEndProportion,
+        this.material.uniforms,
+      );
     }
   }
 }
