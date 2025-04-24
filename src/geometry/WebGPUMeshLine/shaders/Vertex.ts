@@ -111,9 +111,6 @@ export default class VertexShader {
         distance(firstPosition, secondPosition),
       );
 
-      const tangent = endFragment.sub(startFragment);
-      const unitTangent = normalize(tangent);
-      const unitNormal = rotate90(unitTangent);
       // NOTE: This is the vector offset from the start or end of the
       // current segment to a corner of the quadrilateral containing
       // it (scaled by 2 for segments that compose an arrow). It's
@@ -126,23 +123,36 @@ export default class VertexShader {
       // | *---------------* |
       // |/                 \|
       // *-------------------*
-      varyingProperty("vec4", "vTestColor").assign(vec4(1, 0, 0, 1));
       const rawVertexOffset = attribute("vertexOffset");
       const isArrow = rawVertexOffset.lengthSq().greaterThan(2);
-      const vertexOffset = rawVertexOffset.normalize().mul(SQRT_2);
+
+      const arrowSegmentTangent = arrowSegmentEndFragment.sub(
+        arrowSegmentStartFragment,
+      );
+      const arrowTipFragment = arrowSegmentStartFragment.add(
+        arrowSegmentTangent.mul(arrowSegmentProportion),
+      );
+
+      const tangent = select(
+        isArrow,
+        endFragment.sub(startFragment),
+        endFragment.sub(startFragment),
+      );
+      const unitTangent = normalize(tangent);
+      const unitNormal = rotate90(unitTangent);
+      varyingProperty("vec4", "vTestColor").assign(vec4(1, 0, 0, 1));
 
       If(isArrow, () => {
         varyingProperty("vec4", "vTestColor").assign(vec4(0, 0, 1, 1));
       });
-      const arrowTangent = arrowSegmentEndFragment.sub(
-        arrowSegmentStartFragment,
-      );
       const arrowUnitTangent = normalize(arrowTangent);
       const arrowUnitNormal = rotate90(arrowUnitTangent);
       const clipSpaceArrowTip = clipSpaceArrowSegmentStart.add(
         arrowTangent.mul(arrowSegmentProportion),
       );
+      const clipSpaceArrowTail = clipSpaceArrowTip.add(vec4(0, 1, 0, 0));
 
+      const vertexOffset = rawVertexOffset.normalize().mul(SQRT_2);
       const unitOffset = mat2(unitTangent, unitNormal).mul(vertexOffset);
       const cameraSpaceVertexOffset = vec4(
         unitOffset.mul(width).mul(UNITS_PER_STROKE_WIDTH),
