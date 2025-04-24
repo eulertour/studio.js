@@ -125,23 +125,35 @@ export default class FragmentShader {
       const tangentVector = components.xy;
       const normalVector = components.zw;
 
-      const segmentStart = attribute("positionOffset").x;
-      const segmentEnd = attribute("positionOffset").y;
+      const segmentStart = select(
+        isArrowSegment,
+        0,
+        attribute("positionOffset").x,
+      );
+      const segmentEnd = select(
+        isArrowSegment,
+        varyingProperty("float", "vArrowSegmentLength"),
+        attribute("positionOffset").y,
+      );
       const segmentDistancePerFragment = segmentEnd
         .sub(segmentStart)
         .div(segmentVector.length());
 
-      const offset = add(
-        segmentStart,
+      const offset = segmentStart.add(
         tangentVector
           .length()
           .mul(segmentDistancePerFragment)
           .mul(sign(dot(segmentVector, tangentVector))),
       );
 
+      const strokeOrArrowEnd = select(
+        isArrowSegment,
+        varyingProperty("float", "vArrowSegmentLength"),
+        strokeEnd,
+      );
       const referenceDashData = select(
         float(dashLength).equal(0),
-        vec4(0, 0, strokeEnd, 0),
+        vec4(0, 0, strokeOrArrowEnd, 0),
         this.getReferenceDashData(offset, dashOffset, dashLength),
       );
       const referencePoint = referenceDashData.x;
@@ -159,7 +171,7 @@ export default class FragmentShader {
       If(
         or(
           referenceDashEnd.lessThan(0),
-          float(strokeEnd).lessThan(referenceDashStart),
+          float(strokeOrArrowEnd).lessThan(referenceDashStart),
         ),
         () => {
           Discard();
@@ -181,12 +193,12 @@ export default class FragmentShader {
       )
         // Stroke end
         .ElseIf(
-          float(strokeEnd)
+          float(strokeOrArrowEnd)
             .lessThanEqual(offset)
-            .and(referenceDashStart.lessThanEqual(strokeEnd))
-            .and(float(strokeEnd).lessThanEqual(referenceDashEnd)),
+            .and(referenceDashStart.lessThanEqual(strokeOrArrowEnd))
+            .and(float(strokeOrArrowEnd).lessThanEqual(referenceDashEnd)),
           () => {
-            const dx = offset.sub(strokeEnd);
+            const dx = offset.sub(strokeOrArrowEnd);
             If(
               lengthSquared(vec2(dx, dy)).greaterThan(halfWidthSquared),
               () => {
@@ -257,7 +269,7 @@ export default class FragmentShader {
       });
 
       // Incoming to join
-      If(segmentEnd.notEqual(strokeEnd), () => {
+      If(segmentEnd.notEqual(strokeOrArrowEnd), () => {
         If(segmentEnd.lessThan(referenceDashStart), () => {
           Discard();
         });
@@ -277,14 +289,16 @@ export default class FragmentShader {
 
       // Incoming to start of closed curve
       const patternLength = this.dashAtlas.period.mul(dashLength);
-      const drawStart = float(strokeEnd).mul(startProportion);
-      const drawEnd = float(strokeEnd).mul(endProportion);
+      const drawStart = float(strokeOrArrowEnd).mul(startProportion);
+      const drawEnd = float(strokeOrArrowEnd).mul(endProportion);
       const isFirstSegment = segmentStart.equal(0);
       If(
         or(
           float(dashLength)
             .notEqual(0)
-            .and(float(strokeEnd).sub(offset).lessThanEqual(patternLength)),
+            .and(
+              float(strokeOrArrowEnd).sub(offset).lessThanEqual(patternLength),
+            ),
           float(dashLength).equal(0).and(isFirstSegment.not()),
         ),
         () => {
@@ -396,7 +410,7 @@ export default class FragmentShader {
       });
 
       // Start of draw range
-      const testColor = vec4(color, opacity).toVar();
+      // const testColor = vec4(color, opacity).toVar();
       If(float(dashLength).equal(0), () => {
         If(segmentEnd.lessThanEqual(drawStart), () => {
           const nextFragment = varyingProperty("vec2", "vNextFragment");
@@ -534,17 +548,28 @@ export default class FragmentShader {
         // });
       });
 
-      const red = vec4(1, 0, 0, 1);
-      const green = vec4(0, 1, 0, 1);
-      const blue = vec4(0, 0, 1, 1);
-      const purple = vec4(1, 0, 1, 1);
-      // Arrows
-      If(arrow, () => {
-        testColor.assign(varyingProperty("vec4", "vTestColor"));
-      });
+      // const red = vec4(1, 0, 0, 1);
+      // const green = vec4(0, 1, 0, 1);
+      // const blue = vec4(0, 0, 1, 1);
+      // const purple = vec4(1, 0, 1, 1);
+      // // Arrows
+      // const testHalfWidth = float(4)
+      //   .mul(1 / 20)
+      //   .mul(1 / 2);
+      // const dx = offset
+      //   .mul(segmentDistancePerFragment)
+      //   .mul(sign(dot(rotate90(segmentVector), normalVector)));
+      // If(
+      //   float(offset)
+      //     .and(normalVector.x.abs().greaterThan(testHalfWidth))
+      //     .and(normalVector.y.equal(0)),
+      //   () => {
+      //     testColor.assign(varyingProperty("vec4", "vTestColor"));
+      //   },
+      // );
 
-      return testColor;
-      // return vec4(color, opacity);
+      // return testColor;
+      return vec4(color, opacity);
     });
   }
 

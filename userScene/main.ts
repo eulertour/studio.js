@@ -216,7 +216,11 @@ export default class Scene implements StudioScene {
     this.singleSegmentArrow = new Geometry.Line(
       new THREE.Vector3(-3, 0, 0),
       new THREE.Vector3(3, 0, 0),
-      { strokeArrow: true },
+      {
+        strokeColor: new THREE.Color("blue"),
+        strokeOpacity: 0.85,
+        strokeArrow: true,
+      },
     );
     this.multiSegmentArrow = new Geometry.Polyline(
       [
@@ -224,7 +228,11 @@ export default class Scene implements StudioScene {
         new THREE.Vector3(-4, -1, 0),
         new THREE.Vector3(4.5, -1, 0),
       ],
-      { strokeArrow: true },
+      {
+        strokeColor: new THREE.Color("orange"),
+        strokeOpacity: 0.85,
+        strokeArrow: true,
+      },
     );
 
     withArrow.add(this.singleSegmentArrow, this.multiSegmentArrow);

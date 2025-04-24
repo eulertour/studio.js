@@ -25,6 +25,8 @@ import { Vector3 } from "three";
 import { lerp } from "three/src/math/MathUtils.js";
 
 const SQRT_2 = 1.4142135624;
+const ARROW_WIDTH = 1;
+const ARROW_LENGTH = 1;
 
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=defined%20clipping%20region.-,Perspective%20divide,-%5Bedit%5D
 const perspectiveDivide = Fn(
@@ -92,7 +94,9 @@ export default class VertexShader {
       const arrowTipPosition = vec3(arrowSegmentStart).add(
         arrowSegmentVector.mul(arrowSegmentProportion),
       );
-      const arrowTailPosition = arrowTipPosition.add(arrowTailUnitOffset);
+      const arrowTailPosition = arrowTipPosition
+        .add(arrowTailUnitOffset.mul(ARROW_WIDTH))
+        .add(arrowSegmentVector.negate().normalize().mul(ARROW_LENGTH));
 
       const modelViewProjection = cameraProjectionMatrix.mul(modelViewMatrix);
       const clipSpaceLinePoints = modelViewProjection.mul(
@@ -107,8 +111,8 @@ export default class VertexShader {
         mat4(
           vec4(firstPosition, 1),
           vec4(secondPosition, 1),
-          vec4(arrowTipPosition),
-          vec4(arrowTailPosition),
+          vec4(arrowTipPosition, 1),
+          vec4(arrowTailPosition, 1),
         ),
       );
 
@@ -159,6 +163,9 @@ export default class VertexShader {
         distance(firstPosition, secondPosition),
       );
       varyingProperty("float", "vIsArrowSegment").assign(isArrowSegment);
+      varyingProperty("float", "vArrowSegmentLength").assign(
+        arrowTipPosition.distance(arrowTailPosition),
+      );
 
       const tangent = select(
         isArrowSegment,
