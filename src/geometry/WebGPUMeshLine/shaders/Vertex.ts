@@ -4,6 +4,7 @@ import {
   ShaderNodeObject,
   attribute,
   cameraProjectionMatrix,
+  cameraWorldMatrix,
   distance,
   mat2,
   mat4,
@@ -13,6 +14,7 @@ import {
   select,
   varyingProperty,
   vec2,
+  vec3,
   vec4,
 } from "three/tsl";
 import { ShaderNodeFn } from "three/src/nodes/TSL.js";
@@ -45,6 +47,16 @@ const clipToScreenSpace = Fn(
   },
 );
 
+const projectOntoVector = Fn(
+  ([vectorToProject, vectorToProjectOnto]: [
+    ShaderNodeObject<OperatorNode>,
+    ShaderNodeObject<OperatorNode>,
+  ]) => {
+    const projectionUnitVector = vectorToProjectOnto.normalize();
+    return vectorToProject.dot(projectionUnitVector).mul(projectionUnitVector);
+  },
+);
+
 const rotate90 = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
   vec2(vector.y.negate(), vector.x),
 );
@@ -61,6 +73,27 @@ export default class VertexShader {
     arrowSegmentProportion: UniformNode<number>,
   ) {
     this.node = Fn(() => {
+      const cameraWorldMatrixZColumn = cameraWorldMatrix[2];
+      if (cameraWorldMatrixZColumn === undefined) {
+        throw new Error("Camera z column is undefined");
+      }
+      const cameraPlaneUnitNormal = cameraWorldMatrixZColumn.xyz
+        .negate()
+        .normalize();
+
+      const arrowSegmentVector = vec3(arrowSegmentEnd).sub(arrowSegmentStart);
+      const arrowSegmentProjectionToCameraPlane = arrowSegmentVector.sub(
+        projectOntoVector(arrowSegmentVector, cameraPlaneUnitNormal),
+      );
+      const arrowTailUnitOffset = arrowSegmentProjectionToCameraPlane
+        .cross(cameraPlaneUnitNormal)
+        .normalize();
+
+      const arrowTipPosition = vec3(arrowSegmentStart).add(
+        arrowSegmentVector.mul(arrowSegmentProportion),
+      );
+      const arrowTailPosition = arrowTipPosition.add(arrowTailUnitOffset);
+
       const modelViewProjection = cameraProjectionMatrix.mul(modelViewMatrix);
       const clipSpaceLinePoints = modelViewProjection.mul(
         mat4(
@@ -74,8 +107,8 @@ export default class VertexShader {
         mat4(
           vec4(firstPosition, 1),
           vec4(secondPosition, 1),
-          vec4(arrowSegmentStart, 1),
-          vec4(arrowSegmentEnd, 1),
+          vec4(arrowTipPosition),
+          vec4(arrowTailPosition),
         ),
       );
 
@@ -85,8 +118,8 @@ export default class VertexShader {
       const clipSpaceNext = vec4(clipSpaceLinePoints[3]);
       const clipSpaceFirstPosition = vec4(clipSpaceSegments[0]);
       const clipSpaceSecondPosition = vec4(clipSpaceSegments[1]);
-      const clipSpaceArrowSegmentStart = vec4(clipSpaceSegments[2]);
-      const clipSpaceArrowSegmentEnd = vec4(clipSpaceSegments[3]);
+      const clipSpaceArrowTip = vec4(clipSpaceSegments[2]);
+      const clipSpaceArrowTail = vec4(clipSpaceSegments[3]);
 
       const startFragment = clipToScreenSpace(clipSpaceStart);
       const endFragment = clipToScreenSpace(clipSpaceEnd);
@@ -94,22 +127,8 @@ export default class VertexShader {
       const nextFragment = clipToScreenSpace(clipSpaceNext);
       const firstFragment = clipToScreenSpace(clipSpaceFirstPosition);
       const secondFragment = clipToScreenSpace(clipSpaceSecondPosition);
-      const arrowSegmentStartFragment = clipToScreenSpace(
-        clipSpaceArrowSegmentStart,
-      );
-      const arrowSegmentEndFragment = clipToScreenSpace(
-        clipSpaceArrowSegmentEnd,
-      );
-
-      varyingProperty("vec2", "vStartFragment").assign(startFragment);
-      varyingProperty("vec2", "vEndFragment").assign(endFragment);
-      varyingProperty("vec2", "vPreviousFragment").assign(previousFragment);
-      varyingProperty("vec2", "vNextFragment").assign(nextFragment);
-      varyingProperty("vec2", "vFirstFragment").assign(firstFragment);
-      varyingProperty("vec2", "vSecondFragment").assign(secondFragment);
-      varyingProperty("float", "vFirstSegmentLength").assign(
-        distance(firstPosition, secondPosition),
-      );
+      const arrowTipFragment = clipToScreenSpace(clipSpaceArrowTip);
+      const arrowTailFragment = clipToScreenSpace(clipSpaceArrowTail);
 
       // NOTE: This is the vector offset from the start or end of the
       // current segment to a corner of the quadrilateral containing
@@ -124,33 +143,35 @@ export default class VertexShader {
       // |/                 \|
       // *-------------------*
       const rawVertexOffset = attribute("vertexOffset");
-      const isArrow = rawVertexOffset.lengthSq().greaterThan(2);
+      const isArrowSegment = rawVertexOffset.lengthSq().greaterThan(2);
 
-      const arrowSegmentTangent = arrowSegmentEndFragment.sub(
-        arrowSegmentStartFragment,
+      varyingProperty("vec2", "vStartFragment").assign(
+        select(isArrowSegment, arrowTipFragment, startFragment),
       );
-      const arrowTipFragment = arrowSegmentStartFragment.add(
-        arrowSegmentTangent.mul(arrowSegmentProportion),
+      varyingProperty("vec2", "vEndFragment").assign(
+        select(isArrowSegment, arrowTailFragment, endFragment),
       );
+      varyingProperty("vec2", "vPreviousFragment").assign(previousFragment);
+      varyingProperty("vec2", "vNextFragment").assign(nextFragment);
+      varyingProperty("vec2", "vFirstFragment").assign(firstFragment);
+      varyingProperty("vec2", "vSecondFragment").assign(secondFragment);
+      varyingProperty("float", "vFirstSegmentLength").assign(
+        distance(firstPosition, secondPosition),
+      );
+      varyingProperty("float", "vIsArrowSegment").assign(isArrowSegment);
 
       const tangent = select(
-        isArrow,
-        endFragment.sub(startFragment),
+        isArrowSegment,
+        arrowTailFragment.sub(arrowTipFragment),
         endFragment.sub(startFragment),
       );
       const unitTangent = normalize(tangent);
       const unitNormal = rotate90(unitTangent);
       varyingProperty("vec4", "vTestColor").assign(vec4(1, 0, 0, 1));
 
-      If(isArrow, () => {
+      If(isArrowSegment, () => {
         varyingProperty("vec4", "vTestColor").assign(vec4(0, 0, 1, 1));
       });
-      const arrowUnitTangent = normalize(arrowTangent);
-      const arrowUnitNormal = rotate90(arrowUnitTangent);
-      const clipSpaceArrowTip = clipSpaceArrowSegmentStart.add(
-        arrowTangent.mul(arrowSegmentProportion),
-      );
-      const clipSpaceArrowTail = clipSpaceArrowTip.add(vec4(0, 1, 0, 0));
 
       const vertexOffset = rawVertexOffset.normalize().mul(SQRT_2);
       const unitOffset = mat2(unitTangent, unitNormal).mul(vertexOffset);
@@ -164,11 +185,14 @@ export default class VertexShader {
       );
 
       const linePointVertex = select(
-        isArrow,
-        select(vertexOffset.x.lessThan(0), clipSpaceStart, clipSpaceEnd),
+        isArrowSegment,
+        select(
+          vertexOffset.x.lessThan(0),
+          clipSpaceArrowTip,
+          clipSpaceArrowTail,
+        ),
         select(vertexOffset.x.lessThan(0), clipSpaceStart, clipSpaceEnd),
       );
-
       return linePointVertex.add(clipSpaceVertexOffset);
     });
   }

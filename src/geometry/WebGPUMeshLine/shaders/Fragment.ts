@@ -111,6 +111,11 @@ export default class FragmentShader {
     arrow: UniformNode<number>,
   ) {
     this.node = Fn(() => {
+      const isArrowSegment = varyingProperty("float", "vIsArrowSegment");
+      If(isArrowSegment.and(float(arrow).not()), () => {
+        Discard();
+      });
+
       const startFragment = varyingProperty("vec2", "vStartFragment");
       const endFragment = varyingProperty("vec2", "vEndFragment");
 
