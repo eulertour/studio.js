@@ -338,5 +338,6 @@ export default class Scene implements StudioScene {
     this.sine.reshape(sinPoints(t));
 
     this.singleSegmentArrow.restyle({ strokeProportion: sinProportion });
+    // this.multiSegmentArrow.restyle({ strokeProportion: sinProportion });
   }
 }

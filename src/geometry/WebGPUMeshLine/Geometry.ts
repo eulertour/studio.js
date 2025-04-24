@@ -1,7 +1,8 @@
 import * as THREE from "three/webgpu";
 import { indexOrThrow, bufferIndexOrThrow } from "../../utils.js";
-import { UniformNode } from "three/webgpu";
 import { Uniforms } from "./index.js";
+
+const NUM_ARROW_SEGMENTS = 2;
 
 export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   // NOTE: The vertexOffset attribute is used to expand the segments
@@ -83,11 +84,11 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   }
 
   setPoints(points: Array<THREE.Vector3>, updateBounds = true) {
-    const sizeChanged = this.position.length / 12 + 1 !== points.length;
+    const sizeChanged = this.numPoints !== points.length;
     if (sizeChanged) {
       this.allocateNewBuffers(points.length - 1);
     } else {
-      this.setNeedsUpdate(false);
+      this.setVariableDataNeedsUpdate();
     }
     this.fillBuffers(points);
     if (updateBounds) {
@@ -126,18 +127,22 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.setAttribute("vertexOffset", vertexOffsetBuffer);
     this.setIndex(indexBuffer);
 
-    this.setNeedsUpdate(true);
+    this.setVariableDataNeedsUpdate();
+    this.setStaticDataNeedsUpdate();
   }
 
-  setNeedsUpdate(sizeChanged: boolean) {
+  setVariableDataNeedsUpdate() {
     this.getAttribute("position").needsUpdate = true;
     this.getAttribute("endPosition").needsUpdate = true;
     this.getAttribute("prevPosition").needsUpdate = true;
     this.getAttribute("nextPosition").needsUpdate = true;
     this.getAttribute("positionOffset").needsUpdate = true;
-    this.getAttribute("vertexOffset").needsUpdate = sizeChanged;
+  }
+
+  setStaticDataNeedsUpdate() {
+    this.getAttribute("vertexOffset").needsUpdate = true;
     if (this.index !== null) {
-      this.index.needsUpdate = sizeChanged;
+      this.index.needsUpdate = true;
     }
   }
 
