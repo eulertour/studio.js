@@ -2,7 +2,7 @@ import * as THREE from "three/webgpu";
 import { indexOrThrow, bufferIndexOrThrow } from "../../utils.js";
 import { Uniforms } from "./index.js";
 
-const NUM_ARROW_SEGMENTS = 2;
+const NUM_ARROW_SEGMENTS = 1;
 
 export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   // NOTE: The vertexOffset attribute is used to expand the segments
@@ -86,7 +86,9 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   setPoints(points: Array<THREE.Vector3>, updateBounds = true) {
     const sizeChanged = this.numPoints !== points.length;
     if (sizeChanged) {
-      this.allocateNewBuffers(points.length - 1);
+      const sentinel = points.pop();
+      this.allocateNewBuffers(points.length - 1 + NUM_ARROW_SEGMENTS);
+      points.push(sentinel);
     } else {
       this.setVariableDataNeedsUpdate();
     }
