@@ -33,10 +33,19 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   }
 
   getPoint(index: number, output: THREE.Vector3) {
-    const bufferOffset = 12 * index;
-    const x = bufferIndexOrThrow(this.position, bufferOffset);
-    const y = bufferIndexOrThrow(this.position, bufferOffset + 1);
-    const z = bufferIndexOrThrow(this.position, bufferOffset + 2);
+    let buffer, segmentIndex;
+    if (index === this.numPoints - 1) {
+      buffer = this.endPosition;
+      segmentIndex = index - 1;
+    } else {
+      buffer = this.position;
+      segmentIndex = index;
+    }
+
+    const bufferOffset = 12 * segmentIndex;
+    const x = bufferIndexOrThrow(buffer, bufferOffset);
+    const y = bufferIndexOrThrow(buffer, bufferOffset + 1);
+    const z = bufferIndexOrThrow(buffer, bufferOffset + 2);
     output.set(x, y, z);
   }
 
@@ -149,37 +158,28 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   }
 
   fillBuffers(points: THREE.Vector3[]) {
+    const sentinel = points.pop();
     this.fillPoints(points);
+    points.push(sentinel);
+
     this.fillVertexOffsets(points.length - 1);
     this.fillLengths(points);
     this.fillIndices(points.length - 1);
   }
 
   fillPoints(points: THREE.Vector3[]) {
-    for (let i = 0; i < points.length - 2; i++) {
+    for (let i = 0; i < points.length - 1; i++) {
       const startPoint = indexOrThrow(points, i);
       const endPoint = indexOrThrow(points, i + 1);
       const prevPoint = indexOrThrow(points, Math.max(i - 1, 0));
       const nextPoint = indexOrThrow(
         points,
-        Math.min(i + 2, points.length - 2),
+        Math.min(i + 2, points.length - 1),
       );
       this.writeVector3ToSegment(this.position, i, startPoint);
       this.writeVector3ToSegment(this.endPosition, i, endPoint);
       this.writeVector3ToSegment(this.prevPosition, i, prevPoint);
       this.writeVector3ToSegment(this.nextPosition, i, nextPoint);
-    }
-
-    if (this.isArrow) {
-      const segmentIndex = points.length - 2;
-      const startPoint = indexOrThrow(points, segmentIndex);
-      const endPoint = indexOrThrow(points, segmentIndex + 1);
-      const prevPoint = startPoint;
-      const nextPoint = endPoint;
-      this.writeVector3ToSegment(this.position, segmentIndex, startPoint);
-      this.writeVector3ToSegment(this.endPosition, segmentIndex, endPoint);
-      this.writeVector3ToSegment(this.prevPosition, segmentIndex, prevPoint);
-      this.writeVector3ToSegment(this.nextPosition, segmentIndex, nextPoint);
     }
   }
 
