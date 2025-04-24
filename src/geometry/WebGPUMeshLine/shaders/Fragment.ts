@@ -548,25 +548,29 @@ export default class FragmentShader {
         // });
       });
 
-      // const red = vec4(1, 0, 0, 1);
-      // const green = vec4(0, 1, 0, 1);
-      // const blue = vec4(0, 0, 1, 1);
-      // const purple = vec4(1, 0, 1, 1);
-      // // Arrows
-      // const testHalfWidth = float(4)
-      //   .mul(1 / 20)
-      //   .mul(1 / 2);
-      // const dx = offset
-      //   .mul(segmentDistancePerFragment)
-      //   .mul(sign(dot(rotate90(segmentVector), normalVector)));
-      // If(
-      //   float(offset)
-      //     .and(normalVector.x.abs().greaterThan(testHalfWidth))
-      //     .and(normalVector.y.equal(0)),
-      //   () => {
-      //     testColor.assign(varyingProperty("vec4", "vTestColor"));
-      //   },
-      // );
+      If(float(arrow).and(isArrowSegment.not()), () => {
+        const segmentFragmentsPerDistance = float(1).div(
+          segmentDistancePerFragment,
+        );
+        const arrowVector = varyingProperty("vec2", "vArrowTailFragment").sub(
+          varyingProperty("vec2", "vArrowTipFragment"),
+        );
+        const arrowTailFragment = varyingProperty(
+          "vec2",
+          "vArrowTipFragment",
+        ).add(arrowVector.mul(endProportion));
+        If(
+          segmentCoversFragment(
+            glFragCoord(),
+            varyingProperty("vec2", "vArrowTipFragment"),
+            arrowTailFragment,
+            halfWidth.mul(segmentFragmentsPerDistance),
+          ),
+          () => {
+            Discard();
+          },
+        );
+      });
 
       // return testColor;
       return vec4(color, opacity);

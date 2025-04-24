@@ -22,7 +22,6 @@ import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import { UNITS_PER_STROKE_WIDTH } from "../../../constants.js";
 import { UniformNode } from "three/webgpu";
 import { Vector3 } from "three";
-import { lerp } from "three/src/math/MathUtils.js";
 
 const SQRT_2 = 1.4142135624;
 const ARROW_WIDTH = 1;
@@ -166,6 +165,8 @@ export default class VertexShader {
       varyingProperty("float", "vArrowSegmentLength").assign(
         arrowTipPosition.distance(arrowTailPosition),
       );
+      varyingProperty("vec2", "vArrowTipFragment").assign(arrowTipFragment);
+      varyingProperty("vec2", "vArrowTailFragment").assign(arrowTailFragment);
 
       const tangent = select(
         isArrowSegment,
