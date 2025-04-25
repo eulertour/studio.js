@@ -102,7 +102,7 @@ const createUniforms = (
 export default class WebGPUMeshLine extends THREE.Mesh {
   constructor(points: Array<THREE.Vector3>, inputConfig: Config = {}) {
     const config = { ...defaultConfig, ...inputConfig };
-    const geometry = new WebGPUMeshLineGeometry(points, config.arrow);
+    const geometry = new WebGPUMeshLineGeometry(points);
     const uniforms = createUniforms(
       geometry,
       config.color,

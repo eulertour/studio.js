@@ -17,18 +17,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   vertexOffset = new Float32Array();
   indices = new Uint16Array();
 
-  constructor(
-    points: THREE.Vector3[],
-    public isArrow: boolean,
-  ) {
+  constructor(points: THREE.Vector3[]) {
     super();
-    // This segment has data but isn't rendered
-    const lastPoint = indexOrThrow(points, points.length - 1);
-    const newPoint = lastPoint
-      .clone()
-      .setX(lastPoint.x - 1)
-      .setY(lastPoint.y + 1);
-    points.push(newPoint);
     this.setPoints(points);
   }
 
@@ -95,9 +85,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   setPoints(points: Array<THREE.Vector3>, updateBounds = true) {
     const sizeChanged = this.numPoints !== points.length;
     if (sizeChanged) {
-      const sentinel = points.pop();
       this.allocateNewBuffers(points.length - 1 + NUM_ARROW_SEGMENTS);
-      points.push(sentinel);
     } else {
       this.setVariableDataNeedsUpdate();
     }
@@ -158,12 +146,10 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   }
 
   fillBuffers(points: THREE.Vector3[]) {
-    const sentinel = points.pop();
     this.fillPoints(points);
     this.fillVertexOffsets(points.length - 1, NUM_ARROW_SEGMENTS);
     this.fillOffsets(points);
     this.fillIndices(points.length - 1 + NUM_ARROW_SEGMENTS);
-    points.push(sentinel);
   }
 
   fillPoints(points: THREE.Vector3[]) {
