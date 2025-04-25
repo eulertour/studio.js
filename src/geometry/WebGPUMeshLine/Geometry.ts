@@ -55,7 +55,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     return this.positionOffset.length / 16 + 1 - 1;
   }
 
-  get length() {
+  get strokeLength() {
     // Exclude segments for the arrow
     const lastSegmentIndex = this.positionOffset.length / 16 - 2;
     // Return the endLength of the last segment
@@ -63,7 +63,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   }
 
   fillArrowSegmentData(proportion: number, output: Uniforms) {
-    const totalLength = this.length;
+    const totalLength = this.strokeLength;
     // PERF: This could be done with binary search.
     for (let i = 0; i < this.numPoints - 1; i++) {
       const startProportion = this.getOffset(i) / totalLength;

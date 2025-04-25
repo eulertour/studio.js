@@ -79,7 +79,7 @@ const createUniforms = (
     color: uniform(color),
     opacity: uniform(opacity),
     width: uniform(width),
-    length: uniform(geometry.length),
+    length: uniform(geometry.strokeLength),
     dashLength: uniform(dashLength),
     dashOffset: uniform(dashOffset),
     startProportion: uniform(startProportion),
