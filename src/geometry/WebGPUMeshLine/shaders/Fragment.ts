@@ -13,6 +13,7 @@ import {
   min,
   mul,
   or,
+  reciprocal,
   screenCoordinate,
   screenSize,
   select,
@@ -549,7 +550,7 @@ export default class FragmentShader {
       });
 
       If(float(arrow).and(isArrowSegment.not()), () => {
-        const segmentFragmentsPerDistance = float(1).div(
+        const segmentFragmentsPerDistance = reciprocal(
           segmentDistancePerFragment,
         );
         const arrowVector = varyingProperty("vec2", "vArrowTailFragment").sub(

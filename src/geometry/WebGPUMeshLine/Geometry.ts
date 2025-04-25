@@ -160,15 +160,16 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   fillBuffers(points: THREE.Vector3[]) {
     const sentinel = points.pop();
     this.fillPoints(points);
+    this.fillVertexOffsets(points.length - 1, NUM_ARROW_SEGMENTS);
     points.push(sentinel);
 
-    this.fillVertexOffsets(points.length - 1);
     this.fillLengths(points);
     this.fillIndices(points.length - 1);
   }
 
   fillPoints(points: THREE.Vector3[]) {
-    for (let i = 0; i < points.length - 1; i++) {
+    const numStrokeSegments = points.length - 1;
+    for (let i = 0; i < numStrokeSegments; i++) {
       const startPoint = indexOrThrow(points, i);
       const endPoint = indexOrThrow(points, i + 1);
       const prevPoint = indexOrThrow(points, Math.max(i - 1, 0));
@@ -181,6 +182,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       this.writeVector3ToSegment(this.prevPosition, i, prevPoint);
       this.writeVector3ToSegment(this.nextPosition, i, nextPoint);
     }
+    // NOTE: Arrow segments are skipped since they don't use this
+    // data.
   }
 
   writeVector3ToSegment(
@@ -240,9 +243,9 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   //   |/               \|
   //   *-----------------*--> x
   //  0, (-1, -1)         2, (1, -1)
-  fillVertexOffsets(segmentCount: number) {
+  fillVertexOffsets(numStrokeSegments: number, numArrowSegments: number) {
     let i = 0;
-    for (i = 0; i < segmentCount - 1; i++) {
+    for (i = 0; i < numStrokeSegments; i++) {
       const arrayOffset = 8 * i;
       this.vertexOffset[arrayOffset] = -1;
       this.vertexOffset[arrayOffset + 1] = -1;
@@ -254,15 +257,19 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       this.vertexOffset[arrayOffset + 7] = 1;
     }
 
-    const arrayOffset = 8 * i;
-    this.vertexOffset[arrayOffset] = -2;
-    this.vertexOffset[arrayOffset + 1] = -2;
-    this.vertexOffset[arrayOffset + 2] = -2;
-    this.vertexOffset[arrayOffset + 3] = 2;
-    this.vertexOffset[arrayOffset + 4] = 2;
-    this.vertexOffset[arrayOffset + 5] = -2;
-    this.vertexOffset[arrayOffset + 6] = 2;
-    this.vertexOffset[arrayOffset + 7] = 2;
+    // NOTE: Offsets are scaled by 2 for arrow segments to
+    // identify them in the vertex shader.
+    for (let j = 0; j < numArrowSegments; j++) {
+      const arrayOffset = 8 * (i + j);
+      this.vertexOffset[arrayOffset] = -2;
+      this.vertexOffset[arrayOffset + 1] = -2;
+      this.vertexOffset[arrayOffset + 2] = -2;
+      this.vertexOffset[arrayOffset + 3] = 2;
+      this.vertexOffset[arrayOffset + 4] = 2;
+      this.vertexOffset[arrayOffset + 5] = -2;
+      this.vertexOffset[arrayOffset + 6] = 2;
+      this.vertexOffset[arrayOffset + 7] = 2;
+    }
   }
 
   // NOTE: The indices are chosen to construct the segment
