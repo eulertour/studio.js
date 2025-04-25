@@ -162,9 +162,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     this.fillPoints(points);
     this.fillVertexOffsets(points.length - 1, NUM_ARROW_SEGMENTS);
     this.fillOffsets(points);
+    this.fillIndices(points.length - 1 + NUM_ARROW_SEGMENTS);
     points.push(sentinel);
-
-    this.fillIndices(points.length - 1);
   }
 
   fillPoints(points: THREE.Vector3[]) {
