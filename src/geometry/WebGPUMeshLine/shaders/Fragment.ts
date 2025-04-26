@@ -4,7 +4,6 @@ import {
   If,
   ShaderNodeObject,
   abs,
-  add,
   attribute,
   div,
   dot,
@@ -549,23 +548,45 @@ export default class FragmentShader {
         // });
       });
 
+      // Exclude arrow segments from the stroke segment
+      const segmentFragmentsPerDistance = reciprocal(
+        segmentDistancePerFragment,
+      );
+      const arrowTopVector = varyingProperty(
+        "vec2",
+        "vArrowTopTailFragment",
+      ).sub(varyingProperty("vec2", "vArrowTipFragment"));
+      const arrowTopTailFragment = varyingProperty(
+        "vec2",
+        "vArrowTipFragment",
+      ).add(arrowTopVector.mul(endProportion));
+
       If(float(arrow).and(isArrowSegment.not()), () => {
-        const segmentFragmentsPerDistance = reciprocal(
-          segmentDistancePerFragment,
-        );
-        const arrowVector = varyingProperty(
-          "vec2",
-          "vArrowTopTailFragment",
-        ).sub(varyingProperty("vec2", "vArrowTipFragment"));
-        const arrowTailFragment = varyingProperty(
-          "vec2",
-          "vArrowTipFragment",
-        ).add(arrowVector.mul(endProportion));
         If(
           segmentCoversFragment(
             glFragCoord(),
             varyingProperty("vec2", "vArrowTipFragment"),
-            arrowTailFragment,
+            arrowTopTailFragment,
+            halfWidth.mul(segmentFragmentsPerDistance),
+          ),
+          () => {
+            Discard();
+          },
+        );
+
+        const arrowBottomVector = varyingProperty(
+          "vec2",
+          "vArrowBottomTailFragment",
+        ).sub(varyingProperty("vec2", "vArrowTipFragment"));
+        const arrowBottomTailFragment = varyingProperty(
+          "vec2",
+          "vArrowTipFragment",
+        ).add(arrowBottomVector.mul(endProportion));
+        If(
+          segmentCoversFragment(
+            glFragCoord(),
+            varyingProperty("vec2", "vArrowTipFragment"),
+            arrowBottomTailFragment,
             halfWidth.mul(segmentFragmentsPerDistance),
           ),
           () => {
@@ -574,8 +595,29 @@ export default class FragmentShader {
         );
       });
 
-      // return testColor;
-      return vec4(color, opacity);
+      // Exclude the top arrow segment from the bottom stroke segment
+      const testColor = vec4(color, opacity).toVar();
+      If(
+        float(arrow).and(
+          varyingProperty("float", "vIsBottomArrowSegment").greaterThan(0),
+        ),
+        () => {
+          If(
+            segmentCoversFragment(
+              glFragCoord(),
+              varyingProperty("vec2", "vArrowTipFragment"),
+              arrowTopTailFragment,
+              halfWidth.mul(segmentFragmentsPerDistance),
+            ),
+            () => {
+              Discard();
+            },
+          );
+        },
+      );
+
+      return testColor;
+      // return vec4(color, opacity);
     });
   }
 

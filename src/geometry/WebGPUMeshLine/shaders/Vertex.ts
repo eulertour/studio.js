@@ -190,6 +190,10 @@ export default class VertexShader {
       varyingProperty("float", "vIsArrowSegment").assign(
         isTopArrowSegment.or(isBottomArrowSegment),
       );
+      varyingProperty("float", "vIsTopArrowSegment").assign(isTopArrowSegment);
+      varyingProperty("float", "vIsBottomArrowSegment").assign(
+        isBottomArrowSegment,
+      );
       varyingProperty("float", "vArrowSegmentLength").assign(
         arrowTipPosition.distance(arrowTopTailPosition),
       );
