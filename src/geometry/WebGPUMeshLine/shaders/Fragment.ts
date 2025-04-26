@@ -553,9 +553,10 @@ export default class FragmentShader {
         const segmentFragmentsPerDistance = reciprocal(
           segmentDistancePerFragment,
         );
-        const arrowVector = varyingProperty("vec2", "vArrowTailFragment").sub(
-          varyingProperty("vec2", "vArrowTipFragment"),
-        );
+        const arrowVector = varyingProperty(
+          "vec2",
+          "vArrowTopTailFragment",
+        ).sub(varyingProperty("vec2", "vArrowTipFragment"));
         const arrowTailFragment = varyingProperty(
           "vec2",
           "vArrowTipFragment",

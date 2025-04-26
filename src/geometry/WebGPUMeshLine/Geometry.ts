@@ -244,18 +244,19 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
       this.vertexOffset[arrayOffset + 7] = 1;
     }
 
-    // NOTE: Offsets are scaled by 2 for arrow segments to
-    // identify them in the vertex shader.
+    // NOTE: Offsets are scaled by 2 or 3 for the top and bottom
+    // arrow segments, respectively.
     for (let j = 0; j < NUM_ARROW_SEGMENTS; j++) {
       const arrayOffset = 8 * (i + j);
-      this.vertexOffset[arrayOffset] = -2;
-      this.vertexOffset[arrayOffset + 1] = -2;
-      this.vertexOffset[arrayOffset + 2] = -2;
-      this.vertexOffset[arrayOffset + 3] = 2;
-      this.vertexOffset[arrayOffset + 4] = 2;
-      this.vertexOffset[arrayOffset + 5] = -2;
-      this.vertexOffset[arrayOffset + 6] = 2;
-      this.vertexOffset[arrayOffset + 7] = 2;
+      const scale = j + 2;
+      this.vertexOffset[arrayOffset] = -scale;
+      this.vertexOffset[arrayOffset + 1] = -scale;
+      this.vertexOffset[arrayOffset + 2] = -scale;
+      this.vertexOffset[arrayOffset + 3] = scale;
+      this.vertexOffset[arrayOffset + 4] = scale;
+      this.vertexOffset[arrayOffset + 5] = -scale;
+      this.vertexOffset[arrayOffset + 6] = scale;
+      this.vertexOffset[arrayOffset + 7] = scale;
     }
   }
 

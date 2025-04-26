@@ -93,8 +93,11 @@ export default class VertexShader {
       const arrowTipPosition = vec3(arrowSegmentStart).add(
         arrowSegmentVector.mul(arrowSegmentProportion),
       );
-      const arrowTailPosition = arrowTipPosition
+      const arrowTopTailPosition = arrowTipPosition
         .add(arrowTailUnitOffset.mul(ARROW_WIDTH))
+        .add(arrowSegmentVector.negate().normalize().mul(ARROW_LENGTH));
+      const arrowBottomTailPosition = arrowTipPosition
+        .add(arrowTailUnitOffset.mul(-ARROW_WIDTH))
         .add(arrowSegmentVector.negate().normalize().mul(ARROW_LENGTH));
 
       const modelViewProjection = cameraProjectionMatrix.mul(modelViewMatrix);
@@ -106,12 +109,20 @@ export default class VertexShader {
           vec4(attribute("nextPosition"), 1),
         ),
       );
-      const clipSpaceSegments = modelViewProjection.mul(
+      const clipSpaceFirstSegment = modelViewProjection.mul(
         mat4(
           vec4(firstPosition, 1),
           vec4(secondPosition, 1),
+          vec4(0, 0, 0, 0),
+          vec4(0, 0, 0, 0),
+        ),
+      );
+      const clipSpaceArrowPoints = modelViewProjection.mul(
+        mat4(
           vec4(arrowTipPosition, 1),
-          vec4(arrowTailPosition, 1),
+          vec4(arrowTopTailPosition, 1),
+          vec4(arrowBottomTailPosition, 1),
+          vec4(0, 0, 0, 0),
         ),
       );
 
@@ -119,10 +130,11 @@ export default class VertexShader {
       const clipSpaceEnd = vec4(clipSpaceLinePoints[1]);
       const clipSpacePrevious = vec4(clipSpaceLinePoints[2]);
       const clipSpaceNext = vec4(clipSpaceLinePoints[3]);
-      const clipSpaceFirstPosition = vec4(clipSpaceSegments[0]);
-      const clipSpaceSecondPosition = vec4(clipSpaceSegments[1]);
-      const clipSpaceArrowTip = vec4(clipSpaceSegments[2]);
-      const clipSpaceArrowTail = vec4(clipSpaceSegments[3]);
+      const clipSpaceFirstPosition = vec4(clipSpaceFirstSegment[0]);
+      const clipSpaceSecondPosition = vec4(clipSpaceFirstSegment[1]);
+      const clipSpaceArrowTip = vec4(clipSpaceArrowPoints[0]);
+      const clipSpaceTopArrowTail = vec4(clipSpaceArrowPoints[1]);
+      const clipSpaceBottomArrowTail = vec4(clipSpaceArrowPoints[2]);
 
       const startFragment = clipToScreenSpace(clipSpaceStart);
       const endFragment = clipToScreenSpace(clipSpaceEnd);
@@ -131,28 +143,42 @@ export default class VertexShader {
       const firstFragment = clipToScreenSpace(clipSpaceFirstPosition);
       const secondFragment = clipToScreenSpace(clipSpaceSecondPosition);
       const arrowTipFragment = clipToScreenSpace(clipSpaceArrowTip);
-      const arrowTailFragment = clipToScreenSpace(clipSpaceArrowTail);
+      const arrowTopTailFragment = clipToScreenSpace(clipSpaceTopArrowTail);
+      const arrowBottomTailFragment = clipToScreenSpace(
+        clipSpaceBottomArrowTail,
+      );
 
       // NOTE: This is the vector offset from the start or end of the
       // current segment to a corner of the quadrilateral containing
-      // it (scaled by 2 for segments that compose an arrow). It's
-      // represented by the diagonal lines in the diagram below. The
-      // components tangent and normal to the segment vector are equal
-      // and each have length 1 (or 2). The length of the vector is
-      // sqrt(2).
+      // it (scaled by 2 or 3 for segments that represent the top or
+      // bottom of an arrow, respectively). This vector is represented
+      // by the diagonal lines in the diagram below. The components
+      // tangent and normal to the segment vector are equal. These
+      // components have length 1 for segments making up the stroke and
+      // 2 or 3 for segments making up the arrow. The length of the
+      // vector is a multiple of sqrt(2).
       // *-------------------*
       // |\                 /|
       // | *---------------* |
       // |/                 \|
       // *-------------------*
       const rawVertexOffset = attribute("vertexOffset");
-      const isArrowSegment = rawVertexOffset.lengthSq().greaterThan(2);
+      const isTopArrowSegment = rawVertexOffset.x.abs().equal(2);
+      const isBottomArrowSegment = rawVertexOffset.x.abs().equal(3);
 
       varyingProperty("vec2", "vStartFragment").assign(
-        select(isArrowSegment, arrowTipFragment, startFragment),
+        select(
+          isTopArrowSegment.or(isBottomArrowSegment),
+          arrowTipFragment,
+          startFragment,
+        ),
       );
       varyingProperty("vec2", "vEndFragment").assign(
-        select(isArrowSegment, arrowTailFragment, endFragment),
+        select(
+          isTopArrowSegment,
+          arrowTopTailFragment,
+          select(isBottomArrowSegment, arrowBottomTailFragment, endFragment),
+        ),
       );
       varyingProperty("vec2", "vPreviousFragment").assign(previousFragment);
       varyingProperty("vec2", "vNextFragment").assign(nextFragment);
@@ -161,23 +187,34 @@ export default class VertexShader {
       varyingProperty("float", "vFirstSegmentLength").assign(
         distance(firstPosition, secondPosition),
       );
-      varyingProperty("float", "vIsArrowSegment").assign(isArrowSegment);
+      varyingProperty("float", "vIsArrowSegment").assign(
+        isTopArrowSegment.or(isBottomArrowSegment),
+      );
       varyingProperty("float", "vArrowSegmentLength").assign(
-        arrowTipPosition.distance(arrowTailPosition),
+        arrowTipPosition.distance(arrowTopTailPosition),
       );
       varyingProperty("vec2", "vArrowTipFragment").assign(arrowTipFragment);
-      varyingProperty("vec2", "vArrowTailFragment").assign(arrowTailFragment);
+      varyingProperty("vec2", "vArrowTopTailFragment").assign(
+        arrowTopTailFragment,
+      );
+      varyingProperty("vec2", "vArrowBottomTailFragment").assign(
+        arrowBottomTailFragment,
+      );
 
       const tangent = select(
-        isArrowSegment,
-        arrowTailFragment.sub(arrowTipFragment),
-        endFragment.sub(startFragment),
+        isTopArrowSegment,
+        arrowTopTailFragment.sub(arrowTipFragment),
+        select(
+          isBottomArrowSegment,
+          arrowBottomTailFragment.sub(arrowTipFragment),
+          endFragment.sub(startFragment),
+        ),
       );
       const unitTangent = normalize(tangent);
       const unitNormal = rotate90(unitTangent);
       varyingProperty("vec4", "vTestColor").assign(vec4(1, 0, 0, 1));
 
-      If(isArrowSegment, () => {
+      If(isTopArrowSegment, () => {
         varyingProperty("vec4", "vTestColor").assign(vec4(0, 0, 1, 1));
       });
 
@@ -193,13 +230,21 @@ export default class VertexShader {
       );
 
       const linePointVertex = select(
-        isArrowSegment,
+        isTopArrowSegment,
         select(
           vertexOffset.x.lessThan(0),
           clipSpaceArrowTip,
-          clipSpaceArrowTail,
+          clipSpaceTopArrowTail,
         ),
-        select(vertexOffset.x.lessThan(0), clipSpaceStart, clipSpaceEnd),
+        select(
+          isBottomArrowSegment,
+          select(
+            vertexOffset.x.lessThan(0),
+            clipSpaceArrowTip,
+            clipSpaceBottomArrowTail,
+          ),
+          select(vertexOffset.x.lessThan(0), clipSpaceStart, clipSpaceEnd),
+        ),
       );
       return linePointVertex.add(clipSpaceVertexOffset);
     });
