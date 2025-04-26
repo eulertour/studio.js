@@ -2,7 +2,7 @@ import * as THREE from "three/webgpu";
 import { indexOrThrow, bufferIndexOrThrow } from "../../utils.js";
 import { Uniforms } from "./index.js";
 
-const NUM_ARROW_SEGMENTS = 1;
+const NUM_ARROW_SEGMENTS = 2;
 
 export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   // NOTE: The vertexOffset attribute is used to expand the segments
@@ -24,7 +24,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
 
   getPoint(index: number, output: THREE.Vector3) {
     let buffer, segmentIndex;
-    if (index === this.numPoints - 1) {
+    const numStrokeSegments = this.numStrokePoints - 1;
+    if (index === numStrokeSegments) {
       buffer = this.endPosition;
       segmentIndex = index - 1;
     } else {
@@ -40,8 +41,8 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   }
 
   getOffset(index: number) {
-    // Exclude segments for the arrow
-    const lastSegmentIndex = this.positionOffset.length / 16 - 2;
+    const numStrokeSegments = this.numStrokePoints - 1;
+    const lastSegmentIndex = numStrokeSegments - 1;
     if (index === lastSegmentIndex + 1) {
       return bufferIndexOrThrow(this.positionOffset, 16 * lastSegmentIndex + 1);
     } else {
@@ -50,22 +51,21 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     }
   }
 
-  get numPoints() {
-    // Exclude segments for the arrow
-    return this.positionOffset.length / 16 + 1 - 1;
+  get numStrokePoints() {
+    const numSegments = this.positionOffset.length / 16;
+    return numSegments - NUM_ARROW_SEGMENTS + 1;
   }
 
   get strokeLength() {
-    // Exclude segments for the arrow
-    const lastSegmentIndex = this.positionOffset.length / 16 - 2;
-    // Return the endLength of the last segment
+    const numStrokeSegments = this.numStrokePoints - 1;
+    const lastSegmentIndex = numStrokeSegments - 1;
     return bufferIndexOrThrow(this.positionOffset, 16 * lastSegmentIndex + 1);
   }
 
   fillArrowSegmentData(proportion: number, output: Uniforms) {
     const totalLength = this.strokeLength;
     // PERF: This could be done with binary search.
-    for (let i = 0; i < this.numPoints - 1; i++) {
+    for (let i = 0; i < this.numStrokePoints - 1; i++) {
       const startProportion = this.getOffset(i) / totalLength;
       const endProportion = this.getOffset(i + 1) / totalLength;
       if (startProportion <= proportion && proportion <= endProportion) {
@@ -83,7 +83,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
   }
 
   setPoints(points: Array<THREE.Vector3>, updateBounds = true) {
-    const sizeChanged = this.numPoints !== points.length;
+    const sizeChanged = this.numStrokePoints !== points.length;
     if (sizeChanged) {
       this.allocateNewBuffers(points.length - 1);
     } else {
