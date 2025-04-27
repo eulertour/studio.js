@@ -152,7 +152,7 @@ export default class FragmentShader {
         strokeEnd,
       );
       const referenceDashData = select(
-        float(dashLength).equal(0),
+        float(dashLength).equal(0).or(isArrowSegment),
         vec4(0, 0, strokeOrArrowEnd, 0),
         this.getReferenceDashData(offset, dashOffset, dashLength),
       );

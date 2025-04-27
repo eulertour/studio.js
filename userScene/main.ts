@@ -40,11 +40,12 @@ export default class Scene implements StudioScene {
   dashedStaticClosed: THREE.Group;
   solidStaticClosed: THREE.Group;
 
-  staticSolidArrow: Geometry.Line;
-  staticDashedArrow: Geometry.Line;
-  staticDashedMovingArrow: Geometry.Line;
-  singleSegmentArrow: Geometry.Line;
-  multiSegmentArrow: Geometry.Polyline;
+  staticSolidArrow: Geometry.Polyline;
+  staticDashedArrow: Geometry.Polyline;
+  staticDashedMovingArrow: Geometry.Polyline;
+  drawnSolidArrow: Geometry.Polyline;
+  drawnDashedArrow: Geometry.Polyline;
+  drawnDashedMovingArrow: Geometry.Polyline;
 
   constructor(
     public scene: THREE.Scene,
@@ -216,72 +217,74 @@ export default class Scene implements StudioScene {
     const withArrow = new THREE.Group();
     withArrow.position.set(-2, 0, 0);
 
-    this.staticSolidArrow = new Geometry.Line(
-      new THREE.Vector3(-1, 0, 0),
-      new THREE.Vector3(1, 0, 0),
-      {
-        strokeColor: new THREE.Color("blue"),
-        strokeOpacity: 0.85,
-        strokeArrow: true,
-      },
-    );
+    const zigZagPoints = [
+      new THREE.Vector3(-1.5, 0.35, 0),
+      new THREE.Vector3(-0.75, 0.35, 0),
+      new THREE.Vector3(-0.75, -0.35, 0),
+      new THREE.Vector3(0, -0.35, 0),
+      new THREE.Vector3(0, 0.35, 0),
+      new THREE.Vector3(0.75, 0.35, 0),
+      new THREE.Vector3(0.75, -0.35, 0),
+      new THREE.Vector3(1.5, -0.35, 0),
+    ];
 
-    this.staticDashedArrow = new Geometry.Line(
-      new THREE.Vector3(-1, 0, 0),
-      new THREE.Vector3(1, 0, 0),
-      {
-        strokeColor: new THREE.Color("blue"),
-        strokeOpacity: 0.85,
-        strokeArrow: true,
-        strokeDashLength: 0.5,
-      },
-    );
+    this.staticSolidArrow = new Geometry.Polyline(zigZagPoints, {
+      strokeColor: new THREE.Color("blue"),
+      strokeOpacity: 0.85,
+      strokeArrow: true,
+    });
 
-    this.staticDashedMovingArrow = new Geometry.Line(
-      new THREE.Vector3(-1, 0, 0),
-      new THREE.Vector3(1, 0, 0),
-      {
-        strokeColor: new THREE.Color("blue"),
-        strokeOpacity: 0.85,
-        strokeArrow: true,
-        strokeDashLength: 0.5,
-        strokeDashSpeed: 1,
-      },
-    );
+    this.staticDashedArrow = new Geometry.Polyline(zigZagPoints, {
+      strokeColor: new THREE.Color("blue"),
+      strokeOpacity: 0.85,
+      strokeArrow: true,
+      strokeDashLength: 0.45,
+    });
 
-    this.singleSegmentArrow = new Geometry.Line(
-      new THREE.Vector3(-1, 0, 0),
-      new THREE.Vector3(1, 0, 0),
-      {
-        strokeColor: new THREE.Color("blue"),
-        strokeOpacity: 0.85,
-        strokeArrow: true,
-      },
-    );
-    this.multiSegmentArrow = new Geometry.Polyline(
-      [
-        new THREE.Vector3(-4, 0, 0),
-        new THREE.Vector3(-4, -1, 0),
-        new THREE.Vector3(4.5, -1, 0),
-      ],
-      {
-        strokeColor: new THREE.Color("orange"),
-        strokeOpacity: 0.85,
-        strokeArrow: true,
-      },
-    );
+    this.staticDashedMovingArrow = new Geometry.Polyline(zigZagPoints, {
+      strokeColor: new THREE.Color("blue"),
+      strokeOpacity: 0.85,
+      strokeArrow: true,
+      strokeDashLength: 0.45,
+      strokeDashSpeed: 1,
+    });
 
-    this.staticSolidArrow.position.set(-5, 1, 0);
+    this.drawnSolidArrow = new Geometry.Polyline(zigZagPoints, {
+      strokeColor: new THREE.Color("blue"),
+      strokeOpacity: 0.85,
+      strokeArrow: true,
+    });
+
+    this.drawnDashedArrow = new Geometry.Polyline(zigZagPoints, {
+      strokeColor: new THREE.Color("blue"),
+      strokeOpacity: 0.85,
+      strokeArrow: true,
+      strokeDashLength: 0.45,
+    });
+
+    this.drawnDashedMovingArrow = new Geometry.Polyline(zigZagPoints, {
+      strokeColor: new THREE.Color("blue"),
+      strokeOpacity: 0.85,
+      strokeArrow: true,
+      strokeDashLength: 0.45,
+      strokeDashSpeed: 1,
+    });
+
+    this.staticSolidArrow.position.set(-5, 1.25, 0);
     this.staticDashedArrow.position.set(-5, 0, 0);
-    this.staticDashedMovingArrow.position.set(-5, -1, 0);
+    this.staticDashedMovingArrow.position.set(-5, -1.25, 0);
+    this.drawnSolidArrow.position.set(0, 1.25, 0);
+    this.drawnDashedArrow.position.set(0, 0, 0);
+    this.drawnDashedMovingArrow.position.set(0, -1.25, 0);
     withArrow.add(
       this.staticSolidArrow,
       this.staticDashedArrow,
       this.staticDashedMovingArrow,
-      // this.singleSegmentArrow,
-      // this.multiSegmentArrow,
+      this.drawnSolidArrow,
+      this.drawnDashedArrow,
+      this.drawnDashedMovingArrow,
     );
-    withArrow.position.set(0, -2, 0);
+    withArrow.position.set(0, -1.75, 0);
     scene.add(withArrow);
 
     this.animations = [];
@@ -382,7 +385,8 @@ export default class Scene implements StudioScene {
 
     this.sine.reshape(sinPoints(t));
 
-    this.singleSegmentArrow.restyle({ strokeProportion: sinProportion });
-    this.multiSegmentArrow.restyle({ strokeProportion: sinProportion });
+    this.drawnSolidArrow.restyle({ strokeProportion: sinProportion });
+    this.drawnDashedArrow.restyle({ strokeProportion: sinProportion });
+    this.drawnDashedMovingArrow.restyle({ strokeProportion: sinProportion });
   }
 }
