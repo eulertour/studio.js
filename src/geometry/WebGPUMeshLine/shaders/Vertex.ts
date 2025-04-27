@@ -6,6 +6,7 @@ import {
   cameraProjectionMatrix,
   cameraWorldMatrix,
   distance,
+  float,
   mat2,
   mat4,
   modelViewMatrix,
@@ -72,6 +73,8 @@ export default class VertexShader {
     arrowSegmentStart: UniformNode<Vector3>,
     arrowSegmentEnd: UniformNode<Vector3>,
     arrowSegmentProportion: UniformNode<number>,
+    arrowLength: UniformNode<number>,
+    arrowWidth: UniformNode<number>,
   ) {
     this.node = Fn(() => {
       const cameraWorldMatrixZColumn = cameraWorldMatrix[2];
@@ -94,11 +97,11 @@ export default class VertexShader {
         arrowSegmentVector.mul(arrowSegmentProportion),
       );
       const arrowTopTailPosition = arrowTipPosition
-        .add(arrowTailUnitOffset.mul(ARROW_WIDTH))
-        .add(arrowSegmentVector.negate().normalize().mul(ARROW_LENGTH));
+        .add(arrowTailUnitOffset.mul(arrowWidth))
+        .add(arrowSegmentVector.negate().normalize().mul(arrowLength));
       const arrowBottomTailPosition = arrowTipPosition
-        .add(arrowTailUnitOffset.mul(-ARROW_WIDTH))
-        .add(arrowSegmentVector.negate().normalize().mul(ARROW_LENGTH));
+        .add(arrowTailUnitOffset.mul(float(arrowWidth).negate()))
+        .add(arrowSegmentVector.negate().normalize().mul(arrowLength));
 
       const modelViewProjection = cameraProjectionMatrix.mul(modelViewMatrix);
       const clipSpaceLinePoints = modelViewProjection.mul(

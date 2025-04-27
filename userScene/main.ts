@@ -40,6 +40,9 @@ export default class Scene implements StudioScene {
   dashedStaticClosed: THREE.Group;
   solidStaticClosed: THREE.Group;
 
+  staticSolidArrow: Geometry.Line;
+  staticDashedArrow: Geometry.Line;
+  staticDashedMovingArrow: Geometry.Line;
   singleSegmentArrow: Geometry.Line;
   multiSegmentArrow: Geometry.Polyline;
 
@@ -213,9 +216,42 @@ export default class Scene implements StudioScene {
     const withArrow = new THREE.Group();
     withArrow.position.set(-2, 0, 0);
 
+    this.staticSolidArrow = new Geometry.Line(
+      new THREE.Vector3(-1, 0, 0),
+      new THREE.Vector3(1, 0, 0),
+      {
+        strokeColor: new THREE.Color("blue"),
+        strokeOpacity: 0.85,
+        strokeArrow: true,
+      },
+    );
+
+    this.staticDashedArrow = new Geometry.Line(
+      new THREE.Vector3(-1, 0, 0),
+      new THREE.Vector3(1, 0, 0),
+      {
+        strokeColor: new THREE.Color("blue"),
+        strokeOpacity: 0.85,
+        strokeArrow: true,
+        strokeDashLength: 0.5,
+      },
+    );
+
+    this.staticDashedMovingArrow = new Geometry.Line(
+      new THREE.Vector3(-1, 0, 0),
+      new THREE.Vector3(1, 0, 0),
+      {
+        strokeColor: new THREE.Color("blue"),
+        strokeOpacity: 0.85,
+        strokeArrow: true,
+        strokeDashLength: 0.5,
+        strokeDashSpeed: 1,
+      },
+    );
+
     this.singleSegmentArrow = new Geometry.Line(
-      new THREE.Vector3(-3, 0, 0),
-      new THREE.Vector3(3, 0, 0),
+      new THREE.Vector3(-1, 0, 0),
+      new THREE.Vector3(1, 0, 0),
       {
         strokeColor: new THREE.Color("blue"),
         strokeOpacity: 0.85,
@@ -235,7 +271,16 @@ export default class Scene implements StudioScene {
       },
     );
 
-    withArrow.add(this.singleSegmentArrow, this.multiSegmentArrow);
+    this.staticSolidArrow.position.set(-5, 1, 0);
+    this.staticDashedArrow.position.set(-5, 0, 0);
+    this.staticDashedMovingArrow.position.set(-5, -1, 0);
+    withArrow.add(
+      this.staticSolidArrow,
+      this.staticDashedArrow,
+      this.staticDashedMovingArrow,
+      // this.singleSegmentArrow,
+      // this.multiSegmentArrow,
+    );
     withArrow.position.set(0, -2, 0);
     scene.add(withArrow);
 

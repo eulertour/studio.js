@@ -1,9 +1,7 @@
 import * as THREE from "three/webgpu";
-import { uniform } from "three/tsl";
 import VertexShader from "./shaders/Vertex.js";
 import FragmentShader from "./shaders/Fragment.js";
 import DashAtlas from "./DashAtlas.js";
-import { indexOrThrow } from "../../utils.js";
 import { Uniforms } from "./index.js";
 
 export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
@@ -32,6 +30,8 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       this.uniforms.arrowSegmentStart,
       this.uniforms.arrowSegmentEnd,
       this.uniforms.arrowSegmentProportion,
+      this.uniforms.arrowWidth,
+      this.uniforms.arrowLength,
     ).node();
     this.fragmentNode = new FragmentShader(
       this.dashAtlas,

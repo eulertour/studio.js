@@ -69,6 +69,9 @@ export default abstract class Shape extends THREE.Group {
         startProportion: config.strokeStartProportion,
         endProportion: config.strokeEndProportion,
         arrow: config.strokeArrow,
+        drawArrow: config.strokeArrow,
+        arrowWidth: config.strokeArrowWidth,
+        arrowLength: config.strokeArrowLength,
       });
       this.add(this.stroke);
     }
@@ -115,13 +118,15 @@ export default abstract class Shape extends THREE.Group {
       strokeColor: new THREE.Color(0x000000),
       strokeOpacity: 1.0,
       strokeWidth: 4,
+      strokeDashed: false,
       strokeDashLength: 0.0,
       strokeDashSpeed: 0,
       strokeDashOffset: 0,
       strokeStartProportion: 0,
       strokeEndProportion: 1,
       strokeArrow: false,
-      dashed: false,
+      strokeArrowWidth: 0.35,
+      strokeArrowLength: 0.35,
     };
   }
 

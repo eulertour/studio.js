@@ -17,18 +17,26 @@ export type StrokeProportionConfig =
         }
     );
 
+export type StrokeArrowConfig =
+  | boolean
+  | {
+      width?: number;
+      length?: number;
+      draw?: boolean;
+    };
+
 export type Style = {
   fillColor?: THREE.Color;
   fillOpacity?: number;
   strokeColor?: THREE.Color;
   strokeOpacity?: number;
   strokeWidth?: number;
+  strokeDash?: boolean;
   strokeDashLength?: number;
   strokeDashSpeed?: number;
   strokeDashOffset?: number;
   strokeProportion?: StrokeProportionConfig;
-  strokeArrow?: boolean;
-  dashed?: boolean;
+  strokeArrow?: StrokeArrowConfig;
 };
 
 type StyleData = {
@@ -43,6 +51,9 @@ type StyleData = {
   strokeStartProportion?: number;
   strokeEndProportion?: number;
   strokeArrow?: boolean;
+  strokeDrawArrow?: boolean;
+  strokeArrowWidth?: number;
+  strokeArrowLength?: number;
 };
 
 export const strokeProportionConfigToData = (
@@ -85,6 +96,31 @@ export const strokeProportionConfigToData = (
   }
 };
 
+const strokeArrowConfigToData = (
+  strokeArrowConfig: StrokeArrowConfig,
+): {
+  strokeArrow: boolean;
+  strokeDrawArrow: boolean;
+  strokeArrowWidth: number;
+  strokeArrowLength: number;
+} => {
+  if (typeof strokeArrowConfig === "boolean") {
+    return {
+      strokeArrow: strokeArrowConfig,
+      strokeDrawArrow: true,
+      strokeArrowWidth: 0.35,
+      strokeArrowLength: 0.35,
+    };
+  }
+  const { width, length, draw } = strokeArrowConfig;
+  return {
+    strokeArrow: true,
+    strokeDrawArrow: draw ?? true,
+    strokeArrowWidth: width ?? 0.35,
+    strokeArrowLength: length ?? 0.35,
+  };
+};
+
 export const styleToData = (style: Style): StyleData => {
   const data: StyleData = {};
   if (style.fillColor !== undefined) {
@@ -118,7 +154,16 @@ export const styleToData = (style: Style): StyleData => {
     data.strokeEndProportion = strokeEndProportion;
   }
   if (style.strokeArrow !== undefined) {
-    data.strokeArrow = style.strokeArrow;
+    const {
+      strokeArrow,
+      strokeDrawArrow,
+      strokeArrowWidth,
+      strokeArrowLength,
+    } = strokeArrowConfigToData(style.strokeArrow);
+    data.strokeArrow = strokeArrow;
+    data.strokeDrawArrow = strokeDrawArrow;
+    data.strokeArrowWidth = strokeArrowWidth;
+    data.strokeArrowLength = strokeArrowLength;
   }
   return data;
 };
