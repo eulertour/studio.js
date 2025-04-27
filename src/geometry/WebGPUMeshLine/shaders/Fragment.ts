@@ -291,8 +291,16 @@ export default class FragmentShader {
       // Incoming to start of closed curve
       const patternLength = this.dashAtlas.period.mul(dashLength);
       const skipDrawingArrow = isArrowSegment.and(float(drawArrow).equal(0));
-      const drawStart = float(strokeOrArrowEnd).mul(startProportion);
-      const drawEnd = float(strokeOrArrowEnd).mul(endProportion);
+      const drawStart = select(
+        skipDrawingArrow,
+        0,
+        float(strokeOrArrowEnd).mul(startProportion),
+      );
+      const drawEnd = select(
+        skipDrawingArrow,
+        strokeOrArrowEnd,
+        float(strokeOrArrowEnd).mul(endProportion),
+      );
       const isFirstSegment = segmentStart.equal(0);
       If(
         or(
@@ -559,6 +567,7 @@ export default class FragmentShader {
       const segmentFragmentsPerDistance = reciprocal(
         segmentDistancePerFragment,
       );
+
       const arrowTopVector = varyingProperty(
         "vec2",
         "vArrowTopTailFragment",
@@ -566,7 +575,22 @@ export default class FragmentShader {
       const arrowTopTailFragment = varyingProperty(
         "vec2",
         "vArrowTipFragment",
-      ).add(arrowTopVector.mul(endProportion));
+      ).add(
+        arrowTopVector.mul(select(float(drawArrow).equal(0), 1, endProportion)),
+      );
+
+      const arrowBottomVector = varyingProperty(
+        "vec2",
+        "vArrowBottomTailFragment",
+      ).sub(varyingProperty("vec2", "vArrowTipFragment"));
+      const arrowBottomTailFragment = varyingProperty(
+        "vec2",
+        "vArrowTipFragment",
+      ).add(
+        arrowBottomVector.mul(
+          select(float(drawArrow).equal(0), 1, endProportion),
+        ),
+      );
 
       If(float(arrow).and(isArrowSegment.not()), () => {
         If(
@@ -580,15 +604,6 @@ export default class FragmentShader {
             Discard();
           },
         );
-
-        const arrowBottomVector = varyingProperty(
-          "vec2",
-          "vArrowBottomTailFragment",
-        ).sub(varyingProperty("vec2", "vArrowTipFragment"));
-        const arrowBottomTailFragment = varyingProperty(
-          "vec2",
-          "vArrowTipFragment",
-        ).add(arrowBottomVector.mul(endProportion));
         If(
           segmentCoversFragment(
             glFragCoord(),

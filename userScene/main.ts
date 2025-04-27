@@ -337,8 +337,7 @@ export default class Scene implements StudioScene {
     const frequency = 1 / 8;
     const sinValue = Math.sin(2 * Math.PI * t * frequency);
     const cosValue = Math.cos(2 * Math.PI * t * frequency);
-    // const sinProportion = 0.5 + 0.5 * sinValue;
-    const sinProportion = 0.2;
+    const sinProportion = 0.5 + 0.5 * sinValue;
     const cosProportion = 0.5 + 0.5 * cosValue;
 
     this.solidClosedStartRange.restyle({
