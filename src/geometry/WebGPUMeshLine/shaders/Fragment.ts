@@ -298,7 +298,8 @@ export default class FragmentShader {
             .notEqual(0)
             .and(
               float(strokeOrArrowEnd).sub(offset).lessThanEqual(patternLength),
-            ),
+            )
+            .and(float(arrow).equal(0)),
           float(dashLength).equal(0).and(isFirstSegment.not()),
         ),
         () => {
