@@ -37,6 +37,9 @@ export type Style = {
   strokeDashOffset?: number;
   strokeProportion?: StrokeProportionConfig;
   strokeArrow?: StrokeArrowConfig;
+  strokeDrawArrow?: boolean;
+  strokeArrowWidth?: number;
+  strokeArrowLength?: number;
 };
 
 type StyleData = {

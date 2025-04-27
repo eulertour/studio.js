@@ -46,6 +46,9 @@ export default class Scene implements StudioScene {
   drawnSolidArrow: Geometry.Polyline;
   drawnDashedArrow: Geometry.Polyline;
   drawnDashedMovingArrow: Geometry.Polyline;
+  drawnSolidArrowStaticTips: Geometry.Polyline;
+  drawnDashedArrowStaticTips: Geometry.Polyline;
+  drawnDashedMovingArrowStaticTips: Geometry.Polyline;
 
   constructor(
     public scene: THREE.Scene,
@@ -270,12 +273,39 @@ export default class Scene implements StudioScene {
       strokeDashSpeed: 1,
     });
 
+    this.drawnSolidArrowStaticTips = new Geometry.Polyline(zigZagPoints, {
+      strokeColor: new THREE.Color("blue"),
+      strokeOpacity: 0.85,
+      strokeArrow: true,
+    });
+
+    this.drawnDashedArrowStaticTips = new Geometry.Polyline(zigZagPoints, {
+      strokeColor: new THREE.Color("blue"),
+      strokeOpacity: 0.85,
+      strokeArrow: true,
+      strokeDashLength: 0.45,
+    });
+
+    this.drawnDashedMovingArrowStaticTips = new Geometry.Polyline(
+      zigZagPoints,
+      {
+        strokeColor: new THREE.Color("blue"),
+        strokeOpacity: 0.85,
+        strokeArrow: true,
+        strokeDashLength: 0.45,
+        strokeDashSpeed: 1,
+      },
+    );
+
     this.staticSolidArrow.position.set(-5, 1.25, 0);
     this.staticDashedArrow.position.set(-5, 0, 0);
     this.staticDashedMovingArrow.position.set(-5, -1.25, 0);
     this.drawnSolidArrow.position.set(0, 1.25, 0);
     this.drawnDashedArrow.position.set(0, 0, 0);
     this.drawnDashedMovingArrow.position.set(0, -1.25, 0);
+    this.drawnSolidArrowStaticTips.position.set(5, 1.25, 0);
+    this.drawnDashedArrowStaticTips.position.set(5, 0, 0);
+    this.drawnDashedMovingArrowStaticTips.position.set(5, -1.25, 0);
     withArrow.add(
       this.staticSolidArrow,
       this.staticDashedArrow,
@@ -283,6 +313,9 @@ export default class Scene implements StudioScene {
       this.drawnSolidArrow,
       this.drawnDashedArrow,
       this.drawnDashedMovingArrow,
+      this.drawnSolidArrowStaticTips,
+      this.drawnDashedArrowStaticTips,
+      this.drawnDashedMovingArrowStaticTips,
     );
     withArrow.position.set(0, -1.75, 0);
     scene.add(withArrow);
@@ -388,5 +421,12 @@ export default class Scene implements StudioScene {
     this.drawnSolidArrow.restyle({ strokeProportion: sinProportion });
     this.drawnDashedArrow.restyle({ strokeProportion: sinProportion });
     this.drawnDashedMovingArrow.restyle({ strokeProportion: sinProportion });
+    this.drawnSolidArrowStaticTips.restyle({ strokeProportion: sinProportion });
+    this.drawnDashedArrowStaticTips.restyle({
+      strokeProportion: sinProportion,
+    });
+    this.drawnDashedMovingArrowStaticTips.restyle({
+      strokeProportion: sinProportion,
+    });
   }
 }
