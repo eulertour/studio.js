@@ -109,6 +109,7 @@ export default class FragmentShader {
     startProportion: UniformNode<number>,
     endProportion: UniformNode<number>,
     arrow: UniformNode<number>,
+    drawArrow: UniformNode<number>,
   ) {
     this.node = Fn(() => {
       const isArrowSegment = varyingProperty("float", "vIsArrowSegment");
@@ -289,6 +290,7 @@ export default class FragmentShader {
 
       // Incoming to start of closed curve
       const patternLength = this.dashAtlas.period.mul(dashLength);
+      const skipDrawingArrow = isArrowSegment.and(float(drawArrow).equal(0));
       const drawStart = float(strokeOrArrowEnd).mul(startProportion);
       const drawEnd = float(strokeOrArrowEnd).mul(endProportion);
       const isFirstSegment = segmentStart.equal(0);
@@ -392,6 +394,10 @@ export default class FragmentShader {
       );
 
       // End of draw range
+      const testColor = vec4(color, opacity).toVar();
+      // If(skipDrawingArrow, () => {
+      //   testColor.assign(vec4(1, 0, 0, 1));
+      // });
       If(float(dashLength).equal(0), () => {
         If(drawEnd.lessThanEqual(offset), () => {
           const dx = offset.sub(drawEnd);
@@ -597,7 +603,6 @@ export default class FragmentShader {
       });
 
       // Exclude the top arrow segment from the bottom stroke segment
-      const testColor = vec4(color, opacity).toVar();
       If(
         float(arrow).and(
           varyingProperty("float", "vIsBottomArrowSegment").greaterThan(0),

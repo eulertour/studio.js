@@ -44,6 +44,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       this.uniforms.startProportion,
       this.uniforms.endProportion,
       this.uniforms.arrow,
+      this.uniforms.drawArrow,
     ).node();
   }
 

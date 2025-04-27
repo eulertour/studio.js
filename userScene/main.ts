@@ -50,6 +50,8 @@ export default class Scene implements StudioScene {
   drawnDashedArrowStaticTips: Geometry.Polyline;
   drawnDashedMovingArrowStaticTips: Geometry.Polyline;
 
+  arrowCircle: Geometry.Circle;
+
   constructor(
     public scene: THREE.Scene,
     public camera: THREE.OrthographicCamera,
@@ -276,13 +278,13 @@ export default class Scene implements StudioScene {
     this.drawnSolidArrowStaticTips = new Geometry.Polyline(zigZagPoints, {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 0.85,
-      strokeArrow: true,
+      strokeArrow: { draw: false },
     });
 
     this.drawnDashedArrowStaticTips = new Geometry.Polyline(zigZagPoints, {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 0.85,
-      strokeArrow: true,
+      strokeArrow: { draw: false },
       strokeDashLength: 0.45,
     });
 
@@ -291,11 +293,17 @@ export default class Scene implements StudioScene {
       {
         strokeColor: new THREE.Color("blue"),
         strokeOpacity: 0.85,
-        strokeArrow: true,
+        strokeArrow: { draw: false },
         strokeDashLength: 0.45,
         strokeDashSpeed: 1,
       },
     );
+
+    this.arrowCircle = new Geometry.Circle(1, {
+      strokeColor: new THREE.Color("blue"),
+      strokeOpacity: 0.85,
+      strokeArrow: true,
+    });
 
     this.staticSolidArrow.position.set(-5, 1.25, 0);
     this.staticDashedArrow.position.set(-5, 0, 0);
@@ -306,6 +314,7 @@ export default class Scene implements StudioScene {
     this.drawnSolidArrowStaticTips.position.set(5, 1.25, 0);
     this.drawnDashedArrowStaticTips.position.set(5, 0, 0);
     this.drawnDashedMovingArrowStaticTips.position.set(5, -1.25, 0);
+    this.arrowCircle.position.set(3, 3, 0);
     withArrow.add(
       this.staticSolidArrow,
       this.staticDashedArrow,
@@ -316,6 +325,7 @@ export default class Scene implements StudioScene {
       this.drawnSolidArrowStaticTips,
       this.drawnDashedArrowStaticTips,
       this.drawnDashedMovingArrowStaticTips,
+      this.arrowCircle,
     );
     withArrow.position.set(0, -1.75, 0);
     scene.add(withArrow);
@@ -327,7 +337,8 @@ export default class Scene implements StudioScene {
     const frequency = 1 / 8;
     const sinValue = Math.sin(2 * Math.PI * t * frequency);
     const cosValue = Math.cos(2 * Math.PI * t * frequency);
-    const sinProportion = 0.5 + 0.5 * sinValue;
+    // const sinProportion = 0.5 + 0.5 * sinValue;
+    const sinProportion = 0.2;
     const cosProportion = 0.5 + 0.5 * cosValue;
 
     this.solidClosedStartRange.restyle({
@@ -426,6 +437,9 @@ export default class Scene implements StudioScene {
       strokeProportion: sinProportion,
     });
     this.drawnDashedMovingArrowStaticTips.restyle({
+      strokeProportion: sinProportion,
+    });
+    this.arrowCircle.restyle({
       strokeProportion: sinProportion,
     });
   }
