@@ -298,18 +298,16 @@ export default abstract class Shape extends THREE.Group {
         strokeColor,
         strokeOpacity,
         strokeWidth,
-        strokeDashLength,
-        strokeDashSpeed,
-        strokeDashOffset,
+        strokeDashes,
         strokeProportion,
+        strokeArrow,
       }) => ({
         strokeColor,
         strokeOpacity,
         strokeWidth,
-        strokeDashLength,
-        strokeDashSpeed,
-        strokeDashOffset,
+        strokeDashes,
         strokeProportion,
+        strokeArrow,
       }))(style);
       this.stroke.restyle(strokeStyle);
     }

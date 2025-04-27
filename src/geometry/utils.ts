@@ -6,6 +6,14 @@ export type Transform = {
   scale: THREE.Vector3;
 };
 
+export type StrokeDashesConfig =
+  | boolean
+  | {
+      length?: number;
+      speed?: number;
+      offset?: number;
+    };
+
 export type StrokeProportionConfig =
   | number
   | (
@@ -31,10 +39,7 @@ export type Style = {
   strokeColor?: THREE.Color;
   strokeOpacity?: number;
   strokeWidth?: number;
-  strokeDash?: boolean;
-  strokeDashLength?: number;
-  strokeDashSpeed?: number;
-  strokeDashOffset?: number;
+  strokeDashes?: StrokeDashesConfig;
   strokeProportion?: StrokeProportionConfig;
   strokeArrow?: StrokeArrowConfig;
 };
@@ -54,6 +59,29 @@ type StyleData = {
   strokeDrawArrow?: boolean;
   strokeArrowWidth?: number;
   strokeArrowLength?: number;
+};
+
+export const strokeDashesConfigToData = (
+  strokeDashesConfig: StrokeDashesConfig,
+): {
+  strokeDashLength: number;
+  strokeDashSpeed: number;
+  strokeDashOffset: number;
+} => {
+  if (typeof strokeDashesConfig === "boolean") {
+    return {
+      strokeDashLength: 1,
+      strokeDashSpeed: 0,
+      strokeDashOffset: 0,
+    };
+  } else {
+    const { length, speed, offset } = strokeDashesConfig;
+    return {
+      strokeDashLength: length ?? 1,
+      strokeDashSpeed: speed ?? 0,
+      strokeDashOffset: offset ?? 0,
+    };
+  }
 };
 
 export const strokeProportionConfigToData = (
@@ -138,14 +166,12 @@ export const styleToData = (style: Style): StyleData => {
   if (style.strokeWidth !== undefined) {
     data.strokeWidth = style.strokeWidth;
   }
-  if (style.strokeDashLength !== undefined) {
-    data.strokeDashLength = style.strokeDashLength;
-  }
-  if (style.strokeDashSpeed !== undefined) {
-    data.strokeDashSpeed = style.strokeDashSpeed;
-  }
-  if (style.strokeDashOffset !== undefined) {
-    data.strokeDashOffset = style.strokeDashOffset;
+  if (style.strokeDashes !== undefined) {
+    const { strokeDashLength, strokeDashSpeed, strokeDashOffset } =
+      strokeDashesConfigToData(style.strokeDashes);
+    data.strokeDashLength = strokeDashLength;
+    data.strokeDashSpeed = strokeDashSpeed;
+    data.strokeDashOffset = strokeDashOffset;
   }
   if (style.strokeProportion !== undefined) {
     const { strokeStartProportion, strokeEndProportion } =

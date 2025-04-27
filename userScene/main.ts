@@ -89,7 +89,9 @@ export default class Scene implements StudioScene {
     const dashedStrokeRangeStyle = {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 0.85,
-      strokeDashLength: 0.5,
+      strokeDashes: {
+        length: 0.5,
+      },
     };
 
     this.dashedClosedStartRange = new Geometry.Square(
@@ -109,17 +111,22 @@ export default class Scene implements StudioScene {
     this.dashedMovingDynamic = new THREE.Group();
     const dashedMovingDynamicClosedStyle = {
       strokeColor: new THREE.Color("orange"),
-      strokeOpacity: 0.85,
-      strokeDashSpeed: 1,
+      strokeOpacity: 0.857,
     };
 
     this.dashedMovingDynamicClosedCircle = new Geometry.Circle(1.5, {
       ...dashedMovingDynamicClosedStyle,
-      strokeDashLength: (2 * Math.PI * 1.5) / 8,
+      strokeDashes: {
+        speed: 1,
+        length: (2 * Math.PI * 1.5) / 8,
+      },
     });
     this.dashedMovingDynamicClosedSquare = new Geometry.Square(1.5, {
       ...dashedMovingDynamicClosedStyle,
-      strokeDashLength: 1,
+      strokeDashes: {
+        speed: 1,
+        length: 1,
+      },
     });
 
     this.dashedMovingDynamic.add(this.dashedMovingDynamicClosedCircle);
@@ -129,8 +136,10 @@ export default class Scene implements StudioScene {
     const dashedMovingStrokeRangeStyle = {
       strokeColor: new THREE.Color("red"),
       strokeOpacity: 0.85,
-      strokeDashSpeed: 1,
-      strokeDashLength: 0.5,
+      strokeDashes: {
+        speed: 1,
+        length: 0.5,
+      },
     };
 
     this.dashedMovingClosedStartRange = new Geometry.Square(
@@ -154,8 +163,10 @@ export default class Scene implements StudioScene {
     const dashedMovingClosedStyle = {
       strokeColor: new THREE.Color("green"),
       strokeOpacity: 0.85,
-      strokeDashLength: 0.5,
-      strokeDashSpeed: 1,
+      strokeDashes: {
+        length: 0.5,
+        speed: 1,
+      },
     };
 
     let square1 = new Geometry.Square(1, dashedMovingClosedStyle);
@@ -168,7 +179,9 @@ export default class Scene implements StudioScene {
     const dashedStaticClosedStyle = {
       strokeColor: new THREE.Color("indigo"),
       strokeOpacity: 0.85,
-      strokeDashLength: 0.5,
+      strokeDashes: {
+        length: 0.5,
+      },
     };
 
     square1 = new Geometry.Square(1, dashedStaticClosedStyle);
@@ -192,8 +205,10 @@ export default class Scene implements StudioScene {
     this.sine = new Geometry.Polyline(sinPoints(0), {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 0.85,
-      strokeDashLength: 0.35,
-      strokeDashSpeed: 1,
+      strokeDashes: {
+        length: 0.35,
+        speed: 1,
+      },
     });
 
     this.solidStaticClosed.position.set(firstColumn, firstRow, 0);
@@ -244,15 +259,19 @@ export default class Scene implements StudioScene {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 0.85,
       strokeArrow: true,
-      strokeDashLength: 0.45,
+      strokeDashes: {
+        length: 0.45,
+      },
     });
 
     this.staticDashedMovingArrow = new Geometry.Polyline(zigZagPoints, {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 0.85,
       strokeArrow: true,
-      strokeDashLength: 0.45,
-      strokeDashSpeed: 1,
+      strokeDashes: {
+        length: 0.45,
+        speed: 1,
+      },
     });
 
     this.drawnSolidArrow = new Geometry.Polyline(zigZagPoints, {
@@ -265,15 +284,19 @@ export default class Scene implements StudioScene {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 0.85,
       strokeArrow: true,
-      strokeDashLength: 0.45,
+      strokeDashes: {
+        length: 0.45,
+      },
     });
 
     this.drawnDashedMovingArrow = new Geometry.Polyline(zigZagPoints, {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 0.85,
       strokeArrow: true,
-      strokeDashLength: 0.45,
-      strokeDashSpeed: 1,
+      strokeDashes: {
+        length: 0.45,
+        speed: 1,
+      },
     });
 
     this.drawnSolidArrowStaticTips = new Geometry.Polyline(zigZagPoints, {
@@ -286,7 +309,9 @@ export default class Scene implements StudioScene {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 0.85,
       strokeArrow: { draw: false },
-      strokeDashLength: 0.45,
+      strokeDashes: {
+        length: 0.45,
+      },
     });
 
     this.drawnDashedMovingArrowStaticTips = new Geometry.Polyline(
@@ -295,8 +320,10 @@ export default class Scene implements StudioScene {
         strokeColor: new THREE.Color("blue"),
         strokeOpacity: 0.85,
         strokeArrow: { draw: false },
-        strokeDashLength: 0.45,
-        strokeDashSpeed: 1,
+        strokeDashes: {
+          length: 0.45,
+          speed: 1,
+        },
       },
     );
 
@@ -395,20 +422,28 @@ export default class Scene implements StudioScene {
     if (quarter < 2) {
       const t0 = quarter / 2;
       this.dashedMovingDynamicClosedCircle.restyle({
-        strokeDashLength: (2 * Math.PI * 1.5) / (8 - 2 * t0),
+        strokeDashes: {
+          length: (2 * Math.PI * 1.5) / (8 - 2 * t0),
+        },
       });
       this.dashedMovingDynamicClosedSquare.restyle({
-        strokeDashLength: 1 - t0 / 4,
+        strokeDashes: {
+          length: 1 - t0 / 4,
+        },
       });
     } else if (quarter < 4) {
       // do nothing
     } else if (quarter < 6) {
       const t0 = (quarter - 4) / 2;
       this.dashedMovingDynamicClosedCircle.restyle({
-        strokeDashLength: (2 * Math.PI * 1.5) / (6 + 2 * t0),
+        strokeDashes: {
+          length: (2 * Math.PI * 1.5) / (6 + 2 * t0),
+        },
       });
       this.dashedMovingDynamicClosedSquare.restyle({
-        strokeDashLength: 3 / 4 + t0 / 4,
+        strokeDashes: {
+          length: 3 / 4 + t0 / 4,
+        },
       });
     } else {
       // do nothing

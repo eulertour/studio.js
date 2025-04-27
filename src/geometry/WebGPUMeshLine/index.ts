@@ -4,6 +4,9 @@ import WebGPUMeshLineMaterial from "./Material.js";
 import {
   strokeProportionConfigToData,
   StrokeProportionConfig,
+  StrokeDashesConfig,
+  StrokeArrowConfig,
+  strokeDashesConfigToData,
 } from "../utils.js";
 import { uniform } from "three/tsl";
 
@@ -31,13 +34,9 @@ interface StrokeStyle {
   strokeColor?: THREE.Color;
   strokeOpacity?: number;
   strokeWidth?: number;
-  strokeDashLength?: number;
-  strokeDashSpeed?: number;
-  strokeDashOffset?: number;
+  strokeDashes?: StrokeDashesConfig;
   strokeProportion?: StrokeProportionConfig;
-  drawArrow?: boolean;
-  arrowWidth?: number;
-  arrowLength?: number;
+  strokeArrow?: StrokeArrowConfig;
 }
 
 interface Config {
@@ -149,60 +148,72 @@ export default class WebGPUMeshLine extends THREE.Mesh {
       strokeColor,
       strokeOpacity,
       strokeWidth,
-      strokeDashLength,
-      strokeDashSpeed,
-      strokeDashOffset,
+      strokeDashes,
+      strokeArrow,
       strokeProportion,
     } = style;
 
     const setUniform = (uniform: keyof Uniforms, value: any) => {
       if (Array.isArray(this.material)) {
         this.material.forEach((material: any) => {
-          if ((material as WebGPUMeshLineMaterial).uniforms && (material as WebGPUMeshLineMaterial).uniforms[uniform]) {
-            (material as WebGPUMeshLineMaterial).uniforms[uniform].value = value;
+          if (
+            (material as WebGPUMeshLineMaterial).uniforms &&
+            (material as WebGPUMeshLineMaterial).uniforms[uniform]
+          ) {
+            (material as WebGPUMeshLineMaterial).uniforms[uniform].value =
+              value;
           }
         });
       } else {
-        if ((this.material as WebGPUMeshLineMaterial).uniforms && (this.material as WebGPUMeshLineMaterial).uniforms[uniform]) {
-          (this.material as WebGPUMeshLineMaterial).uniforms[uniform].value = value;
+        if (
+          (this.material as WebGPUMeshLineMaterial).uniforms &&
+          (this.material as WebGPUMeshLineMaterial).uniforms[uniform]
+        ) {
+          (this.material as WebGPUMeshLineMaterial).uniforms[uniform].value =
+            value;
         }
       }
     };
 
     if (strokeColor !== undefined) {
-      setUniform('color', strokeColor);
+      setUniform("color", strokeColor);
     }
     if (strokeOpacity !== undefined) {
-      setUniform('opacity', strokeOpacity);
+      setUniform("opacity", strokeOpacity);
     }
     if (strokeWidth !== undefined) {
-      setUniform('width', strokeWidth);
+      setUniform("width", strokeWidth);
     }
-    if (strokeDashLength !== undefined) {
-      setUniform('dashLength', strokeDashLength);
-    }
-   if (strokeDashSpeed !== undefined) {
-      if (Array.isArray(this.material)) {
-        this.material.forEach((material: any) => {
-          (material as WebGPUMeshLineMaterial).dashSpeed = strokeDashSpeed;
+    if (strokeDashes !== undefined) {
+      if (strokeDashes.length !== undefined) {
+        const { strokeDashLength } = strokeDashesConfigToData({
+          length: style.strokeDashes.length,
         });
-      } else {
-        (this.material as WebGPUMeshLineMaterial).dashSpeed = strokeDashSpeed;
+        setUniform("dashLength", strokeDashLength);
       }
-    }
-    if (strokeDashOffset !== undefined) {
-      setUniform('dashOffset', strokeDashOffset);
+      if (strokeDashes.speed !== undefined) {
+        const { strokeDashSpeed } = strokeDashesConfigToData({
+          speed: style.strokeDashes.speed,
+        });
+        this.material.dashSpeed = strokeDashSpeed;
+      }
+      if (strokeDashes.offset !== undefined) {
+        const { strokeDashOffset } = strokeDashesConfigToData({
+          offset: style.strokeDashes.offset,
+        });
+        setUniform("dashOffset", strokeDashOffset);
+      }
     }
     if (strokeProportion !== undefined) {
       const { strokeStartProportion, strokeEndProportion } =
         strokeProportionConfigToData(strokeProportion);
-      setUniform('startProportion', strokeStartProportion);
-      setUniform('endProportion', strokeEndProportion);
+      setUniform("startProportion", strokeStartProportion);
+      setUniform("endProportion", strokeEndProportion);
 
       if (this.geometry instanceof WebGPUMeshLineGeometry) {
         this.geometry.fillArrowSegmentData(
           strokeEndProportion,
-          ((this.material as any) as WebGPUMeshLineMaterial).uniforms,
+          (this.material as any as WebGPUMeshLineMaterial).uniforms,
         );
       }
     }
