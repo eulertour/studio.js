@@ -18,7 +18,7 @@ export default class Circle extends Shape {
   ) {
     const angle = 2 * Math.PI;
     let points = [];
-    for (let i = 0; i < angle + ERROR_THRESHOLD; i += angle / 50) {
+    for (let i = 0; i < angle + ERROR_THRESHOLD; i += angle / 250) {
       points.push(
         new THREE.Vector3(radius * Math.cos(i), radius * Math.sin(i), 0),
       );

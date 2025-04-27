@@ -51,6 +51,7 @@ export default class Scene implements StudioScene {
   drawnDashedMovingArrowStaticTips: Geometry.Polyline;
 
   arrowCircle: Geometry.Circle;
+  arrowSquare: Geometry.Square;
 
   constructor(
     public scene: THREE.Scene,
@@ -299,10 +300,16 @@ export default class Scene implements StudioScene {
       },
     );
 
-    this.arrowCircle = new Geometry.Circle(1, {
+    this.arrowCircle = new Geometry.Circle(1.3, {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 0.85,
-      strokeArrow: true,
+      strokeArrow: { draw: false },
+    });
+
+    this.arrowSquare = new Geometry.Square(1.15, {
+      strokeColor: new THREE.Color("blue"),
+      strokeOpacity: 0.85,
+      strokeArrow: { draw: false },
     });
 
     this.staticSolidArrow.position.set(-5, 1.25, 0);
@@ -314,7 +321,8 @@ export default class Scene implements StudioScene {
     this.drawnSolidArrowStaticTips.position.set(5, 1.25, 0);
     this.drawnDashedArrowStaticTips.position.set(5, 0, 0);
     this.drawnDashedMovingArrowStaticTips.position.set(5, -1.25, 0);
-    this.arrowCircle.position.set(3, 3, 0);
+    this.arrowCircle.position.set(3.5, 3.75, 0);
+    this.arrowSquare.position.set(3.5, 3.75, 0);
     withArrow.add(
       this.staticSolidArrow,
       this.staticDashedArrow,
@@ -326,6 +334,7 @@ export default class Scene implements StudioScene {
       this.drawnDashedArrowStaticTips,
       this.drawnDashedMovingArrowStaticTips,
       this.arrowCircle,
+      this.arrowSquare,
     );
     withArrow.position.set(0, -1.75, 0);
     scene.add(withArrow);
@@ -439,6 +448,9 @@ export default class Scene implements StudioScene {
       strokeProportion: sinProportion,
     });
     this.arrowCircle.restyle({
+      strokeProportion: sinProportion,
+    });
+    this.arrowSquare.restyle({
       strokeProportion: sinProportion,
     });
   }
