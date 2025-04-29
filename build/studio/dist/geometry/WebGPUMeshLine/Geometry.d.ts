@@ -11,6 +11,7 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     constructor(points: THREE.Vector3[]);
     getPoint(index: number, output: THREE.Vector3): void;
     getOffset(index: number): number;
+    get points(): THREE.Vector3[];
     get numStrokePoints(): number;
     get strokeLength(): number;
     fillArrowSegmentData(proportion: number, output: Uniforms): void;
