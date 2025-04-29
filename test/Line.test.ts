@@ -1,5 +1,5 @@
 import { describe, it, assert } from "vitest";
-import MeshLine from "../src/geometry/MeshLine/index.js";
+import WebGPUMeshLine from "../src/geometry/WebGPUMeshLine/index.js";
 import { Geometry, THREE } from "../src/index.js";
 
 describe("Line", () => {
@@ -29,7 +29,7 @@ describe("Line", () => {
 
   it("should inherit from shape", () => {
     assert.instanceOf(line.fill, THREE.Mesh);
-    assert.instanceOf(line.stroke, MeshLine);
+    assert.instanceOf(line.stroke, WebGPUMeshLine);
     assert.isArray(line.curveEndIndices);
   });
 });
@@ -41,7 +41,7 @@ describe("Shape", () => {
     }
   }
   const shape = new TestShape(getTestPoints());
-  const defaults = TestShape.defaultStyle();
+  const defaults = Geometry.Shape.defaultStyleData();
 
   function getTestPoints() {
     return [new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 1)];
@@ -62,7 +62,7 @@ describe("Shape", () => {
 
     it("strokeColor", () => {
       assert.equal(
-        shape.stroke?.material.color.getHexString(),
+        shape.stroke?.material.uniforms.color.value.getHexString(),
         defaults.strokeColor.getHexString(),
       );
     });
@@ -72,7 +72,10 @@ describe("Shape", () => {
     });
 
     it("strokeWidth", () => {
-      assert.equal(shape.stroke?.material.width, defaults.strokeWidth);
+      assert.equal(
+        shape.stroke?.material.uniforms.width.value,
+        defaults.strokeWidth,
+      );
     });
   });
 
@@ -111,7 +114,7 @@ describe("Shape", () => {
 
   describe("stroke", () => {
     it("adds a stroke by default", () => {
-      assert.instanceOf(shape.stroke, MeshLine);
+      assert.instanceOf(shape.stroke, WebGPUMeshLine);
     });
 
     it.skip("uses strokeColor option", () => {
@@ -127,7 +130,7 @@ describe("Shape", () => {
         strokeOpacity: 0.65,
       });
 
-      assert.equal(shape.stroke?.material.opacity, 0.65);
+      assert.equal(shape.stroke?.material.uniforms.opacity.value, 0.65);
     });
 
     it("uses strokeWidth option", () => {
@@ -135,7 +138,7 @@ describe("Shape", () => {
         strokeWidth: 6,
       });
 
-      assert.equal(shape.stroke?.material.width, 6);
+      assert.equal(shape.stroke?.material.uniforms.width.value, 6);
     });
 
     it.skip("doesn't add a stroke if config.stroke is false", () => {

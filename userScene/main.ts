@@ -111,7 +111,7 @@ export default class Scene implements StudioScene {
     this.dashedMovingDynamic = new THREE.Group();
     const dashedMovingDynamicClosedStyle = {
       strokeColor: new THREE.Color("orange"),
-      strokeOpacity: 0.857,
+      strokeOpacity: 0.85,
     };
 
     this.dashedMovingDynamicClosedCircle = new Geometry.Circle(1.5, {

@@ -1,5 +1,5 @@
 import * as THREE from "three/webgpu";
-import Shape from "../src/geometry/Shape";
+import { Shape } from "../src/geometry/index.js";
 import { describe, beforeEach, test, expect } from "vitest";
 
 // Mock class to test Shape since Shape is abstract
@@ -28,7 +28,9 @@ describe("Shape", () => {
     shape.restyle(newStyle);
 
     expect(shape.fill.material.color).toEqual(newStyle.fillColor);
-    expect(shape.stroke.material.color).toEqual(newStyle.strokeColor);
+    expect(shape.stroke.material.uniforms.color.value).toEqual(
+      newStyle.strokeColor,
+    );
   });
 
   test("restyle with includeDescendents updates all children", () => {

@@ -51,6 +51,16 @@ export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
     }
   }
 
+  get points() {
+    const points = [];
+    for (let i = 0; i < this.numStrokePoints; i++) {
+      const point = new THREE.Vector3();
+      this.getPoint(i, point);
+      points.push(point);
+    }
+    return points;
+  }
+
   get numStrokePoints() {
     const numSegments = this.positionOffset.length / 16;
     return numSegments - NUM_ARROW_SEGMENTS + 1;
