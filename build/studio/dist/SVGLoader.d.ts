@@ -1,5 +1,5 @@
 /// <reference types="@xmldom/xmldom" />
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 declare class SVGLoader extends THREE.Loader {
     constructor(manager: any);
     load(url: any, onLoad: any, onProgress: any, onError: any): void;

@@ -1,5 +1,5 @@
 import { Animation } from "./Animation.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 export default class MoveTo extends Animation {
     target: THREE.Object3D;
     obj: THREE.Object3D;

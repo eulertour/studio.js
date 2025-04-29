@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import { ERROR_THRESHOLD } from "../constants.js";
 export const getArcPoints = (radius, angle, config = {}) => {
     let points = [];

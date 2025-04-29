@@ -1,6 +1,7 @@
-import * as THREE from "three";
-import MeshLine, { MeshLineGeometry, MeshLineMaterial, } from "./MeshLine/index.js";
+import * as THREE from "three/webgpu";
 import * as Text from "../text.js";
+import WebGPUMeshLine from "./WebGPUMeshLine/index.js";
+import { styleToData } from "./utils.js";
 const getFillGeometry = (points) => {
     const shape = new THREE.Shape();
     shape.moveTo(points[0].x, points[0].y);
@@ -14,7 +15,7 @@ const getFillGeometry = (points) => {
  * An abstract class representing a generalized shape.
  */
 export default class Shape extends THREE.Group {
-    constructor(points, config = {}) {
+    constructor(points, userConfig = {}) {
         super();
         Object.defineProperty(this, "fill", {
             enumerable: true,
@@ -46,7 +47,15 @@ export default class Shape extends THREE.Group {
             writable: true,
             value: (e) => this.dispatchEvent(e)
         });
-        config = Object.assign(Shape.defaultStyle(), config);
+        const config = {
+            ...Shape.defaultStyleData(),
+            ...styleToData(userConfig),
+            arrow: userConfig.arrow ?? false,
+            stroke: userConfig.stroke ?? true,
+            fill: userConfig.fill ?? true,
+            closed: userConfig.closed ?? false,
+            fillPoints: userConfig.fillPoints ?? points,
+        };
         if (config.fill !== false) {
             const fillGeometry = getFillGeometry(config.fillPoints ?? points);
             const fillMaterial = new THREE.MeshBasicMaterial({
@@ -59,24 +68,23 @@ export default class Shape extends THREE.Group {
             this.add(this.fill);
         }
         if (config.stroke !== false) {
-            const strokeGeometry = new MeshLineGeometry(config.arrow);
-            strokeGeometry.setPoints(points);
-            if (config.dashed && config.strokeDashLength === 0) {
-                config.strokeDashLength = 0.4;
-            }
-            const strokeMaterial = new MeshLineMaterial({
+            this.stroke = new WebGPUMeshLine(points, {
                 color: config.strokeColor,
                 opacity: config.strokeOpacity,
-                transparent: true,
-                side: THREE.DoubleSide,
                 width: config.strokeWidth,
                 dashLength: config.strokeDashLength,
+                dashSpeed: config.strokeDashSpeed,
                 dashOffset: config.strokeDashOffset,
+                startProportion: config.strokeStartProportion,
+                endProportion: config.strokeEndProportion,
+                arrow: config.strokeArrow,
+                drawArrow: config.strokeDrawArrow,
+                arrowWidth: config.strokeArrowWidth,
+                arrowLength: config.strokeArrowLength,
             });
-            this.stroke = new MeshLine(strokeGeometry, strokeMaterial);
             this.add(this.stroke);
         }
-        this.curveEndIndices = this.getCurveEndIndices();
+        // this.curveEndIndices = this.getCurveEndIndices();
     }
     add(...objects) {
         super.add(...objects);
@@ -99,16 +107,28 @@ export default class Shape extends THREE.Group {
         this.add(label);
         label.moveNextTo(this, direction);
     }
-    static defaultStyle() {
+    update(dt, _) {
+        if (this.stroke !== undefined) {
+            this.stroke.material.update(dt);
+        }
+    }
+    static defaultStyleData() {
         return {
             fillColor: new THREE.Color(0xfffaf0),
             fillOpacity: 0.0,
             strokeColor: new THREE.Color(0x000000),
             strokeOpacity: 1.0,
             strokeWidth: 4,
-            strokeDashLength: 0,
+            strokeDashed: false,
+            strokeDashLength: 0.0,
+            strokeDashSpeed: 0,
             strokeDashOffset: 0,
-            dashed: false,
+            strokeStartProportion: 0,
+            strokeEndProportion: 1,
+            strokeArrow: false,
+            strokeDrawArrow: true,
+            strokeArrowWidth: 0.35,
+            strokeArrowLength: 0.35,
         };
     }
     static defaultConfig() {
@@ -141,6 +161,8 @@ export default class Shape extends THREE.Group {
     copyStroke(shape) {
         this.stroke.geometry.dispose();
         this.stroke.geometry = shape.stroke.geometry;
+        this.stroke.material.dispose();
+        this.stroke.material = shape.stroke.material;
     }
     copyFill(shape) {
         this.fill.geometry.dispose();
@@ -209,41 +231,41 @@ export default class Shape extends THREE.Group {
         return [this.points];
     }
     getStyle() {
-        return {
-            fillColor: this.fill.material.color,
-            fillOpacity: this.fill.material.opacity,
-            strokeColor: this.stroke.material.color,
-            strokeOpacity: this.stroke.material.opacity,
-            strokeWidth: this.stroke.material.width,
-        };
+        const style = {};
+        if (this.fill !== undefined) {
+            style.fillColor = this.fill.material.color;
+            style.fillOpacity = this.fill.material.opacity;
+        }
+        if (this.stroke !== undefined) {
+            style.strokeColor = this.stroke.material.uniforms.color.value;
+            style.strokeOpacity = this.stroke.material.uniforms.opacity.value;
+            style.strokeWidth = this.stroke.material.uniforms.width.value;
+            style.strokeDashLength = this.stroke.material.uniforms.dashLength.value;
+            style.strokeDashSpeed = this.stroke.material.dashSpeed;
+            style.strokeDashOffset = this.stroke.material.dashOffset;
+        }
+        return style;
     }
     restyle(style, config = { includeDescendents: false }) {
-        const { fillColor, fillOpacity } = style;
-        if (fillColor !== undefined) {
-            this.fill.material.color = fillColor;
+        if (this.fill !== undefined) {
+            const { fillColor, fillOpacity } = style;
+            if (fillColor !== undefined) {
+                this.fill.material.color = fillColor;
+            }
+            if (fillOpacity !== undefined) {
+                this.fill.material.opacity = fillOpacity;
+            }
         }
-        if (fillOpacity !== undefined) {
-            this.fill.material.opacity = fillOpacity;
-        }
-        const { strokeColor, strokeOpacity, strokeWidth } = style;
-        if (strokeColor !== undefined) {
-            this.stroke.material.color = strokeColor;
-        }
-        if (strokeOpacity !== undefined) {
-            this.stroke.material.opacity = strokeOpacity;
-        }
-        if (strokeWidth !== undefined) {
-            this.stroke.material.width = strokeWidth;
-        }
-        if (style.dashed === true) {
-            this.stroke.material.dashLength = 0.4;
-        }
-        const { strokeDashLength, strokeDashOffset } = style;
-        if (strokeDashLength !== undefined) {
-            this.stroke.material.dashLength = strokeDashLength;
-        }
-        if (strokeDashOffset !== undefined) {
-            this.stroke.material.dashOffset = strokeDashOffset;
+        if (this.stroke !== undefined) {
+            const strokeStyle = (({ strokeColor, strokeOpacity, strokeWidth, strokeDashes, strokeProportion, strokeArrow, }) => ({
+                strokeColor,
+                strokeOpacity,
+                strokeWidth,
+                strokeDashes,
+                strokeProportion,
+                strokeArrow,
+            }))(style);
+            this.stroke.restyle(strokeStyle);
         }
         if (config.includeDescendents) {
             this.traverse((child) => {

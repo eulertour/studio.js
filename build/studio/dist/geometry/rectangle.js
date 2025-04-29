@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import Shape from "./Shape.js";
 /**
  * A shape with four sides and four right angles.

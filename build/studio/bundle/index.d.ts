@@ -1,59 +1,29 @@
-import * as THREE from 'three';
-import { Scene as Scene$1 } from 'three';
+import * as THREE from 'three/webgpu';
+import { Scene as Scene$1 } from 'three/webgpu';
 export { THREE };
-
-declare class MeshLineGeometry extends THREE.BufferGeometry {
-    #private;
-    arrow: boolean;
-    readonly isMeshLineGeometry = true;
-    readonly type = "MeshLineGeometry";
-    points: THREE.Vector3[];
-    totalLength: number;
-    constructor(arrow?: boolean);
-    setPoints(points: Array<THREE.Vector3>, updateBounds?: boolean): void;
-    setVertexData(array: WritableArrayLike<number>, offset: number, x: number, y: number, z: number): void;
-    setTextureCoords(array: WritableArrayLike<number>, offset: number): void;
-    setIndices(array: WritableArrayLike<number>, offset: number, startIndex: number): void;
-    computeBoundingSphere(): void;
-}
-interface WritableArrayLike<T> {
-    readonly length: number;
-    [n: number]: T;
-}
-
-declare const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
-declare const setCanvasViewport: (viewport: THREE.Vector4) => void;
-declare class MeshLineMaterial extends THREE.ShaderMaterial {
-    constructor(parameters: THREE.ShaderMaterialParameters & {
-        color: THREE.ColorRepresentation;
-        opacity: number;
-        width: number;
-        dashLength: number;
-        dashOffset: number;
-    });
-    get color(): any;
-    set color(value: any);
-    get width(): number;
-    set width(value: number);
-    get totalLength(): any;
-    set totalLength(value: any);
-    get dashLength(): any;
-    set dashLength(value: any);
-    get dashOffset(): any;
-    set dashOffset(value: any);
-}
-
-declare class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
-    constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
-    get points(): THREE.Vector3[];
-    get dashOffset(): number;
-    set dashOffset(dashOffset: number);
-}
 
 type Transform = {
     position: THREE.Vector3;
     rotation: THREE.Euler;
     scale: THREE.Vector3;
+};
+type StrokeDashesConfig = boolean | {
+    length?: number;
+    speed?: number;
+    offset?: number;
+};
+type StrokeProportionConfig = number | ({
+    start: number;
+} | {
+    end: number;
+} | {
+    start: number;
+    end: number;
+});
+type StrokeArrowConfig = boolean | {
+    width?: number;
+    length?: number;
+    draw?: boolean;
 };
 type Style = {
     fillColor?: THREE.Color;
@@ -61,12 +31,42 @@ type Style = {
     strokeColor?: THREE.Color;
     strokeOpacity?: number;
     strokeWidth?: number;
-    strokeDashLength?: number;
-    strokeDashOffset?: number;
-    dashed?: boolean;
+    strokeDashes?: StrokeDashesConfig;
+    strokeProportion?: StrokeProportionConfig;
+    strokeArrow?: StrokeArrowConfig;
 };
+
+interface StrokeStyle {
+    strokeColor?: THREE.Color;
+    strokeOpacity?: number;
+    strokeWidth?: number;
+    strokeDashes?: StrokeDashesConfig;
+    strokeProportion?: StrokeProportionConfig;
+    strokeArrow?: StrokeArrowConfig;
+}
+interface Config {
+    color?: THREE.Color;
+    opacity?: number;
+    width?: number;
+    dashLength?: number;
+    dashSpeed?: number;
+    dashPattern?: Array<number>;
+    dashOffset?: number;
+    startProportion?: number;
+    endProportion?: number;
+    arrow?: boolean;
+    drawArrow?: boolean;
+    arrowWidth?: number;
+    arrowLength?: number;
+    threeDimensions?: boolean;
+}
+declare class WebGPUMeshLine extends THREE.Mesh {
+    constructor(points: Array<THREE.Vector3>, inputConfig?: Config);
+    restyle(style: StrokeStyle): void;
+}
+
 type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
-type Stroke = MeshLine;
+type Stroke = WebGPUMeshLine;
 /**
  * An abstract class representing a generalized shape.
  */
@@ -75,7 +75,7 @@ declare abstract class Shape extends THREE.Group {
     stroke?: Stroke;
     curveEndIndices: Array<Array<number>>;
     arrow: boolean;
-    constructor(points: Array<THREE.Vector3>, config?: Style & {
+    constructor(points: Array<THREE.Vector3>, userConfig?: Style & {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
@@ -86,15 +86,23 @@ declare abstract class Shape extends THREE.Group {
     add(...objects: THREE.Object3D[]): this;
     remove(...objects: THREE.Object3D[]): this;
     addLabel(tex: string, direction: THREE.Vector3): void;
-    static defaultStyle(): {
+    update(dt: number, _: number): void;
+    static defaultStyleData(): {
         fillColor: THREE.Color;
         fillOpacity: number;
         strokeColor: THREE.Color;
         strokeOpacity: number;
         strokeWidth: number;
+        strokeDashed: boolean;
         strokeDashLength: number;
+        strokeDashSpeed: number;
         strokeDashOffset: number;
-        dashed: boolean;
+        strokeStartProportion: number;
+        strokeEndProportion: number;
+        strokeArrow: boolean;
+        strokeDrawArrow: boolean;
+        strokeArrowWidth: number;
+        strokeArrowLength: number;
     };
     static defaultConfig(): {};
     reshape(...args: any[]): void;
@@ -325,8 +333,6 @@ type index_d$1_Circle = Circle;
 declare const index_d$1_Circle: typeof Circle;
 type index_d$1_Line = Line;
 declare const index_d$1_Line: typeof Line;
-type index_d$1_MeshLine = MeshLine;
-declare const index_d$1_MeshLine: typeof MeshLine;
 type index_d$1_Point = Point;
 declare const index_d$1_Point: typeof Point;
 type index_d$1_Polygon = Polygon;
@@ -340,8 +346,9 @@ declare const index_d$1_Shape: typeof Shape;
 type index_d$1_Square = Square;
 declare const index_d$1_Square: typeof Square;
 type index_d$1_Style = Style;
+type index_d$1_Transform = Transform;
 declare namespace index_d$1 {
-  export { index_d$1_Arc as Arc, index_d$1_Arrow as Arrow, index_d$1_Circle as Circle, index_d$1_Line as Line, index_d$1_MeshLine as MeshLine, index_d$1_Point as Point, index_d$1_Polygon as Polygon, index_d$1_Polyline as Polyline, index_d$1_Rectangle as Rectangle, index_d$1_Shape as Shape, index_d$1_Square as Square, type index_d$1_Style as Style };
+  export { index_d$1_Arc as Arc, index_d$1_Arrow as Arrow, index_d$1_Circle as Circle, index_d$1_Line as Line, index_d$1_Point as Point, index_d$1_Polygon as Polygon, index_d$1_Polyline as Polyline, index_d$1_Rectangle as Rectangle, index_d$1_Shape as Shape, index_d$1_Square as Square, type index_d$1_Style as Style, type index_d$1_Transform as Transform };
 }
 
 declare const BUFFER = 0.5;
@@ -372,13 +379,14 @@ type HeightSetupConfig = {
 };
 type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
     viewport?: THREE.Vector4;
+    webgpu: boolean;
 };
 declare class Scene extends Scene$1 {
     forwardEvent: (e: any) => void;
     add(...objects: THREE.Object3D[]): this;
     remove(...objects: THREE.Object3D[]): this;
 }
-declare const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [Scene, THREE.Camera, THREE.WebGLRenderer];
+declare const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [Scene, THREE.Camera, THREE.WebGPURenderer];
 declare const convertWorldDirectionToObjectSpace: (worldDirection: THREE.Vector3, object: THREE.Object3D) => THREE.Vector3;
 declare const vstack: (group: THREE.Group, buffer?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;
 declare const vspace: (group: THREE.Group, distanceBetween?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;
@@ -397,6 +405,8 @@ declare const getBoundingBoxHelper: (obj: THREE.Object3D, color: string) => THRE
 declare const pointAlongCurve: (shape: Shape, t: number) => THREE.Vector3 | undefined;
 declare const intersectionsBetween: (shape1: Shape, shape2: Shape) => Array<THREE.Vector3>;
 declare const positiveAngleTo: (a: THREE.Vector3, b: THREE.Vector3) => number;
+declare const indexOrThrow: <T>(array: T[], i: number) => T & ({} | null);
+declare const bufferIndexOrThrow: (array: Float32Array, i: number) => number;
 declare class ShapeFromCurves {
     adjacentThreshold: number;
     segmentClosestToPoint: THREE.Vector3;
@@ -423,12 +433,14 @@ type utils_d_ShapeFromCurves = ShapeFromCurves;
 declare const utils_d_ShapeFromCurves: typeof ShapeFromCurves;
 declare const utils_d_UP: typeof UP;
 type utils_d_WidthSetupConfig = WidthSetupConfig;
+declare const utils_d_bufferIndexOrThrow: typeof bufferIndexOrThrow;
 declare const utils_d_clamp: typeof clamp;
 declare const utils_d_convertWorldDirectionToObjectSpace: typeof convertWorldDirectionToObjectSpace;
 declare const utils_d_furthestInDirection: typeof furthestInDirection;
 declare const utils_d_getBoundingBoxCenter: typeof getBoundingBoxCenter;
 declare const utils_d_getBoundingBoxHelper: typeof getBoundingBoxHelper;
 declare const utils_d_getFrameAttributes: typeof getFrameAttributes;
+declare const utils_d_indexOrThrow: typeof indexOrThrow;
 declare const utils_d_intersectionsBetween: typeof intersectionsBetween;
 declare const utils_d_moveAbove: typeof moveAbove;
 declare const utils_d_moveBelow: typeof moveBelow;
@@ -445,7 +457,7 @@ declare const utils_d_transformBetweenSpaces: typeof transformBetweenSpaces;
 declare const utils_d_vspace: typeof vspace;
 declare const utils_d_vstack: typeof vstack;
 declare namespace utils_d {
-  export { utils_d_BUFFER as BUFFER, utils_d_DOWN as DOWN, type utils_d_HeightSetupConfig as HeightSetupConfig, utils_d_IN as IN, utils_d_LEFT as LEFT, utils_d_ORIGIN as ORIGIN, utils_d_OUT as OUT, utils_d_RIGHT as RIGHT, type utils_d_SceneCanvasConfig as SceneCanvasConfig, utils_d_ShapeFromCurves as ShapeFromCurves, utils_d_UP as UP, type utils_d_WidthSetupConfig as WidthSetupConfig, utils_d_clamp as clamp, utils_d_convertWorldDirectionToObjectSpace as convertWorldDirectionToObjectSpace, utils_d_furthestInDirection as furthestInDirection, utils_d_getBoundingBoxCenter as getBoundingBoxCenter, utils_d_getBoundingBoxHelper as getBoundingBoxHelper, utils_d_getFrameAttributes as getFrameAttributes, utils_d_intersectionsBetween as intersectionsBetween, utils_d_moveAbove as moveAbove, utils_d_moveBelow as moveBelow, utils_d_moveNextTo as moveNextTo, utils_d_moveToLeftOf as moveToLeftOf, utils_d_moveToRightOf as moveToRightOf, utils_d_pointAlongCurve as pointAlongCurve, utils_d_positiveAngleTo as positiveAngleTo, utils_d_rotate180 as rotate180, utils_d_rotate270 as rotate270, utils_d_rotate90 as rotate90, utils_d_setupCanvas as setupCanvas, utils_d_transformBetweenSpaces as transformBetweenSpaces, utils_d_vspace as vspace, utils_d_vstack as vstack };
+  export { utils_d_BUFFER as BUFFER, utils_d_DOWN as DOWN, type utils_d_HeightSetupConfig as HeightSetupConfig, utils_d_IN as IN, utils_d_LEFT as LEFT, utils_d_ORIGIN as ORIGIN, utils_d_OUT as OUT, utils_d_RIGHT as RIGHT, type utils_d_SceneCanvasConfig as SceneCanvasConfig, utils_d_ShapeFromCurves as ShapeFromCurves, utils_d_UP as UP, type utils_d_WidthSetupConfig as WidthSetupConfig, utils_d_bufferIndexOrThrow as bufferIndexOrThrow, utils_d_clamp as clamp, utils_d_convertWorldDirectionToObjectSpace as convertWorldDirectionToObjectSpace, utils_d_furthestInDirection as furthestInDirection, utils_d_getBoundingBoxCenter as getBoundingBoxCenter, utils_d_getBoundingBoxHelper as getBoundingBoxHelper, utils_d_getFrameAttributes as getFrameAttributes, utils_d_indexOrThrow as indexOrThrow, utils_d_intersectionsBetween as intersectionsBetween, utils_d_moveAbove as moveAbove, utils_d_moveBelow as moveBelow, utils_d_moveNextTo as moveNextTo, utils_d_moveToLeftOf as moveToLeftOf, utils_d_moveToRightOf as moveToRightOf, utils_d_pointAlongCurve as pointAlongCurve, utils_d_positiveAngleTo as positiveAngleTo, utils_d_rotate180 as rotate180, utils_d_rotate270 as rotate270, utils_d_rotate90 as rotate90, utils_d_setupCanvas as setupCanvas, utils_d_transformBetweenSpaces as transformBetweenSpaces, utils_d_vspace as vspace, utils_d_vstack as vstack };
 }
 
 declare class Animation {
@@ -595,14 +607,15 @@ declare const PIXELS_TO_COORDS: number;
 declare const COORDS_TO_PIXELS: number;
 declare const ERROR_THRESHOLD = 0.001;
 declare const DEFAULT_BACKGROUND_HEX = 16775920;
-//# sourceMappingURL=constants.d.ts.map
+declare const UNITS_PER_STROKE_WIDTH: number;
 
 declare const constants_d_COORDS_TO_PIXELS: typeof COORDS_TO_PIXELS;
 declare const constants_d_DEFAULT_BACKGROUND_HEX: typeof DEFAULT_BACKGROUND_HEX;
 declare const constants_d_ERROR_THRESHOLD: typeof ERROR_THRESHOLD;
 declare const constants_d_PIXELS_TO_COORDS: typeof PIXELS_TO_COORDS;
+declare const constants_d_UNITS_PER_STROKE_WIDTH: typeof UNITS_PER_STROKE_WIDTH;
 declare namespace constants_d {
-  export { constants_d_COORDS_TO_PIXELS as COORDS_TO_PIXELS, constants_d_DEFAULT_BACKGROUND_HEX as DEFAULT_BACKGROUND_HEX, constants_d_ERROR_THRESHOLD as ERROR_THRESHOLD, constants_d_PIXELS_TO_COORDS as PIXELS_TO_COORDS };
+  export { constants_d_COORDS_TO_PIXELS as COORDS_TO_PIXELS, constants_d_DEFAULT_BACKGROUND_HEX as DEFAULT_BACKGROUND_HEX, constants_d_ERROR_THRESHOLD as ERROR_THRESHOLD, constants_d_PIXELS_TO_COORDS as PIXELS_TO_COORDS, constants_d_UNITS_PER_STROKE_WIDTH as UNITS_PER_STROKE_WIDTH };
 }
 
 type TextStyle = {
@@ -812,11 +825,11 @@ type AnimationRepresentation = Animation | Array<Animation> | {
     runTime?: number;
     scale?: number;
 } | ((t: number, dt: number) => void);
-type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
+type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGPURenderer) => T;
 interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
     scene: THREE.Scene;
     camera: T;
-    renderer: THREE.WebGLRenderer;
+    renderer: THREE.WebGPURenderer;
     animations?: Array<AnimationRepresentation>;
     update?: (deltaTime: number, time: number) => void;
 }
@@ -837,7 +850,7 @@ declare class SceneController {
     constructor(UserScene: StudioSceneClass, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
     get scene(): THREE.Scene;
     get camera(): THREE.OrthographicCamera;
-    get renderer(): THREE.WebGLRenderer;
+    get renderer(): THREE.WebGPURenderer;
     render(): void;
     tick(deltaTime: number, render?: boolean): void;
     play(): void;
@@ -900,4 +913,4 @@ type ComponentParent = THREE.Object3D & {
 declare function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 //# sourceMappingURL=index.d.ts.map
 
-export { index_d as Animation, type AnimationRepresentation, constants_d as Constants, diagram_d as Diagram, _default as Frame, index_d$1 as Geometry, graphing_d as Graphing, MeshLineMaterial, type SceneCanvasConfig, SceneController, type StudioScene, text_d as Text, utils_d as Utils, component, setCameraDimensions, setCanvasViewport, setupCanvas };
+export { index_d as Animation, type AnimationRepresentation, constants_d as Constants, diagram_d as Diagram, _default as Frame, index_d$1 as Geometry, graphing_d as Graphing, type SceneCanvasConfig, SceneController, type StudioScene, text_d as Text, utils_d as Utils, component, setupCanvas };

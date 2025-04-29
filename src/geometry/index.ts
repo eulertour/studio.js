@@ -1,5 +1,5 @@
-export { default as MeshLine } from "./MeshLine/index.js";
-export { default as Shape, type Style } from "./Shape.js";
+export { type Transform, type Style } from "./utils.js";
+export { default as Shape } from "./Shape.js";
 export { default as Line } from "./Line.js";
 export { default as Arrow } from "./Arrow.js";
 export { default as Polygon } from "./Polygon.js";
@@ -9,3 +9,4 @@ export { default as Circle } from "./Circle.js";
 export { default as Point } from "./Point.js";
 export { default as Rectangle } from "./Rectangle.js";
 export { default as Square } from "./Square.js";
+

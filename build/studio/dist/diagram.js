@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import { Animation } from "./animation/index.js";
 import * as Geometry from "./geometry/index.js";
 import * as Utils from "./utils.js";

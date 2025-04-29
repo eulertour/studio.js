@@ -1,4 +1,5 @@
-import Shape, { Style } from "./Shape.js";
+import Shape from "./Shape.js";
+import { type Style } from "./utils.js";
 import { THREE } from "../index.js";
 export type PolygonAttributes = {
     points: Array<THREE.Vector3>;

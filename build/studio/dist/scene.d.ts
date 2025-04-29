@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import { Animation } from "./animation/index.js";
 import { SceneCanvasConfig } from "./utils.js";
 export type AnimationRepresentation = Animation | Array<Animation> | {
@@ -9,11 +9,11 @@ export type AnimationRepresentation = Animation | Array<Animation> | {
     runTime?: number;
     scale?: number;
 } | ((t: number, dt: number) => void);
-type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer) => T;
+type Class<T> = new (scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGPURenderer) => T;
 export interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> {
     scene: THREE.Scene;
     camera: T;
-    renderer: THREE.WebGLRenderer;
+    renderer: THREE.WebGPURenderer;
     animations?: Array<AnimationRepresentation>;
     update?: (deltaTime: number, time: number) => void;
 }
@@ -34,7 +34,7 @@ export declare class SceneController {
     constructor(UserScene: StudioSceneClass, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
     get scene(): THREE.Scene;
     get camera(): THREE.OrthographicCamera;
-    get renderer(): THREE.WebGLRenderer;
+    get renderer(): THREE.WebGPURenderer;
     render(): void;
     tick(deltaTime: number, render?: boolean): void;
     play(): void;

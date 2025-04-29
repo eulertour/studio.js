@@ -1,10 +1,8 @@
 import * as THREE from "three/webgpu";
 import { Scene as BaseScene } from "three/webgpu";
-import MeshLine from "./geometry/MeshLine/index.js";
-import { setCameraDimensions } from "./geometry/MeshLine/MeshLineMaterial.js";
-import { CanvasViewport } from "./geometry/MeshLine/MeshLineMaterial.js";
 import { DEFAULT_BACKGROUND_HEX, PIXELS_TO_COORDS } from "./constants.js";
 import * as Geometry from "./geometry/index.js";
+import WebGPUMeshLine from "./geometry/WebGPUMeshLine/index.js";
 
 const BUFFER = 0.5;
 const ORIGIN = Object.freeze(new THREE.Vector3(0, 0, 0));
@@ -122,7 +120,6 @@ const setupCanvas = (
     11,
   );
   camera.position.z = 6;
-  setCameraDimensions(camera);
 
   const renderer = new THREE.WebGPURenderer({
     canvas,
@@ -130,15 +127,11 @@ const setupCanvas = (
   });
   renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
   renderer.autoClear = false;
-  if (config.viewport) {
-    CanvasViewport.copy(config.viewport);
-  } else {
+  if (!config.viewport) {
     renderer.setSize(pixelWidth, pixelHeight, false);
-    CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
   }
   if (typeof window !== "undefined") {
     renderer.setPixelRatio(window.devicePixelRatio);
-    CanvasViewport.multiplyScalar(window.devicePixelRatio);
   }
   return [new Scene(), camera, renderer];
 };
@@ -262,7 +255,7 @@ const furthestInDirection = (
       exclusionCheckObj = exclusionCheckObj.parent;
     }
 
-    if (obj instanceof MeshLine) {
+    if (obj instanceof WebGPUMeshLine) {
       for (const point of obj.points) {
         const clonedPoint = point.clone();
         transformBetweenSpaces(obj, object, clonedPoint);

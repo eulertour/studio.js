@@ -1,5 +1,5 @@
-import Shape from "./geometry/Shape.js";
-import * as THREE from "three";
+import { Shape } from "./geometry/index.js";
+import * as THREE from "three/webgpu";
 import { Utils } from "./index.js";
 import { getArcPoints } from "./geometry/geometryUtils.js";
 // TODO: Handle reflex angles.

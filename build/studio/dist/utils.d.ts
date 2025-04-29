@@ -1,5 +1,5 @@
-import * as THREE from "three";
-import { Scene as BaseScene } from "three";
+import * as THREE from "three/webgpu";
+import { Scene as BaseScene } from "three/webgpu";
 import * as Geometry from "./geometry/index.js";
 declare const BUFFER = 0.5;
 declare const ORIGIN: Readonly<THREE.Vector3>;
@@ -29,13 +29,14 @@ export type HeightSetupConfig = {
 };
 export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
     viewport?: THREE.Vector4;
+    webgpu: boolean;
 };
 declare class Scene extends BaseScene {
     forwardEvent: (e: any) => void;
     add(...objects: THREE.Object3D[]): this;
     remove(...objects: THREE.Object3D[]): this;
 }
-declare const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [Scene, THREE.Camera, THREE.WebGLRenderer];
+declare const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [Scene, THREE.Camera, THREE.WebGPURenderer];
 declare const convertWorldDirectionToObjectSpace: (worldDirection: THREE.Vector3, object: THREE.Object3D) => THREE.Vector3;
 declare const vstack: (group: THREE.Group, buffer?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;
 declare const vspace: (group: THREE.Group, distanceBetween?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;
@@ -54,6 +55,8 @@ declare const getBoundingBoxHelper: (obj: THREE.Object3D, color: string) => THRE
 declare const pointAlongCurve: (shape: Geometry.Shape, t: number) => THREE.Vector3 | undefined;
 declare const intersectionsBetween: (shape1: Geometry.Shape, shape2: Geometry.Shape) => Array<THREE.Vector3>;
 declare const positiveAngleTo: (a: THREE.Vector3, b: THREE.Vector3) => number;
+declare const indexOrThrow: <T>(array: T[], i: number) => T & ({} | null);
+declare const bufferIndexOrThrow: (array: Float32Array, i: number) => number;
 declare class ShapeFromCurves {
     adjacentThreshold: number;
     segmentClosestToPoint: THREE.Vector3;
@@ -66,5 +69,5 @@ declare class ShapeFromCurves {
     extendCurve(shape: Geometry.Shape, initialPointIndex: number, forward: boolean, until?: THREE.Vector3 | undefined): void;
     finish(): Geometry.Polygon;
 }
-export { getFrameAttributes, setupCanvas, clamp, vstack, vspace, furthestInDirection, moveToRightOf, moveToLeftOf, moveAbove, moveBelow, moveNextTo, rotate90, rotate180, rotate270, getBoundingBoxCenter, getBoundingBoxHelper, transformBetweenSpaces, convertWorldDirectionToObjectSpace, intersectionsBetween, pointAlongCurve, positiveAngleTo, ShapeFromCurves, BUFFER, RIGHT, LEFT, UP, DOWN, OUT, IN, ORIGIN, };
+export { getFrameAttributes, setupCanvas, clamp, vstack, vspace, furthestInDirection, moveToRightOf, moveToLeftOf, moveAbove, moveBelow, moveNextTo, rotate90, rotate180, rotate270, getBoundingBoxCenter, getBoundingBoxHelper, transformBetweenSpaces, convertWorldDirectionToObjectSpace, intersectionsBetween, pointAlongCurve, positiveAngleTo, indexOrThrow, bufferIndexOrThrow, ShapeFromCurves, BUFFER, RIGHT, LEFT, UP, DOWN, OUT, IN, ORIGIN, };
 //# sourceMappingURL=utils.d.ts.map

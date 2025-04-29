@@ -1,22 +1,8 @@
-import * as THREE from "three";
-import MeshLine from "./MeshLine/index.js";
-export type Transform = {
-    position: THREE.Vector3;
-    rotation: THREE.Euler;
-    scale: THREE.Vector3;
-};
-export type Style = {
-    fillColor?: THREE.Color;
-    fillOpacity?: number;
-    strokeColor?: THREE.Color;
-    strokeOpacity?: number;
-    strokeWidth?: number;
-    strokeDashLength?: number;
-    strokeDashOffset?: number;
-    dashed?: boolean;
-};
+import * as THREE from "three/webgpu";
+import WebGPUMeshLine from "./WebGPUMeshLine/index.js";
+import { Style, Transform } from "./utils.js";
 type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
-type Stroke = MeshLine;
+type Stroke = WebGPUMeshLine;
 /**
  * An abstract class representing a generalized shape.
  */
@@ -25,7 +11,7 @@ export default abstract class Shape extends THREE.Group {
     stroke?: Stroke;
     curveEndIndices: Array<Array<number>>;
     arrow: boolean;
-    constructor(points: Array<THREE.Vector3>, config?: Style & {
+    constructor(points: Array<THREE.Vector3>, userConfig?: Style & {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
@@ -36,15 +22,23 @@ export default abstract class Shape extends THREE.Group {
     add(...objects: THREE.Object3D[]): this;
     remove(...objects: THREE.Object3D[]): this;
     addLabel(tex: string, direction: THREE.Vector3): void;
-    static defaultStyle(): {
+    update(dt: number, _: number): void;
+    static defaultStyleData(): {
         fillColor: THREE.Color;
         fillOpacity: number;
         strokeColor: THREE.Color;
         strokeOpacity: number;
         strokeWidth: number;
+        strokeDashed: boolean;
         strokeDashLength: number;
+        strokeDashSpeed: number;
         strokeDashOffset: number;
-        dashed: boolean;
+        strokeStartProportion: number;
+        strokeEndProportion: number;
+        strokeArrow: boolean;
+        strokeDrawArrow: boolean;
+        strokeArrowWidth: number;
+        strokeArrowLength: number;
     };
     static defaultConfig(): {};
     reshape(...args: any[]): void;

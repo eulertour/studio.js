@@ -44,7 +44,7 @@
     ":copyThreeBundle": "cp node_modules/three/build/three.module.js build/three",
     "build:api": "bun run :extractApi && bun run :parseJson",
     ":extractApi": "api-extractor run --config docs/apiExtractor/api-extractor.json --local --verbose",
-    ":parseJson": "node ./docs/parser/index.js docs/apiExtractor/studio.js.api.json ./build/studio.api.json",
+    ":parseJson": "node ./docs/parser/index.js docs/apiExtractor/studio.api.json ./build/studio.api.json",
     "copy:examples": "cp -r examples/src build/studio/examples",
     "deploy:development": "bun run :deploy -- --development",
     "deploy:staging": "bun run :deploy -- --staging",

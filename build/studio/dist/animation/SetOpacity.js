@@ -1,5 +1,5 @@
 import { Animation } from "./Animation.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 export default class SetOpacity extends Animation {
     constructor(objectOrFunc, targetOpacity, config) {
         let family = true;

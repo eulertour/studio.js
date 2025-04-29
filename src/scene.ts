@@ -1,8 +1,4 @@
 import * as THREE from "three/webgpu";
-import {
-  setCameraDimensions,
-  setCanvasViewport,
-} from "./geometry/MeshLine/MeshLineMaterial.js";
 import { Animation } from "./animation/index.js";
 import { SceneCanvasConfig, setupCanvas } from "./utils.js";
 
@@ -85,8 +81,6 @@ export class SceneController {
       this.renderer.setViewport(...viewportArray);
       this.renderer.setScissorTest(true);
       this.renderer.clear();
-      setCanvasViewport(this.viewport);
-      setCameraDimensions(this.camera);
       this.renderer.render(this.scene, this.camera);
     }
   }

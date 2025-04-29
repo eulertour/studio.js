@@ -4,8 +4,8 @@
 
 ```ts
 
-import { Scene as Scene_2 } from 'three';
-import * as THREE from 'three';
+import { Scene as Scene_2 } from 'three/webgpu';
+import * as THREE from 'three/webgpu';
 
 // @public (undocumented)
 class Angle extends Shape {
@@ -170,6 +170,9 @@ class Arrow extends Shape {
 // @public (undocumented)
 const BUFFER = 0.5;
 
+// @public (undocumented)
+const bufferIndexOrThrow: (array: Float32Array, i: number) => number;
+
 // @public
 class Circle extends Shape {
     constructor(radius?: number, config?: Style);
@@ -229,7 +232,8 @@ declare namespace Constants {
         PIXELS_TO_COORDS,
         COORDS_TO_PIXELS,
         ERROR_THRESHOLD,
-        DEFAULT_BACKGROUND_HEX
+        DEFAULT_BACKGROUND_HEX,
+        UNITS_PER_STROKE_WIDTH
     }
 }
 export { Constants }
@@ -374,9 +378,9 @@ const furthestInDirection: (object: any, direction: any, exclude?: THREE.Object3
 
 declare namespace Geometry {
     export {
-        MeshLine,
-        Shape,
+        Transform,
         Style,
+        Shape,
         Line,
         Arrow,
         Polygon,
@@ -421,6 +425,9 @@ type HeightSetupConfig = {
 
 // @public (undocumented)
 const IN: Readonly<THREE.Vector3>;
+
+// @public (undocumented)
+const indexOrThrow: <T>(array: T[], i: number) => T & ({} | null);
 
 // @public (undocumented)
 class Indicator extends THREE.Group {
@@ -471,44 +478,6 @@ class Line extends Shape {
     reshape(start: THREE.Vector3, end: THREE.Vector3, config?: Style): void;
     // (undocumented)
     start: THREE.Vector3;
-}
-
-// Warning: (ae-forgotten-export) The symbol "MeshLineGeometry" needs to be exported by the entry point index.d.ts
-//
-// @public (undocumented)
-class MeshLine extends THREE.Mesh<MeshLineGeometry, MeshLineMaterial> {
-    constructor(geometry: MeshLineGeometry, material: MeshLineMaterial);
-    // (undocumented)
-    get dashOffset(): number;
-    set dashOffset(dashOffset: number);
-    // (undocumented)
-    get points(): THREE.Vector3[];
-}
-
-// @public (undocumented)
-export class MeshLineMaterial extends THREE.ShaderMaterial {
-    constructor(parameters: THREE.ShaderMaterialParameters & {
-        color: THREE.ColorRepresentation;
-        opacity: number;
-        width: number;
-        dashLength: number;
-        dashOffset: number;
-    });
-    // (undocumented)
-    get color(): any;
-    set color(value: any);
-    // (undocumented)
-    get dashLength(): any;
-    set dashLength(value: any);
-    // (undocumented)
-    get dashOffset(): any;
-    set dashOffset(value: any);
-    // (undocumented)
-    get totalLength(): any;
-    set totalLength(value: any);
-    // (undocumented)
-    get width(): number;
-    set width(value: number);
 }
 
 // @public (undocumented)
@@ -689,6 +658,7 @@ const rotate90: (v: THREE.Vector3) => THREE.Vector3;
 // @public (undocumented)
 export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
     viewport?: THREE.Vector4;
+    webgpu: boolean;
 };
 
 // @public (undocumented)
@@ -717,7 +687,7 @@ export class SceneController {
     // (undocumented)
     render(): void;
     // (undocumented)
-    get renderer(): THREE.WebGLRenderer;
+    get renderer(): THREE.WebGPURenderer;
     // (undocumented)
     get scene(): THREE.Scene;
     // (undocumented)
@@ -733,12 +703,6 @@ export class SceneController {
     // (undocumented)
     viewport: THREE.Vector4 | undefined;
 }
-
-// @public (undocumented)
-export const setCameraDimensions: (camera: THREE.OrthographicCamera) => void;
-
-// @public (undocumented)
-export const setCanvasViewport: (viewport: THREE.Vector4) => void;
 
 // @public (undocumented)
 class SetOpacity extends Animation_3 {
@@ -765,7 +729,7 @@ class SetScale extends Animation_3 {
 // Warning: (ae-forgotten-export) The symbol "Scene" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [Scene, THREE.Camera, THREE.WebGLRenderer];
+export const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [Scene, THREE.Camera, THREE.WebGPURenderer];
 
 // @public (undocumented)
 class Shake extends Animation_3 {
@@ -777,7 +741,7 @@ class Shake extends Animation_3 {
 
 // @public
 abstract class Shape extends THREE.Group {
-    constructor(points: Array<THREE.Vector3>, config?: Style & {
+    constructor(points: Array<THREE.Vector3>, userConfig?: Style & {
         arrow?: boolean;
         stroke?: boolean;
         fill?: boolean;
@@ -811,15 +775,22 @@ abstract class Shape extends THREE.Group {
     // (undocumented)
     static defaultConfig(): {};
     // (undocumented)
-    static defaultStyle(): {
+    static defaultStyleData(): {
         fillColor: THREE.Color;
         fillOpacity: number;
         strokeColor: THREE.Color;
         strokeOpacity: number;
         strokeWidth: number;
+        strokeDashed: boolean;
         strokeDashLength: number;
+        strokeDashSpeed: number;
         strokeDashOffset: number;
-        dashed: boolean;
+        strokeStartProportion: number;
+        strokeEndProportion: number;
+        strokeArrow: boolean;
+        strokeDrawArrow: boolean;
+        strokeArrowWidth: number;
+        strokeArrowLength: number;
     };
     // (undocumented)
     dispose(): this;
@@ -841,8 +812,6 @@ abstract class Shape extends THREE.Group {
     getDimensions(): THREE.Vector2;
     // (undocumented)
     getStyle(): Style;
-    // Warning: (ae-forgotten-export) The symbol "Transform" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     getTransform(): Transform;
     // (undocumented)
@@ -868,6 +837,8 @@ abstract class Shape extends THREE.Group {
     stroke?: Stroke;
     // (undocumented)
     transformedPoint(index: number, targetSpace: THREE.Object3D): THREE.Vector3;
+    // (undocumented)
+    update(dt: number, _: number): void;
     // (undocumented)
     worldPoint(index: number): THREE.Vector3;
 }
@@ -929,7 +900,7 @@ export interface StudioScene<T extends THREE.Camera = THREE.OrthographicCamera> 
     // (undocumented)
     camera: T;
     // (undocumented)
-    renderer: THREE.WebGLRenderer;
+    renderer: THREE.WebGPURenderer;
     // (undocumented)
     scene: THREE.Scene;
     // (undocumented)
@@ -943,9 +914,9 @@ type Style = {
     strokeColor?: THREE.Color;
     strokeOpacity?: number;
     strokeWidth?: number;
-    strokeDashLength?: number;
-    strokeDashOffset?: number;
-    dashed?: boolean;
+    strokeDashes?: StrokeDashesConfig;
+    strokeProportion?: StrokeProportionConfig;
+    strokeArrow?: StrokeArrowConfig;
 };
 
 declare namespace Text_2 {
@@ -1006,7 +977,17 @@ class Text_3 extends THREE.Group {
 export { THREE }
 
 // @public (undocumented)
+type Transform = {
+    position: THREE.Vector3;
+    rotation: THREE.Euler;
+    scale: THREE.Vector3;
+};
+
+// @public (undocumented)
 const transformBetweenSpaces: (from: THREE.Object3D, to: THREE.Object3D, point: THREE.Vector3) => THREE.Vector3;
+
+// @public (undocumented)
+const UNITS_PER_STROKE_WIDTH: number;
 
 // @public (undocumented)
 const UP: Readonly<THREE.Vector3>;
@@ -1037,6 +1018,8 @@ declare namespace Utils {
         intersectionsBetween,
         pointAlongCurve,
         positiveAngleTo,
+        indexOrThrow,
+        bufferIndexOrThrow,
         ShapeFromCurves,
         BUFFER,
         RIGHT,
@@ -1067,6 +1050,12 @@ type WidthSetupConfig = {
     pixelWidth: number;
     coordinateWidth: number;
 };
+
+// Warnings were encountered during analysis:
+//
+// src/geometry/utils.ts:42:3 - (ae-forgotten-export) The symbol "StrokeDashesConfig" needs to be exported by the entry point index.d.ts
+// src/geometry/utils.ts:43:3 - (ae-forgotten-export) The symbol "StrokeProportionConfig" needs to be exported by the entry point index.d.ts
+// src/geometry/utils.ts:44:3 - (ae-forgotten-export) The symbol "StrokeArrowConfig" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

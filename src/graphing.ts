@@ -1,6 +1,6 @@
 import * as THREE from "three/webgpu";
 import Polyline from "./geometry/Polyline.js";
-import { type Style } from "./geometry/Shape.js";
+import { type Style } from "./geometry/index.js";
 
 type CurveAttributes = {
   equation: () => void;

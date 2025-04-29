@@ -1,4 +1,4 @@
-import { Style } from "./Shape.js";
+import { type Style } from "./utils.js";
 import Rectangle, { RectangleAttributes } from "./Rectangle.js";
 
 /**

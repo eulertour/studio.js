@@ -1,5 +1,5 @@
 import Circle from "./Circle.js";
-import { Style } from "./Shape.js";
+import { type Style } from "./utils.js";
 import { ArcAttributes } from "./Arc.js";
 import { THREE } from "../index.js";
 import { ORIGIN } from "../utils.js";

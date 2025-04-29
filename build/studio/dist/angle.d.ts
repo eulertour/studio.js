@@ -1,5 +1,5 @@
-import Shape, { Style } from "./geometry/Shape.js";
-import * as THREE from "three";
+import { Shape, type Style } from "./geometry/index.js";
+import * as THREE from "three/webgpu";
 export type AngleAttributes = {
     point1: THREE.Vector3;
     point2: THREE.Vector3;

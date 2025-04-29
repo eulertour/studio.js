@@ -1,4 +1,3 @@
-export { default as MeshLine } from "./MeshLine/index.js";
 export { default as Shape } from "./Shape.js";
 export { default as Line } from "./Line.js";
 export { default as Arrow } from "./Arrow.js";

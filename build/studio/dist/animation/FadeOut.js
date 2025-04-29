@@ -1,5 +1,5 @@
 import { Animation } from "./Animation.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 export default class FadeOut extends Animation {
     constructor(objectOrFunc, config) {
         let family = true;

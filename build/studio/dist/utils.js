@@ -1,10 +1,8 @@
-import * as THREE from "three";
-import { Scene as BaseScene } from "three";
-import MeshLine from "./geometry/MeshLine/index.js";
-import { setCameraDimensions } from "./geometry/MeshLine/MeshLineMaterial.js";
-import { CanvasViewport } from "./geometry/MeshLine/MeshLineMaterial.js";
+import * as THREE from "three/webgpu";
+import { Scene as BaseScene } from "three/webgpu";
 import { DEFAULT_BACKGROUND_HEX, PIXELS_TO_COORDS } from "./constants.js";
 import * as Geometry from "./geometry/index.js";
+import WebGPUMeshLine from "./geometry/WebGPUMeshLine/index.js";
 const BUFFER = 0.5;
 const ORIGIN = Object.freeze(new THREE.Vector3(0, 0, 0));
 const RIGHT = Object.freeze(new THREE.Vector3(1, 0, 0));
@@ -91,24 +89,17 @@ const setupCanvas = (canvas, config = {
     }
     const camera = new THREE.OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
     camera.position.z = 6;
-    setCameraDimensions(camera);
-    const renderer = new THREE.WebGLRenderer({
+    const renderer = new THREE.WebGPURenderer({
         canvas,
         antialias: true,
-        preserveDrawingBuffer: true,
     });
     renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
     renderer.autoClear = false;
-    if (config.viewport) {
-        CanvasViewport.copy(config.viewport);
-    }
-    else {
+    if (!config.viewport) {
         renderer.setSize(pixelWidth, pixelHeight, false);
-        CanvasViewport.set(0, 0, pixelWidth, pixelHeight);
     }
     if (typeof window !== "undefined") {
         renderer.setPixelRatio(window.devicePixelRatio);
-        CanvasViewport.multiplyScalar(window.devicePixelRatio);
     }
     return [new Scene(), camera, renderer];
 };
@@ -202,7 +193,7 @@ const furthestInDirection = (object, direction, exclude = []) => {
             }
             exclusionCheckObj = exclusionCheckObj.parent;
         }
-        if (obj instanceof MeshLine) {
+        if (obj instanceof WebGPUMeshLine) {
             for (const point of obj.points) {
                 const clonedPoint = point.clone();
                 transformBetweenSpaces(obj, object, clonedPoint);
@@ -447,6 +438,20 @@ const positiveAngleTo = (a, b) => {
     }
     return angle;
 };
+const indexOrThrow = (array, i) => {
+    const value = array[i];
+    if (value === undefined) {
+        throw new Error("Invalid array access");
+    }
+    return value;
+};
+const bufferIndexOrThrow = (array, i) => {
+    const value = array[i];
+    if (value === undefined) {
+        throw new Error("Invalid array access");
+    }
+    return value;
+};
 class ShapeFromCurves {
     constructor() {
         Object.defineProperty(this, "adjacentThreshold", {
@@ -643,5 +648,5 @@ class ShapeFromCurves {
         return new Geometry.Polygon(this.points, this.style);
     }
 }
-export { getFrameAttributes, setupCanvas, clamp, vstack, vspace, furthestInDirection, moveToRightOf, moveToLeftOf, moveAbove, moveBelow, moveNextTo, rotate90, rotate180, rotate270, getBoundingBoxCenter, getBoundingBoxHelper, transformBetweenSpaces, convertWorldDirectionToObjectSpace, intersectionsBetween, pointAlongCurve, positiveAngleTo, ShapeFromCurves, BUFFER, RIGHT, LEFT, UP, DOWN, OUT, IN, ORIGIN, };
+export { getFrameAttributes, setupCanvas, clamp, vstack, vspace, furthestInDirection, moveToRightOf, moveToLeftOf, moveAbove, moveBelow, moveNextTo, rotate90, rotate180, rotate270, getBoundingBoxCenter, getBoundingBoxHelper, transformBetweenSpaces, convertWorldDirectionToObjectSpace, intersectionsBetween, pointAlongCurve, positiveAngleTo, indexOrThrow, bufferIndexOrThrow, ShapeFromCurves, BUFFER, RIGHT, LEFT, UP, DOWN, OUT, IN, ORIGIN, };
 //# sourceMappingURL=utils.js.map

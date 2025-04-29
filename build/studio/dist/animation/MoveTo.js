@@ -1,5 +1,5 @@
 import { Animation } from "./Animation.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import { getBoundingBoxCenter } from "../utils.js";
 export default class MoveTo extends Animation {
     constructor(target, obj, config) {

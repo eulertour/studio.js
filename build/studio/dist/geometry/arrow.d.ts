@@ -1,5 +1,6 @@
-import * as THREE from "three";
-import Shape, { type Style } from "./Shape.js";
+import * as THREE from "three/webgpu";
+import Shape from "./Shape.js";
+import { type Style } from "./utils.js";
 export type ArrowAttributes = {
     start: THREE.Vector3;
     end: THREE.Vector3;

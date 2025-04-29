@@ -1,4 +1,4 @@
-import Shape, { Style } from "./geometry/Shape.js";
+import { Shape, type Style } from "./geometry/index.js";
 import * as THREE from "three/webgpu";
 import { Utils } from "./index.js";
 import { getArcPoints } from "./geometry/geometryUtils.js";

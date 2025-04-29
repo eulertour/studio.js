@@ -1,5 +1,5 @@
 import { Animation } from "./Animation.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 export default class SetScale extends Animation {
     initialScale: number;
     constructor(object: THREE.Object3D, factor: number, config?: any);

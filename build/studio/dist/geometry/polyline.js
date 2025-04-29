@@ -10,7 +10,9 @@ export default class Polyline extends Shape {
         this.curveEndIndices = [[0, 1]];
     }
     reshape(points, config = {}) {
-        this.copyStrokeAndFill(new Polyline(points, config));
+        const newConfig = { ...this.getStyle(), ...config };
+        this.stroke.geometry.setPoints(points, false);
+        this.restyle(newConfig);
     }
     static defaultConfig() {
         return { ...Shape.defaultConfig(), fill: false };
