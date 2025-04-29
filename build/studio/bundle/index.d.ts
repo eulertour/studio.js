@@ -993,24 +993,13 @@ declare class SceneController {
 
 declare module "three" {
     interface Object3D {
-        vstack(buffer?: number): THREE.Object3D;
         vspace(distanceBetween?: number): THREE.Object3D;
-        setScale(factor: number): THREE.Object3D;
         moveNextTo(target: THREE.Object3D, direction: THREE.Vector3, distance?: number): void;
         moveToRightOf(target: THREE.Object3D, distance?: number): void;
         moveToLeftOf(target: THREE.Object3D, distance?: number): void;
         moveAbove(target: THREE.Object3D, distance?: number): void;
         moveBelow(target: THREE.Object3D, distance?: number): void;
-        setOpacity(opacity: number, config?: any): THREE.Object3D;
-        setInvisible(config?: any): THREE.Object3D;
-        setVisible(config?: any): THREE.Object3D;
-        setUpright(): THREE.Object3D;
-        recenter(center: THREE.Vector3): THREE.Object3D;
-        reorient(zRotation: number): void;
         pointAlongCurve(t: number): THREE.Vector3;
-        addComponent<T extends THREE.Object3D, K extends string>(name: K, child: T): this & {
-            [P in K]: T;
-        };
         updateComponent(name: string, child: THREE.Object3D): void;
         removeComponent(name: string): THREE.Object3D;
         hideComponents(): THREE.Object3D;
