@@ -56,7 +56,6 @@ const isHeightSetup = (config: object): config is HeightSetupConfig => {
 
 export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
   viewport?: THREE.Vector4;
-  webgpu: boolean;
 };
 
 class Scene extends BaseScene {

@@ -223,6 +223,7 @@ export default class FragmentShader {
         // Dash body
         .ElseIf(referencePointType.equal(0), () => {
           If(abs(dy).greaterThan(halfWidth), () => {
+            // testColor.assign(vec4(1, 0, 0, 1));
             Discard();
           });
         })
@@ -289,6 +290,7 @@ export default class FragmentShader {
       });
 
       // Incoming to start of closed curve
+      const testColor = vec4(color, opacity).toVar();
       const patternLength = this.dashAtlas.period.mul(dashLength);
       const skipDrawingArrow = isArrowSegment.and(float(drawArrow).equal(0));
       const drawStart = select(
@@ -402,10 +404,6 @@ export default class FragmentShader {
       );
 
       // End of draw range
-      const testColor = vec4(color, opacity).toVar();
-      // If(skipDrawingArrow, () => {
-      //   testColor.assign(vec4(1, 0, 0, 1));
-      // });
       If(float(dashLength).equal(0), () => {
         If(drawEnd.lessThanEqual(offset), () => {
           const dx = offset.sub(drawEnd);
@@ -425,7 +423,6 @@ export default class FragmentShader {
       });
 
       // Start of draw range
-      // const testColor = vec4(color, opacity).toVar();
       If(float(dashLength).equal(0), () => {
         If(segmentEnd.lessThanEqual(drawStart), () => {
           const nextFragment = varyingProperty("vec2", "vNextFragment");

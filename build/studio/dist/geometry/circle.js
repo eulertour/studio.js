@@ -1,6 +1,5 @@
-import { ERROR_THRESHOLD } from "../constants.js";
 import Shape from "./Shape.js";
-import * as THREE from "three/webgpu";
+import { getArcPoints } from "./geometryUtils.js";
 /**
  * A shape consisting of all points at a fixed distance from a given center.
  *
@@ -8,12 +7,7 @@ import * as THREE from "three/webgpu";
  */
 export default class Circle extends Shape {
     constructor(radius = 1, config = {}) {
-        const angle = 2 * Math.PI;
-        let points = [];
-        for (let i = 0; i < angle + ERROR_THRESHOLD; i += angle / 50) {
-            points.push(new THREE.Vector3(radius * Math.cos(i), radius * Math.sin(i), 0));
-        }
-        points.push(points[0].clone());
+        const points = getArcPoints(radius, 2 * Math.PI);
         super(points, {
             ...Circle.defaultConfig(),
             ...config,

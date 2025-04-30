@@ -332,12 +332,15 @@ export default class Scene implements StudioScene {
       strokeOpacity: 0.85,
       strokeArrow: { draw: false },
     });
-
     this.arrowSquare = new Geometry.Square(1.15, {
       strokeColor: new THREE.Color("blue"),
       strokeOpacity: 0.85,
       strokeArrow: { draw: false },
     });
+    const arrowShapes = new THREE.Group();
+    arrowShapes.add(this.arrowCircle, this.arrowSquare);
+    arrowShapes.position.set(2, 2, 0);
+    scene.add(arrowShapes);
 
     this.staticSolidArrow.position.set(-5, 1.25, 0);
     this.staticDashedArrow.position.set(-5, 0, 0);
@@ -348,8 +351,6 @@ export default class Scene implements StudioScene {
     this.drawnSolidArrowStaticTips.position.set(5, 1.25, 0);
     this.drawnDashedArrowStaticTips.position.set(5, 0, 0);
     this.drawnDashedMovingArrowStaticTips.position.set(5, -1.25, 0);
-    this.arrowCircle.position.set(3.5, 3.75, 0);
-    this.arrowSquare.position.set(3.5, 3.75, 0);
     withArrow.add(
       this.staticSolidArrow,
       this.staticDashedArrow,
@@ -360,11 +361,17 @@ export default class Scene implements StudioScene {
       this.drawnSolidArrowStaticTips,
       this.drawnDashedArrowStaticTips,
       this.drawnDashedMovingArrowStaticTips,
-      this.arrowCircle,
-      this.arrowSquare,
     );
     withArrow.position.set(0, -1.75, 0);
     scene.add(withArrow);
+
+    // const circle = new Geometry.Circle(1);
+    // circle.position.set(0, 0, 0);
+    // scene.add(circle);
+    //
+    // const arc = new Geometry.Arc(0.5, 2 * Math.PI);
+    // arc.position.set(0, 0, 0);
+    // scene.add(arc);
 
     this.animations = [];
   }

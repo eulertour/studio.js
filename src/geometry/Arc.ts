@@ -24,7 +24,6 @@ export default class Arc extends Shape {
   ) {
     config = { ...Arc.defaultConfig(), ...config };
     let points = getArcPoints(radius, angle, { closed: config.closed });
-
     super(points, config);
 
     this.closed = config.closed ?? false;

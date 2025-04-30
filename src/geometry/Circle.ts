@@ -1,5 +1,6 @@
 import { ERROR_THRESHOLD } from "../constants.js";
 import Shape from "./Shape.js";
+import { getArcPoints } from "./geometryUtils.js";
 import { type Style } from "./utils.js";
 import * as THREE from "three/webgpu";
 
@@ -17,15 +18,7 @@ export default class Circle extends Shape {
     public radius = 1,
     config: Style = {},
   ) {
-    const angle = 2 * Math.PI;
-    let points = [];
-    for (let i = 0; i < angle + ERROR_THRESHOLD; i += angle / 50) {
-      points.push(
-        new THREE.Vector3(radius * Math.cos(i), radius * Math.sin(i), 0),
-      );
-    }
-    points.push(points[0].clone());
-
+    const points = getArcPoints(radius, 2 * Math.PI);
     super(points, {
       ...Circle.defaultConfig(),
       ...config,

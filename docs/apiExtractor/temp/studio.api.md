@@ -658,7 +658,6 @@ const rotate90: (v: THREE.Vector3) => THREE.Vector3;
 // @public (undocumented)
 export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
     viewport?: THREE.Vector4;
-    webgpu: boolean;
 };
 
 // @public (undocumented)

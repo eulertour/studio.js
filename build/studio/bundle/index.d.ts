@@ -379,7 +379,6 @@ type HeightSetupConfig = {
 };
 type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
     viewport?: THREE.Vector4;
-    webgpu: boolean;
 };
 declare class Scene extends Scene$1 {
     forwardEvent: (e: any) => void;
