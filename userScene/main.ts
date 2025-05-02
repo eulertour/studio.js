@@ -31,13 +31,9 @@ export default class Scene implements StudioScene {
 
     this.animations = [
       new Animation.Wait(),
-      new Animation.Animation((t, _) => {
-        triangle.reshape([
-          new THREE.Vector3(-1, -1, 0),
-          new THREE.Vector3(1 + t, 1, 0),
-          new THREE.Vector3(1, -1, 0),
-        ]);
-      }),
+      new Animation.Shrink(triangle),
+      new Animation.Grow(triangle),
+      
     ];
   }
 }
