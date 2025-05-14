@@ -41,7 +41,7 @@
     "build:mathjax": "rollup --config rollup.mathjax.ts --configPlugin typescript",
     "build:three": "bun run :bundleThreeTypes && bun run :copyThreeBundle",
     ":bundleThreeTypes": "rollup --config three-types/rollup.ts --configPlugin typescript",
-    ":copyThreeBundle": "cp node_modules/three/build/three.module.js build/three",
+    ":copyThreeBundle": "cp node_modules/three/{package.json,build/*} build/three",
     "build:api": "bun run :extractApi && bun run :parseJson",
     ":extractApi": "api-extractor run --config docs/apiExtractor/api-extractor.json --local --verbose",
     ":parseJson": "node ./docs/parser/index.js docs/apiExtractor/studio.api.json ./build/studio.api.json",
@@ -54,6 +54,6 @@
   "source": "src/index.ts",
   "type": "module",
   "dependencies": {
-    "three": "../three.js"
+    "three": "../three-latest"
   }
 }
