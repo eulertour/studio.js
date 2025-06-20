@@ -381,6 +381,7 @@ import {
 } from "./scene.js";
 import * as Text from "./text.js";
 import { setupCanvas, SceneCanvasConfig } from "./utils.js";
+import WebGPUMeshLineMaterial from "./geometry/WebGPUMeshLine/Material.js";
 
 export {
   component,
@@ -391,6 +392,7 @@ export {
   Graphing,
   setupCanvas,
   THREE,
+  WebGPUMeshLineMaterial,
   type StudioScene,
   type SceneCanvasConfig,
   type AnimationRepresentation,

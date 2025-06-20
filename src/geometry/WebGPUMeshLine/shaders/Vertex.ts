@@ -22,7 +22,7 @@ import { ShaderNodeFn } from "three/src/nodes/TSL.js";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import { UNITS_PER_STROKE_WIDTH } from "../../../constants.js";
 import { UniformNode } from "three/webgpu";
-import { Vector3 } from "three";
+import { Vector3 } from "three/webgpu";
 
 const SQRT_2 = 1.4142135624;
 const ARROW_WIDTH = 1;

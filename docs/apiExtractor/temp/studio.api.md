@@ -5,6 +5,7 @@
 ```ts
 
 import { Scene as Scene_2 } from 'three/webgpu';
+import { ShaderNodeObject } from 'three/tsl';
 import * as THREE from 'three/webgpu';
 
 // @public (undocumented)
@@ -1041,6 +1042,27 @@ const vstack: (group: THREE.Group, buffer?: number) => THREE.Group<THREE.Object3
 // @public (undocumented)
 class Wait extends Animation_3 {
     constructor(config?: any);
+}
+
+// @public (undocumented)
+export class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
+    constructor(uniforms: Uniforms, dashSpeed: number, dashPattern: number[], threeDimensions: boolean);
+    // Warning: (ae-forgotten-export) The symbol "DashAtlas" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    dashAtlas: DashAtlas;
+    // (undocumented)
+    dashSpeed: number;
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    previousDashOffset: number;
+    // Warning: (ae-forgotten-export) The symbol "Uniforms" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    uniforms: Uniforms;
+    // (undocumented)
+    update(dt: number): void;
 }
 
 // @public (undocumented)

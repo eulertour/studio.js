@@ -64,5 +64,6 @@ import * as Graphing from "./graphing.js";
 import { type AnimationRepresentation, SceneController, type StudioScene } from "./scene.js";
 import * as Text from "./text.js";
 import { setupCanvas, SceneCanvasConfig } from "./utils.js";
-export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, type StudioScene, type SceneCanvasConfig, type AnimationRepresentation, Utils, Diagram, Constants, Frame, };
+import WebGPUMeshLineMaterial from "./geometry/WebGPUMeshLine/Material.js";
+export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, WebGPUMeshLineMaterial, type StudioScene, type SceneCanvasConfig, type AnimationRepresentation, Utils, Diagram, Constants, Frame, };
 //# sourceMappingURL=index.d.ts.map

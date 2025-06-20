@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu';
 import { Scene as Scene$1 } from 'three/webgpu';
 export { THREE };
+import { ShaderNodeObject } from 'three/tsl';
 
 type Transform = {
     position: THREE.Vector3;
@@ -36,6 +37,25 @@ type Style = {
     strokeArrow?: StrokeArrowConfig;
 };
 
+type Uniforms = {
+    firstPoint: THREE.UniformNode<THREE.Vector3>;
+    secondPoint: THREE.UniformNode<THREE.Vector3>;
+    color: THREE.UniformNode<THREE.Color>;
+    opacity: THREE.UniformNode<number>;
+    width: THREE.UniformNode<number>;
+    length: THREE.UniformNode<number>;
+    dashLength: THREE.UniformNode<number>;
+    dashOffset: THREE.UniformNode<number>;
+    startProportion: THREE.UniformNode<number>;
+    endProportion: THREE.UniformNode<number>;
+    arrow: THREE.UniformNode<number>;
+    arrowSegmentStart: THREE.UniformNode<THREE.Vector3>;
+    arrowSegmentEnd: THREE.UniformNode<THREE.Vector3>;
+    arrowSegmentProportion: THREE.UniformNode<number>;
+    drawArrow: THREE.UniformNode<number>;
+    arrowWidth: THREE.UniformNode<number>;
+    arrowLength: THREE.UniformNode<number>;
+};
 interface StrokeStyle {
     strokeColor?: THREE.Color;
     strokeOpacity?: number;
@@ -855,6 +875,25 @@ declare class SceneController {
     play(): void;
 }
 
+declare class DashAtlas {
+    atlas: THREE.DataTexture;
+    period: ShaderNodeObject<THREE.UniformNode<number>>;
+    constructor(pattern: number[]);
+    getPeriod(pattern: number[]): number;
+    computeSegmentBoundaries(pattern: number[]): number[];
+    generateAtlasData(pattern: number[]): Int8Array;
+}
+
+declare class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
+    dashAtlas: DashAtlas;
+    uniforms: Uniforms;
+    dashSpeed: number;
+    previousDashOffset: number;
+    constructor(uniforms: Uniforms, dashSpeed: number, dashPattern: number[], threeDimensions: boolean);
+    update(dt: number): void;
+    dispose(): void;
+}
+
 declare module "three" {
     interface Object3D {
         vstack(buffer?: number): THREE.Object3D;
@@ -912,4 +951,4 @@ type ComponentParent = THREE.Object3D & {
 declare function component(_: ClassAccessorDecoratorTarget<ComponentParent, THREE.Object3D>, context: ClassAccessorDecoratorContext<ComponentParent, THREE.Object3D>): ClassAccessorDecoratorResult<ComponentParent, any>;
 //# sourceMappingURL=index.d.ts.map
 
-export { index_d as Animation, type AnimationRepresentation, constants_d as Constants, diagram_d as Diagram, _default as Frame, index_d$1 as Geometry, graphing_d as Graphing, type SceneCanvasConfig, SceneController, type StudioScene, text_d as Text, utils_d as Utils, component, setupCanvas };
+export { index_d as Animation, type AnimationRepresentation, constants_d as Constants, diagram_d as Diagram, _default as Frame, index_d$1 as Geometry, graphing_d as Graphing, type SceneCanvasConfig, SceneController, type StudioScene, text_d as Text, utils_d as Utils, WebGPUMeshLineMaterial, component, setupCanvas };

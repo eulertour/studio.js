@@ -47,7 +47,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       this.uniforms.drawArrow,
     ).node();
   }
-
+  
   update(dt: number) {
     if (this.dashSpeed === 0) {
       return;

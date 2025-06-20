@@ -10,7 +10,7 @@ export default [
       file: "build/studio/bundle/index.js",
       format: "es",
     },
-    external: ["three"],
+    external: ["three/webgpu"],
     plugins: [
       nodeResolve(),
       typescript({

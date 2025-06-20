@@ -239,5 +239,6 @@ import * as Graphing from "./graphing.js";
 import { SceneController, } from "./scene.js";
 import * as Text from "./text.js";
 import { setupCanvas } from "./utils.js";
-export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, Utils, Diagram, Constants, Frame, };
+import WebGPUMeshLineMaterial from "./geometry/WebGPUMeshLine/Material.js";
+export { component, Geometry, Animation, Text, SceneController, Graphing, setupCanvas, THREE, WebGPUMeshLineMaterial, Utils, Diagram, Constants, Frame, };
 //# sourceMappingURL=index.js.map
