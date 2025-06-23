@@ -290,7 +290,6 @@ export default class FragmentShader {
       });
 
       // Incoming to start of closed curve
-      const testColor = vec4(color, opacity).toVar();
       const patternLength = this.dashAtlas.period.mul(dashLength);
       const skipDrawingArrow = isArrowSegment.and(float(drawArrow).equal(0));
       const drawStart = select(
@@ -634,6 +633,11 @@ export default class FragmentShader {
         },
       );
 
+      const testColor = vec4(color, opacity).toVar();
+      // testColor.assign(vec4(new THREE.Color("red"), opacity));
+      If(screenSize.y.lessThan(1647), () => {
+        testColor.assign(vec4(new THREE.Color("red"), opacity));
+      });
       return testColor;
       // return vec4(color, opacity);
     });
