@@ -47,6 +47,18 @@ export class SceneController {
   private _viewport: THREE.Vector4 | undefined;
   aspectRatio: number;
 
+  constructor(
+    public UserScene: StudioSceneClass,
+    canvasRef: HTMLCanvasElement,
+    config: SceneCanvasConfig,
+  ) {
+    this.aspectRatio = config.aspectRatio;
+    this.userScene = new UserScene(...setupCanvas(canvasRef, config));
+
+    // Set viewport which will trigger the setter and update ViewportManager
+    this.viewport = config.viewport;
+  }
+
   get viewport(): THREE.Vector4 | undefined {
     return this._viewport;
   }
@@ -58,18 +70,6 @@ export class SceneController {
       const screenSize = new THREE.Vector2(canvas.width, canvas.height);
       ViewportManager.getInstance().setViewport(value, screenSize);
     }
-  }
-
-  constructor(
-    public UserScene: StudioSceneClass,
-    canvasRef: HTMLCanvasElement,
-    config: SceneCanvasConfig,
-  ) {
-    this.aspectRatio = config.aspectRatio;
-    this.userScene = new UserScene(...setupCanvas(canvasRef, config));
-    
-    // Set viewport which will trigger the setter and update ViewportManager
-    this.viewport = config.viewport;
   }
 
   get scene() {
