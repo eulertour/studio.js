@@ -44,24 +44,32 @@ export class SceneController {
   loopAnimations: Array<Animation> = [];
   finishedAnimationCount = 0;
   userScene: StudioScene;
-  viewport: THREE.Vector4 | undefined;
+  private _viewport: THREE.Vector4 | undefined;
   aspectRatio: number;
+
+  get viewport(): THREE.Vector4 | undefined {
+    return this._viewport;
+  }
+
+  set viewport(value: THREE.Vector4 | undefined) {
+    this._viewport = value;
+    const canvas = this.renderer?.domElement;
+    if (canvas) {
+      const screenSize = new THREE.Vector2(canvas.width, canvas.height);
+      ViewportManager.getInstance().setViewport(value, screenSize);
+    }
+  }
 
   constructor(
     public UserScene: StudioSceneClass,
     canvasRef: HTMLCanvasElement,
     config: SceneCanvasConfig,
   ) {
-    this.viewport = config.viewport;
     this.aspectRatio = config.aspectRatio;
     this.userScene = new UserScene(...setupCanvas(canvasRef, config));
     
-    // Update ViewportManager with initial viewport
-    const screenSize = new THREE.Vector2(
-      canvasRef.width,
-      canvasRef.height
-    );
-    ViewportManager.getInstance().setViewport(this.viewport, screenSize);
+    // Set viewport which will trigger the setter and update ViewportManager
+    this.viewport = config.viewport;
   }
 
   get scene() {
@@ -91,13 +99,6 @@ export class SceneController {
       this.renderer.clear();
       this.renderer.render(this.scene, this.camera);
     }
-  }
-
-  setViewport(viewport: THREE.Vector4 | undefined) {
-    this.viewport = viewport;
-    const canvas = this.renderer.domElement;
-    const screenSize = new THREE.Vector2(canvas.width, canvas.height);
-    ViewportManager.getInstance().setViewport(viewport, screenSize);
   }
 
   tick(deltaTime: number, render = true) {

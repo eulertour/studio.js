@@ -228,6 +228,7 @@ export default class WebGPUMeshLine extends THREE.Mesh {
   }
 
   update(dt: number) {
+    console.log(this.material.uniforms["viewportSize"].value)
     // Update material's dash animation
     if (this.material instanceof WebGPUMeshLineMaterial) {
       this.material.update(dt);

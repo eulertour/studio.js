@@ -33,8 +33,8 @@ import DashAtlas from "../DashAtlas.js";
 // This returns [cssViewportWidth, cssViewportHeight] * devicePixelRatio.
 // If the css dimensions are 1280x720, this returns
 // [1280, 720] * devicePixelRatio, which may be [1408, 792].
-const glFragCoord = Fn(() =>
-  vec2(screenCoordinate.x, screenSize.y.sub(screenCoordinate.y)),
+const glFragCoord = Fn(
+  () => vec2(screenCoordinate.x, screenSize.y.sub(screenCoordinate.y)),
   // TODO: When viewport is enabled, use this logic instead:
   // vec2(screenCoordinate.x, viewportSize.y.sub(screenCoordinate.y)).sub(viewportOffset),
 );
@@ -647,9 +647,9 @@ export default class FragmentShader {
       // testColor.assign(vec4(new THREE.Color("red"), opacity));
       // TODO: When viewport is enabled, replace screenSize with viewportSize:
       // If(viewportSize.y.lessThan(1647), () => {
-      If(screenSize.y.lessThan(1647), () => {
-        testColor.assign(vec4(new THREE.Color("red"), opacity));
-      });
+      // If(screenSize.y.lessThan(1647), () => {
+      //   testColor.assign(vec4(new THREE.Color("red"), opacity));
+      // });
       return testColor;
       // return vec4(color, opacity);
     });
