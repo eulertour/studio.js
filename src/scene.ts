@@ -1,6 +1,7 @@
 import * as THREE from "three/webgpu";
 import { Animation } from "./animation/index.js";
 import { SceneCanvasConfig, setupCanvas } from "./utils.js";
+import { ViewportManager } from "./ViewportManager.js";
 
 export type AnimationRepresentation =
   | Animation
@@ -54,6 +55,13 @@ export class SceneController {
     this.viewport = config.viewport;
     this.aspectRatio = config.aspectRatio;
     this.userScene = new UserScene(...setupCanvas(canvasRef, config));
+    
+    // Update ViewportManager with initial viewport
+    const screenSize = new THREE.Vector2(
+      canvasRef.width,
+      canvasRef.height
+    );
+    ViewportManager.getInstance().setViewport(this.viewport, screenSize);
   }
 
   get scene() {
@@ -83,6 +91,13 @@ export class SceneController {
       this.renderer.clear();
       this.renderer.render(this.scene, this.camera);
     }
+  }
+
+  setViewport(viewport: THREE.Vector4 | undefined) {
+    this.viewport = viewport;
+    const canvas = this.renderer.domElement;
+    const screenSize = new THREE.Vector2(canvas.width, canvas.height);
+    ViewportManager.getInstance().setViewport(viewport, screenSize);
   }
 
   tick(deltaTime: number, render = true) {

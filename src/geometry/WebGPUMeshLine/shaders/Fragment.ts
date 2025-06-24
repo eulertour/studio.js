@@ -26,6 +26,7 @@ import * as THREE from "three/webgpu";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import { ShaderNodeFn } from "three/src/nodes/TSL.js";
 import { UniformNode } from "three/webgpu";
+import { Vector2 } from "three/webgpu";
 import { UNITS_PER_STROKE_WIDTH } from "../../../constants.js";
 import DashAtlas from "../DashAtlas.js";
 
@@ -34,6 +35,8 @@ import DashAtlas from "../DashAtlas.js";
 // [1280, 720] * devicePixelRatio, which may be [1408, 792].
 const glFragCoord = Fn(() =>
   vec2(screenCoordinate.x, screenSize.y.sub(screenCoordinate.y)),
+  // TODO: When viewport is enabled, use this logic instead:
+  // vec2(screenCoordinate.x, viewportSize.y.sub(screenCoordinate.y)).sub(viewportOffset),
 );
 
 const rotate90 = Fn(([vector]: [ShaderNodeObject<OperatorNode>]) =>
@@ -110,6 +113,8 @@ export default class FragmentShader {
     endProportion: UniformNode<number>,
     arrow: UniformNode<number>,
     drawArrow: UniformNode<number>,
+    viewportSize: UniformNode<Vector2>,
+    viewportOffset: UniformNode<Vector2>,
   ) {
     this.node = Fn(() => {
       const isArrowSegment = varyingProperty("float", "vIsArrowSegment");
@@ -121,6 +126,11 @@ export default class FragmentShader {
       const endFragment = varyingProperty("vec2", "vEndFragment");
 
       const segmentVector = endFragment.sub(startFragment);
+      // TODO: When viewport is enabled, use viewportSize/viewportOffset in glFragCoord:
+      // const glFragCoordWithViewport = Fn(() =>
+      //   vec2(screenCoordinate.x, viewportSize.y.sub(screenCoordinate.y)).sub(viewportOffset),
+      // );
+      // const fragmentVector = glFragCoordWithViewport().sub(startFragment);
       const fragmentVector = glFragCoord().sub(startFragment);
       const components = transformToBasis(fragmentVector, segmentVector);
       const tangentVector = components.xy;
@@ -635,6 +645,8 @@ export default class FragmentShader {
 
       const testColor = vec4(color, opacity).toVar();
       // testColor.assign(vec4(new THREE.Color("red"), opacity));
+      // TODO: When viewport is enabled, replace screenSize with viewportSize:
+      // If(viewportSize.y.lessThan(1647), () => {
       If(screenSize.y.lessThan(1647), () => {
         testColor.assign(vec4(new THREE.Color("red"), opacity));
       });

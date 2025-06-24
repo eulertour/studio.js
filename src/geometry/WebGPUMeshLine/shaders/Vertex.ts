@@ -22,7 +22,7 @@ import { ShaderNodeFn } from "three/src/nodes/TSL.js";
 import OperatorNode from "three/src/nodes/math/OperatorNode.js";
 import { UNITS_PER_STROKE_WIDTH } from "../../../constants.js";
 import { UniformNode } from "three/webgpu";
-import { Vector3 } from "three/webgpu";
+import { Vector2, Vector3 } from "three/webgpu";
 
 const SQRT_2 = 1.4142135624;
 const ARROW_WIDTH = 1;
@@ -39,6 +39,9 @@ const viewportTransform = Fn(
   ([normalizedDeviceCoordinates]: [ShaderNodeObject<OperatorNode>]) =>
     normalizedDeviceCoordinates.mul(screenSize.div(2)).add(screenSize.div(2))
       .xy,
+    // TODO: When viewport is enabled, use this logic instead:
+    // normalizedDeviceCoordinates.mul(viewportSize.div(2)).add(viewportSize.div(2))
+    //   .xy,
 );
 
 const clipToScreenSpace = Fn(
@@ -75,8 +78,18 @@ export default class VertexShader {
     arrowSegmentProportion: UniformNode<number>,
     arrowLength: UniformNode<number>,
     arrowWidth: UniformNode<number>,
+    viewportSize: UniformNode<Vector2>,
+    viewportOffset: UniformNode<Vector2>,
   ) {
     this.node = Fn(() => {
+      // Create viewport-aware transform function inside constructor
+      // TODO: When viewport is enabled, use this logic instead of viewportTransform:
+      // const viewportTransformWithOffset = Fn(
+      //   ([normalizedDeviceCoordinates]: [ShaderNodeObject<OperatorNode>]) =>
+      //     normalizedDeviceCoordinates.mul(viewportSize.div(2)).add(viewportSize.div(2))
+      //       .xy.add(viewportOffset),
+      // );
+      
       const cameraWorldMatrixZColumn = cameraWorldMatrix[2];
       if (cameraWorldMatrixZColumn === undefined) {
         throw new Error("Camera z column is undefined");

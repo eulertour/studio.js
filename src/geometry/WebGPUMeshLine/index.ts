@@ -9,6 +9,7 @@ import {
   strokeDashesConfigToData,
 } from "../utils.js";
 import { uniform } from "three/tsl";
+import { ViewportManager } from "../../ViewportManager.js";
 
 export type Uniforms = {
   firstPoint: THREE.UniformNode<THREE.Vector3>;
@@ -28,6 +29,9 @@ export type Uniforms = {
   drawArrow: THREE.UniformNode<number>;
   arrowWidth: THREE.UniformNode<number>;
   arrowLength: THREE.UniformNode<number>;
+  viewport: THREE.UniformNode<THREE.Vector4>;
+  viewportSize: THREE.UniformNode<THREE.Vector2>;
+  viewportOffset: THREE.UniformNode<THREE.Vector2>;
 };
 
 interface StrokeStyle {
@@ -87,6 +91,7 @@ const createUniforms = (
   arrowWidth: number,
   arrowLength: number,
 ): Uniforms => {
+  const viewportManager = ViewportManager.getInstance();
   const uniforms = {
     firstPoint: uniform(new THREE.Vector3()),
     secondPoint: uniform(new THREE.Vector3()),
@@ -105,6 +110,9 @@ const createUniforms = (
     arrowSegmentStart: uniform(new THREE.Vector3()),
     arrowSegmentEnd: uniform(new THREE.Vector3()),
     arrowSegmentProportion: uniform(0),
+    viewport: uniform(viewportManager.viewport || new THREE.Vector4(0, 0, 1, 1)),
+    viewportSize: uniform(viewportManager.getViewportSize()),
+    viewportOffset: uniform(viewportManager.getViewportOffset()),
   };
 
   // TODO: Update this after finishing arrow geometry
@@ -217,5 +225,48 @@ export default class WebGPUMeshLine extends THREE.Mesh {
         );
       }
     }
+  }
+
+  update(dt: number) {
+    // Update material's dash animation
+    if (this.material instanceof WebGPUMeshLineMaterial) {
+      this.material.update(dt);
+    } else if (Array.isArray(this.material)) {
+      this.material.forEach((material: any) => {
+        if (material instanceof WebGPUMeshLineMaterial) {
+          material.update(dt);
+        }
+      });
+    }
+    
+    // Update viewport uniforms from singleton
+    const viewportManager = ViewportManager.getInstance();
+    const setUniform = (uniform: keyof Uniforms, value: any) => {
+      if (Array.isArray(this.material)) {
+        this.material.forEach((material: any) => {
+          if (
+            (material as WebGPUMeshLineMaterial).uniforms &&
+            (material as WebGPUMeshLineMaterial).uniforms[uniform]
+          ) {
+            (material as WebGPUMeshLineMaterial).uniforms[uniform].value =
+              value;
+          }
+        });
+      } else {
+        if (
+          (this.material as WebGPUMeshLineMaterial).uniforms &&
+          (this.material as WebGPUMeshLineMaterial).uniforms[uniform]
+        ) {
+          (this.material as WebGPUMeshLineMaterial).uniforms[uniform].value =
+            value;
+        }
+      }
+    };
+    
+    if (viewportManager.viewport) {
+      setUniform("viewport", viewportManager.viewport);
+    }
+    setUniform("viewportSize", viewportManager.getViewportSize());
+    setUniform("viewportOffset", viewportManager.getViewportOffset());
   }
 }
