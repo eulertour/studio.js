@@ -80,6 +80,7 @@ export default class VertexShader {
     arrowWidth: UniformNode<number>,
     viewportSize: UniformNode<Vector2>,
     viewportOffset: UniformNode<Vector2>,
+    devicePixelRatio: UniformNode<number>,
   ) {
     this.node = Fn(() => {
       // Create viewport-aware transform function inside constructor

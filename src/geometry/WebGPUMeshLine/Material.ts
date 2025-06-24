@@ -34,6 +34,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       this.uniforms.arrowLength,
       this.uniforms.viewportSize,
       this.uniforms.viewportOffset,
+      this.uniforms.devicePixelRatio,
     ).node();
     this.fragmentNode = new FragmentShader(
       this.dashAtlas,
@@ -49,6 +50,7 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
       this.uniforms.drawArrow,
       this.uniforms.viewportSize,
       this.uniforms.viewportOffset,
+      this.uniforms.devicePixelRatio,
     ).node();
   }
   

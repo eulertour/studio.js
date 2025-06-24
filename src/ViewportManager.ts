@@ -4,11 +4,13 @@ export class ViewportManager {
   private static instance: ViewportManager;
   private _viewport: Vector4 | undefined;
   private _screenSize: Vector2;
+  private _devicePixelRatio: number;
 
   private constructor() {
     // Default to undefined viewport (full screen)
     this._viewport = undefined;
     this._screenSize = new Vector2(1, 1);
+    this._devicePixelRatio = 1;
   }
 
   static getInstance(): ViewportManager {
@@ -18,9 +20,10 @@ export class ViewportManager {
     return ViewportManager.instance;
   }
 
-  setViewport(viewport: Vector4 | undefined, screenSize: Vector2) {
+  setViewport(viewport: Vector4 | undefined, screenSize: Vector2, devicePixelRatio: number = 1) {
     this._viewport = viewport;
     this._screenSize = screenSize;
+    this._devicePixelRatio = devicePixelRatio;
   }
 
   get viewport(): Vector4 | undefined {
@@ -29,6 +32,10 @@ export class ViewportManager {
 
   get screenSize(): Vector2 {
     return this._screenSize;
+  }
+
+  get devicePixelRatio(): number {
+    return this._devicePixelRatio;
   }
 
   // Get the actual viewport dimensions for shader calculations

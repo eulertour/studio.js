@@ -32,6 +32,7 @@ export type Uniforms = {
   viewport: THREE.UniformNode<THREE.Vector4>;
   viewportSize: THREE.UniformNode<THREE.Vector2>;
   viewportOffset: THREE.UniformNode<THREE.Vector2>;
+  devicePixelRatio: THREE.UniformNode<number>;
 };
 
 interface StrokeStyle {
@@ -113,6 +114,7 @@ const createUniforms = (
     viewport: uniform(viewportManager.viewport || new THREE.Vector4(0, 0, 1, 1)),
     viewportSize: uniform(viewportManager.getViewportSize()),
     viewportOffset: uniform(viewportManager.getViewportOffset()),
+    devicePixelRatio: uniform(viewportManager.devicePixelRatio),
   };
 
   // TODO: Update this after finishing arrow geometry
@@ -228,7 +230,8 @@ export default class WebGPUMeshLine extends THREE.Mesh {
   }
 
   update(dt: number) {
-    console.log(this.material.uniforms["viewportSize"].value)
+    console.log(this.material.uniforms["viewportOffset"].value)
+    // console.log(this.material.uniforms["devicePixelRatio"].value)
     // Update material's dash animation
     if (this.material instanceof WebGPUMeshLineMaterial) {
       this.material.update(dt);
@@ -269,5 +272,6 @@ export default class WebGPUMeshLine extends THREE.Mesh {
     }
     setUniform("viewportSize", viewportManager.getViewportSize());
     setUniform("viewportOffset", viewportManager.getViewportOffset());
+    setUniform("devicePixelRatio", viewportManager.devicePixelRatio);
   }
 }

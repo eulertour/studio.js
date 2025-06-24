@@ -68,7 +68,8 @@ export class SceneController {
     const canvas = this.renderer?.domElement;
     if (canvas) {
       const screenSize = new THREE.Vector2(canvas.width, canvas.height);
-      ViewportManager.getInstance().setViewport(value, screenSize);
+      const devicePixelRatio = typeof window !== "undefined" ? window.devicePixelRatio : 1;
+      ViewportManager.getInstance().setViewport(value, screenSize, devicePixelRatio);
     }
   }
 
