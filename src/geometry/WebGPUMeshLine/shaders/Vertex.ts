@@ -35,9 +35,16 @@ const perspectiveDivide = Fn(
 
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=)-,Viewport%20transform,-%5Bedit%5D
 const viewportTransform = Fn(
-  ([normalizedDeviceCoordinates, viewport, viewportSize, devicePixelRatio]: [
+  ([
+    normalizedDeviceCoordinates,
+    viewport,
+    viewportSize,
+    viewportOffset,
+    devicePixelRatio,
+  ]: [
     ShaderNodeObject<OperatorNode>,
     ShaderNodeObject<UniformNode<THREE.Vector4>>,
+    ShaderNodeObject<UniformNode<Vector2>>,
     ShaderNodeObject<UniformNode<Vector2>>,
     ShaderNodeObject<UniformNode<number>>,
   ]) => {
@@ -46,8 +53,12 @@ const viewportTransform = Fn(
       viewportSet,
       normalizedDeviceCoordinates
         .mul(viewportSize)
+        .mul(devicePixelRatio)
+        .div(2)
         .add(viewportSize)
-        .xy.add(vec2(4, 1)),
+        .mul(devicePixelRatio)
+        .div(2)
+        .add(vec2(viewportOffset.x.mul(devicePixelRatio), 0)).xy,
       normalizedDeviceCoordinates.mul(screenSize.div(2)).add(screenSize.div(2))
         .xy,
     );
@@ -55,9 +66,16 @@ const viewportTransform = Fn(
 );
 
 const clipToScreenSpace = Fn(
-  ([clipSpaceVertex, viewport, viewportSize, devicePixelRatio]: [
+  ([
+    clipSpaceVertex,
+    viewport,
+    viewportSize,
+    viewportOffset,
+    devicePixelRatio,
+  ]: [
     ShaderNodeObject<OperatorNode>,
     ShaderNodeObject<UniformNode<THREE.Vector4>>,
+    ShaderNodeObject<UniformNode<Vector2>>,
     ShaderNodeObject<UniformNode<Vector2>>,
     ShaderNodeObject<UniformNode<number>>,
   ]) => {
@@ -66,6 +84,7 @@ const clipToScreenSpace = Fn(
       normalizedDeviceCoordinate,
       viewport,
       viewportSize,
+      viewportOffset,
       devicePixelRatio,
     );
     return screenSpaceFragment;
@@ -183,54 +202,63 @@ export default class VertexShader {
         clipSpaceStart,
         viewport,
         viewportSize,
+        viewportOffset,
         devicePixelRatio,
       );
       const endFragment = clipToScreenSpace(
         clipSpaceEnd,
         viewport,
         viewportSize,
+        viewportOffset,
         devicePixelRatio,
       );
       const previousFragment = clipToScreenSpace(
         clipSpacePrevious,
         viewport,
         viewportSize,
+        viewportOffset,
         devicePixelRatio,
       );
       const nextFragment = clipToScreenSpace(
         clipSpaceNext,
         viewport,
         viewportSize,
+        viewportOffset,
         devicePixelRatio,
       );
       const firstFragment = clipToScreenSpace(
         clipSpaceFirstPosition,
         viewport,
         viewportSize,
+        viewportOffset,
         devicePixelRatio,
       );
       const secondFragment = clipToScreenSpace(
         clipSpaceSecondPosition,
         viewport,
         viewportSize,
+        viewportOffset,
         devicePixelRatio,
       );
       const arrowTipFragment = clipToScreenSpace(
         clipSpaceArrowTip,
         viewport,
         viewportSize,
+        viewportOffset,
         devicePixelRatio,
       );
       const arrowTopTailFragment = clipToScreenSpace(
         clipSpaceTopArrowTail,
         viewport,
         viewportSize,
+        viewportOffset,
         devicePixelRatio,
       );
       const arrowBottomTailFragment = clipToScreenSpace(
         clipSpaceBottomArrowTail,
         viewport,
         viewportSize,
+        viewportOffset,
         devicePixelRatio,
       );
 
@@ -303,7 +331,8 @@ export default class VertexShader {
       const unitTangent = normalize(tangent);
       const unitNormal = rotate90(unitTangent);
 
-      const vertexOffset = rawVertexOffset.normalize().mul(SQRT_2);
+      // HACK: Add slightly more to the offset to avoid artifacts.
+      const vertexOffset = rawVertexOffset.normalize().mul(SQRT_2 + 0.1);
       const unitOffset = mat2(unitTangent, unitNormal).mul(vertexOffset);
       const cameraSpaceVertexOffset = vec4(
         unitOffset.mul(width).mul(UNITS_PER_STROKE_WIDTH),
