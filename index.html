@@ -12,7 +12,7 @@
       style="border: 1px solid black; width: 640px; height: 360px"
     ></canvas>
     <script type="module">
-      import { THREE, SceneController } from "./src/index";
+      import { SceneController } from "./src/index";
       import UserScene from "./userScene/main.ts";
 
       const canvas = document.querySelector("#canvas");
@@ -24,7 +24,6 @@
         aspectRatio: 16 / 9,
         pixelHeight: 360,
         coordinateHeight: 8,
-        // viewport: new THREE.Vector4(0, 0, 640, 360),
       });
 
       sceneController.play();

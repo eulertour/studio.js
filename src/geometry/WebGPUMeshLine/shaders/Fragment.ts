@@ -502,7 +502,6 @@ export default class FragmentShader {
               Discard();
             },
           );
-          // Discard();
         }).ElseIf(
           segmentStart
             .lessThanEqual(drawStart)
@@ -711,19 +710,7 @@ export default class FragmentShader {
         },
       );
 
-      return varyingProperty("vec4", "vTestColor");
-      const coord = glFragCoord(
-        viewport,
-        viewportSize,
-        devicePixelRatio,
-        viewportOffset,
-      );
-      const testColor = vec4(color, opacity).toVar();
-      If(coord.x.greaterThan(640), () => {
-        testColor.assign(vec4(1, 0, 0, 1));
-      });
-      return testColor;
-      // return vec4(color, opacity);
+      return vec4(color, opacity);
     });
   }
 

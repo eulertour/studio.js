@@ -123,19 +123,6 @@ export default class VertexShader {
     devicePixelRatio: UniformNode<number>,
   ) {
     this.node = Fn(() => {
-      varyingProperty("vec4", "vTestColor").assign(vec4(1, 0, 0, 1));
-      If(viewportSize.x.greaterThan(650), () => {
-        varyingProperty("vec4", "vTestColor").assign(vec4(0, 0, 1, 1));
-      });
-
-      // Create viewport-aware transform function inside constructor
-      // TODO: When viewport is enabled, use this logic instead of viewportTransform:
-      // const viewportTransformWithOffset = Fn(
-      //   ([normalizedDeviceCoordinates]: [ShaderNodeObject<OperatorNode>]) =>
-      //     normalizedDeviceCoordinates.mul(viewportSize.div(2)).add(viewportSize.div(2))
-      //       .xy.add(viewportOffset),
-      // );
-
       const cameraWorldMatrixZColumn = cameraWorldMatrix[2];
       if (cameraWorldMatrixZColumn === undefined) {
         throw new Error("Camera z column is undefined");

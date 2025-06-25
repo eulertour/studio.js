@@ -117,7 +117,7 @@ export class SceneController {
         if (Array.isArray(o)) {
           o = { animations: o };
         }
-        if (o instanceof Animation || true) {
+        if (o instanceof Animation) {
           const animation = o;
           animation.startTime = currentEndTime;
           animation.endTime = currentEndTime + animation.runTime;
