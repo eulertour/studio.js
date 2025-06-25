@@ -111,7 +111,9 @@ const createUniforms = (
     arrowSegmentStart: uniform(new THREE.Vector3()),
     arrowSegmentEnd: uniform(new THREE.Vector3()),
     arrowSegmentProportion: uniform(0),
-    viewport: uniform(viewportManager.viewport || new THREE.Vector4(0, 0, 1, 1)),
+    viewport: uniform(
+      viewportManager.viewport || new THREE.Vector4(0, 0, 0, 0),
+    ),
     viewportSize: uniform(viewportManager.getViewportSize()),
     viewportOffset: uniform(viewportManager.getViewportOffset()),
     devicePixelRatio: uniform(viewportManager.devicePixelRatio),
@@ -230,8 +232,6 @@ export default class WebGPUMeshLine extends THREE.Mesh {
   }
 
   update(dt: number) {
-    console.log(this.material.uniforms["viewportOffset"].value)
-    // console.log(this.material.uniforms["devicePixelRatio"].value)
     // Update material's dash animation
     if (this.material instanceof WebGPUMeshLineMaterial) {
       this.material.update(dt);
@@ -242,7 +242,7 @@ export default class WebGPUMeshLine extends THREE.Mesh {
         }
       });
     }
-    
+
     // Update viewport uniforms from singleton
     const viewportManager = ViewportManager.getInstance();
     const setUniform = (uniform: keyof Uniforms, value: any) => {
@@ -266,10 +266,8 @@ export default class WebGPUMeshLine extends THREE.Mesh {
         }
       }
     };
-    
-    if (viewportManager.viewport) {
-      setUniform("viewport", viewportManager.viewport);
-    }
+
+    setUniform("viewport", viewportManager.viewport || new THREE.Vector4(0, 0, 0, 0));
     setUniform("viewportSize", viewportManager.getViewportSize());
     setUniform("viewportOffset", viewportManager.getViewportOffset());
     setUniform("devicePixelRatio", viewportManager.devicePixelRatio);

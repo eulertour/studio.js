@@ -14,7 +14,6 @@ import {
   min,
   mul,
   or,
-  and,
   reciprocal,
   screenCoordinate,
   screenSize,
@@ -37,11 +36,14 @@ import DashAtlas from "../DashAtlas.js";
 // If the css dimensions are 1280x720, this returns
 // [1280, 720] * devicePixelRatio, which may be [1408, 792].
 const glFragCoord = Fn(
-  ([viewportSize, devicePixelRatio, viewportOffset]: [
+  ([viewport, viewportSize, devicePixelRatio, viewportOffset]: [
+    ShaderNodeObject<UniformNode<THREE.Vector4>>,
     ShaderNodeObject<UniformNode<Vector2>>,
     ShaderNodeObject<UniformNode<number>>,
     ShaderNodeObject<UniformNode<Vector2>>,
   ]) => {
+    const viewportSet = viewport.z.greaterThan(0).or(viewport.w.greaterThan(0));
+
     const screenTopToViewportBottom = mul(
       add(viewportOffset.y, viewportSize.y),
       devicePixelRatio,
@@ -50,7 +52,12 @@ const glFragCoord = Fn(
       screenTopToViewportBottom,
       screenCoordinate.y,
     );
-    return vec2(screenCoordinate.x, viewportBottomToCoord);
+
+    return select(
+      viewportSet,
+      vec2(screenCoordinate.x, viewportBottomToCoord),
+      vec2(screenCoordinate.x, screenSize.y.sub(screenCoordinate.y)),
+    );
   },
 );
 
@@ -128,6 +135,7 @@ export default class FragmentShader {
     endProportion: UniformNode<number>,
     arrow: UniformNode<number>,
     drawArrow: UniformNode<number>,
+    viewport: UniformNode<THREE.Vector4>,
     viewportSize: UniformNode<Vector2>,
     viewportOffset: UniformNode<Vector2>,
     devicePixelRatio: UniformNode<number>,
@@ -143,6 +151,7 @@ export default class FragmentShader {
 
       const segmentVector = endFragment.sub(startFragment);
       const fragmentVector = glFragCoord(
+        viewport,
         viewportSize,
         devicePixelRatio,
         viewportOffset,
@@ -283,7 +292,12 @@ export default class FragmentShader {
           );
           If(
             segmentCoversFragment(
-              glFragCoord(viewportSize, devicePixelRatio, viewportOffset),
+              glFragCoord(
+                viewport,
+                viewportSize,
+                devicePixelRatio,
+                viewportOffset,
+              ),
               previousSegmentDashStartFragment,
               startFragment,
               halfWidth.mul(previousSegmentFragmentsPerDistance),
@@ -389,7 +403,12 @@ export default class FragmentShader {
               );
               If(
                 segmentCoversFragment(
-                  glFragCoord(viewportSize, devicePixelRatio, viewportOffset),
+                  glFragCoord(
+                    viewport,
+                    viewportSize,
+                    devicePixelRatio,
+                    viewportOffset,
+                  ),
                   firstSegmentDrawStartFragment,
                   firstSegmentDrawEndFragment,
                   halfWidth.mul(firstSegmentFragmentsPerDistance),
@@ -414,7 +433,12 @@ export default class FragmentShader {
             );
             If(
               segmentCoversFragment(
-                glFragCoord(viewportSize, devicePixelRatio, viewportOffset),
+                glFragCoord(
+                  viewport,
+                  viewportSize,
+                  devicePixelRatio,
+                  viewportOffset,
+                ),
                 firstSegmentDashStartFragment,
                 firstSegmentDashEndFragment,
                 halfWidth.mul(firstSegmentFragmentsPerDistance),
@@ -465,7 +489,12 @@ export default class FragmentShader {
           );
           If(
             segmentCoversFragment(
-              glFragCoord(viewportSize, devicePixelRatio, viewportOffset),
+              glFragCoord(
+                viewport,
+                viewportSize,
+                devicePixelRatio,
+                viewportOffset,
+              ),
               nextSegmentStartPointFragment,
               nextFragment,
               halfWidth.mul(nextSegmentFragmentsPerDistance),
@@ -499,7 +528,12 @@ export default class FragmentShader {
                 );
                 If(
                   segmentCoversFragment(
-                    glFragCoord(viewportSize, devicePixelRatio, viewportOffset),
+                    glFragCoord(
+                      viewport,
+                      viewportSize,
+                      devicePixelRatio,
+                      viewportOffset,
+                    ),
                     nextSegmentStartPointFragment,
                     nextFragment,
                     halfWidth.mul(nextSegmentFragmentsPerDistance),
@@ -537,7 +571,12 @@ export default class FragmentShader {
               );
               If(
                 segmentCoversFragment(
-                  glFragCoord(viewportSize, devicePixelRatio, viewportOffset),
+                  glFragCoord(
+                    viewport,
+                    viewportSize,
+                    devicePixelRatio,
+                    viewportOffset,
+                  ),
                   nextSegmentStartPointFragment,
                   nextFragment,
                   halfWidth.mul(nextSegmentFragmentsPerDistance),
@@ -616,7 +655,12 @@ export default class FragmentShader {
       If(float(arrow).and(isArrowSegment.not()), () => {
         If(
           segmentCoversFragment(
-            glFragCoord(viewportSize, devicePixelRatio, viewportOffset),
+            glFragCoord(
+              viewport,
+              viewportSize,
+              devicePixelRatio,
+              viewportOffset,
+            ),
             varyingProperty("vec2", "vArrowTipFragment"),
             arrowTopTailFragment,
             halfWidth.mul(segmentFragmentsPerDistance),
@@ -627,7 +671,12 @@ export default class FragmentShader {
         );
         If(
           segmentCoversFragment(
-            glFragCoord(viewportSize, devicePixelRatio, viewportOffset),
+            glFragCoord(
+              viewport,
+              viewportSize,
+              devicePixelRatio,
+              viewportOffset,
+            ),
             varyingProperty("vec2", "vArrowTipFragment"),
             arrowBottomTailFragment,
             halfWidth.mul(segmentFragmentsPerDistance),
@@ -646,7 +695,12 @@ export default class FragmentShader {
         () => {
           If(
             segmentCoversFragment(
-              glFragCoord(viewportSize, devicePixelRatio, viewportOffset),
+              glFragCoord(
+                viewport,
+                viewportSize,
+                devicePixelRatio,
+                viewportOffset,
+              ),
               varyingProperty("vec2", "vArrowTipFragment"),
               arrowTopTailFragment,
               halfWidth.mul(segmentFragmentsPerDistance),
@@ -658,25 +712,7 @@ export default class FragmentShader {
         },
       );
 
-      const testColor = vec4(color, opacity).toVar();
-      // testColor.assign(vec4(new THREE.Color("red"), opacity));
-      // TODO: When viewport is enabled, replace screenSize with viewportSize:
-      // If(viewportSize.y.lessThan(1647), () => {
-      If(
-        and(
-          and(screenSize.x.greaterThan(2155), screenSize.x.lessThan(2157)),
-          and(screenSize.y.greaterThan(1645), screenSize.y.lessThan(1647)),
-          and(viewportSize.x.greaterThan(1077), viewportSize.x.lessThan(1079)),
-          and(viewportSize.y.greaterThan(605), viewportSize.y.lessThan(606)),
-          viewportOffset.x.equal(0),
-          and(viewportOffset.y.greaterThan(78), viewportOffset.y.lessThan(79)),
-        ),
-        () => {
-          testColor.assign(vec4(new THREE.Color("red"), opacity));
-        },
-      );
-      return testColor;
-      // return vec4(color, opacity);
+      return vec4(color, opacity);
     });
   }
 
