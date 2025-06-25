@@ -47,13 +47,10 @@ const glFragCoord = Fn(
       devicePixelRatio,
     );
     const viewportBottomToCoord = sub(
-      screenCoordinate.y,
       screenTopToViewportBottom,
+      screenCoordinate.y,
     );
-    // return vec2(screenCoordinate.x, viewportBottomToCoord);
-    return vec2(screenCoordinate.x, screenSize.y.sub(screenCoordinate.y));
-    // TODO: When viewport is enabled, use this logic instead:
-    // return vec2(viewportSize.x, viewportSize.y);
+    return vec2(screenCoordinate.x, viewportBottomToCoord);
   },
 );
 
@@ -145,11 +142,6 @@ export default class FragmentShader {
       const endFragment = varyingProperty("vec2", "vEndFragment");
 
       const segmentVector = endFragment.sub(startFragment);
-      // TODO: When viewport is enabled, use viewportSize/viewportOffset in glFragCoord:
-      // const glFragCoordWithViewport = Fn(() =>
-      //   vec2(screenCoordinate.x, viewportSize.y.sub(screenCoordinate.y)).sub(viewportOffset),
-      // );
-      // const fragmentVector = glFragCoordWithViewport().sub(startFragment);
       const fragmentVector = glFragCoord(
         viewportSize,
         devicePixelRatio,

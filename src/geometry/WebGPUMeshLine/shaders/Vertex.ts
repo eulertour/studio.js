@@ -36,18 +36,28 @@ const perspectiveDivide = Fn(
 
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=)-,Viewport%20transform,-%5Bedit%5D
 const viewportTransform = Fn(
-  ([normalizedDeviceCoordinates]: [ShaderNodeObject<OperatorNode>]) =>
-    normalizedDeviceCoordinates.mul(screenSize.div(2)).add(screenSize.div(2))
-      .xy,
-    // TODO: When viewport is enabled, use this logic instead:
-    // normalizedDeviceCoordinates.mul(viewportSize.div(2)).add(viewportSize.div(2))
-    //   .xy,
+  ([normalizedDeviceCoordinates, viewportSize, devicePixelRatio]: [
+    ShaderNodeObject<OperatorNode>,
+    ShaderNodeObject<UniformNode<Vector2>>,
+    ShaderNodeObject<UniformNode<number>>,
+  ]) =>
+    normalizedDeviceCoordinates
+      .mul(viewportSize.mul(devicePixelRatio).div(2))
+      .add(viewportSize.mul(devicePixelRatio).div(2)).xy,
 );
 
 const clipToScreenSpace = Fn(
-  ([clipSpaceVertex]: [ShaderNodeObject<OperatorNode>]) => {
+  ([clipSpaceVertex, viewportSize, devicePixelRatio]: [
+    ShaderNodeObject<OperatorNode>,
+    ShaderNodeObject<UniformNode<Vector2>>,
+    ShaderNodeObject<UniformNode<number>>,
+  ]) => {
     const normalizedDeviceCoordinate = perspectiveDivide(clipSpaceVertex);
-    const screenSpaceFragment = viewportTransform(normalizedDeviceCoordinate);
+    const screenSpaceFragment = viewportTransform(
+      normalizedDeviceCoordinate,
+      viewportSize,
+      devicePixelRatio,
+    );
     return screenSpaceFragment;
   },
 );
@@ -90,7 +100,7 @@ export default class VertexShader {
       //     normalizedDeviceCoordinates.mul(viewportSize.div(2)).add(viewportSize.div(2))
       //       .xy.add(viewportOffset),
       // );
-      
+
       const cameraWorldMatrixZColumn = cameraWorldMatrix[2];
       if (cameraWorldMatrixZColumn === undefined) {
         throw new Error("Camera z column is undefined");
@@ -153,16 +163,50 @@ export default class VertexShader {
       const clipSpaceTopArrowTail = vec4(clipSpaceArrowPoints[1]);
       const clipSpaceBottomArrowTail = vec4(clipSpaceArrowPoints[2]);
 
-      const startFragment = clipToScreenSpace(clipSpaceStart);
-      const endFragment = clipToScreenSpace(clipSpaceEnd);
-      const previousFragment = clipToScreenSpace(clipSpacePrevious);
-      const nextFragment = clipToScreenSpace(clipSpaceNext);
-      const firstFragment = clipToScreenSpace(clipSpaceFirstPosition);
-      const secondFragment = clipToScreenSpace(clipSpaceSecondPosition);
-      const arrowTipFragment = clipToScreenSpace(clipSpaceArrowTip);
-      const arrowTopTailFragment = clipToScreenSpace(clipSpaceTopArrowTail);
+      const startFragment = clipToScreenSpace(
+        clipSpaceStart,
+        viewportSize,
+        devicePixelRatio,
+      );
+      const endFragment = clipToScreenSpace(
+        clipSpaceEnd,
+        viewportSize,
+        devicePixelRatio,
+      );
+      const previousFragment = clipToScreenSpace(
+        clipSpacePrevious,
+        viewportSize,
+        devicePixelRatio,
+      );
+      const nextFragment = clipToScreenSpace(
+        clipSpaceNext,
+        viewportSize,
+        devicePixelRatio,
+      );
+      const firstFragment = clipToScreenSpace(
+        clipSpaceFirstPosition,
+        viewportSize,
+        devicePixelRatio,
+      );
+      const secondFragment = clipToScreenSpace(
+        clipSpaceSecondPosition,
+        viewportSize,
+        devicePixelRatio,
+      );
+      const arrowTipFragment = clipToScreenSpace(
+        clipSpaceArrowTip,
+        viewportSize,
+        devicePixelRatio,
+      );
+      const arrowTopTailFragment = clipToScreenSpace(
+        clipSpaceTopArrowTail,
+        viewportSize,
+        devicePixelRatio,
+      );
       const arrowBottomTailFragment = clipToScreenSpace(
         clipSpaceBottomArrowTail,
+        viewportSize,
+        devicePixelRatio,
       );
 
       // NOTE: This is the vector offset from the start or end of the
