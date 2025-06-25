@@ -68,8 +68,13 @@ export class SceneController {
     const canvas = this.renderer?.domElement;
     if (canvas) {
       const screenSize = new THREE.Vector2(canvas.width, canvas.height);
-      const devicePixelRatio = typeof window !== "undefined" ? window.devicePixelRatio : 1;
-      ViewportManager.getInstance().setViewport(value, screenSize, devicePixelRatio);
+      const devicePixelRatio =
+        typeof window !== "undefined" ? window.devicePixelRatio : 1;
+      ViewportManager.getInstance().setViewport(
+        value,
+        screenSize,
+        devicePixelRatio,
+      );
     }
   }
 
@@ -112,7 +117,7 @@ export class SceneController {
         if (Array.isArray(o)) {
           o = { animations: o };
         }
-        if (o instanceof Animation) {
+        if (o instanceof Animation || true) {
           const animation = o;
           animation.startTime = currentEndTime;
           animation.endTime = currentEndTime + animation.runTime;

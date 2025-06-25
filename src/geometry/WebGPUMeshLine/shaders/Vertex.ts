@@ -45,8 +45,9 @@ const viewportTransform = Fn(
     return select(
       viewportSet,
       normalizedDeviceCoordinates
-        .mul(viewportSize.mul(devicePixelRatio).div(2))
-        .add(viewportSize.mul(devicePixelRatio).div(2)).xy,
+        .mul(viewportSize)
+        .add(viewportSize)
+        .xy.add(vec2(4, 1)),
       normalizedDeviceCoordinates.mul(screenSize.div(2)).add(screenSize.div(2))
         .xy,
     );
@@ -103,6 +104,11 @@ export default class VertexShader {
     devicePixelRatio: UniformNode<number>,
   ) {
     this.node = Fn(() => {
+      varyingProperty("vec4", "vTestColor").assign(vec4(1, 0, 0, 1));
+      If(viewportSize.x.greaterThan(650), () => {
+        varyingProperty("vec4", "vTestColor").assign(vec4(0, 0, 1, 1));
+      });
+
       // Create viewport-aware transform function inside constructor
       // TODO: When viewport is enabled, use this logic instead of viewportTransform:
       // const viewportTransformWithOffset = Fn(
@@ -296,11 +302,6 @@ export default class VertexShader {
       );
       const unitTangent = normalize(tangent);
       const unitNormal = rotate90(unitTangent);
-      varyingProperty("vec4", "vTestColor").assign(vec4(1, 0, 0, 1));
-
-      If(isTopArrowSegment, () => {
-        varyingProperty("vec4", "vTestColor").assign(vec4(0, 0, 1, 1));
-      });
 
       const vertexOffset = rawVertexOffset.normalize().mul(SQRT_2);
       const unitOffset = mat2(unitTangent, unitNormal).mul(vertexOffset);

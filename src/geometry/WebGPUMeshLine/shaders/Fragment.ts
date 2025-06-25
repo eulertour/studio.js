@@ -257,7 +257,6 @@ export default class FragmentShader {
         // Dash body
         .ElseIf(referencePointType.equal(0), () => {
           If(abs(dy).greaterThan(halfWidth), () => {
-            // testColor.assign(vec4(1, 0, 0, 1));
             Discard();
           });
         })
@@ -712,7 +711,19 @@ export default class FragmentShader {
         },
       );
 
-      return vec4(color, opacity);
+      return varyingProperty("vec4", "vTestColor");
+      const coord = glFragCoord(
+        viewport,
+        viewportSize,
+        devicePixelRatio,
+        viewportOffset,
+      );
+      const testColor = vec4(color, opacity).toVar();
+      If(coord.x.greaterThan(640), () => {
+        testColor.assign(vec4(1, 0, 0, 1));
+      });
+      return testColor;
+      // return vec4(color, opacity);
     });
   }
 

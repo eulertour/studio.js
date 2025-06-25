@@ -267,7 +267,10 @@ export default class WebGPUMeshLine extends THREE.Mesh {
       }
     };
 
-    setUniform("viewport", viewportManager.viewport || new THREE.Vector4(0, 0, 0, 0));
+    setUniform(
+      "viewport",
+      viewportManager.viewport || new THREE.Vector4(0, 0, 0, 0),
+    );
     setUniform("viewportSize", viewportManager.getViewportSize());
     setUniform("viewportOffset", viewportManager.getViewportOffset());
     setUniform("devicePixelRatio", viewportManager.devicePixelRatio);
