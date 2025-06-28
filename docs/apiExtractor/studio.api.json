@@ -10452,7 +10452,7 @@
               "excerptTokens": [
                 {
                   "kind": "Content",
-                  "text": "viewport: "
+                  "text": "get viewport(): "
                 },
                 {
                   "kind": "Reference",
@@ -10465,7 +10465,16 @@
                 },
                 {
                   "kind": "Content",
-                  "text": ";"
+                  "text": ";\n\nset viewport(value: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "THREE.Vector4",
+                  "canonicalReference": "@types/three!Vector4:class"
+                },
+                {
+                  "kind": "Content",
+                  "text": " | undefined);"
                 }
               ],
               "isReadonly": false,

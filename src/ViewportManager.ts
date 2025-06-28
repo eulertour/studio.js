@@ -5,12 +5,16 @@ export class ViewportManager {
   private _viewport: Vector4 | undefined;
   private _screenSize: Vector2;
   private _devicePixelRatio: number;
+  private _viewportSize: Vector2;
+  private _viewportOffset: Vector2;
 
   private constructor() {
     // Default to undefined viewport (full screen)
     this._viewport = undefined;
     this._screenSize = new Vector2(1, 1);
     this._devicePixelRatio = 1;
+    this._viewportSize = new Vector2(1, 1);
+    this._viewportOffset = new Vector2(0, 0);
   }
 
   static getInstance(): ViewportManager {
@@ -24,6 +28,15 @@ export class ViewportManager {
     this._viewport = viewport;
     this._screenSize = screenSize;
     this._devicePixelRatio = devicePixelRatio;
+    
+    // Update viewportSize and viewportOffset based on viewport
+    if (this._viewport) {
+      this._viewportSize.set(this._viewport.z, this._viewport.w);
+      this._viewportOffset.set(this._viewport.x, this._viewport.y);
+    } else {
+      this._viewportSize.copy(this._screenSize);
+      this._viewportOffset.set(0, 0);
+    }
   }
 
   get viewport(): Vector4 | undefined {
@@ -38,19 +51,11 @@ export class ViewportManager {
     return this._devicePixelRatio;
   }
 
-  // Get the actual viewport dimensions for shader calculations
-  getViewportSize(): Vector2 {
-    if (this._viewport) {
-      return new Vector2(this._viewport.z, this._viewport.w);
-    }
-    return this._screenSize;
+  get viewportSize(): Vector2 {
+    return this._viewportSize;
   }
 
-  // Get the viewport offset for shader calculations
-  getViewportOffset(): Vector2 {
-    if (this._viewport) {
-      return new Vector2(this._viewport.x, this._viewport.y);
-    }
-    return new Vector2(0, 0);
+  get viewportOffset(): Vector2 {
+    return this._viewportOffset;
   }
 }

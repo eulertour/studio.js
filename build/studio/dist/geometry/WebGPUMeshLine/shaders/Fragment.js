@@ -1,9 +1,14 @@
-import { Discard, Fn, If, abs, attribute, div, dot, float, max, min, mul, or, reciprocal, screenCoordinate, screenSize, select, sign, texture, varyingProperty, vec2, vec4, } from "three/tsl";
+import { Discard, Fn, If, abs, attribute, add, sub, div, dot, float, max, min, mul, or, reciprocal, screenCoordinate, screenSize, select, sign, texture, varyingProperty, vec2, vec4, } from "three/tsl";
 import { UNITS_PER_STROKE_WIDTH } from "../../../constants.js";
 // This returns [cssViewportWidth, cssViewportHeight] * devicePixelRatio.
 // If the css dimensions are 1280x720, this returns
 // [1280, 720] * devicePixelRatio, which may be [1408, 792].
-const glFragCoord = Fn(() => vec2(screenCoordinate.x, screenSize.y.sub(screenCoordinate.y)));
+const glFragCoord = Fn(([viewport, viewportSize, devicePixelRatio, viewportOffset]) => {
+    const viewportSet = viewport.z.greaterThan(0).or(viewport.w.greaterThan(0));
+    const screenTopToViewportBottom = mul(add(viewportOffset.y, viewportSize.y), devicePixelRatio);
+    const viewportBottomToCoord = sub(screenTopToViewportBottom, screenCoordinate.y);
+    return select(viewportSet, vec2(screenCoordinate.x, viewportBottomToCoord), vec2(screenCoordinate.x, screenSize.y.sub(screenCoordinate.y)));
+});
 const rotate90 = Fn(([vector]) => vec2(vector.y.negate(), vector.x));
 const lengthSquared = Fn(([vector]) => dot(vector, vector));
 const projectOntoVector = Fn(([vectorToProject, vectorToProjectOnto]) => {
@@ -32,7 +37,7 @@ const segmentCoversFragment = Fn(([fragment, start, end, halfWidth]) => {
     return coveredByStem.or(coveredByStart).or(coveredByEnd);
 });
 export default class FragmentShader {
-    constructor(dashAtlas, color, opacity, width, strokeEnd, dashLength, dashOffset, startProportion, endProportion, arrow, drawArrow) {
+    constructor(dashAtlas, color, opacity, width, strokeEnd, dashLength, dashOffset, startProportion, endProportion, arrow, drawArrow, viewport, viewportSize, viewportOffset, devicePixelRatio) {
         Object.defineProperty(this, "dashAtlas", {
             enumerable: true,
             configurable: true,
@@ -78,7 +83,7 @@ export default class FragmentShader {
             const startFragment = varyingProperty("vec2", "vStartFragment");
             const endFragment = varyingProperty("vec2", "vEndFragment");
             const segmentVector = endFragment.sub(startFragment);
-            const fragmentVector = glFragCoord().sub(startFragment);
+            const fragmentVector = glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset).sub(startFragment);
             const components = transformToBasis(fragmentVector, segmentVector);
             const tangentVector = components.xy;
             const normalVector = components.zw;
@@ -140,7 +145,6 @@ export default class FragmentShader {
                 // Dash body
                 .ElseIf(referencePointType.equal(0), () => {
                 If(abs(dy).greaterThan(halfWidth), () => {
-                    // testColor.assign(vec4(1, 0, 0, 1));
                     Discard();
                 });
             })
@@ -166,7 +170,7 @@ export default class FragmentShader {
                         .normalize()
                         .mul(previousSegmentDashStartDistance)
                         .mul(previousSegmentFragmentsPerDistance));
-                    If(segmentCoversFragment(glFragCoord(), previousSegmentDashStartFragment, startFragment, halfWidth.mul(previousSegmentFragmentsPerDistance)), () => {
+                    If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), previousSegmentDashStartFragment, startFragment, halfWidth.mul(previousSegmentFragmentsPerDistance)), () => {
                         Discard();
                     });
                 });
@@ -187,7 +191,6 @@ export default class FragmentShader {
                 });
             });
             // Incoming to start of closed curve
-            const testColor = vec4(color, opacity).toVar();
             const patternLength = this.dashAtlas.period.mul(dashLength);
             const skipDrawingArrow = isArrowSegment.and(float(drawArrow).equal(0));
             const drawStart = select(skipDrawingArrow, 0, float(strokeOrArrowEnd).mul(startProportion));
@@ -215,7 +218,7 @@ export default class FragmentShader {
                             .normalize()
                             .mul(min(drawEnd, firstSegmentLength))
                             .mul(firstSegmentFragmentsPerDistance));
-                        If(segmentCoversFragment(glFragCoord(), firstSegmentDrawStartFragment, firstSegmentDrawEndFragment, halfWidth.mul(firstSegmentFragmentsPerDistance)), () => {
+                        If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), firstSegmentDrawStartFragment, firstSegmentDrawEndFragment, halfWidth.mul(firstSegmentFragmentsPerDistance)), () => {
                             Discard();
                         });
                     });
@@ -228,7 +231,7 @@ export default class FragmentShader {
                         .normalize()
                         .mul(max(drawStart, startPointReferenceDashEnd))
                         .mul(firstSegmentFragmentsPerDistance));
-                    If(segmentCoversFragment(glFragCoord(), firstSegmentDashStartFragment, firstSegmentDashEndFragment, halfWidth.mul(firstSegmentFragmentsPerDistance)), () => {
+                    If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), firstSegmentDashStartFragment, firstSegmentDashEndFragment, halfWidth.mul(firstSegmentFragmentsPerDistance)), () => {
                         Discard();
                     });
                 });
@@ -263,10 +266,9 @@ export default class FragmentShader {
                         .normalize()
                         .mul(nextSegmentStartPointDistance)
                         .mul(nextSegmentFragmentsPerDistance));
-                    If(segmentCoversFragment(glFragCoord(), nextSegmentStartPointFragment, nextFragment, halfWidth.mul(nextSegmentFragmentsPerDistance)).not(), () => {
+                    If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), nextSegmentStartPointFragment, nextFragment, halfWidth.mul(nextSegmentFragmentsPerDistance)).not(), () => {
                         Discard();
                     });
-                    // Discard();
                 }).ElseIf(segmentStart
                     .lessThanEqual(drawStart)
                     .and(drawStart.lessThanEqual(segmentEnd)), () => {
@@ -282,7 +284,7 @@ export default class FragmentShader {
                                 .normalize()
                                 .mul(nextSegmentStartPointDistance)
                                 .mul(nextSegmentFragmentsPerDistance));
-                            If(segmentCoversFragment(glFragCoord(), nextSegmentStartPointFragment, nextFragment, halfWidth.mul(nextSegmentFragmentsPerDistance)).not(), () => {
+                            If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), nextSegmentStartPointFragment, nextFragment, halfWidth.mul(nextSegmentFragmentsPerDistance)).not(), () => {
                                 Discard();
                             });
                         });
@@ -304,7 +306,7 @@ export default class FragmentShader {
                             .normalize()
                             .mul(nextSegmentStartPointDistance)
                             .mul(nextSegmentFragmentsPerDistance));
-                        If(segmentCoversFragment(glFragCoord(), nextSegmentStartPointFragment, nextFragment, halfWidth.mul(nextSegmentFragmentsPerDistance)).not(), () => {
+                        If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), nextSegmentStartPointFragment, nextFragment, halfWidth.mul(nextSegmentFragmentsPerDistance)).not(), () => {
                             Discard();
                         });
                     });
@@ -344,21 +346,20 @@ export default class FragmentShader {
             const arrowBottomVector = varyingProperty("vec2", "vArrowBottomTailFragment").sub(varyingProperty("vec2", "vArrowTipFragment"));
             const arrowBottomTailFragment = varyingProperty("vec2", "vArrowTipFragment").add(arrowBottomVector.mul(select(float(drawArrow).equal(0), 1, endProportion)));
             If(float(arrow).and(isArrowSegment.not()), () => {
-                If(segmentCoversFragment(glFragCoord(), varyingProperty("vec2", "vArrowTipFragment"), arrowTopTailFragment, halfWidth.mul(segmentFragmentsPerDistance)), () => {
+                If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), varyingProperty("vec2", "vArrowTipFragment"), arrowTopTailFragment, halfWidth.mul(segmentFragmentsPerDistance)), () => {
                     Discard();
                 });
-                If(segmentCoversFragment(glFragCoord(), varyingProperty("vec2", "vArrowTipFragment"), arrowBottomTailFragment, halfWidth.mul(segmentFragmentsPerDistance)), () => {
+                If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), varyingProperty("vec2", "vArrowTipFragment"), arrowBottomTailFragment, halfWidth.mul(segmentFragmentsPerDistance)), () => {
                     Discard();
                 });
             });
             // Exclude the top arrow segment from the bottom stroke segment
             If(float(arrow).and(varyingProperty("float", "vIsBottomArrowSegment").greaterThan(0)), () => {
-                If(segmentCoversFragment(glFragCoord(), varyingProperty("vec2", "vArrowTipFragment"), arrowTopTailFragment, halfWidth.mul(segmentFragmentsPerDistance)), () => {
+                If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), varyingProperty("vec2", "vArrowTipFragment"), arrowTopTailFragment, halfWidth.mul(segmentFragmentsPerDistance)), () => {
                     Discard();
                 });
             });
-            return testColor;
-            // return vec4(color, opacity);
+            return vec4(color, opacity);
         });
     }
 }

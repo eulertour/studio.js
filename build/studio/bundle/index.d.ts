@@ -55,6 +55,10 @@ type Uniforms = {
     drawArrow: THREE.UniformNode<number>;
     arrowWidth: THREE.UniformNode<number>;
     arrowLength: THREE.UniformNode<number>;
+    viewport: THREE.UniformNode<THREE.Vector4>;
+    viewportSize: THREE.UniformNode<THREE.Vector2>;
+    viewportOffset: THREE.UniformNode<THREE.Vector2>;
+    devicePixelRatio: THREE.UniformNode<number>;
 };
 interface StrokeStyle {
     strokeColor?: THREE.Color;
@@ -83,6 +87,7 @@ interface Config {
 declare class WebGPUMeshLine extends THREE.Mesh {
     constructor(points: Array<THREE.Vector3>, inputConfig?: Config);
     restyle(style: StrokeStyle): void;
+    update(dt: number): void;
 }
 
 type Fill = THREE.Mesh<THREE.ShapeGeometry, THREE.MeshBasicMaterial>;
@@ -864,9 +869,11 @@ declare class SceneController {
     loopAnimations: Array<Animation>;
     finishedAnimationCount: number;
     userScene: StudioScene;
-    viewport: THREE.Vector4 | undefined;
+    private _viewport;
     aspectRatio: number;
     constructor(UserScene: StudioSceneClass, canvasRef: HTMLCanvasElement, config: SceneCanvasConfig);
+    get viewport(): THREE.Vector4 | undefined;
+    set viewport(value: THREE.Vector4 | undefined);
     get scene(): THREE.Scene;
     get camera(): THREE.OrthographicCamera;
     get renderer(): THREE.WebGPURenderer;

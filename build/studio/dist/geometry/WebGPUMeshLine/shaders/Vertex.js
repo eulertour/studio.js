@@ -1,16 +1,24 @@
-import { Fn, If, attribute, cameraProjectionMatrix, cameraWorldMatrix, distance, float, mat2, mat4, modelViewMatrix, normalize, screenSize, select, varyingProperty, vec2, vec3, vec4, } from "three/tsl";
+import { Fn, attribute, cameraProjectionMatrix, cameraWorldMatrix, distance, float, mat2, mat4, modelViewMatrix, normalize, screenSize, select, varyingProperty, vec2, vec3, vec4, } from "three/tsl";
 import { UNITS_PER_STROKE_WIDTH } from "../../../constants.js";
 const SQRT_2 = 1.4142135624;
-const ARROW_WIDTH = 1;
-const ARROW_LENGTH = 1;
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=defined%20clipping%20region.-,Perspective%20divide,-%5Bedit%5D
 const perspectiveDivide = Fn(([clipSpaceVertex]) => clipSpaceVertex.xyz.div(clipSpaceVertex.w));
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=)-,Viewport%20transform,-%5Bedit%5D
-const viewportTransform = Fn(([normalizedDeviceCoordinates]) => normalizedDeviceCoordinates.mul(screenSize.div(2)).add(screenSize.div(2))
-    .xy);
-const clipToScreenSpace = Fn(([clipSpaceVertex]) => {
+const viewportTransform = Fn(([normalizedDeviceCoordinates, viewport, viewportSize, viewportOffset, devicePixelRatio,]) => {
+    const viewportSet = viewport.z.greaterThan(0).or(viewport.w.greaterThan(0));
+    return select(viewportSet, normalizedDeviceCoordinates
+        .mul(viewportSize)
+        .mul(devicePixelRatio)
+        .div(2)
+        .add(viewportSize)
+        .mul(devicePixelRatio)
+        .div(2)
+        .add(vec2(viewportOffset.x.mul(devicePixelRatio), 0)).xy, normalizedDeviceCoordinates.mul(screenSize.div(2)).add(screenSize.div(2))
+        .xy);
+});
+const clipToScreenSpace = Fn(([clipSpaceVertex, viewport, viewportSize, viewportOffset, devicePixelRatio,]) => {
     const normalizedDeviceCoordinate = perspectiveDivide(clipSpaceVertex);
-    const screenSpaceFragment = viewportTransform(normalizedDeviceCoordinate);
+    const screenSpaceFragment = viewportTransform(normalizedDeviceCoordinate, viewport, viewportSize, viewportOffset, devicePixelRatio);
     return screenSpaceFragment;
 });
 const projectOntoVector = Fn(([vectorToProject, vectorToProjectOnto]) => {
@@ -19,7 +27,7 @@ const projectOntoVector = Fn(([vectorToProject, vectorToProjectOnto]) => {
 });
 const rotate90 = Fn(([vector]) => vec2(vector.y.negate(), vector.x));
 export default class VertexShader {
-    constructor(width, firstPosition, secondPosition, arrowSegmentStart, arrowSegmentEnd, arrowSegmentProportion, arrowLength, arrowWidth) {
+    constructor(width, firstPosition, secondPosition, arrowSegmentStart, arrowSegmentEnd, arrowSegmentProportion, arrowLength, arrowWidth, viewport, viewportSize, viewportOffset, devicePixelRatio) {
         Object.defineProperty(this, "node", {
             enumerable: true,
             configurable: true,
@@ -59,15 +67,15 @@ export default class VertexShader {
             const clipSpaceArrowTip = vec4(clipSpaceArrowPoints[0]);
             const clipSpaceTopArrowTail = vec4(clipSpaceArrowPoints[1]);
             const clipSpaceBottomArrowTail = vec4(clipSpaceArrowPoints[2]);
-            const startFragment = clipToScreenSpace(clipSpaceStart);
-            const endFragment = clipToScreenSpace(clipSpaceEnd);
-            const previousFragment = clipToScreenSpace(clipSpacePrevious);
-            const nextFragment = clipToScreenSpace(clipSpaceNext);
-            const firstFragment = clipToScreenSpace(clipSpaceFirstPosition);
-            const secondFragment = clipToScreenSpace(clipSpaceSecondPosition);
-            const arrowTipFragment = clipToScreenSpace(clipSpaceArrowTip);
-            const arrowTopTailFragment = clipToScreenSpace(clipSpaceTopArrowTail);
-            const arrowBottomTailFragment = clipToScreenSpace(clipSpaceBottomArrowTail);
+            const startFragment = clipToScreenSpace(clipSpaceStart, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const endFragment = clipToScreenSpace(clipSpaceEnd, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const previousFragment = clipToScreenSpace(clipSpacePrevious, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const nextFragment = clipToScreenSpace(clipSpaceNext, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const firstFragment = clipToScreenSpace(clipSpaceFirstPosition, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const secondFragment = clipToScreenSpace(clipSpaceSecondPosition, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const arrowTipFragment = clipToScreenSpace(clipSpaceArrowTip, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const arrowTopTailFragment = clipToScreenSpace(clipSpaceTopArrowTail, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const arrowBottomTailFragment = clipToScreenSpace(clipSpaceBottomArrowTail, viewport, viewportSize, viewportOffset, devicePixelRatio);
             // NOTE: This is the vector offset from the start or end of the
             // current segment to a corner of the quadrilateral containing
             // it (scaled by 2 or 3 for segments that represent the top or
@@ -102,11 +110,8 @@ export default class VertexShader {
             const tangent = select(isTopArrowSegment, arrowTopTailFragment.sub(arrowTipFragment), select(isBottomArrowSegment, arrowBottomTailFragment.sub(arrowTipFragment), endFragment.sub(startFragment)));
             const unitTangent = normalize(tangent);
             const unitNormal = rotate90(unitTangent);
-            varyingProperty("vec4", "vTestColor").assign(vec4(1, 0, 0, 1));
-            If(isTopArrowSegment, () => {
-                varyingProperty("vec4", "vTestColor").assign(vec4(0, 0, 1, 1));
-            });
-            const vertexOffset = rawVertexOffset.normalize().mul(SQRT_2);
+            // HACK: Add slightly more to the offset to avoid artifacts.
+            const vertexOffset = rawVertexOffset.normalize().mul(SQRT_2 + 0.1);
             const unitOffset = mat2(unitTangent, unitNormal).mul(vertexOffset);
             const cameraSpaceVertexOffset = vec4(unitOffset.mul(width).mul(UNITS_PER_STROKE_WIDTH), 0, 0);
             const clipSpaceVertexOffset = cameraProjectionMatrix.mul(cameraSpaceVertexOffset);

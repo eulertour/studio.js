@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { TSL, Scene as Scene$1 } from 'three/webgpu';
+import { TSL, Vector2, Scene as Scene$1 } from 'three/webgpu';
 export { THREE };
 
 const PIXELS_TO_COORDS = 8 / 450;
@@ -54238,7 +54238,7 @@ TSL.V_GGX_SmithCorrelated;
 const abs = TSL.abs;
 TSL.acesFilmicToneMapping;
 TSL.acos;
-TSL.add;
+const add = TSL.add;
 TSL.addNodeElement;
 TSL.agxToneMapping;
 TSL.all;
@@ -54656,7 +54656,7 @@ TSL.storageObject;
 TSL.storageTexture;
 TSL.string;
 TSL.struct;
-TSL.sub;
+const sub = TSL.sub;
 TSL.subgroupIndex;
 TSL.subgroupSize;
 TSL.tan;
@@ -54753,11 +54753,21 @@ const SQRT_2 = 1.4142135624;
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=defined%20clipping%20region.-,Perspective%20divide,-%5Bedit%5D
 const perspectiveDivide = Fn(([clipSpaceVertex]) => clipSpaceVertex.xyz.div(clipSpaceVertex.w));
 // NOTE: https://www.khronos.org/opengl/wiki/Vertex_Post-Processing#Perspective_divide:~:text=)-,Viewport%20transform,-%5Bedit%5D
-const viewportTransform = Fn(([normalizedDeviceCoordinates]) => normalizedDeviceCoordinates.mul(screenSize.div(2)).add(screenSize.div(2))
-    .xy);
-const clipToScreenSpace = Fn(([clipSpaceVertex]) => {
+const viewportTransform = Fn(([normalizedDeviceCoordinates, viewport, viewportSize, viewportOffset, devicePixelRatio,]) => {
+    const viewportSet = viewport.z.greaterThan(0).or(viewport.w.greaterThan(0));
+    return select(viewportSet, normalizedDeviceCoordinates
+        .mul(viewportSize)
+        .mul(devicePixelRatio)
+        .div(2)
+        .add(viewportSize)
+        .mul(devicePixelRatio)
+        .div(2)
+        .add(vec2(viewportOffset.x.mul(devicePixelRatio), 0)).xy, normalizedDeviceCoordinates.mul(screenSize.div(2)).add(screenSize.div(2))
+        .xy);
+});
+const clipToScreenSpace = Fn(([clipSpaceVertex, viewport, viewportSize, viewportOffset, devicePixelRatio,]) => {
     const normalizedDeviceCoordinate = perspectiveDivide(clipSpaceVertex);
-    const screenSpaceFragment = viewportTransform(normalizedDeviceCoordinate);
+    const screenSpaceFragment = viewportTransform(normalizedDeviceCoordinate, viewport, viewportSize, viewportOffset, devicePixelRatio);
     return screenSpaceFragment;
 });
 const projectOntoVector$1 = Fn(([vectorToProject, vectorToProjectOnto]) => {
@@ -54766,7 +54776,7 @@ const projectOntoVector$1 = Fn(([vectorToProject, vectorToProjectOnto]) => {
 });
 const rotate90$2 = Fn(([vector]) => vec2(vector.y.negate(), vector.x));
 class VertexShader {
-    constructor(width, firstPosition, secondPosition, arrowSegmentStart, arrowSegmentEnd, arrowSegmentProportion, arrowLength, arrowWidth) {
+    constructor(width, firstPosition, secondPosition, arrowSegmentStart, arrowSegmentEnd, arrowSegmentProportion, arrowLength, arrowWidth, viewport, viewportSize, viewportOffset, devicePixelRatio) {
         Object.defineProperty(this, "node", {
             enumerable: true,
             configurable: true,
@@ -54806,15 +54816,15 @@ class VertexShader {
             const clipSpaceArrowTip = vec4(clipSpaceArrowPoints[0]);
             const clipSpaceTopArrowTail = vec4(clipSpaceArrowPoints[1]);
             const clipSpaceBottomArrowTail = vec4(clipSpaceArrowPoints[2]);
-            const startFragment = clipToScreenSpace(clipSpaceStart);
-            const endFragment = clipToScreenSpace(clipSpaceEnd);
-            const previousFragment = clipToScreenSpace(clipSpacePrevious);
-            const nextFragment = clipToScreenSpace(clipSpaceNext);
-            const firstFragment = clipToScreenSpace(clipSpaceFirstPosition);
-            const secondFragment = clipToScreenSpace(clipSpaceSecondPosition);
-            const arrowTipFragment = clipToScreenSpace(clipSpaceArrowTip);
-            const arrowTopTailFragment = clipToScreenSpace(clipSpaceTopArrowTail);
-            const arrowBottomTailFragment = clipToScreenSpace(clipSpaceBottomArrowTail);
+            const startFragment = clipToScreenSpace(clipSpaceStart, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const endFragment = clipToScreenSpace(clipSpaceEnd, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const previousFragment = clipToScreenSpace(clipSpacePrevious, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const nextFragment = clipToScreenSpace(clipSpaceNext, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const firstFragment = clipToScreenSpace(clipSpaceFirstPosition, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const secondFragment = clipToScreenSpace(clipSpaceSecondPosition, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const arrowTipFragment = clipToScreenSpace(clipSpaceArrowTip, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const arrowTopTailFragment = clipToScreenSpace(clipSpaceTopArrowTail, viewport, viewportSize, viewportOffset, devicePixelRatio);
+            const arrowBottomTailFragment = clipToScreenSpace(clipSpaceBottomArrowTail, viewport, viewportSize, viewportOffset, devicePixelRatio);
             // NOTE: This is the vector offset from the start or end of the
             // current segment to a corner of the quadrilateral containing
             // it (scaled by 2 or 3 for segments that represent the top or
@@ -54849,11 +54859,8 @@ class VertexShader {
             const tangent = select(isTopArrowSegment, arrowTopTailFragment.sub(arrowTipFragment), select(isBottomArrowSegment, arrowBottomTailFragment.sub(arrowTipFragment), endFragment.sub(startFragment)));
             const unitTangent = normalize(tangent);
             const unitNormal = rotate90$2(unitTangent);
-            varyingProperty("vec4", "vTestColor").assign(vec4(1, 0, 0, 1));
-            If(isTopArrowSegment, () => {
-                varyingProperty("vec4", "vTestColor").assign(vec4(0, 0, 1, 1));
-            });
-            const vertexOffset = rawVertexOffset.normalize().mul(SQRT_2);
+            // HACK: Add slightly more to the offset to avoid artifacts.
+            const vertexOffset = rawVertexOffset.normalize().mul(SQRT_2 + 0.1);
             const unitOffset = mat2(unitTangent, unitNormal).mul(vertexOffset);
             const cameraSpaceVertexOffset = vec4(unitOffset.mul(width).mul(UNITS_PER_STROKE_WIDTH), 0, 0);
             const clipSpaceVertexOffset = cameraProjectionMatrix.mul(cameraSpaceVertexOffset);
@@ -54866,7 +54873,12 @@ class VertexShader {
 // This returns [cssViewportWidth, cssViewportHeight] * devicePixelRatio.
 // If the css dimensions are 1280x720, this returns
 // [1280, 720] * devicePixelRatio, which may be [1408, 792].
-const glFragCoord = Fn(() => vec2(screenCoordinate.x, screenSize.y.sub(screenCoordinate.y)));
+const glFragCoord = Fn(([viewport, viewportSize, devicePixelRatio, viewportOffset]) => {
+    const viewportSet = viewport.z.greaterThan(0).or(viewport.w.greaterThan(0));
+    const screenTopToViewportBottom = mul(add(viewportOffset.y, viewportSize.y), devicePixelRatio);
+    const viewportBottomToCoord = sub(screenTopToViewportBottom, screenCoordinate.y);
+    return select(viewportSet, vec2(screenCoordinate.x, viewportBottomToCoord), vec2(screenCoordinate.x, screenSize.y.sub(screenCoordinate.y)));
+});
 const rotate90$1 = Fn(([vector]) => vec2(vector.y.negate(), vector.x));
 const lengthSquared = Fn(([vector]) => dot(vector, vector));
 const projectOntoVector = Fn(([vectorToProject, vectorToProjectOnto]) => {
@@ -54895,7 +54907,7 @@ const segmentCoversFragment = Fn(([fragment, start, end, halfWidth]) => {
     return coveredByStem.or(coveredByStart).or(coveredByEnd);
 });
 class FragmentShader {
-    constructor(dashAtlas, color, opacity, width, strokeEnd, dashLength, dashOffset, startProportion, endProportion, arrow, drawArrow) {
+    constructor(dashAtlas, color, opacity, width, strokeEnd, dashLength, dashOffset, startProportion, endProportion, arrow, drawArrow, viewport, viewportSize, viewportOffset, devicePixelRatio) {
         Object.defineProperty(this, "dashAtlas", {
             enumerable: true,
             configurable: true,
@@ -54941,7 +54953,7 @@ class FragmentShader {
             const startFragment = varyingProperty("vec2", "vStartFragment");
             const endFragment = varyingProperty("vec2", "vEndFragment");
             const segmentVector = endFragment.sub(startFragment);
-            const fragmentVector = glFragCoord().sub(startFragment);
+            const fragmentVector = glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset).sub(startFragment);
             const components = transformToBasis(fragmentVector, segmentVector);
             const tangentVector = components.xy;
             const normalVector = components.zw;
@@ -55003,7 +55015,6 @@ class FragmentShader {
                 // Dash body
                 .ElseIf(referencePointType.equal(0), () => {
                 If(abs(dy).greaterThan(halfWidth), () => {
-                    // testColor.assign(vec4(1, 0, 0, 1));
                     Discard();
                 });
             })
@@ -55029,7 +55040,7 @@ class FragmentShader {
                         .normalize()
                         .mul(previousSegmentDashStartDistance)
                         .mul(previousSegmentFragmentsPerDistance));
-                    If(segmentCoversFragment(glFragCoord(), previousSegmentDashStartFragment, startFragment, halfWidth.mul(previousSegmentFragmentsPerDistance)), () => {
+                    If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), previousSegmentDashStartFragment, startFragment, halfWidth.mul(previousSegmentFragmentsPerDistance)), () => {
                         Discard();
                     });
                 });
@@ -55050,7 +55061,6 @@ class FragmentShader {
                 });
             });
             // Incoming to start of closed curve
-            const testColor = vec4(color, opacity).toVar();
             const patternLength = this.dashAtlas.period.mul(dashLength);
             const skipDrawingArrow = isArrowSegment.and(float(drawArrow).equal(0));
             const drawStart = select(skipDrawingArrow, 0, float(strokeOrArrowEnd).mul(startProportion));
@@ -55078,7 +55088,7 @@ class FragmentShader {
                             .normalize()
                             .mul(min(drawEnd, firstSegmentLength))
                             .mul(firstSegmentFragmentsPerDistance));
-                        If(segmentCoversFragment(glFragCoord(), firstSegmentDrawStartFragment, firstSegmentDrawEndFragment, halfWidth.mul(firstSegmentFragmentsPerDistance)), () => {
+                        If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), firstSegmentDrawStartFragment, firstSegmentDrawEndFragment, halfWidth.mul(firstSegmentFragmentsPerDistance)), () => {
                             Discard();
                         });
                     });
@@ -55091,7 +55101,7 @@ class FragmentShader {
                         .normalize()
                         .mul(max(drawStart, startPointReferenceDashEnd))
                         .mul(firstSegmentFragmentsPerDistance));
-                    If(segmentCoversFragment(glFragCoord(), firstSegmentDashStartFragment, firstSegmentDashEndFragment, halfWidth.mul(firstSegmentFragmentsPerDistance)), () => {
+                    If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), firstSegmentDashStartFragment, firstSegmentDashEndFragment, halfWidth.mul(firstSegmentFragmentsPerDistance)), () => {
                         Discard();
                     });
                 });
@@ -55126,10 +55136,9 @@ class FragmentShader {
                         .normalize()
                         .mul(nextSegmentStartPointDistance)
                         .mul(nextSegmentFragmentsPerDistance));
-                    If(segmentCoversFragment(glFragCoord(), nextSegmentStartPointFragment, nextFragment, halfWidth.mul(nextSegmentFragmentsPerDistance)).not(), () => {
+                    If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), nextSegmentStartPointFragment, nextFragment, halfWidth.mul(nextSegmentFragmentsPerDistance)).not(), () => {
                         Discard();
                     });
-                    // Discard();
                 }).ElseIf(segmentStart
                     .lessThanEqual(drawStart)
                     .and(drawStart.lessThanEqual(segmentEnd)), () => {
@@ -55145,7 +55154,7 @@ class FragmentShader {
                                 .normalize()
                                 .mul(nextSegmentStartPointDistance)
                                 .mul(nextSegmentFragmentsPerDistance));
-                            If(segmentCoversFragment(glFragCoord(), nextSegmentStartPointFragment, nextFragment, halfWidth.mul(nextSegmentFragmentsPerDistance)).not(), () => {
+                            If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), nextSegmentStartPointFragment, nextFragment, halfWidth.mul(nextSegmentFragmentsPerDistance)).not(), () => {
                                 Discard();
                             });
                         });
@@ -55167,7 +55176,7 @@ class FragmentShader {
                             .normalize()
                             .mul(nextSegmentStartPointDistance)
                             .mul(nextSegmentFragmentsPerDistance));
-                        If(segmentCoversFragment(glFragCoord(), nextSegmentStartPointFragment, nextFragment, halfWidth.mul(nextSegmentFragmentsPerDistance)).not(), () => {
+                        If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), nextSegmentStartPointFragment, nextFragment, halfWidth.mul(nextSegmentFragmentsPerDistance)).not(), () => {
                             Discard();
                         });
                     });
@@ -55207,21 +55216,20 @@ class FragmentShader {
             const arrowBottomVector = varyingProperty("vec2", "vArrowBottomTailFragment").sub(varyingProperty("vec2", "vArrowTipFragment"));
             const arrowBottomTailFragment = varyingProperty("vec2", "vArrowTipFragment").add(arrowBottomVector.mul(select(float(drawArrow).equal(0), 1, endProportion)));
             If(float(arrow).and(isArrowSegment.not()), () => {
-                If(segmentCoversFragment(glFragCoord(), varyingProperty("vec2", "vArrowTipFragment"), arrowTopTailFragment, halfWidth.mul(segmentFragmentsPerDistance)), () => {
+                If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), varyingProperty("vec2", "vArrowTipFragment"), arrowTopTailFragment, halfWidth.mul(segmentFragmentsPerDistance)), () => {
                     Discard();
                 });
-                If(segmentCoversFragment(glFragCoord(), varyingProperty("vec2", "vArrowTipFragment"), arrowBottomTailFragment, halfWidth.mul(segmentFragmentsPerDistance)), () => {
+                If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), varyingProperty("vec2", "vArrowTipFragment"), arrowBottomTailFragment, halfWidth.mul(segmentFragmentsPerDistance)), () => {
                     Discard();
                 });
             });
             // Exclude the top arrow segment from the bottom stroke segment
             If(float(arrow).and(varyingProperty("float", "vIsBottomArrowSegment").greaterThan(0)), () => {
-                If(segmentCoversFragment(glFragCoord(), varyingProperty("vec2", "vArrowTipFragment"), arrowTopTailFragment, halfWidth.mul(segmentFragmentsPerDistance)), () => {
+                If(segmentCoversFragment(glFragCoord(viewport, viewportSize, devicePixelRatio, viewportOffset), varyingProperty("vec2", "vArrowTipFragment"), arrowTopTailFragment, halfWidth.mul(segmentFragmentsPerDistance)), () => {
                     Discard();
                 });
             });
-            return testColor;
-            // return vec4(color, opacity);
+            return vec4(color, opacity);
         });
     }
 }
@@ -55356,8 +55364,8 @@ class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
         this.dashSpeed = dashSpeed;
         this.dashAtlas = new DashAtlas(dashPattern);
         this.uniforms = uniforms;
-        this.vertexNode = new VertexShader(this.uniforms.width, this.uniforms.firstPoint, this.uniforms.secondPoint, this.uniforms.arrowSegmentStart, this.uniforms.arrowSegmentEnd, this.uniforms.arrowSegmentProportion, this.uniforms.arrowWidth, this.uniforms.arrowLength).node();
-        this.fragmentNode = new FragmentShader(this.dashAtlas, this.uniforms.color, this.uniforms.opacity, this.uniforms.width, this.uniforms.length, this.uniforms.dashLength, this.uniforms.dashOffset, this.uniforms.startProportion, this.uniforms.endProportion, this.uniforms.arrow, this.uniforms.drawArrow).node();
+        this.vertexNode = new VertexShader(this.uniforms.width, this.uniforms.firstPoint, this.uniforms.secondPoint, this.uniforms.arrowSegmentStart, this.uniforms.arrowSegmentEnd, this.uniforms.arrowSegmentProportion, this.uniforms.arrowWidth, this.uniforms.arrowLength, this.uniforms.viewport, this.uniforms.viewportSize, this.uniforms.viewportOffset, this.uniforms.devicePixelRatio).node();
+        this.fragmentNode = new FragmentShader(this.dashAtlas, this.uniforms.color, this.uniforms.opacity, this.uniforms.width, this.uniforms.length, this.uniforms.dashLength, this.uniforms.dashOffset, this.uniforms.startProportion, this.uniforms.endProportion, this.uniforms.arrow, this.uniforms.drawArrow, this.uniforms.viewport, this.uniforms.viewportSize, this.uniforms.viewportOffset, this.uniforms.devicePixelRatio).node();
     }
     update(dt) {
         if (this.dashSpeed === 0) {
@@ -55482,6 +55490,82 @@ const styleToData = (style) => {
     return data;
 };
 
+class ViewportManager {
+    constructor() {
+        Object.defineProperty(this, "_viewport", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "_screenSize", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "_devicePixelRatio", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "_viewportSize", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "_viewportOffset", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        // Default to undefined viewport (full screen)
+        this._viewport = undefined;
+        this._screenSize = new Vector2(1, 1);
+        this._devicePixelRatio = 1;
+        this._viewportSize = new Vector2(1, 1);
+        this._viewportOffset = new Vector2(0, 0);
+    }
+    static getInstance() {
+        if (!ViewportManager.instance) {
+            ViewportManager.instance = new ViewportManager();
+        }
+        return ViewportManager.instance;
+    }
+    setViewport(viewport, screenSize, devicePixelRatio = 1) {
+        this._viewport = viewport;
+        this._screenSize = screenSize;
+        this._devicePixelRatio = devicePixelRatio;
+        // Update viewportSize and viewportOffset based on viewport
+        if (this._viewport) {
+            this._viewportSize.set(this._viewport.z, this._viewport.w);
+            this._viewportOffset.set(this._viewport.x, this._viewport.y);
+        }
+        else {
+            this._viewportSize.copy(this._screenSize);
+            this._viewportOffset.set(0, 0);
+        }
+    }
+    get viewport() {
+        return this._viewport;
+    }
+    get screenSize() {
+        return this._screenSize;
+    }
+    get devicePixelRatio() {
+        return this._devicePixelRatio;
+    }
+    get viewportSize() {
+        return this._viewportSize;
+    }
+    get viewportOffset() {
+        return this._viewportOffset;
+    }
+}
+
 const defaultConfig = {
     color: new THREE.Color(0x000000),
     opacity: 1,
@@ -55499,6 +55583,7 @@ const defaultConfig = {
     threeDimensions: true,
 };
 const createUniforms = (geometry, color, opacity, width, dashLength, dashOffset, startProportion, endProportion, arrow, drawArrow, arrowWidth, arrowLength) => {
+    const viewportManager = ViewportManager.getInstance();
     const uniforms = {
         firstPoint: uniform(new THREE.Vector3()),
         secondPoint: uniform(new THREE.Vector3()),
@@ -55517,6 +55602,10 @@ const createUniforms = (geometry, color, opacity, width, dashLength, dashOffset,
         arrowSegmentStart: uniform(new THREE.Vector3()),
         arrowSegmentEnd: uniform(new THREE.Vector3()),
         arrowSegmentProportion: uniform(0),
+        viewport: uniform(viewportManager.viewport || new THREE.Vector4(0, 0, 0, 0)),
+        viewportSize: uniform(viewportManager.viewportSize),
+        viewportOffset: uniform(viewportManager.viewportOffset),
+        devicePixelRatio: uniform(viewportManager.devicePixelRatio),
     };
     // TODO: Update this after finishing arrow geometry
     geometry.getPoint(0, uniforms.firstPoint.value);
@@ -55591,6 +55680,43 @@ class WebGPUMeshLine extends THREE.Mesh {
                 this.geometry.fillArrowSegmentData(strokeEndProportion, this.material.uniforms);
             }
         }
+    }
+    update(dt) {
+        // Update material's dash animation
+        if (this.material instanceof WebGPUMeshLineMaterial) {
+            this.material.update(dt);
+        }
+        else if (Array.isArray(this.material)) {
+            this.material.forEach((material) => {
+                if (material instanceof WebGPUMeshLineMaterial) {
+                    material.update(dt);
+                }
+            });
+        }
+        // Update viewport uniforms from singleton
+        const viewportManager = ViewportManager.getInstance();
+        const setUniform = (uniform, value) => {
+            if (Array.isArray(this.material)) {
+                this.material.forEach((material) => {
+                    if (material.uniforms &&
+                        material.uniforms[uniform]) {
+                        material.uniforms[uniform].value =
+                            value;
+                    }
+                });
+            }
+            else {
+                if (this.material.uniforms &&
+                    this.material.uniforms[uniform]) {
+                    this.material.uniforms[uniform].value =
+                        value;
+                }
+            }
+        };
+        setUniform("viewport", viewportManager.viewport || new THREE.Vector4(0, 0, 0, 0));
+        setUniform("viewportSize", viewportManager.viewportSize);
+        setUniform("viewportOffset", viewportManager.viewportOffset);
+        setUniform("devicePixelRatio", viewportManager.devicePixelRatio);
     }
 }
 
@@ -58051,7 +58177,7 @@ class SceneController {
             writable: true,
             value: void 0
         });
-        Object.defineProperty(this, "viewport", {
+        Object.defineProperty(this, "_viewport", {
             enumerable: true,
             configurable: true,
             writable: true,
@@ -58063,9 +58189,22 @@ class SceneController {
             writable: true,
             value: void 0
         });
-        this.viewport = config.viewport;
         this.aspectRatio = config.aspectRatio;
         this.userScene = new UserScene(...setupCanvas(canvasRef, config));
+        // Set viewport which will trigger the setter and update ViewportManager
+        this.viewport = config.viewport;
+    }
+    get viewport() {
+        return this._viewport;
+    }
+    set viewport(value) {
+        this._viewport = value;
+        const canvas = this.renderer?.domElement;
+        if (canvas) {
+            const screenSize = new THREE.Vector2(canvas.width, canvas.height);
+            const devicePixelRatio = typeof window !== "undefined" ? window.devicePixelRatio : 1;
+            ViewportManager.getInstance().setViewport(value, screenSize, devicePixelRatio);
+        }
     }
     get scene() {
         return this.userScene.scene;

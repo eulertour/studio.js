@@ -18,6 +18,10 @@ export type Uniforms = {
     drawArrow: THREE.UniformNode<number>;
     arrowWidth: THREE.UniformNode<number>;
     arrowLength: THREE.UniformNode<number>;
+    viewport: THREE.UniformNode<THREE.Vector4>;
+    viewportSize: THREE.UniformNode<THREE.Vector2>;
+    viewportOffset: THREE.UniformNode<THREE.Vector2>;
+    devicePixelRatio: THREE.UniformNode<number>;
 };
 interface StrokeStyle {
     strokeColor?: THREE.Color;
@@ -46,6 +50,7 @@ interface Config {
 export default class WebGPUMeshLine extends THREE.Mesh {
     constructor(points: Array<THREE.Vector3>, inputConfig?: Config);
     restyle(style: StrokeStyle): void;
+    update(dt: number): void;
 }
 export {};
 //# sourceMappingURL=index.d.ts.map

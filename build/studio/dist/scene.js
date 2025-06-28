@@ -1,5 +1,7 @@
+import * as THREE from "three/webgpu";
 import { Animation } from "./animation/index.js";
 import { setupCanvas } from "./utils.js";
+import { ViewportManager } from "./ViewportManager.js";
 export class SceneController {
     constructor(UserScene, canvasRef, config) {
         Object.defineProperty(this, "UserScene", {
@@ -62,7 +64,7 @@ export class SceneController {
             writable: true,
             value: void 0
         });
-        Object.defineProperty(this, "viewport", {
+        Object.defineProperty(this, "_viewport", {
             enumerable: true,
             configurable: true,
             writable: true,
@@ -74,9 +76,22 @@ export class SceneController {
             writable: true,
             value: void 0
         });
-        this.viewport = config.viewport;
         this.aspectRatio = config.aspectRatio;
         this.userScene = new UserScene(...setupCanvas(canvasRef, config));
+        // Set viewport which will trigger the setter and update ViewportManager
+        this.viewport = config.viewport;
+    }
+    get viewport() {
+        return this._viewport;
+    }
+    set viewport(value) {
+        this._viewport = value;
+        const canvas = this.renderer?.domElement;
+        if (canvas) {
+            const screenSize = new THREE.Vector2(canvas.width, canvas.height);
+            const devicePixelRatio = typeof window !== "undefined" ? window.devicePixelRatio : 1;
+            ViewportManager.getInstance().setViewport(value, screenSize, devicePixelRatio);
+        }
     }
     get scene() {
         return this.userScene.scene;

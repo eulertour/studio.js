@@ -3,6 +3,7 @@ import WebGPUMeshLineGeometry from "./Geometry.js";
 import WebGPUMeshLineMaterial from "./Material.js";
 import { strokeProportionConfigToData, strokeDashesConfigToData, } from "../utils.js";
 import { uniform } from "three/tsl";
+import { ViewportManager } from "../../ViewportManager.js";
 const defaultConfig = {
     color: new THREE.Color(0x000000),
     opacity: 1,
@@ -20,6 +21,7 @@ const defaultConfig = {
     threeDimensions: true,
 };
 const createUniforms = (geometry, color, opacity, width, dashLength, dashOffset, startProportion, endProportion, arrow, drawArrow, arrowWidth, arrowLength) => {
+    const viewportManager = ViewportManager.getInstance();
     const uniforms = {
         firstPoint: uniform(new THREE.Vector3()),
         secondPoint: uniform(new THREE.Vector3()),
@@ -38,6 +40,10 @@ const createUniforms = (geometry, color, opacity, width, dashLength, dashOffset,
         arrowSegmentStart: uniform(new THREE.Vector3()),
         arrowSegmentEnd: uniform(new THREE.Vector3()),
         arrowSegmentProportion: uniform(0),
+        viewport: uniform(viewportManager.viewport || new THREE.Vector4(0, 0, 0, 0)),
+        viewportSize: uniform(viewportManager.viewportSize),
+        viewportOffset: uniform(viewportManager.viewportOffset),
+        devicePixelRatio: uniform(viewportManager.devicePixelRatio),
     };
     // TODO: Update this after finishing arrow geometry
     geometry.getPoint(0, uniforms.firstPoint.value);
@@ -112,6 +118,43 @@ export default class WebGPUMeshLine extends THREE.Mesh {
                 this.geometry.fillArrowSegmentData(strokeEndProportion, this.material.uniforms);
             }
         }
+    }
+    update(dt) {
+        // Update material's dash animation
+        if (this.material instanceof WebGPUMeshLineMaterial) {
+            this.material.update(dt);
+        }
+        else if (Array.isArray(this.material)) {
+            this.material.forEach((material) => {
+                if (material instanceof WebGPUMeshLineMaterial) {
+                    material.update(dt);
+                }
+            });
+        }
+        // Update viewport uniforms from singleton
+        const viewportManager = ViewportManager.getInstance();
+        const setUniform = (uniform, value) => {
+            if (Array.isArray(this.material)) {
+                this.material.forEach((material) => {
+                    if (material.uniforms &&
+                        material.uniforms[uniform]) {
+                        material.uniforms[uniform].value =
+                            value;
+                    }
+                });
+            }
+            else {
+                if (this.material.uniforms &&
+                    this.material.uniforms[uniform]) {
+                    this.material.uniforms[uniform].value =
+                        value;
+                }
+            }
+        };
+        setUniform("viewport", viewportManager.viewport || new THREE.Vector4(0, 0, 0, 0));
+        setUniform("viewportSize", viewportManager.viewportSize);
+        setUniform("viewportOffset", viewportManager.viewportOffset);
+        setUniform("devicePixelRatio", viewportManager.devicePixelRatio);
     }
 }
 //# sourceMappingURL=index.js.map

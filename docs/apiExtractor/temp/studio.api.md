@@ -701,7 +701,8 @@ export class SceneController {
     // (undocumented)
     userScene: StudioScene;
     // (undocumented)
-    viewport: THREE.Vector4 | undefined;
+    get viewport(): THREE.Vector4 | undefined;
+    set viewport(value: THREE.Vector4 | undefined);
 }
 
 // @public (undocumented)

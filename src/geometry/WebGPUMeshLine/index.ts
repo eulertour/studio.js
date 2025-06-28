@@ -114,8 +114,8 @@ const createUniforms = (
     viewport: uniform(
       viewportManager.viewport || new THREE.Vector4(0, 0, 0, 0),
     ),
-    viewportSize: uniform(viewportManager.getViewportSize()),
-    viewportOffset: uniform(viewportManager.getViewportOffset()),
+    viewportSize: uniform(viewportManager.viewportSize),
+    viewportOffset: uniform(viewportManager.viewportOffset),
     devicePixelRatio: uniform(viewportManager.devicePixelRatio),
   };
 
@@ -271,8 +271,8 @@ export default class WebGPUMeshLine extends THREE.Mesh {
       "viewport",
       viewportManager.viewport || new THREE.Vector4(0, 0, 0, 0),
     );
-    setUniform("viewportSize", viewportManager.getViewportSize());
-    setUniform("viewportOffset", viewportManager.getViewportOffset());
+    setUniform("viewportSize", viewportManager.viewportSize);
+    setUniform("viewportOffset", viewportManager.viewportOffset);
     setUniform("devicePixelRatio", viewportManager.devicePixelRatio);
   }
 }

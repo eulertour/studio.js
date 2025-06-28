@@ -35,8 +35,8 @@ export default class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial 
         this.dashSpeed = dashSpeed;
         this.dashAtlas = new DashAtlas(dashPattern);
         this.uniforms = uniforms;
-        this.vertexNode = new VertexShader(this.uniforms.width, this.uniforms.firstPoint, this.uniforms.secondPoint, this.uniforms.arrowSegmentStart, this.uniforms.arrowSegmentEnd, this.uniforms.arrowSegmentProportion, this.uniforms.arrowWidth, this.uniforms.arrowLength).node();
-        this.fragmentNode = new FragmentShader(this.dashAtlas, this.uniforms.color, this.uniforms.opacity, this.uniforms.width, this.uniforms.length, this.uniforms.dashLength, this.uniforms.dashOffset, this.uniforms.startProportion, this.uniforms.endProportion, this.uniforms.arrow, this.uniforms.drawArrow).node();
+        this.vertexNode = new VertexShader(this.uniforms.width, this.uniforms.firstPoint, this.uniforms.secondPoint, this.uniforms.arrowSegmentStart, this.uniforms.arrowSegmentEnd, this.uniforms.arrowSegmentProportion, this.uniforms.arrowWidth, this.uniforms.arrowLength, this.uniforms.viewport, this.uniforms.viewportSize, this.uniforms.viewportOffset, this.uniforms.devicePixelRatio).node();
+        this.fragmentNode = new FragmentShader(this.dashAtlas, this.uniforms.color, this.uniforms.opacity, this.uniforms.width, this.uniforms.length, this.uniforms.dashLength, this.uniforms.dashOffset, this.uniforms.startProportion, this.uniforms.endProportion, this.uniforms.arrow, this.uniforms.drawArrow, this.uniforms.viewport, this.uniforms.viewportSize, this.uniforms.viewportOffset, this.uniforms.devicePixelRatio).node();
     }
     update(dt) {
         if (this.dashSpeed === 0) {
