@@ -86,6 +86,7 @@ interface Config {
 }
 declare class WebGPUMeshLine extends THREE.Mesh {
     constructor(points: Array<THREE.Vector3>, inputConfig?: Config);
+    get points(): any;
     restyle(style: StrokeStyle): void;
     update(dt: number): void;
 }

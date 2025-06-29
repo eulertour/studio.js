@@ -55620,6 +55620,9 @@ class WebGPUMeshLine extends THREE.Mesh {
         const material = new WebGPUMeshLineMaterial(uniforms, config.dashSpeed, config.dashPattern, config.threeDimensions);
         super(geometry, material);
     }
+    get points() {
+        return this.geometry.points;
+    }
     restyle(style) {
         const { strokeColor, strokeOpacity, strokeWidth, strokeDashes, strokeArrow, strokeProportion, } = style;
         const setUniform = (uniform, value) => {
