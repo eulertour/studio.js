@@ -155,6 +155,10 @@ export default class WebGPUMeshLine extends THREE.Mesh {
     super(geometry, material);
   }
 
+  get points() {
+    return this.geometry.points;
+  }
+
   restyle(style: StrokeStyle) {
     const {
       strokeColor,

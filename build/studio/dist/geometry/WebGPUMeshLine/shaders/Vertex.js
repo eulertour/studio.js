@@ -7,12 +7,9 @@ const perspectiveDivide = Fn(([clipSpaceVertex]) => clipSpaceVertex.xyz.div(clip
 const viewportTransform = Fn(([normalizedDeviceCoordinates, viewport, viewportSize, viewportOffset, devicePixelRatio,]) => {
     const viewportSet = viewport.z.greaterThan(0).or(viewport.w.greaterThan(0));
     return select(viewportSet, normalizedDeviceCoordinates
-        .mul(viewportSize)
-        .mul(devicePixelRatio)
+        .mul(viewportSize.mul(devicePixelRatio))
         .div(2)
-        .add(viewportSize)
-        .mul(devicePixelRatio)
-        .div(2)
+        .add(viewportSize.mul(devicePixelRatio).div(2))
         .add(vec2(viewportOffset.x.mul(devicePixelRatio), 0)).xy, normalizedDeviceCoordinates.mul(screenSize.div(2)).add(screenSize.div(2))
         .xy);
 });
