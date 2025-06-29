@@ -52,12 +52,9 @@ const viewportTransform = Fn(
     return select(
       viewportSet,
       normalizedDeviceCoordinates
-        .mul(viewportSize)
-        .mul(devicePixelRatio)
+        .mul(viewportSize.mul(devicePixelRatio))
         .div(2)
-        .add(viewportSize)
-        .mul(devicePixelRatio)
-        .div(2)
+        .add(viewportSize.mul(devicePixelRatio).div(2))
         .add(vec2(viewportOffset.x.mul(devicePixelRatio), 0)).xy,
       normalizedDeviceCoordinates.mul(screenSize.div(2)).add(screenSize.div(2))
         .xy,
