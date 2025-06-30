@@ -4,29 +4,10 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + TS</title>
+    <title>Studio.js Examples</title>
+    <meta http-equiv="refresh" content="0; url=html/horizontal.html">
   </head>
   <body>
-    <canvas
-      id="canvas"
-      style="border: 1px solid black; width: 640px; height: 360px"
-    ></canvas>
-    <script type="module">
-      import { SceneController } from "./src/index";
-      import UserScene from "./userScene/main.ts";
-
-      const canvas = document.querySelector("#canvas");
-      if (canvas === null) {
-        throw new Error("canvas is null");
-      }
-
-      const sceneController = new SceneController(UserScene, canvas, {
-        aspectRatio: 16 / 9,
-        pixelHeight: 360,
-        coordinateHeight: 8,
-      });
-
-      sceneController.play();
-    </script>
+    <p>Redirecting to examples... If you are not redirected, <a href="html/horizontal.html">click here</a>.</p>
   </body>
 </html>

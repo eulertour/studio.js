@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Horizontal - Studio.js Example</title>
+    <link rel="stylesheet" href="common.css">
+  </head>
+  <body>
+    <header>
+      <h1>Horizontal</h1>
+      <select id="config-selector">
+        <option value="horizontal.html" selected>Horizontal</option>
+        <option value="vertical.html">Vertical</option>
+      </select>
+    </header>
+    <main>
+      <canvas
+        id="canvas"
+        style="border: 1px solid black; width: 640px; height: 360px"
+      ></canvas>
+    </main>
+    <script type="module">
+      import { SceneController } from "../src/index";
+      import UserScene from "../userScene/main.ts";
+
+      // Handle dropdown navigation
+      document.getElementById('config-selector').addEventListener('change', (e) => {
+        window.location.href = e.target.value;
+      });
+
+      // Initialize canvas and scene
+      const canvas = document.querySelector("#canvas");
+      if (canvas === null) {
+        throw new Error("canvas is null");
+      }
+
+      const sceneController = new SceneController(UserScene, canvas, {
+        aspectRatio: 16 / 9,
+        pixelHeight: 360,
+        coordinateHeight: 8,
+      });
+
+      sceneController.play();
+    </script>
+  </body>
+</html>
