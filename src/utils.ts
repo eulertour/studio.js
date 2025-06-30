@@ -124,13 +124,11 @@ const setupCanvas = (
     canvas,
     antialias: true,
   });
-  renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
   renderer.autoClear = false;
+  renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
+  renderer.setPixelRatio(window.devicePixelRatio);
   if (!config.viewport) {
-    renderer.setSize(pixelWidth, pixelHeight, false);
-  }
-  if (typeof window !== "undefined") {
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(pixelWidth, pixelHeight, true);
   }
   return [new Scene(), camera, renderer];
 };
