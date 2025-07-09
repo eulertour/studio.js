@@ -54,7 +54,21 @@ const isHeightSetup = (config: object): config is HeightSetupConfig => {
   );
 };
 
-export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
+export type ViewportSetupConfig = {
+  viewport: THREE.Vector4;
+  coordinateWidth?: number;
+  coordinateHeight?: number;
+};
+
+const isViewportSetup = (config: object): config is ViewportSetupConfig => {
+  return (
+    "viewport" in config &&
+    (("coordinateWidth" in config && !("coordinateHeight" in config)) ||
+     ("coordinateHeight" in config && !("coordinateWidth" in config)))
+  );
+};
+
+export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig | ViewportSetupConfig) & {
   viewport?: THREE.Vector4;
 };
 
