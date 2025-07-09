@@ -9,7 +9,8 @@ export function setupNavigation() {
   // Define options
   const options = [
     { value: 'horizontal.html', text: 'Horizontal' },
-    { value: 'vertical.html', text: 'Vertical' }
+    { value: 'vertical.html', text: 'Vertical' },
+    { value: 'viewport.html', text: 'Viewport' }
   ];
   
   // Get current page

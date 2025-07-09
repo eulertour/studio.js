@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vertical - Studio.js Example</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main>
+      <canvas
+        id="canvas"
+        style="width: 700px; height: 700px; border: 1px solid black"
+      ></canvas>
+    </main>
+    <script type="module">
+      import { SceneController, THREE } from "../src/index";
+      import UserScene from "../userScene/main.ts";
+      import { setupNavigation } from "./script.js";
+
+      setupNavigation();
+
+      const canvas = document.querySelector("#canvas");
+      if (canvas === null) {
+        throw new Error("canvas is null");
+      }
+
+      const aspectRatio = 9 / 16; // 9:16 aspect ratio
+      const verticalPadding = 140;
+
+      const viewportHeight = 150;
+      const viewportWidth = viewportHeight;
+      // const viewportX = (700 - viewportWidth) / 2; // Center x
+      // const viewportY = verticalPadding;
+      console.log(viewportHeight)
+      const sceneController = new SceneController(UserScene, canvas, {
+        aspectRatio,
+        pixelHeight: viewportHeight,
+        coordinateHeight: 8 * (16 / 9),
+        viewport: new THREE.Vector4(
+          0,
+          0,
+          viewportWidth,
+          viewportHeight
+        )
+      });
+
+      sceneController.play();
+    </script>
+  </body>
+</html>
