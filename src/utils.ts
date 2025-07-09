@@ -102,13 +102,29 @@ const setupCanvas = (
     coordinateHeight: 8,
     viewport: undefined,
   },
-): [Scene, THREE.Camera, THREE.WebGPURenderer] => {
+): [Scene, THREE.Camera, THREE.WebGPURenderer, number] => {
   let aspectRatio;
   let pixelWidth;
   let pixelHeight;
   let coordinateWidth;
   let coordinateHeight;
-  if (isWidthSetup(config)) {
+  if (isViewportSetup(config)) {
+    // Calculate aspect ratio from viewport dimensions
+    aspectRatio = config.viewport.z / config.viewport.w;
+    pixelWidth = config.viewport.z;
+    pixelHeight = config.viewport.w;
+    
+    // Calculate coordinate dimensions based on what was provided
+    if (config.coordinateWidth !== undefined) {
+      coordinateWidth = config.coordinateWidth;
+      coordinateHeight = coordinateWidth / aspectRatio;
+    } else if (config.coordinateHeight !== undefined) {
+      coordinateHeight = config.coordinateHeight;
+      coordinateWidth = coordinateHeight * aspectRatio;
+    } else {
+      throw new Error("ViewportSetupConfig must include either coordinateWidth or coordinateHeight");
+    }
+  } else if (isWidthSetup(config)) {
     aspectRatio = config.aspectRatio;
     pixelWidth = config.pixelWidth;
     coordinateWidth = config.coordinateWidth;
@@ -121,7 +137,7 @@ const setupCanvas = (
     pixelWidth = pixelHeight * aspectRatio;
     coordinateWidth = coordinateHeight * aspectRatio;
   } else {
-    throw new Error("Invalid config:", config);
+    throw new Error("Invalid config");
   }
 
   const camera = new THREE.OrthographicCamera(
@@ -141,10 +157,11 @@ const setupCanvas = (
   renderer.autoClear = false;
   renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
   renderer.setPixelRatio(window.devicePixelRatio);
-  if (!config.viewport) {
+  // Only resize canvas when no viewport is provided or when using non-viewport setup
+  if (!isViewportSetup(config)) {
     renderer.setSize(pixelWidth, pixelHeight, true);
   }
-  return [new Scene(), camera, renderer];
+  return [new Scene(), camera, renderer, aspectRatio];
 };
 
 const convertWorldDirectionToObjectSpace = (
