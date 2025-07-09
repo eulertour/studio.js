@@ -5,15 +5,9 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vertical - Studio.js Example</title>
-    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <header>
-      <select id="config-selector">
-        <option value="horizontal.html">Horizontal</option>
-        <option value="vertical.html" selected>Vertical</option>
-      </select>
-    </header>
     <main>
       <canvas
         id="canvas"
@@ -23,13 +17,10 @@
     <script type="module">
       import { SceneController } from "../src/index";
       import UserScene from "../userScene/main.ts";
+      import { setupNavigation } from "./script.js";
 
-      // Handle dropdown navigation
-      document.getElementById('config-selector').addEventListener('change', (e) => {
-        window.location.href = e.target.value;
-      });
+      setupNavigation();
 
-      // Initialize canvas and scene
       const canvas = document.querySelector("#canvas");
       if (canvas === null) {
         throw new Error("canvas is null");
