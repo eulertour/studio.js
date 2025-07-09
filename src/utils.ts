@@ -109,12 +109,10 @@ const setupCanvas = (
   let coordinateWidth;
   let coordinateHeight;
   if (isViewportSetup(config)) {
-    // Calculate aspect ratio from viewport dimensions
     aspectRatio = config.viewport.z / config.viewport.w;
-    pixelWidth = config.viewport.z;
-    pixelHeight = config.viewport.w;
+    pixelWidth = canvas.clientWidth || canvas.width;
+    pixelHeight = canvas.clientHeight || canvas.height;
     
-    // Calculate coordinate dimensions based on what was provided
     if (config.coordinateWidth !== undefined) {
       coordinateWidth = config.coordinateWidth;
       coordinateHeight = coordinateWidth / aspectRatio;
