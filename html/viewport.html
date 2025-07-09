@@ -26,23 +26,17 @@
         throw new Error("canvas is null");
       }
 
-      const aspectRatio = 9 / 16; // 9:16 aspect ratio
-      const verticalPadding = 140;
-
-      const viewportHeight = 150;
-      const viewportWidth = viewportHeight;
-      // const viewportX = (700 - viewportWidth) / 2; // Center x
-      // const viewportY = verticalPadding;
+      const viewportHeight = 700;
+      const viewportWidth = viewportHeight; // Square viewport
+      
       const sceneController = new SceneController(UserScene, canvas, {
-        aspectRatio,
-        pixelHeight: viewportHeight,
-        coordinateHeight: 8 * (16 / 9),
         viewport: new THREE.Vector4(
           0,
           0,
           viewportWidth,
           viewportHeight
-        )
+        ),
+        coordinateHeight: 8
       });
 
       sceneController.play();

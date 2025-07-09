@@ -157,10 +157,7 @@ const setupCanvas = (
   renderer.autoClear = false;
   renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
   renderer.setPixelRatio(window.devicePixelRatio);
-  // Only resize canvas when no viewport is provided or when using non-viewport setup
-  if (!isViewportSetup(config)) {
-    renderer.setSize(pixelWidth, pixelHeight, true);
-  }
+  renderer.setSize(pixelWidth, pixelHeight, !isViewportSetup(config));
   return [new Scene(), camera, renderer, aspectRatio];
 };
 
