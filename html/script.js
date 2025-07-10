@@ -1,3 +1,11 @@
+export function querySelectorOrThrow(selector) {
+  const element = document.querySelector(selector);
+  if (element === null) {
+    throw new Error(`Element with selector "${selector}" not found`);
+  }
+  return element;
+}
+
 export function setupNavigation() {
   // Create header element
   const header = document.createElement('header');
@@ -10,7 +18,8 @@ export function setupNavigation() {
   const options = [
     { value: 'horizontal.html', text: 'Horizontal' },
     { value: 'vertical.html', text: 'Vertical' },
-    { value: 'viewport.html', text: 'Viewport' }
+    { value: 'viewport-vertical.html', text: 'Viewport Vertical' },
+    { value: 'viewport-horizontal.html', text: 'Viewport Horizontal' }
   ];
   
   // Get current page
