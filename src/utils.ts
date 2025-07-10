@@ -32,18 +32,28 @@ export type WidthSetupConfig = {
   coordinateWidth: number;
 };
 
+export type HeightSetupConfig = {
+  aspectRatio: number;
+  pixelHeight: number;
+  coordinateHeight: number;
+};
+
+export type ViewportWidthSetupConfig = {
+  viewport: THREE.Vector4;
+  coordinateWidth: number;
+};
+
+export type ViewportHeightSetupConfig = {
+  viewport: THREE.Vector4;
+  coordinateHeight: number;
+};
+
 const isWidthSetup = (config: object): config is WidthSetupConfig => {
   return (
     "aspectRatio" in config &&
     "pixelWidth" in config &&
     "coordinateWidth" in config
   );
-};
-
-export type HeightSetupConfig = {
-  aspectRatio: number;
-  pixelHeight: number;
-  coordinateHeight: number;
 };
 
 const isHeightSetup = (config: object): config is HeightSetupConfig => {
@@ -54,21 +64,15 @@ const isHeightSetup = (config: object): config is HeightSetupConfig => {
   );
 };
 
-export type ViewportSetupConfig = {
-  viewport: THREE.Vector4;
-  coordinateWidth?: number;
-  coordinateHeight?: number;
+const isViewportWidthSetup = (config: object): config is ViewportWidthSetupConfig => {
+  return "viewport" in config && "coordinateWidth" in config && !("coordinateHeight" in config);
 };
 
-const isViewportSetup = (config: object): config is ViewportSetupConfig => {
-  return (
-    "viewport" in config &&
-    (("coordinateWidth" in config && !("coordinateHeight" in config)) ||
-     ("coordinateHeight" in config && !("coordinateWidth" in config)))
-  );
+const isViewportHeightSetup = (config: object): config is ViewportHeightSetupConfig => {
+  return "viewport" in config && "coordinateHeight" in config && !("coordinateWidth" in config);
 };
 
-export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig | ViewportSetupConfig) & {
+export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig | ViewportHeightSetupConfig | ViewportWidthSetupConfig) & {
   viewport?: THREE.Vector4;
 };
 
@@ -108,20 +112,18 @@ const setupCanvas = (
   let pixelHeight;
   let coordinateWidth;
   let coordinateHeight;
-  if (isViewportSetup(config)) {
+  if (isViewportWidthSetup(config)) {
     aspectRatio = config.viewport.z / config.viewport.w;
     pixelWidth = canvas.clientWidth || canvas.width;
     pixelHeight = canvas.clientHeight || canvas.height;
-    
-    if (config.coordinateWidth !== undefined) {
-      coordinateWidth = config.coordinateWidth;
-      coordinateHeight = coordinateWidth / aspectRatio;
-    } else if (config.coordinateHeight !== undefined) {
-      coordinateHeight = config.coordinateHeight;
-      coordinateWidth = coordinateHeight * aspectRatio;
-    } else {
-      throw new Error("ViewportSetupConfig must include either coordinateWidth or coordinateHeight");
-    }
+    coordinateWidth = config.coordinateWidth;
+    coordinateHeight = coordinateWidth / aspectRatio;
+  } else if (isViewportHeightSetup(config)) {
+    aspectRatio = config.viewport.z / config.viewport.w;
+    pixelWidth = canvas.clientWidth || canvas.width;
+    pixelHeight = canvas.clientHeight || canvas.height;
+    coordinateHeight = config.coordinateHeight;
+    coordinateWidth = coordinateHeight * aspectRatio;
   } else if (isWidthSetup(config)) {
     aspectRatio = config.aspectRatio;
     pixelWidth = config.pixelWidth;
@@ -155,7 +157,7 @@ const setupCanvas = (
   renderer.autoClear = false;
   renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
   renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(pixelWidth, pixelHeight, !isViewportSetup(config));
+  renderer.setSize(pixelWidth, pixelHeight, !(isViewportWidthSetup(config) || isViewportHeightSetup(config)));
   return [new Scene(), camera, renderer, aspectRatio];
 };
 
