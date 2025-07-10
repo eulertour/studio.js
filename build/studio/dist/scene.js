@@ -76,8 +76,9 @@ export class SceneController {
             writable: true,
             value: void 0
         });
-        this.aspectRatio = config.aspectRatio;
-        this.userScene = new UserScene(...setupCanvas(canvasRef, config));
+        const [scene, camera, renderer, aspectRatio] = setupCanvas(canvasRef, config);
+        this.aspectRatio = aspectRatio;
+        this.userScene = new UserScene(scene, camera, renderer);
         // Set viewport which will trigger the setter and update ViewportManager
         this.viewport = config.viewport;
     }

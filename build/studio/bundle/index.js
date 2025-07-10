@@ -55619,6 +55619,7 @@ class WebGPUMeshLine extends THREE.Mesh {
         const uniforms = createUniforms(geometry, config.color, config.opacity, config.width, config.dashLength, config.dashOffset, config.startProportion, config.endProportion, config.arrow, config.drawArrow, config.arrowWidth, config.arrowLength);
         const material = new WebGPUMeshLineMaterial(uniforms, config.dashSpeed, config.dashPattern, config.threeDimensions);
         super(geometry, material);
+        this.frustumCulled = false;
     }
     get points() {
         return this.geometry.points;
@@ -56551,6 +56552,12 @@ const isHeightSetup = (config) => {
         "pixelHeight" in config &&
         "coordinateHeight" in config);
 };
+const isViewportWidthSetup = (config) => {
+    return "viewport" in config && "coordinateWidth" in config && !("coordinateHeight" in config);
+};
+const isViewportHeightSetup = (config) => {
+    return "viewport" in config && "coordinateHeight" in config && !("coordinateWidth" in config);
+};
 class Scene extends Scene$1 {
     constructor() {
         super(...arguments);
@@ -56589,7 +56596,21 @@ const setupCanvas = (canvas, config = {
     let pixelHeight;
     let coordinateWidth;
     let coordinateHeight;
-    if (isWidthSetup(config)) {
+    if (isViewportWidthSetup(config)) {
+        aspectRatio = config.viewport.z / config.viewport.w;
+        pixelWidth = canvas.clientWidth || canvas.width;
+        pixelHeight = canvas.clientHeight || canvas.height;
+        coordinateWidth = config.coordinateWidth;
+        coordinateHeight = coordinateWidth / aspectRatio;
+    }
+    else if (isViewportHeightSetup(config)) {
+        aspectRatio = config.viewport.z / config.viewport.w;
+        pixelWidth = canvas.clientWidth || canvas.width;
+        pixelHeight = canvas.clientHeight || canvas.height;
+        coordinateHeight = config.coordinateHeight;
+        coordinateWidth = coordinateHeight * aspectRatio;
+    }
+    else if (isWidthSetup(config)) {
         aspectRatio = config.aspectRatio;
         pixelWidth = config.pixelWidth;
         coordinateWidth = config.coordinateWidth;
@@ -56604,7 +56625,7 @@ const setupCanvas = (canvas, config = {
         coordinateWidth = coordinateHeight * aspectRatio;
     }
     else {
-        throw new Error("Invalid config:", config);
+        throw new Error("Invalid config");
     }
     const camera = new THREE.OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
     camera.position.z = 6;
@@ -56612,15 +56633,11 @@ const setupCanvas = (canvas, config = {
         canvas,
         antialias: true,
     });
-    renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
     renderer.autoClear = false;
-    if (!config.viewport) {
-        renderer.setSize(pixelWidth, pixelHeight, false);
-    }
-    if (typeof window !== "undefined") {
-        renderer.setPixelRatio(window.devicePixelRatio);
-    }
-    return [new Scene(), camera, renderer];
+    renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(pixelWidth, pixelHeight, !(isViewportWidthSetup(config) || isViewportHeightSetup(config)));
+    return [new Scene(), camera, renderer, aspectRatio];
 };
 const convertWorldDirectionToObjectSpace = (worldDirection, object) => {
     const worldQuaternion = new THREE.Quaternion();
@@ -58189,8 +58206,9 @@ class SceneController {
             writable: true,
             value: void 0
         });
-        this.aspectRatio = config.aspectRatio;
-        this.userScene = new UserScene(...setupCanvas(canvasRef, config));
+        const [scene, camera, renderer, aspectRatio] = setupCanvas(canvasRef, config);
+        this.aspectRatio = aspectRatio;
+        this.userScene = new UserScene(scene, camera, renderer);
         // Set viewport which will trigger the setter and update ViewportManager
         this.viewport = config.viewport;
     }

@@ -27,7 +27,15 @@ export type HeightSetupConfig = {
     pixelHeight: number;
     coordinateHeight: number;
 };
-export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
+export type ViewportWidthSetupConfig = {
+    viewport: THREE.Vector4;
+    coordinateWidth: number;
+};
+export type ViewportHeightSetupConfig = {
+    viewport: THREE.Vector4;
+    coordinateHeight: number;
+};
+export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig | ViewportHeightSetupConfig | ViewportWidthSetupConfig) & {
     viewport?: THREE.Vector4;
 };
 declare class Scene extends BaseScene {
@@ -35,7 +43,7 @@ declare class Scene extends BaseScene {
     add(...objects: THREE.Object3D[]): this;
     remove(...objects: THREE.Object3D[]): this;
 }
-declare const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [Scene, THREE.Camera, THREE.WebGPURenderer];
+declare const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [Scene, THREE.Camera, THREE.WebGPURenderer, number];
 declare const convertWorldDirectionToObjectSpace: (worldDirection: THREE.Vector3, object: THREE.Object3D) => THREE.Vector3;
 declare const vstack: (group: THREE.Group, buffer?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;
 declare const vspace: (group: THREE.Group, distanceBetween?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;

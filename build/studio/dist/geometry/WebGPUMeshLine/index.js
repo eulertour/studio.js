@@ -60,6 +60,7 @@ export default class WebGPUMeshLine extends THREE.Mesh {
         const uniforms = createUniforms(geometry, config.color, config.opacity, config.width, config.dashLength, config.dashOffset, config.startProportion, config.endProportion, config.arrow, config.drawArrow, config.arrowWidth, config.arrowLength);
         const material = new WebGPUMeshLineMaterial(uniforms, config.dashSpeed, config.dashPattern, config.threeDimensions);
         super(geometry, material);
+        this.frustumCulled = false;
     }
     get points() {
         return this.geometry.points;

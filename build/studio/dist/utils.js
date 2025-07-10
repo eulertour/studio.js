@@ -32,6 +32,12 @@ const isHeightSetup = (config) => {
         "pixelHeight" in config &&
         "coordinateHeight" in config);
 };
+const isViewportWidthSetup = (config) => {
+    return "viewport" in config && "coordinateWidth" in config && !("coordinateHeight" in config);
+};
+const isViewportHeightSetup = (config) => {
+    return "viewport" in config && "coordinateHeight" in config && !("coordinateWidth" in config);
+};
 class Scene extends BaseScene {
     constructor() {
         super(...arguments);
@@ -70,7 +76,21 @@ const setupCanvas = (canvas, config = {
     let pixelHeight;
     let coordinateWidth;
     let coordinateHeight;
-    if (isWidthSetup(config)) {
+    if (isViewportWidthSetup(config)) {
+        aspectRatio = config.viewport.z / config.viewport.w;
+        pixelWidth = canvas.clientWidth || canvas.width;
+        pixelHeight = canvas.clientHeight || canvas.height;
+        coordinateWidth = config.coordinateWidth;
+        coordinateHeight = coordinateWidth / aspectRatio;
+    }
+    else if (isViewportHeightSetup(config)) {
+        aspectRatio = config.viewport.z / config.viewport.w;
+        pixelWidth = canvas.clientWidth || canvas.width;
+        pixelHeight = canvas.clientHeight || canvas.height;
+        coordinateHeight = config.coordinateHeight;
+        coordinateWidth = coordinateHeight * aspectRatio;
+    }
+    else if (isWidthSetup(config)) {
         aspectRatio = config.aspectRatio;
         pixelWidth = config.pixelWidth;
         coordinateWidth = config.coordinateWidth;
@@ -85,7 +105,7 @@ const setupCanvas = (canvas, config = {
         coordinateWidth = coordinateHeight * aspectRatio;
     }
     else {
-        throw new Error("Invalid config:", config);
+        throw new Error("Invalid config");
     }
     const camera = new THREE.OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
     camera.position.z = 6;
@@ -93,15 +113,11 @@ const setupCanvas = (canvas, config = {
         canvas,
         antialias: true,
     });
-    renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
     renderer.autoClear = false;
-    if (!config.viewport) {
-        renderer.setSize(pixelWidth, pixelHeight, false);
-    }
-    if (typeof window !== "undefined") {
-        renderer.setPixelRatio(window.devicePixelRatio);
-    }
-    return [new Scene(), camera, renderer];
+    renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(pixelWidth, pixelHeight, !(isViewportWidthSetup(config) || isViewportHeightSetup(config)));
+    return [new Scene(), camera, renderer, aspectRatio];
 };
 const convertWorldDirectionToObjectSpace = (worldDirection, object) => {
     const worldQuaternion = new THREE.Quaternion();

@@ -657,7 +657,7 @@ const rotate270: (v: THREE.Vector3) => THREE.Vector3;
 const rotate90: (v: THREE.Vector3) => THREE.Vector3;
 
 // @public (undocumented)
-export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig) & {
+export type SceneCanvasConfig = (WidthSetupConfig | HeightSetupConfig | ViewportHeightSetupConfig | ViewportWidthSetupConfig) & {
     viewport?: THREE.Vector4;
 };
 
@@ -730,7 +730,7 @@ class SetScale extends Animation_3 {
 // Warning: (ae-forgotten-export) The symbol "Scene" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [Scene, THREE.Camera, THREE.WebGPURenderer];
+export const setupCanvas: (canvas: HTMLCanvasElement, config?: SceneCanvasConfig) => [Scene, THREE.Camera, THREE.WebGPURenderer, number];
 
 // @public (undocumented)
 class Shake extends Animation_3 {
@@ -997,6 +997,8 @@ declare namespace Utils {
     export {
         WidthSetupConfig,
         HeightSetupConfig,
+        ViewportWidthSetupConfig,
+        ViewportHeightSetupConfig,
         SceneCanvasConfig,
         getFrameAttributes,
         setupCanvas,
@@ -1033,6 +1035,18 @@ declare namespace Utils {
     }
 }
 export { Utils }
+
+// @public (undocumented)
+type ViewportHeightSetupConfig = {
+    viewport: THREE.Vector4;
+    coordinateHeight: number;
+};
+
+// @public (undocumented)
+type ViewportWidthSetupConfig = {
+    viewport: THREE.Vector4;
+    coordinateWidth: number;
+};
 
 // @public (undocumented)
 const vspace: (group: THREE.Group, distanceBetween?: number) => THREE.Group<THREE.Object3DEventMap> | undefined;

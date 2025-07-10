@@ -153,6 +153,8 @@ export default class WebGPUMeshLine extends THREE.Mesh {
       config.threeDimensions,
     );
     super(geometry, material);
+    
+    this.frustumCulled = false;
   }
 
   get points() {
