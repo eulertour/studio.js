@@ -1,3 +1,5 @@
+import { options } from './navigation.js';
+
 export function querySelectorOrThrow(selector) {
   const element = document.querySelector(selector);
   if (element === null) {
@@ -13,14 +15,6 @@ export function setupNavigation() {
   // Create select element
   const select = document.createElement('select');
   select.id = 'config-selector';
-  
-  // Define options
-  const options = [
-    { value: 'horizontal.html', text: 'Horizontal' },
-    { value: 'vertical.html', text: 'Vertical' },
-    { value: 'viewport-vertical.html', text: 'Viewport Vertical' },
-    { value: 'viewport-horizontal.html', text: 'Viewport Horizontal' }
-  ];
   
   // Get current page
   const currentPage = window.location.pathname.split('/').pop();
