@@ -6,7 +6,7 @@ const PIXELS_TO_COORDS = 8 / 450;
 const COORDS_TO_PIXELS = 1 / PIXELS_TO_COORDS;
 const ERROR_THRESHOLD = 0.001;
 const DEFAULT_BACKGROUND_HEX = 0xfffaf0;
-const UNITS_PER_STROKE_WIDTH = 1 / 20;
+const UNITS_PER_STROKE_WIDTH = 1 / 30;
 
 var constants = /*#__PURE__*/Object.freeze({
 	__proto__: null,
