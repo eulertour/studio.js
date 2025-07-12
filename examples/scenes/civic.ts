@@ -9,6 +9,8 @@ export default class RotatingCube {
     public camera: THREE.Camera,
     public renderer: THREE.Renderer,
   ) {
+    this.renderer.setClearColor(0x1578CF);
+
     // Create a group to hold the SVG shapes
     this.svgGroup = new THREE.Group();
     this.svgGroup.scale.set(0.01, -0.01, 0.01);
@@ -50,9 +52,7 @@ export default class RotatingCube {
         this.svgGroup.position.sub(center);
       },
       // onProgress callback
-      (xhr) => {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-      },
+      () => {},
       // onError callback
       (error) => {
         console.error('An error occurred loading the SVG:', error);

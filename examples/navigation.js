@@ -5,4 +5,5 @@ export const options = [
   { value: 'viewport-horizontal.html', text: 'Viewport Horizontal' },
   { value: 'manual-loop.html', text: 'Manual Loop' },
   { value: 'civic.html', text: 'Civic' },
+  { value: 'background-color.html', text: 'Background Color' },
 ];
