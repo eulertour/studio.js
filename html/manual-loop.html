@@ -8,11 +8,12 @@
     <link rel="stylesheet" href="common/style.css">
   </head>
   <body>
-    <main>
+    <main style="display: flex; flex-direction: column; align-items: center;">
       <canvas
         id="canvas"
         style="border: 1px solid black"
       ></canvas>
+      <button id="nextFrameButton" style="margin-top: 12px;">Next Frame</button>
     </main>
     <script type="module">
       import { SceneController } from "../src/index";
@@ -30,10 +31,10 @@
       });
 
       sceneController.render();
-      
-      setInterval(() => {
-        sceneController.tick(1 / 30);
-      }, 500);
+
+      const button = querySelectorOrThrow("#nextFrameButton");
+      const nextFrame = () => sceneController.tick(1 / 30);
+      button.addEventListener('click', nextFrame);
     </script>
   </body>
 </html>
