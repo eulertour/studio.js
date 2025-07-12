@@ -78,6 +78,7 @@ export default class RotatingCube {
       geometry.center();
       
       this.textMesh.position.set(0, -2, 0);
+      this.textMesh.scale.set(3, 3, 3);
       
       this.scene.add(this.textMesh);
     });
