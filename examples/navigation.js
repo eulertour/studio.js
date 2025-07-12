@@ -6,4 +6,6 @@ export const options = [
   { value: 'manual-loop.html', text: 'Manual Loop' },
   { value: 'civic.html', text: 'Civic' },
   { value: 'background-color.html', text: 'Background Color' },
+  { value: 'text.html', text: 'Text' },
+  { value: 'svg.html', text: 'SVG' },
 ];
