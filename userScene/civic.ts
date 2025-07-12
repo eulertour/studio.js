@@ -1,4 +1,4 @@
-import { THREE } from "../src/index";
+import { THREE } from "../src/index.js";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 
 export default class RotatingCube {

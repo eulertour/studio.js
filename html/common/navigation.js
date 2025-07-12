@@ -4,5 +4,5 @@ export const options = [
   { value: 'viewport-vertical.html', text: 'Viewport Vertical' },
   { value: 'viewport-horizontal.html', text: 'Viewport Horizontal' },
   { value: 'manual-loop.html', text: 'Manual Loop' },
-  { value: 'svg.html', text: 'SVG' },
+  { value: 'civic.html', text: 'Civic' },
 ];
