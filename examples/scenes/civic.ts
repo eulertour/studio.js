@@ -1,8 +1,11 @@
 import { THREE } from "../../src/index.js";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 
 export default class RotatingCube {
   svgGroup: THREE.Group;
+  textMesh: THREE.Mesh;
 
   constructor(
     public scene: THREE.Scene,
@@ -58,6 +61,26 @@ export default class RotatingCube {
         console.error('An error occurred loading the SVG:', error);
       }
     );
+
+    const fontLoader = new FontLoader();
+    fontLoader.load("/examples/html/assets/Inter 28pt_Bold.json", (font) => {
+      const geometry = new TextGeometry("Civic", {
+        font: font,
+        size: 0.5,
+        depth: 0.1,
+        curveSegments: 12,
+        bevelEnabled: false,
+      });
+      
+      const material = new THREE.MeshBasicMaterial({ color: "white" });
+      this.textMesh = new THREE.Mesh(geometry, material);
+      
+      geometry.center();
+      
+      this.textMesh.position.set(0, -2, 0);
+      
+      this.scene.add(this.textMesh);
+    });
   }
 
   update(deltaTime: number, elapsedTime: number) {

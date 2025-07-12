@@ -11,8 +11,8 @@ export default class Example {
     public renderer: THREE.Renderer,
   ) {
     const loader = new FontLoader();
-    loader.load("https://threejs.org/examples/fonts/helvetiker_regular.typeface.json", (font) => {
-      const geometry = new TextGeometry("hello", {
+    loader.load("/examples/html/assets/Inter 28pt_Bold.json", (font) => {
+      const geometry = new TextGeometry("Civic", {
         font: font,
         size: 0.5,
         depth: 0.1,
