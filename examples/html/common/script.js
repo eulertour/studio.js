@@ -1,4 +1,4 @@
-import { options } from './navigation.js';
+import { options } from '../../navigation.js';
 
 export function querySelectorOrThrow(selector) {
   const element = document.querySelector(selector);
@@ -26,6 +26,8 @@ export function setupNavigation() {
     option.textContent = opt.text;
     if (opt.value === currentPage) {
       option.selected = true;
+      // Set the page title from the navigation text
+      document.title = opt.text;
     }
     select.appendChild(option);
   });
