@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vertical - Studio.js Example</title>
+    <link rel="stylesheet" href="common/style.css">
+  </head>
+  <body>
+    <main>
+      <canvas
+        id="canvas"
+        style="border: 1px solid black"
+      ></canvas>
+    </main>
+    <script type="module">
+      import { SceneController } from "../../src/index";
+      import UserScene from "../scenes/main.ts";
+      import { setupNavigation, querySelectorOrThrow } from "./common/script.js";
+
+      setupNavigation();
+
+      const canvas = querySelectorOrThrow("#canvas");
+
+      const sceneController = new SceneController(UserScene, canvas, {
+        aspectRatio: 9 / 16,
+        pixelHeight: 640,
+        coordinateHeight: 8 * (16 / 9),
+      });
+
+      sceneController.play();
+    </script>
+  </body>
+</html>
