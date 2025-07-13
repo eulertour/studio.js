@@ -1,5 +1,7 @@
 import { THREE } from "../../../src/index.js";
-import { loadSVG, loadText } from "./loaders.js";
+import { createRightEdgeFadeAlphaMap, loadSVG, loadText } from "./utils.js";
+import civicLogoSVG from '/examples/html/assets/CivicLogo.svg?raw';
+import interBoldFont from '/examples/html/assets/Inter 28pt_Bold.json?raw';
 
 export default class RotatingCube {
   svgGroup: THREE.Group;
@@ -14,90 +16,41 @@ export default class RotatingCube {
   ) {
     this.renderer.setClearColor(0x1578CF);
 
-    // Load the SVG
-    loadSVG({
-      url: '/examples/html/assets/CivicLogo.svg',
-      scene: this.scene,
-      position: new THREE.Vector3(-2.9, 0, 1),
-      scale: new THREE.Vector3(0.005, -0.005, 0.005),
-      center: true
-    }).then((svgGroup) => {
-      this.svgGroup = svgGroup;
+    this.svgGroup = loadSVG({
+      content: civicLogoSVG,
     });
+    this.svgGroup.position.set(-3.4, 0.7, 1);
+    this.svgGroup.scale.set(0.005, -0.005, 0.005);
+    this.scene.add(this.svgGroup);
 
-    // Load the font and create text
-    loadText({
-      url: "/examples/html/assets/Inter 28pt_Bold.json",
-      scene: this.scene,
+    this.civicMesh = loadText({
+      fontData: interBoldFont,
       text: "Civic",
       size: 0.5,
       depth: 0.1,
-      position: new THREE.Vector3(-0.3, -0.1, -1),
-      scale: new THREE.Vector3(2.0, 2.0, 2.0),
       color: "white"
-    }).then((civicMesh) => {
-      this.civicMesh = civicMesh;
     });
+    this.civicMesh.position.set(-0.3, -0.1, -1);
+    this.civicMesh.scale.set(2.0, 2.0, 2.0);
+    this.scene.add(this.civicMesh);
 
-    loadText({
-      url: "/examples/html/assets/Inter 28pt_Bold.json",
-      scene: this.scene,
+    this.numberMesh = loadText({
+      fontData: interBoldFont,
       text: "101",
       size: 0.5,
       depth: 0.1,
-      position: new THREE.Vector3(2.5, -0.1, 0),
-      scale: new THREE.Vector3(2.0, 2.0, 2.0),
       color: "white"
-    }).then((numberMesh) => {
-      this.numberMesh = numberMesh;
-      this.scene.remove(numberMesh);
     });
-    
-    function createRightEdgeFadeAlphaMap(width, height, fadePercentage = 0.3) {
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      
-      const context = canvas.getContext('2d');
-      if (context === null) {
-        throw new Error('Failed to get canvas context');
-      }
-      
-      // Create gradient from left (white/opaque) to right (black/transparent)
-      const gradient = context.createLinearGradient(0, 0, width, 0);
-      
-      // Solid opacity for most of the plane
-      const fadeStartPosition = 1 - fadePercentage;
-      gradient.addColorStop(0, 'white');
-      gradient.addColorStop(fadeStartPosition, 'white');
-      gradient.addColorStop(1, 'black');
-      
-      // Fill canvas with gradient
-      context.fillStyle = gradient;
-      context.fillRect(0, 0, width, height);
-      
-      // Convert canvas to Three.js texture
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.needsUpdate = true;
-      
-      return texture;
-    }
+    this.numberMesh.position.set(2.5, -0.1, 0);
+    this.numberMesh.scale.set(2.0, 2.0, 2.0);
 
-    // Create your mask with the alpha map
-    const maskGeometry = new THREE.PlaneGeometry(5, 3);
-    const alphaMap = createRightEdgeFadeAlphaMap(256, 256, 0.2); // 20% fade on right edge
-
-    const maskMaterial = new THREE.MeshBasicMaterial({ 
-      // color: 0xff78CF,
-      color: 0x1578CF,
-      alphaMap: alphaMap,
-      transparent: true
-    });
-    
     this.mask = new THREE.Mesh(
       new THREE.PlaneGeometry(5, 3),
-      maskMaterial
-      // new THREE.MeshBasicMaterial({ color: 0x1578CF })
+      new THREE.MeshBasicMaterial({ 
+        color: 0x1578CF,
+        alphaMap: createRightEdgeFadeAlphaMap(256, 256, 0.2),
+        transparent: true
+      }),
     );
     this.mask.position.x -= 4.0;
     this.scene.add(this.mask);
