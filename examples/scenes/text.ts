@@ -1,7 +1,6 @@
 import { THREE } from "../../src/index.ts";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
-import { TTFLoader } from "three/examples/jsm/Addons.js";
 
 export default class Example {
   textMesh: THREE.Mesh;

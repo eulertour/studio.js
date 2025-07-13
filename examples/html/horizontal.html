@@ -16,20 +16,20 @@
     </main>
     <script type="module">
       import { SceneController } from "../../src/index";
-      import UserScene from "../scenes/main.ts";
-      import { setupNavigation, querySelectorOrThrow } from "./common/script.js";
+      import { setupNavigation, querySelectorOrThrow, loadSceneFromConfig } from "./common/script.js";
 
       setupNavigation();
+      
+      loadSceneFromConfig().then(UserScene => {
+        const canvas = querySelectorOrThrow("#canvas");
+        const sceneController = new SceneController(UserScene, canvas, {
+          aspectRatio: 16 / 9,
+          pixelHeight: 360,
+          coordinateHeight: 8,
+        });
 
-      const canvas = querySelectorOrThrow("#canvas");
-
-      const sceneController = new SceneController(UserScene, canvas, {
-        aspectRatio: 16 / 9,
-        pixelHeight: 360,
-        coordinateHeight: 8,
+        sceneController.play();
       });
-
-      sceneController.play();
     </script>
   </body>
 </html>

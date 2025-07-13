@@ -16,27 +16,28 @@
     </main>
     <script type="module">
       import { SceneController, THREE } from "../../src/index";
-      import UserScene from "../scenes/main.ts";
-      import { setupNavigation, querySelectorOrThrow } from "./common/script.js";
+      import { setupNavigation, querySelectorOrThrow, loadSceneFromConfig } from "./common/script.js";
 
       setupNavigation();
-
-      const canvas = querySelectorOrThrow("#canvas");
-
-      const viewportWidth = 640;
-      const viewportHeight = viewportWidth * (9 / 16)
       
-      const sceneController = new SceneController(UserScene, canvas, {
-        viewport: new THREE.Vector4(
-          700 / 2 - viewportWidth / 2,
-          700 / 2 - viewportHeight / 2,
-          viewportWidth,
-          viewportHeight
-        ),
-        coordinateHeight: 8,
-      });
+      loadSceneFromConfig().then(UserScene => {
+        const canvas = querySelectorOrThrow("#canvas");
 
-      sceneController.play();
+        const viewportWidth = 640;
+        const viewportHeight = viewportWidth * (9 / 16)
+        
+        const sceneController = new SceneController(UserScene, canvas, {
+          viewport: new THREE.Vector4(
+            700 / 2 - viewportWidth / 2,
+            700 / 2 - viewportHeight / 2,
+            viewportWidth,
+            viewportHeight
+          ),
+          coordinateHeight: 8,
+        });
+
+        sceneController.play();
+      });
     </script>
   </body>
 </html>
