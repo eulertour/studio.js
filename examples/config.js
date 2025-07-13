@@ -30,6 +30,11 @@ export const options = [
     template: 'vertical.html'
   },
   { 
+    scene: '../../scenes/civic101/main.ts',
+    title: 'Civic 101',
+    template: 'vertical.html'
+  },
+  { 
     scene: '../../scenes/backgroundColor.ts',
     title: 'Background Color',
     template: 'vertical.html'
