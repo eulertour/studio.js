@@ -1,6 +1,6 @@
-import { defineConfig } from "vite";
+import { ViteUserConfig } from "vitest/config";
 
-export default defineConfig({
+export default {
   resolve: {
     alias: {
       "@eulertour/studio": "/src/index.ts"
@@ -19,4 +19,4 @@ export default defineConfig({
     include: ["**/*.test.ts"],
     environment: "node",
   },
-});
+} satisfies ViteUserConfig;
