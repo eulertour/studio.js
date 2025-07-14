@@ -10,8 +10,6 @@ export default class Example {
     public camera: THREE.Camera,
     public renderer: THREE.Renderer,
   ) {
-    this.renderer.setClearColor(0x1578CF);
-
     this.square = new Geometry.Square(1);
     scene.add(this.square);
 

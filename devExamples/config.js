@@ -1,26 +1,26 @@
 export const options = [
   { 
-    scene: '../../scenes/main.ts',
+    scene: '../../scenes/mainExample/main.ts',
     title: 'Horizontal',
     file: 'horizontal.html'
   },
   { 
-    scene: '../../scenes/main.ts',
+    scene: '../../scenes/mainExample/main.ts',
     title: 'Vertical',
     file: 'vertical.html'
   },
   { 
-    scene: '../../scenes/main.ts',
+    scene: '../../scenes/mainExample/main.ts',
     title: 'Vertical Viewport',
     file: 'vertical-viewport.html'
   },
   { 
-    scene: '../../scenes/main.ts',
+    scene: '../../scenes/mainExample/main.ts',
     title: 'Horizontal Viewport',
     file: 'horizontal-viewport.html'
   },
   { 
-    scene: '../../scenes/main.ts',
+    scene: '../../scenes/mainExample/main.ts',
     title: 'Manual Loop',
     file: 'manual-loop.html'
   },
@@ -35,7 +35,7 @@ export const options = [
     template: 'vertical.html'
   },
   { 
-    scene: '../../scenes/backgroundColor.ts',
+    scene: '../../scenes/backgroundColor/main.ts',
     title: 'Background Color',
     template: 'vertical.html'
   },

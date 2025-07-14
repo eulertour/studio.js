@@ -1,6 +1,6 @@
 import { THREE } from "@eulertour/studio";
-import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
-import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
+import { loadText } from "./utils";
+import interBoldFont from './assets/Inter 28pt_Bold.json?raw';
 
 export default class Example {
   textMesh: THREE.Mesh;
@@ -10,25 +10,17 @@ export default class Example {
     public camera: THREE.Camera,
     public renderer: THREE.Renderer,
   ) {
-    const loader = new FontLoader();
-    loader.load("./assets/Inter 28pt_Bold.json", (font) => {
-      const geometry = new TextGeometry("hello", {
-        font: font,
-        size: 0.5,
-        depth: 0.1,
-        curveSegments: 12,
-        bevelEnabled: false,
-      });
-      
-      const material = new THREE.MeshBasicMaterial({ color: "black" });
-      this.textMesh = new THREE.Mesh(geometry, material);
-      
-      geometry.center();
-      
-      this.textMesh.scale.set(3, 3, 3);
-      
-      this.scene.add(this.textMesh);
+    this.textMesh = loadText({
+      fontData: interBoldFont,
+      text: "hello",
+      size: 0.5,
+      depth: 0.1,
+      color: "black"
     });
+    
+    this.textMesh.scale.set(3, 3, 3);
+    
+    this.scene.add(this.textMesh);
   }
 
   update(dt: number) {
