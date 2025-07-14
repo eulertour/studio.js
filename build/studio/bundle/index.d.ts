@@ -2,6 +2,9 @@ import * as THREE from 'three/webgpu';
 import { Scene as Scene$1 } from 'three/webgpu';
 export { THREE };
 import { ShaderNodeObject } from 'three/tsl';
+export { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
+export { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+export { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 
 type Transform = {
     position: THREE.Vector3;

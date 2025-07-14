@@ -23,7 +23,7 @@ export default [
     ],
   },
   {
-    input: "build/studio/dist/index.d.ts",
+    input: "build/studio/dist/src/index.d.ts",
     output: {
       file: "build/studio/bundle/index.d.ts",
       format: "es",

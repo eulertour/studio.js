@@ -4,8 +4,11 @@
 
 ```ts
 
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { Scene as Scene_2 } from 'three/webgpu';
 import { ShaderNodeObject } from 'three/tsl';
+import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import * as THREE from 'three/webgpu';
 
 // @public (undocumented)
@@ -329,6 +332,8 @@ class FadeOut extends Animation_3 {
     // (undocumented)
     tearDown(): void;
 }
+
+export { FontLoader }
 
 // @public (undocumented)
 export const Frame: {
@@ -920,6 +925,8 @@ type Style = {
     strokeArrow?: StrokeArrowConfig;
 };
 
+export { SVGLoader }
+
 declare namespace Text_2 {
     export {
         Text_3 as Text
@@ -974,6 +981,8 @@ class Text_3 extends THREE.Group {
         };
     };
 }
+
+export { TextGeometry }
 
 export { THREE }
 
