@@ -1,1 +1,0 @@
-{"version":3,"file":"graphing.d.ts","sourceRoot":"","sources":["../../../src/graphing.ts"],"names":[],"mappings":"AACA,OAAO,QAAQ,MAAM,wBAAwB,CAAC;AAC9C,OAAO,EAAE,KAAK,KAAK,EAAE,MAAM,qBAAqB,CAAC;AAMjD;;GAEG;AACH,qBAAa,KAAM,SAAQ,QAAQ;IAExB,QAAQ,EAAE,MAAM,IAAI;gBAApB,QAAQ,EAAE,MAAM,IAAI,EAC3B,MAAM,GAAE,KAAU;IAMpB,MAAM,CAAC,aAAa;;;IAIpB,cAAc;CAcf"}
