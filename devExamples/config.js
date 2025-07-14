@@ -40,12 +40,12 @@ export const options = [
     template: 'vertical.html'
   },
   { 
-    scene: '../../scenes/text.ts',
+    scene: '../../scenes/text/main.ts',
     title: 'Text',
     template: 'vertical.html'
   },
   { 
-    scene: '../../scenes/svg.ts',
+    scene: '../../scenes/svg/main.ts',
     title: 'SVG',
     template: 'horizontal.html'
   },

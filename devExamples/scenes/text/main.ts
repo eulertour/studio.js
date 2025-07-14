@@ -11,7 +11,7 @@ export default class Example {
     public renderer: THREE.Renderer,
   ) {
     const loader = new FontLoader();
-    loader.load("/examples/html/assets/Inter 28pt_Bold.json", (font) => {
+    loader.load("./assets/Inter 28pt_Bold.json", (font) => {
       const geometry = new TextGeometry("hello", {
         font: font,
         size: 0.5,

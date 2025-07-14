@@ -18,7 +18,7 @@ export default class SVGExample {
     const loader = new SVGLoader();
     loader.load(
       // URL of the SVG file
-      '/examples/html/assets/test.svg',
+      './assets/test.svg',
       // onLoad callback
       (data) => {
         const paths = data.paths;
