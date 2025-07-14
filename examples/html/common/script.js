@@ -24,7 +24,7 @@ export function loadSceneFromConfig() {
   }
   
   const scenePath = config?.scene || "../../scenes/main.ts";
-  return import(scenePath).then(module => module.default);
+  return import(/* @vite-ignore */ scenePath).then(module => module.default);
 }
 
 export function setupNavigation() {

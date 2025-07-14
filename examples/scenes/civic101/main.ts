@@ -1,7 +1,7 @@
 import { THREE } from "../../../src/index.js";
 import { createRightEdgeFadeAlphaMap, loadSVG, loadText } from "./utils.js";
-import civicLogoSVG from '/examples/html/assets/CivicLogo.svg?raw';
-import interBoldFont from '/examples/html/assets/Inter 28pt_Bold.json?raw';
+import civicLogoSVG from './assets/CivicLogo.svg?raw';
+import interBoldFont from './assets/Inter 28pt_Bold.json?raw';
 
 export default class RotatingCube {
   svgGroup: THREE.Group;
