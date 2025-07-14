@@ -65,7 +65,16 @@ export function setupNavigation() {
     const selectedOption = options.find(opt => opt.title === e.target.value);
     if (selectedOption?.template) {
       // If the option has a template, navigate to the template with URL-encoded title as hash
-      window.location.href = `${selectedOption.template}#${encodeURIComponent(selectedOption.title)}`;
+      const newUrl = `${selectedOption.template}#${encodeURIComponent(selectedOption.title)}`;
+      // Check if we're already on the same template file
+      if (window.location.pathname.endsWith(selectedOption.template)) {
+        // Same template, just change the hash and reload the page
+        window.location.hash = `#${encodeURIComponent(selectedOption.title)}`;
+        window.location.reload();
+      } else {
+        // Different template, navigate normally
+        window.location.href = newUrl;
+      }
     } else if (selectedOption?.file) {
       window.location.href = selectedOption.file;
     }
