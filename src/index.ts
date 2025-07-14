@@ -383,6 +383,10 @@ import * as Text from "./text.js";
 import { setupCanvas, SceneCanvasConfig } from "./utils.js";
 import WebGPUMeshLineMaterial from "./geometry/WebGPUMeshLine/Material.js";
 
+import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
+
 export {
   component,
   Geometry,
@@ -400,4 +404,7 @@ export {
   Diagram,
   Constants,
   Frame,
+  SVGLoader,
+  TextGeometry,
+  FontLoader,
 };

@@ -64,19 +64,19 @@ export default class RotatingCube {
     // Civic text movement
     if (v >= 0) {
       this.civicMesh.position.x = x;
-    } else if (this.civicMesh.position.x > -0.3) {
+    } else if (this.civicMesh.position.x > -0.25) {
       if (this.scene.children.includes(this.mask)) {
         this.scene.remove(this.mask);
       }
 
       this.civicMesh.position.x -= 7.5 * deltaTime;
-      if (this.civicMesh.position.x < -0.3 + 0.4) {
+      if (this.civicMesh.position.x < -0.25 + 0.4) {
         this.scene.add(this.numberMesh);
 
         if (Array.isArray(this.numberMesh.material)) {
           throw new Error('Cannot set opacity: numberMesh has an array of materials');
         }
-        this.numberMesh.material.opacity = -(this.civicMesh.position.x - (-0.3 + 0.4)) / 0.4;
+        this.numberMesh.material.opacity = -(this.civicMesh.position.x - (-0.25 + 0.4)) / 0.4;
         this.numberMesh.material.transparent = true;
       }
     }

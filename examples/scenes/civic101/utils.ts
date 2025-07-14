@@ -1,7 +1,4 @@
-import { THREE } from "@eulertour/studio";
-import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
-import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
-import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
+import { THREE, SVGLoader, TextGeometry, FontLoader } from "@eulertour/studio";
 
 interface SVGLoaderOptions {
   content: string;
