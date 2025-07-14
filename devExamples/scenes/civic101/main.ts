@@ -16,9 +16,7 @@ export default class RotatingCube {
   ) {
     this.renderer.setClearColor(0x1578CF);
 
-    this.svgGroup = loadSVG({
-      content: civicLogoSVG,
-    });
+    this.svgGroup = loadSVG({ content: civicLogoSVG });
     this.svgGroup.position.set(-3.4, 0.7, 1);
     this.svgGroup.scale.set(0.005, -0.005, 0.005);
     this.scene.add(this.svgGroup);
