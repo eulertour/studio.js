@@ -1,1 +1,0 @@
-{"version":3,"file":"SetScale.d.ts","sourceRoot":"","sources":["../../../../../src/animation/SetScale.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAE,MAAM,gBAAgB,CAAC;AAC3C,OAAO,KAAK,KAAK,MAAM,cAAc,CAAC;AAEtC,MAAM,CAAC,OAAO,OAAO,QAAS,SAAQ,SAAS;IAC7C,YAAY,EAAE,MAAM,CAAC;gBAET,MAAM,EAAE,KAAK,CAAC,QAAQ,EAAE,MAAM,EAAE,MAAM,EAAE,MAAM,CAAC,EAAE,GAAG;IAchE,KAAK;CAIN"}
