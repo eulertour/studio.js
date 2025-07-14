@@ -24,7 +24,12 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 		"noImplicitReturns": true,
-		"noUncheckedIndexedAccess": true
+		"noUncheckedIndexedAccess": true,
+
+    /* Path Mapping */
+    "paths": {
+      "@eulertour/studio": ["./src/index.ts"]
+    }
   },
-  "include": ["src", "userScene", "three-types"]
+  "include": ["src", "userScene", "three-types", "examples"]
 }

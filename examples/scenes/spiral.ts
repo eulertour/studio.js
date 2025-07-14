@@ -3,7 +3,7 @@ import {
   Animation,
   StudioScene,
   AnimationRepresentation,
-} from "../../src/index.js";
+} from "@eulertour/studio";
 import * as THREE from "three/webgpu";
 
 export default class Scene implements StudioScene {

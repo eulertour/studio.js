@@ -1,4 +1,4 @@
-import { Geometry, Animation, Text, THREE } from "../../src/index.ts";
+import { Geometry, Animation, Text, THREE } from "@eulertour/studio";
 
 export default class Example {
   square: Geometry.Square;

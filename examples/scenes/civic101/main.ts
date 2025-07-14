@@ -1,4 +1,4 @@
-import { THREE } from "../../../src/index.js";
+import { THREE } from "@eulertour/studio";
 import { createRightEdgeFadeAlphaMap, loadSVG, loadText } from "./utils.js";
 import civicLogoSVG from './assets/CivicLogo.svg?raw';
 import interBoldFont from './assets/Inter 28pt_Bold.json?raw';

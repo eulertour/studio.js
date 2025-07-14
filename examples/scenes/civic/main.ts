@@ -1,4 +1,4 @@
-import { THREE } from "../../../src/index.js";
+import { THREE } from "@eulertour/studio";
 import { loadSVG, loadText } from "./loaders.js";
 
 export default class RotatingCube {
