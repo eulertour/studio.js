@@ -173,7 +173,8 @@ export class SceneController {
       });
       this.userScene.update?.(this.deltaTime, this.elapsedTime);
     } catch (err: any) {
-      throw new Error(`Error executing user animation: ${err.toString()}`);
+      console.error(`Error executing user animation: ${err.toString()}`);
+      throw err;
     }
 
     const newFinishedAnimationCount = this.loopAnimations.reduce(

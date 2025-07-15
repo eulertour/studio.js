@@ -1,34 +1,31 @@
-import { clamp } from "../utils.js";
+import { THREE } from "../index.js";
 
-const sigmoid = (x: number) => 1 / (1 + Math.exp(-x));
-const smooth = (t: number) => {
+// From https://easings.net/
+const easeInOutCubic = (x: number): number =>
+  x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 
-  const error = sigmoid(-10 / 2);
-  return clamp((sigmoid(10 * (t - 0.5)) - error) / (1 - 2 * error), 0, 1);
+export const applyEasing = (
+  t: number,
+  dt: number,
+  easingFunction: (_: number) => number,
+  duration: number,
+): [number, number] => {
+  const easedTime = duration * easingFunction(t / duration);
+  const previousEasedTime = duration * easingFunction((t - dt) / duration);
+  const easedDeltaTime = easedTime - previousEasedTime;
+  return [easedTime, easedDeltaTime];
 };
 
-const modulate = (t, dt): [number, number] => {
-  const tSeconds = t;
-  const modulatedDelta = smooth(tSeconds) - smooth(t - dt);
-  const modulatedTime = smooth(tSeconds);
-  return [modulatedTime, modulatedDelta];
+export type AnimationConfig = {
+  object?: THREE.Object3D;
+  parent?: THREE.Object3D;
+  before?: () => void;
+  after?: () => void;
+  family?: boolean;
+  reveal?: boolean;
+  hide?: boolean;
+  easing?: (_: number) => number;
 };
-
-interface IAnimation {
-  // biome-ignore lint/suspicious/noMisleadingInstantiator:
-  constructor(
-    func: (elapsedTime: number, deltaTime: number) => void,
-    config?: any,
-  ): Animation;
-}
-
-interface INoConfigAnimation {
-  // biome-ignore lint/suspicious/noMisleadingInstantiator:
-  constructor(
-    func: (elapsedTime: number, deltaTime: number) => void,
-    config?: any,
-  ): Animation;
-}
 
 class Animation {
   public scene;
@@ -48,28 +45,26 @@ class Animation {
   public runTime = 1;
   public finished = false;
   public elapsedSinceStart = 0;
+  public easing: (_: number) => number;
 
   // family: whether or not the animation will affect the entire family
   // add: whether or not affected shapes will be added to their parents
   constructor(
     public func: (elapsedTime: number, deltaTime: number) => void,
-    {
-      object = undefined,
-      parent = undefined,
-      before = undefined,
-      after = undefined,
-      family = undefined,
-      reveal = undefined,
-      hide = undefined,
-    } = {},
+    config: AnimationConfig = {},
   ) {
-    this.object = object;
-    this.parent = parent;
-    this.before = before;
-    this.after = after;
-    this.family = family;
-    this.reveal = reveal;
-    this.hide = hide;
+    this.object = config.object;
+    this.parent = config.parent;
+    this.before = config.before;
+    this.after = config.after;
+    this.family = config.family;
+    this.reveal = config.reveal;
+    this.hide = config.hide;
+    this.easing = config.easing || easeInOutCubic;
+  }
+
+  get duration() {
+    return this.endTime - this.startTime;
   }
 
   setUp() {
@@ -94,7 +89,11 @@ class Animation {
       if (this.object instanceof Function) {
         this.object = this.object();
       }
-      if (this.object !== undefined && this.object.parent === null) {
+      if (
+        this.object !== undefined &&
+        this.object.parent === undefined &&
+        this.parent !== undefined
+      ) {
         const parent = this.parent;
         !parent.children.includes(this.object) && parent.add(this.object);
       }
@@ -109,7 +108,14 @@ class Animation {
     this.prevUpdateTime = worldTime;
     this.elapsedSinceStart += deltaTime;
 
-    this.func(...modulate(this.elapsedSinceStart, deltaTime));
+    this.func(
+      ...applyEasing(
+        this.elapsedSinceStart,
+        deltaTime,
+        this.easing,
+        this.duration,
+      ),
+    );
 
     if (worldTime >= this.endTime) {
       this.finished = true;
@@ -143,6 +149,4 @@ class Animation {
   }
 }
 
-export {
-  Animation,
-};
+export { Animation };

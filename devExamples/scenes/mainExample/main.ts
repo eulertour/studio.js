@@ -18,7 +18,7 @@ export default class Example {
 
     this.text = new Text.Text("hello");
     scene.add(this.text);
-
+    
     this.animations = [
       new Animation.SetScale(this.square, 2),
       new Animation.Animation(

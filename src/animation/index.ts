@@ -11,3 +11,8 @@ export { default as FadeOut } from "./FadeOut.js";
 export { default as Wait } from "./Wait.js";
 export { default as Emphasize } from "./Emphasize.js";
 export { default as Shake } from "./Shake.js";
+export { default as Grow } from "./Grow.js";
+export { default as Stagger } from "./Stagger.js";
+export { default as SetStyle } from "./SetStyle.js";
+export { default as StaggerFadeIn } from "./StaggerFadeIn.js";
+
