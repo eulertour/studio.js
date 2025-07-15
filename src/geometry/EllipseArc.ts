@@ -1,4 +1,5 @@
-import Shape, { Style } from "./Shape.js";
+import Shape from "./Shape.js";
+import { Style } from "./utils.js";
 import { THREE } from "../index.js";
 import { getEllipseArcPoints } from "./geometryUtils.js";
 import Arc from "./Arc.js";

@@ -1,5 +1,6 @@
 import { ERROR_THRESHOLD } from "../constants.js";
-import Shape, { Style } from "./Shape.js";
+import Shape from "./Shape.js";
+import { Style } from "./utils.js";
 import * as THREE from "three";
 
 export type EllipseAttributes = {
