@@ -285,6 +285,70 @@ class Draw extends Animation_3 {
 }
 
 // @public (undocumented)
+class Ellipse extends Shape {
+    constructor(radiusA?: number, radiusB?: number, config?: Style);
+    // (undocumented)
+    get attributeData(): {
+        attribute: string;
+        type: string;
+        default: number;
+    }[];
+    // (undocumented)
+    static fromAttributes(attributes: EllipseAttributes): Ellipse;
+    // Warning: (ae-forgotten-export) The symbol "EllipseAttributes" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    getAttributes(): EllipseAttributes;
+    // (undocumented)
+    getCloneAttributes(): number[];
+    // (undocumented)
+    radiusA: number;
+    // (undocumented)
+    radiusB: number;
+    // (undocumented)
+    reshape(radiusA: number, radiusB: number, config?: {}): void;
+}
+
+// @public
+class EllipseArc extends Shape {
+    constructor(radiusA?: number, radiusB?: number, angle?: number, config?: Style & {
+        closed?: boolean;
+    });
+    // (undocumented)
+    angle: number;
+    // (undocumented)
+    get attributeData(): ({
+        attribute: string;
+        type: string;
+        default: number;
+    } | {
+        attribute: string;
+        type: string;
+        default: boolean;
+    })[];
+    // (undocumented)
+    closed: boolean;
+    // (undocumented)
+    static fromAttributes(attributes: EllipseArcAttributes): EllipseArc;
+    // Warning: (ae-forgotten-export) The symbol "EllipseArcAttributes" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    getAttributes(): EllipseArcAttributes;
+    // (undocumented)
+    getCloneAttributes(): (number | boolean)[];
+    // (undocumented)
+    getDimensions(): THREE.Vector2;
+    // (undocumented)
+    radiusA: number;
+    // (undocumented)
+    radiusB: number;
+    // (undocumented)
+    reshape(radiusA?: number, radiusB?: number, angle?: number, config?: Style & {
+        closed?: boolean;
+    }): void;
+}
+
+// @public (undocumented)
 class Emphasize extends Animation_3 {
     constructor(object: THREE.Object3D, largeScale?: number, config?: any);
     // (undocumented)
@@ -392,10 +456,12 @@ declare namespace Geometry {
         Polygon,
         Polyline,
         Arc,
+        EllipseArc,
         Circle,
         Point,
         Rectangle,
-        Square
+        Square,
+        Ellipse
     }
 }
 export { Geometry }
