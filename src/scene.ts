@@ -52,7 +52,6 @@ export class SceneController {
     canvasRef: HTMLCanvasElement,
     config: SceneCanvasConfig,
   ) {
-    throw new Error("source map");
     const [scene, camera, renderer, aspectRatio] = setupCanvas(canvasRef, config);
     this.aspectRatio = aspectRatio;
     this.userScene = new UserScene(scene, camera, renderer);

@@ -10,12 +10,23 @@ export default [
       file: "build/studio/bundle/index.js",
       format: "es",
       sourcemap: true,
-      // sourcemapBaseUrl: "http://localhost:5173/",
-      // sourcemapPathTransform: (relativeSourcePath, sourcemapPath) => {
-      //   const srcIndex = relativeSourcePath.indexOf("src/");
-      //   if (srcIndex === -1) return relativeSourcePath;
-      //   return relativeSourcePath.slice(srcIndex);
-      // },
+      sourcemapPathTransform: (relativeSourcePath) => {
+        // Fix excessive ../../../ in source paths
+        const normalized = relativeSourcePath.replace(/^(\.\.\/)+/, '');
+        
+        // For src files, create correct relative path from bundle directory
+        if (normalized.startsWith('src/')) {
+          return '../../../' + normalized;
+        }
+        
+        // For node_modules, create correct relative path
+        if (normalized.includes('node_modules/')) {
+          const nodeModulesIndex = normalized.indexOf('node_modules/');
+          return '../../../' + normalized.slice(nodeModulesIndex);
+        }
+        
+        return relativeSourcePath;
+      },
     },
     external: ["three/webgpu"],
     plugins: [
