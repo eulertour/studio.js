@@ -49,4 +49,9 @@ export const options = [
     title: 'SVG',
     template: 'horizontal.html'
   },
+  { 
+    scene: '../../scenes/studio/main.js',
+    title: 'Studio Example',
+    template: 'horizontal.html'
+  },
 ];

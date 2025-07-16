@@ -17,7 +17,7 @@
     "rollup-plugin-dts": "^6.1.1",
     "serve": "^14.2.4",
     "tslib": "^2.8.1",
-    "typescript": "5.4",
+    "typescript": "5.8",
     "typescript-eslint": "^8.18.2",
     "vite": "^6.0.5",
     "vitest": "^2.1.8"
@@ -34,9 +34,10 @@
     "src"
   ],
   "scripts": {
-    "dev": "vite",
-    "devBundle": "bun run build:source && vite --config vite.config.bundle.ts",
+    "dev": "bun run transpile:studio && vite",
+    "devBundle": "bun run transpile:studio && bun run build:source && vite --config vite.config.bundle.ts",
     "test": "vitest",
+    "transpile:studio": "bun devExamples/scenes/studio/transpile.ts",
     "build": "rm -rf build; bun run build:source; bun run build:mathjax; bun run build:three; bun run build:api; bun run copy:examples",
     "build:source": "tsc --project tsconfig.build.json; rollup --config rollup.studio.ts --configPlugin typescript",
     "build:mathjax": "rollup --config rollup.mathjax.ts --configPlugin typescript",
