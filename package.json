@@ -7,10 +7,12 @@
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-typescript": "^12.1.2",
+    "@types/node": "^24.0.14",
     "@types/three": "^0.174.0",
     "@xmldom/xmldom": "^0.9.6",
     "ajv": "8",
     "colors": "^1.4.0",
+    "concurrently": "^9.2.0",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "mathjax-full": "^3.2.2",
@@ -34,8 +36,8 @@
     "src"
   ],
   "scripts": {
-    "dev": "bun run transpile:studio && vite",
-    "devBundle": "bun run transpile:studio && bun run build:source && vite --config vite.config.bundle.ts",
+    "dev": "concurrently \"bun run transpile:studio --watch\" \"vite\"",
+    "devBundle": "concurrently \"bun run transpile:studio --watch\" \"bun run build:source && vite --config vite.config.bundle.ts\"",
     "test": "vitest",
     "transpile:studio": "bun devExamples/scenes/studio/transpile.ts",
     "build": "rm -rf build; bun run build:source; bun run build:mathjax; bun run build:three; bun run build:api; bun run copy:examples",
