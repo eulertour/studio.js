@@ -6,6 +6,6 @@ export default class DashAtlas {
     constructor(pattern: number[]);
     getPeriod(pattern: number[]): number;
     computeSegmentBoundaries(pattern: number[]): number[];
-    generateAtlasData(pattern: number[]): Int8Array;
+    generateAtlasData(pattern: number[]): Int8Array<ArrayBuffer>;
 }
 //# sourceMappingURL=DashAtlas.d.ts.map

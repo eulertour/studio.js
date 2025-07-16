@@ -1,7 +1,7 @@
 import * as THREE from "three/webgpu";
 import * as Utils from "./utils.js";
 
-declare module "three" {
+declare module "three/webgpu" {
   export interface Object3D {
     vstack(buffer?: number): THREE.Object3D;
     vspace(distanceBetween?: number): THREE.Object3D;

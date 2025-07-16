@@ -1,7 +1,7 @@
 import { ERROR_THRESHOLD } from "../constants.js";
 import Shape from "./Shape.js";
 import { Style } from "./utils.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 
 export type EllipseAttributes = {
   radiusA: number;

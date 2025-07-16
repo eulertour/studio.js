@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import Angle from "./Angle.js";
 import Shape from "../geometry/Shape.js";
 export default class CongruentAngle extends Shape {

@@ -1,6 +1,6 @@
 import { ERROR_THRESHOLD } from "../constants.js";
 import Shape from "./Shape.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 export default class Ellipse extends Shape {
     constructor(radiusA = 2, radiusB = 1, config = {}) {
         const angle = 2 * Math.PI;

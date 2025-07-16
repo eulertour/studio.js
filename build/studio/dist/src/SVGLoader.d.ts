@@ -1,4 +1,3 @@
-/// <reference types="@xmldom/xmldom" />
 import * as THREE from "three/webgpu";
 declare class SVGLoader extends THREE.Loader {
     constructor(manager: any);

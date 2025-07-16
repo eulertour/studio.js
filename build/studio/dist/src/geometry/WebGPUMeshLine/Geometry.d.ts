@@ -1,13 +1,13 @@
 import * as THREE from "three/webgpu";
 import { Uniforms } from "./index.js";
 export default class WebGPUMeshLineGeometry extends THREE.BufferGeometry {
-    position: Float32Array;
-    endPosition: Float32Array;
-    prevPosition: Float32Array;
-    nextPosition: Float32Array;
-    positionOffset: Float32Array;
-    vertexOffset: Float32Array;
-    indices: Uint16Array;
+    position: Float32Array<ArrayBuffer>;
+    endPosition: Float32Array<ArrayBuffer>;
+    prevPosition: Float32Array<ArrayBuffer>;
+    nextPosition: Float32Array<ArrayBuffer>;
+    positionOffset: Float32Array<ArrayBuffer>;
+    vertexOffset: Float32Array<ArrayBuffer>;
+    indices: Uint16Array<ArrayBuffer>;
     constructor(points: THREE.Vector3[]);
     getPoint(index: number, output: THREE.Vector3): void;
     getOffset(index: number): number;

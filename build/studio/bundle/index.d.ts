@@ -1,7 +1,6 @@
 import * as THREE from 'three/webgpu';
 import { Scene as Scene$1 } from 'three/webgpu';
 export { THREE };
-import * as THREE$1 from 'three';
 import { ShaderNodeObject } from 'three/tsl';
 export { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
 export { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
@@ -647,9 +646,9 @@ declare class SetOpacity extends Animation {
 }
 
 declare class FadeOut extends Animation {
-    config?: any;
+    config?: any | undefined;
     initialOpacity: Map<any, any>;
-    constructor(objectOrFunc: THREE.Object3D | (() => THREE.Object3D), config?: any);
+    constructor(objectOrFunc: THREE.Object3D | (() => THREE.Object3D), config?: any | undefined);
     setUp(): void;
     tearDown(): void;
 }
@@ -674,7 +673,7 @@ declare class Shake extends Animation {
 }
 
 declare class Grow extends Animation {
-    constructor(object: THREE$1.Object3D);
+    constructor(object: THREE.Object3D);
 }
 
 type StaggerConfig = {
@@ -709,7 +708,7 @@ declare class Stagger extends Animation {
      * @param objects Array of objects to animate in sequence
      * @param config Additional configuration options
      */
-    constructor(objects: THREE$1.Object3D[], config?: {
+    constructor(objects: THREE.Object3D[], config?: {
         duration?: number;
     });
     setUp(): void;
@@ -769,13 +768,13 @@ declare namespace constants_d {
 interface IndicatorConfig {
     tickLength?: number;
 }
-declare class Indicator extends THREE$1.Group {
-    start: THREE$1.Vector3;
-    end: THREE$1.Vector3;
+declare class Indicator extends THREE.Group {
+    start: THREE.Vector3;
+    end: THREE.Vector3;
     startTick: Line;
     endTick: Line;
     stem: Line;
-    constructor(start: THREE$1.Vector3, end: THREE$1.Vector3, config?: IndicatorConfig & Style);
+    constructor(start: THREE.Vector3, end: THREE.Vector3, config?: IndicatorConfig & Style);
     grow(config?: any): Animation;
 }
 
@@ -796,37 +795,37 @@ declare class Angle extends Shape {
 
 declare class CongruentAngle extends Shape {
     arcs: number;
-    point1: THREE$1.Vector3;
-    point2: THREE$1.Vector3;
-    point3: THREE$1.Vector3;
+    point1: THREE.Vector3;
+    point2: THREE.Vector3;
+    point3: THREE.Vector3;
     config: Style & {
         minRadius?: number;
         spacing?: number;
     };
-    constructor(arcs: number, point1: THREE$1.Vector3, point2: THREE$1.Vector3, point3: THREE$1.Vector3, config?: Style & {
+    constructor(arcs: number, point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
         minRadius?: number;
         spacing?: number;
     });
     getAttributes(): {
         arcs: number;
-        point1: THREE$1.Vector3;
-        point2: THREE$1.Vector3;
-        point3: THREE$1.Vector3;
+        point1: THREE.Vector3;
+        point2: THREE.Vector3;
+        point3: THREE.Vector3;
     };
 }
 
 declare class RightAngle extends Polyline {
-    constructor(point1: THREE$1.Vector3, point2: THREE$1.Vector3, point3: THREE$1.Vector3, config?: Style & {
+    constructor(point1: THREE.Vector3, point2: THREE.Vector3, point3: THREE.Vector3, config?: Style & {
         sideLength?: number;
     });
 }
 
-declare class CongruentLine extends THREE$1.Group {
-    constructor(ticks: number, start: THREE$1.Vector3, end: THREE$1.Vector3, config?: Style & {
+declare class CongruentLine extends THREE.Group {
+    constructor(ticks: number, start: THREE.Vector3, end: THREE.Vector3, config?: Style & {
         tickLength?: number;
         spacing?: number;
     });
-    moveToSegment(start: THREE$1.Vector3, end: THREE$1.Vector3): void;
+    moveToSegment(start: THREE.Vector3, end: THREE.Vector3): void;
 }
 
 type TextStyle = {
@@ -876,28 +875,28 @@ declare namespace text_d {
   export { text_d_Text as Text };
 }
 
-declare class Number extends THREE$1.Group {
-    static geometries: Map<string, THREE$1.ShapeGeometry>;
-    meshes: THREE$1.Mesh[];
-    material: THREE$1.MeshBasicMaterial;
+declare class Number extends THREE.Group {
+    static geometries: Map<string, THREE.ShapeGeometry>;
+    meshes: THREE.Mesh[];
+    material: THREE.MeshBasicMaterial;
     decimals: number;
     centerData: {
-        center: THREE$1.Vector3;
-        box: THREE$1.Box3;
-        offset: THREE$1.Vector3;
-        worldPosition: THREE$1.Vector3;
+        center: THREE.Vector3;
+        box: THREE.Box3;
+        offset: THREE.Vector3;
+        worldPosition: THREE.Vector3;
     };
     constructor(value?: number, config?: {
-        color?: THREE$1.ColorRepresentation;
+        color?: THREE.ColorRepresentation;
         decimals?: number;
     });
     reshape(value: number, config?: {
-        color?: THREE$1.ColorRepresentation;
+        color?: THREE.ColorRepresentation;
         decimals?: number;
     }): void;
     updateFromValue(value: number): void;
-    static extractGeometry(textShape: Text): THREE$1.ShapeGeometry;
-    static initializeGeometries(): Map<string, THREE$1.ShapeGeometry>;
+    static extractGeometry(textShape: Text): THREE.ShapeGeometry;
+    static initializeGeometries(): Map<string, THREE.ShapeGeometry>;
 }
 
 //# sourceMappingURL=index.d.ts.map
@@ -1027,7 +1026,7 @@ declare class DashAtlas {
     constructor(pattern: number[]);
     getPeriod(pattern: number[]): number;
     computeSegmentBoundaries(pattern: number[]): number[];
-    generateAtlasData(pattern: number[]): Int8Array;
+    generateAtlasData(pattern: number[]): Int8Array<ArrayBuffer>;
 }
 
 declare class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
@@ -1040,7 +1039,7 @@ declare class WebGPUMeshLineMaterial extends THREE.MeshBasicNodeMaterial {
     dispose(): void;
 }
 
-declare module "three" {
+declare module "three/webgpu" {
     interface Object3D {
         vstack(buffer?: number): THREE.Object3D;
         vspace(distanceBetween?: number): THREE.Object3D;

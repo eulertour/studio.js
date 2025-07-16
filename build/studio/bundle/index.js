@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import { TSL, Vector2 as Vector2$1, Scene as Scene$1 } from 'three/webgpu';
+import { TSL, Vector2 as Vector2$1, MathUtils, Scene as Scene$1 } from 'three/webgpu';
 export { THREE };
 
 const PIXELS_TO_COORDS = 8 / 450;
@@ -56788,75 +56788,2004 @@ class Animation {
 }
 
 /**
+ * A shape with four sides of equal length and four right angles.
+ *
+ * @example square.ts
+ */
+class Square extends Rectangle {
+    constructor(sideLength = 2, config = {}) {
+        super(sideLength, sideLength, { ...Square.defaultConfig(), ...config });
+        Object.defineProperty(this, "sideLength", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: sideLength
+        });
+    }
+    reshape(sideLength, config = {}) {
+        this.sideLength = sideLength;
+        this.copyStrokeAndFill(new Square(sideLength, config));
+    }
+    Reshape(sideLength) {
+        let startSideLength;
+        let endSideLength;
+        return new Animation((t) => {
+            this.reshape(MathUtils.lerp(startSideLength, endSideLength, t));
+        }, {
+            before: () => {
+                startSideLength = this.sideLength;
+                endSideLength = sideLength;
+            },
+        });
+    }
+    getCloneAttributes() {
+        return [this.sideLength];
+    }
+    getAttributes() {
+        return {
+            width: this.sideLength,
+            height: this.sideLength,
+        };
+    }
+    static fromAttributes(attributes) {
+        const { width } = attributes;
+        return new Square(width);
+    }
+    get attributeData() {
+        return [
+            {
+                attribute: "sideLength",
+                type: "number",
+                default: 2,
+            },
+        ];
+    }
+}
+
+class Ellipse extends Shape$1 {
+    constructor(radiusA = 2, radiusB = 1, config = {}) {
+        const angle = 2 * Math.PI;
+        let points = [];
+        for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
+            const angle = i;
+            const x = radiusA * Math.cos(angle);
+            const y = radiusB * Math.sin(angle);
+            points.push(new THREE.Vector3(x, y, 0));
+        }
+        super(points, {
+            ...Ellipse.defaultConfig(),
+            ...config,
+        });
+        Object.defineProperty(this, "radiusA", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: radiusA
+        });
+        Object.defineProperty(this, "radiusB", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: radiusB
+        });
+    }
+    reshape(radiusA, radiusB, config = {}) {
+        this.radiusA = radiusA;
+        this.radiusB = radiusB;
+        this.copyStrokeAndFill(new Ellipse(radiusA, radiusB, config));
+    }
+    getCloneAttributes() {
+        return [this.radiusA, this.radiusB];
+    }
+    getAttributes() {
+        return {
+            radiusA: this.radiusA,
+            radiusB: this.radiusB,
+        };
+    }
+    static fromAttributes(attributes) {
+        const { radiusA, radiusB } = attributes;
+        return new Ellipse(radiusA, radiusB);
+    }
+    get attributeData() {
+        return [
+            {
+                attribute: "radiusA",
+                type: "number",
+                default: 1,
+            },
+            {
+                attribute: "radiusB",
+                type: "number",
+                default: 2,
+            },
+        ];
+    }
+}
+
+var index$2 = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	Arc: Arc,
+	Arrow: Arrow,
+	Circle: Circle,
+	Ellipse: Ellipse,
+	EllipseArc: EllipseArc,
+	Line: Line,
+	Point: Point,
+	Polygon: Polygon,
+	Polyline: Polyline,
+	Rectangle: Rectangle,
+	Shape: Shape$1,
+	Square: Square
+});
+
+const BUFFER = 0.5;
+const ORIGIN = Object.freeze(new THREE.Vector3(0, 0, 0));
+const RIGHT = Object.freeze(new THREE.Vector3(1, 0, 0));
+const LEFT = Object.freeze(new THREE.Vector3(-1, 0, 0));
+const UP = Object.freeze(new THREE.Vector3(0, 1, 0));
+const DOWN = Object.freeze(new THREE.Vector3(0, -1, 0));
+const OUT = Object.freeze(new THREE.Vector3(0, 0, 1));
+const IN = Object.freeze(new THREE.Vector3(0, 0, -1));
+const clamp$1 = (num, min, max) => Math.min(Math.max(num, min), max);
+const getFrameAttributes = (aspectRatio, height) => {
+    const coordinateHeight = PIXELS_TO_COORDS * height;
+    return {
+        aspectRatio,
+        height,
+        width: height * aspectRatio,
+        coordinateHeight,
+        coordinateWidth: coordinateHeight * aspectRatio,
+    };
+};
+const isWidthSetup = (config) => {
+    return ("aspectRatio" in config &&
+        "pixelWidth" in config &&
+        "coordinateWidth" in config);
+};
+const isHeightSetup = (config) => {
+    return ("aspectRatio" in config &&
+        "pixelHeight" in config &&
+        "coordinateHeight" in config);
+};
+const isViewportWidthSetup = (config) => {
+    return "viewport" in config && "coordinateWidth" in config && !("coordinateHeight" in config);
+};
+const isViewportHeightSetup = (config) => {
+    return "viewport" in config && "coordinateHeight" in config && !("coordinateWidth" in config);
+};
+class Scene extends Scene$1 {
+    constructor() {
+        super(...arguments);
+        Object.defineProperty(this, "forwardEvent", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: (e) => this.dispatchEvent(e)
+        });
+    }
+    add(...objects) {
+        super.add(...objects);
+        objects.forEach((object) => {
+            object.addEventListener("childadded", this.forwardEvent);
+            object.addEventListener("childremoved", this.forwardEvent);
+        });
+        return this;
+    }
+    remove(...objects) {
+        super.remove(...objects);
+        objects.forEach((object) => {
+            object.removeEventListener("childadded", this.forwardEvent);
+            object.removeEventListener("childremoved", this.forwardEvent);
+        });
+        return this;
+    }
+}
+const setupCanvas = (canvas, config = {
+    aspectRatio: 16 / 9,
+    pixelHeight: 720,
+    coordinateHeight: 8,
+    viewport: undefined,
+}) => {
+    let aspectRatio;
+    let pixelWidth;
+    let pixelHeight;
+    let coordinateWidth;
+    let coordinateHeight;
+    if (isViewportWidthSetup(config)) {
+        aspectRatio = config.viewport.z / config.viewport.w;
+        pixelWidth = canvas.clientWidth || canvas.width;
+        pixelHeight = canvas.clientHeight || canvas.height;
+        coordinateWidth = config.coordinateWidth;
+        coordinateHeight = coordinateWidth / aspectRatio;
+    }
+    else if (isViewportHeightSetup(config)) {
+        aspectRatio = config.viewport.z / config.viewport.w;
+        pixelWidth = canvas.clientWidth || canvas.width;
+        pixelHeight = canvas.clientHeight || canvas.height;
+        coordinateHeight = config.coordinateHeight;
+        coordinateWidth = coordinateHeight * aspectRatio;
+    }
+    else if (isWidthSetup(config)) {
+        aspectRatio = config.aspectRatio;
+        pixelWidth = config.pixelWidth;
+        coordinateWidth = config.coordinateWidth;
+        pixelHeight = pixelWidth / aspectRatio;
+        coordinateHeight = coordinateWidth / aspectRatio;
+    }
+    else if (isHeightSetup(config)) {
+        aspectRatio = config.aspectRatio;
+        pixelHeight = config.pixelHeight;
+        coordinateHeight = config.coordinateHeight;
+        pixelWidth = pixelHeight * aspectRatio;
+        coordinateWidth = coordinateHeight * aspectRatio;
+    }
+    else {
+        throw new Error("Invalid config");
+    }
+    const camera = new THREE.OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
+    camera.position.z = 6;
+    const renderer = new THREE.WebGPURenderer({
+        canvas,
+        antialias: true,
+    });
+    renderer.autoClear = false;
+    renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(pixelWidth, pixelHeight, !(isViewportWidthSetup(config) || isViewportHeightSetup(config)));
+    return [new Scene(), camera, renderer, aspectRatio];
+};
+const convertWorldDirectionToObjectSpace = (worldDirection, object) => {
+    const worldQuaternion = new THREE.Quaternion();
+    object.getWorldQuaternion(worldQuaternion);
+    const inverseQuaternion = worldQuaternion.clone().invert();
+    const localDirection = worldDirection
+        .clone()
+        .applyQuaternion(inverseQuaternion);
+    localDirection.normalize();
+    return localDirection;
+};
+/*
+ * Vertically stacks the children of a group.
+ * buffer specifies the length of empty space between each child.
+ */
+const vstack = (group, buffer = 0.2) => {
+    if (group.children.length < 2)
+        return group;
+    const center = group.children[0].position.clone();
+    for (let i = 1; i < group.children.length; i++) {
+        group.children[i].position
+            .copy(group.children[i - 1].position)
+            .addScaledVector(DOWN, buffer);
+        center.add(group.children[i].position);
+    }
+    center.divideScalar(group.children.length);
+    group.children.forEach((child) => child.position.sub(center));
+};
+/*
+ * Like vstack, but puts an equal distance between the positions of each child.
+ */
+const vspace = (group, distanceBetween) => {
+    if (group.children.length < 2)
+        return group;
+    const defaultBuffer = 0.2;
+    let defaultSpacing = Number.NEGATIVE_INFINITY;
+    for (let i = 1; i < group.children.length; i++) {
+        const previous = group.children[i - 1];
+        const previousLowest = furthestInDirection(previous, DOWN);
+        const distanceToBottom = new THREE.Vector3()
+            .subVectors(previousLowest, previous.position)
+            .dot(DOWN);
+        const current = group.children[i];
+        const currentTop = furthestInDirection(current, UP);
+        const distanceToTop = new THREE.Vector3()
+            .subVectors(currentTop, current.position)
+            .dot(UP);
+        defaultSpacing = Math.max(defaultSpacing, distanceToBottom + distanceToTop + defaultBuffer);
+    }
+    const center = group.children[0].position.clone();
+    for (let i = 1; i < group.children.length; i++) {
+        const previous = group.children[i - 1];
+        const current = group.children[i];
+        current.position
+            .copy(previous.position)
+            .addScaledVector(DOWN, distanceBetween ?? defaultSpacing);
+        center.add(group.children[i].position);
+    }
+    center.divideScalar(group.children.length);
+    group.children.forEach((child) => child.position.sub(center));
+};
+const transformBetweenSpaces = (from, to, point) => {
+    return to.worldToLocal(from.localToWorld(point));
+};
+const furthestInDirection = (object, direction, exclude = []) => {
+    let excludeArray;
+    if (!Array.isArray(exclude)) {
+        excludeArray = [exclude];
+    }
+    else {
+        excludeArray = exclude;
+    }
+    object.updateWorldMatrix(true, true);
+    // const unitDirection = convertWorldDirectionToObjectSpace(direction, object);
+    const unitDirection = direction.clone().normalize();
+    let maxDot = Number.NEGATIVE_INFINITY;
+    const maxDotPoint = unitDirection
+        .clone()
+        .negate()
+        .setLength(Number.POSITIVE_INFINITY);
+    object.traverse((obj) => {
+        let exclusionCheckObj = obj;
+        while (exclusionCheckObj) {
+            if (excludeArray.includes(exclusionCheckObj)) {
+                return;
+            }
+            if (exclusionCheckObj === object) {
+                break;
+            }
+            exclusionCheckObj = exclusionCheckObj.parent;
+        }
+        if (obj instanceof WebGPUMeshLine) {
+            for (const point of obj.points) {
+                const clonedPoint = point.clone();
+                transformBetweenSpaces(obj, object, clonedPoint);
+                const dotProduct = clonedPoint.dot(unitDirection);
+                if (dotProduct > maxDot) {
+                    maxDot = dotProduct;
+                    maxDotPoint.copy(clonedPoint);
+                }
+            }
+        }
+        else if (obj instanceof THREE.Mesh &&
+            (obj.parent?.parent?.parent?.constructor?.name === "Text" ||
+                object.parent?.constructor?.name === "Number")) {
+            const pointsArray = obj.geometry.attributes.position.array;
+            const pointContainer = new THREE.Vector3();
+            for (let i = 0; i < pointsArray.length; i += 3) {
+                pointContainer.set(pointsArray[i], pointsArray[i + 1], pointsArray[i + 2]);
+                transformBetweenSpaces(obj, object, pointContainer);
+                const dotProduct = pointContainer.dot(unitDirection);
+                if (dotProduct > maxDot) {
+                    maxDot = dotProduct;
+                    maxDotPoint.copy(pointContainer);
+                }
+            }
+        }
+    });
+    return maxDotPoint;
+};
+const moveNextTo = (target, object, direction, buffer = 0.2) => {
+    target.updateWorldMatrix(true, true);
+    object.updateWorldMatrix(true, true);
+    const targetSpaceDirectionInitial = new THREE.Vector3().applyMatrix4(new THREE.Matrix4().copy(target.matrixWorld).invert());
+    const targetSpaceDirectionFinal = direction
+        .clone()
+        .applyMatrix4(new THREE.Matrix4().copy(target.matrixWorld).invert());
+    const targetSpaceDirection = new THREE.Vector3().subVectors(targetSpaceDirectionFinal, targetSpaceDirectionInitial);
+    // Target space
+    let targetSpaceStartPosition;
+    let targetSpaceOffsetInitial;
+    let targetSpaceOffsetFinal;
+    if (!(target instanceof Line)) {
+        const targetSpaceFurthestInDirection = furthestInDirection(target, targetSpaceDirection, object);
+        targetSpaceStartPosition = new THREE.Vector3();
+        targetSpaceOffsetInitial = new THREE.Vector3();
+        const targetSpaceOffsetFinalLength = targetSpaceDirection
+            .clone()
+            .normalize()
+            .dot(targetSpaceFurthestInDirection);
+        targetSpaceOffsetFinal = targetSpaceDirection
+            .clone()
+            .setLength(Math.max(targetSpaceOffsetFinalLength, 0));
+    }
+    else {
+        const vector = target.getVector().normalize();
+        const normal = vector.clone().applyAxisAngle(OUT, Math.PI / 2);
+        const vectorDot = targetSpaceDirection.dot(vector);
+        const normalDot = targetSpaceDirection.dot(normal);
+        const againstVectorDot = targetSpaceDirection.dot(vector.clone().negate());
+        const againstNormalDot = targetSpaceDirection.dot(normal.clone().negate());
+        const dotProducts = [
+            vectorDot,
+            normalDot,
+            againstVectorDot,
+            againstNormalDot,
+        ];
+        const maxDot = Math.max(...dotProducts);
+        if (maxDot === vectorDot) {
+            targetSpaceStartPosition = target.end.clone();
+        }
+        else if (maxDot === againstVectorDot) {
+            targetSpaceStartPosition = target.start.clone();
+        }
+        else if ([normalDot, againstNormalDot].includes(maxDot)) {
+            targetSpaceStartPosition = new THREE.Vector3()
+                .addVectors(target.start, target.end)
+                .divideScalar(2);
+        }
+        targetSpaceOffsetInitial = new THREE.Vector3();
+        targetSpaceOffsetFinal = new THREE.Vector3();
+    }
+    // Object space
+    const objectSpaceDirectionInitial = new THREE.Vector3().applyMatrix4(new THREE.Matrix4().copy(object.matrixWorld).invert());
+    const objectSpaceDirectionFinal = direction
+        .clone()
+        .applyMatrix4(new THREE.Matrix4().copy(object.matrixWorld).invert());
+    const objectSpaceDirection = new THREE.Vector3()
+        .subVectors(objectSpaceDirectionFinal, objectSpaceDirectionInitial)
+        .negate();
+    const objectSpaceFurthestInDirection = furthestInDirection(object, objectSpaceDirection, target);
+    const objectSpaceOffsetInitial = new THREE.Vector3();
+    const objectSpaceOffsetFinalLength = objectSpaceDirection
+        .clone()
+        .normalize()
+        .dot(objectSpaceFurthestInDirection);
+    const objectSpaceOffsetFinal = objectSpaceDirection
+        .clone()
+        .negate()
+        .setLength(Math.max(objectSpaceOffsetFinalLength, 0));
+    // World space
+    const worldSpaceStartPosition = targetSpaceStartPosition.applyMatrix4(target.matrixWorld);
+    const worldSpaceTargetOffsetInitial = targetSpaceOffsetInitial.applyMatrix4(target.matrixWorld);
+    const worldSpaceTargetOffsetFinal = targetSpaceOffsetFinal.applyMatrix4(target.matrixWorld);
+    const worldSpaceTargetOffset = new THREE.Vector3().subVectors(worldSpaceTargetOffsetFinal, worldSpaceTargetOffsetInitial);
+    const worldSpaceObjectOffsetInitial = objectSpaceOffsetInitial.applyMatrix4(object.matrixWorld);
+    const worldSpaceObjectOffsetFinal = objectSpaceOffsetFinal.applyMatrix4(object.matrixWorld);
+    const worldSpaceObjectOffset = new THREE.Vector3().subVectors(worldSpaceObjectOffsetFinal, worldSpaceObjectOffsetInitial);
+    const worldSpaceOffset = direction
+        .clone()
+        .setLength(0 +
+        worldSpaceTargetOffset.length() +
+        buffer +
+        worldSpaceObjectOffset.length());
+    const worldSpaceOffsetInitial = new THREE.Vector3();
+    const worldSpaceOffsetFinal = worldSpaceOffset.clone();
+    // Object parent space
+    const objectParentSpaceStartPosition = worldSpaceStartPosition
+        .applyMatrix4(object.matrixWorld.clone().invert())
+        .applyMatrix4(object.matrix);
+    const objectParentSpaceOffsetInitial = worldSpaceOffsetInitial
+        .applyMatrix4(object.matrixWorld.clone().invert())
+        .applyMatrix4(object.matrix);
+    const objectParentSpaceOffsetFinal = worldSpaceOffsetFinal
+        .applyMatrix4(object.matrixWorld.clone().invert())
+        .applyMatrix4(object.matrix);
+    const objectParentSpaceOffset = new THREE.Vector3().subVectors(objectParentSpaceOffsetFinal, objectParentSpaceOffsetInitial);
+    object.position
+        .copy(objectParentSpaceStartPosition)
+        .add(objectParentSpaceOffset);
+    return object;
+};
+const moveToRightOf = (target, object, distance = 0.2) => {
+    return moveNextTo(target, object, RIGHT, distance);
+};
+const moveToLeftOf = (target, object, distance = 0.2) => {
+    return moveNextTo(target, object, LEFT, distance);
+};
+const moveAbove = (target, object, distance = 0.2) => {
+    return moveNextTo(target, object, UP, distance);
+};
+const moveBelow = (target, object, distance = 0.2) => {
+    return moveNextTo(target, object, DOWN, distance);
+};
+const rotate90 = (v) => v.applyAxisAngle(OUT, Math.PI / 2);
+const rotate180 = (v) => v.applyAxisAngle(OUT, Math.PI);
+const rotate270 = (v) => v.applyAxisAngle(OUT, -Math.PI / 2);
+const getBoundingBoxCenter = (obj, target) => {
+    obj.updateWorldMatrix(true, true);
+    new THREE.Box3().expandByObject(obj).getCenter(target);
+    return target;
+};
+const getBoundingBoxHelper = (obj, color) => {
+    obj.updateWorldMatrix(true, true);
+    const box = new THREE.Box3().expandByObject(obj);
+    const helper = new THREE.Box3Helper(box, new THREE.Color(color));
+    return helper;
+};
+const pointAlongCurve = (shape, t) => {
+    if (t < 0 || t > 1) {
+        throw new Error(`Invalid parameter ${t}`);
+    }
+    const totalLength = strokeLength(shape);
+    const targetLength = totalLength * t;
+    let currentLength = 0;
+    for (let i = 0; i < shape.points.length - 1; i++) {
+        const segmentLength = getSegmentLength(shape.points[i], shape.points[i + 1]);
+        if (currentLength + segmentLength >= targetLength) {
+            const segmentPercent = (targetLength - currentLength) / segmentLength;
+            return new THREE.Vector3().lerpVectors(shape.points[i], shape.points[i + 1], segmentPercent);
+        }
+        currentLength += segmentLength;
+    }
+    return shape.points[shape.points.length - 1];
+};
+const strokeLength = (shape) => {
+    let length = 0;
+    for (let i = 0; i < shape.points.length - 1; i++) {
+        length += getSegmentLength(shape.points[i], shape.points[i + 1]);
+    }
+    return length;
+};
+const getSegmentLength = (u, v) => {
+    const dx = u.x - v.x;
+    const dy = u.y - v.y;
+    const dz = u.z - v.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+};
+/*
+ * Solves
+ * [ a b ]   [ xa ]   [ ba ]
+ * [ c d ] * [ xb ] = [ bb ]
+ * for x.
+ */
+const matrixSolve = (ma, mb, mc, md, ba, bb) => {
+    const determinant = ma * md - mb * mc;
+    if (determinant === 0) {
+        return null;
+    }
+    return [(md * ba - mb * bb) / determinant, (ma * bb - mc * ba) / determinant];
+};
+// https://blogs.sas.com/content/iml/2018/07/09/intersection-line-segments.html
+const getIntersection = (p1, p2, q1, q2) => {
+    const p2MinusP1 = new THREE.Vector3().subVectors(p2, p1);
+    const q1MinusQ2 = new THREE.Vector3().subVectors(q1, q2);
+    const q1MinusP1 = new THREE.Vector3().subVectors(q1, p1);
+    const solution = matrixSolve(p2MinusP1.x, q1MinusQ2.x, p2MinusP1.y, q1MinusQ2.y, q1MinusP1.x, q1MinusP1.y);
+    if (solution === null) {
+        // TODO: Handle parallel lines.
+        return null;
+    }
+    const [s, t] = solution;
+    if (s < 0 || 1 < s || t < 0 || 1 < t) {
+        return null;
+    }
+    return p1.multiplyScalar(1 - s).addScaledVector(p2, s);
+};
+const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
+    return (new THREE.Vector3()
+        .subVectors(shape.points.at(0), shape.points.at(-1))
+        .length() < adjacentThreshold);
+};
+const intersectionsBetween = (shape1, shape2) => {
+    const intersections = [];
+    shape1.updateMatrixWorld();
+    shape2.updateMatrixWorld();
+    for (let i = 0; i < shape1.points.length - 1; i++) {
+        const segment1 = new THREE.Line3(shape1.points[i]?.clone().applyMatrix4(shape1.matrixWorld), shape1.points[i + 1]?.clone().applyMatrix4(shape1.matrixWorld));
+        for (let j = 0; j < shape2.points.length - 1; j++) {
+            const segment2 = new THREE.Line3(shape2.points[j]?.clone().applyMatrix4(shape2.matrixWorld), shape2.points[j + 1]?.clone().applyMatrix4(shape2.matrixWorld));
+            const maybeIntersection = getIntersection(segment1.start, segment1.end, segment2.start, segment2.end);
+            if (maybeIntersection !== null) {
+                intersections.push(maybeIntersection);
+            }
+        }
+    }
+    return intersections;
+};
+const positiveAngleTo = (a, b) => {
+    const normal = a.clone().rotate90();
+    const angle = a.angleTo(b);
+    if (Math.sign(normal.dot(b)) < 0) {
+        return 2 * Math.PI - angle;
+    }
+    return angle;
+};
+const indexOrThrow = (array, i) => {
+    const value = array[i];
+    if (value === undefined) {
+        throw new Error("Invalid array access");
+    }
+    return value;
+};
+const bufferIndexOrThrow = (array, i) => {
+    const value = array[i];
+    if (value === undefined) {
+        throw new Error("Invalid array access");
+    }
+    return value;
+};
+class ShapeFromCurves {
+    constructor() {
+        Object.defineProperty(this, "adjacentThreshold", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 0.0001
+        });
+        Object.defineProperty(this, "segmentClosestToPoint", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: new THREE.Vector3()
+        });
+        Object.defineProperty(this, "pointToSegment", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: new THREE.Vector3()
+        });
+        Object.defineProperty(this, "points", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "style", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: {}
+        });
+    }
+    withStyle(style) {
+        this.style = style;
+        return this;
+    }
+    startAt(start) {
+        this.points = [start];
+        return this;
+    }
+    extendAlong(shape, direction, until) {
+        const startPoint = this.points.at(-1)?.clone();
+        if (startPoint === undefined) {
+            throw new Error("Cannot extend with no current points.");
+        }
+        // Find where the shape intersects the current endpoint.
+        let intersectSegment = null;
+        let intersectIndex = null;
+        shape.updateMatrixWorld();
+        for (let j = 0; j < shape.points.length - 1; j++) {
+            const segment = new THREE.Line3(shape.points.at(j)?.clone().applyMatrix4(shape.matrixWorld), shape.points
+                .at(j + 1)
+                ?.clone()
+                .applyMatrix4(shape.matrixWorld));
+            segment.closestPointToPoint(startPoint, true, this.segmentClosestToPoint);
+            const distanceToSegment = this.pointToSegment
+                .subVectors(this.segmentClosestToPoint, startPoint)
+                .length();
+            if (distanceToSegment < this.adjacentThreshold) {
+                intersectSegment = segment;
+                intersectIndex = j;
+                break;
+            }
+        }
+        if (intersectSegment === null || intersectIndex === null) {
+            throw new Error(`No intersection between ${startPoint.toArray()} and ${shape}`);
+        }
+        const vectorFromPointToIndex = (point, index) => {
+            const endPoint = shape.points
+                .at(index)
+                ?.clone()
+                .applyMatrix4(shape.matrixWorld);
+            if (endPoint === undefined) {
+                return new THREE.Vector3();
+            }
+            return new THREE.Vector3().subVectors(endPoint, point).normalize();
+        };
+        // Get potential directions to extend.
+        let towardStartVector;
+        let forwardInitialPointIndex = intersectIndex + 1;
+        let backwardInitialPointIndex = intersectIndex;
+        // debugger;
+        towardStartVector = new THREE.Vector3().subVectors(intersectSegment.start, this.segmentClosestToPoint);
+        if (towardStartVector.length() < this.adjacentThreshold) {
+            // The point intersects at the start of this segment, so try using the previous point instead.
+            let prevIndex = intersectIndex - 1;
+            if (prevIndex === -1 && shapeIsClosed(shape)) {
+                // The point intersects at the first point of a closed shape, so use the second to last point.
+                prevIndex = shape.points.length - 2;
+            }
+            if (prevIndex !== -1) {
+                towardStartVector = vectorFromPointToIndex(intersectSegment.start, prevIndex);
+                forwardInitialPointIndex = intersectIndex + 1;
+                backwardInitialPointIndex = prevIndex;
+            }
+            else {
+                // The vector is (effectively) zero.
+                towardStartVector.set(0, 0, 0);
+            }
+        }
+        towardStartVector.normalize();
+        // Ugh do this.
+        let towardEndVector;
+        const endToIntersection = new THREE.Vector3()
+            .subVectors(intersectSegment.end, this.segmentClosestToPoint)
+            .length();
+        if (endToIntersection < this.adjacentThreshold &&
+            intersectIndex + 2 < shape.points.length) {
+            let nextPoint = shape.points
+                .at(intersectIndex + 2)
+                ?.clone()
+                .applyMatrix4(shape.matrixWorld);
+            if (nextPoint === undefined) {
+                throw new Error("No next point");
+            }
+            towardEndVector = new THREE.Vector3()
+                .subVectors(nextPoint, intersectSegment.end)
+                .normalize();
+            // Handle closed curves (shape.points.at(0) === shape.points.at(-1))
+            if (towardEndVector.length() < this.adjacentThreshold) {
+                nextPoint = shape.points
+                    .at(intersectIndex + 3)
+                    ?.clone()
+                    .applyMatrix4(shape.matrixWorld);
+                if (nextPoint === undefined) {
+                    throw new Error("No next point");
+                }
+            }
+            forwardInitialPointIndex = intersectIndex + 2;
+            backwardInitialPointIndex = intersectIndex;
+        }
+        else {
+            towardEndVector = new THREE.Vector3()
+                .subVectors(intersectSegment.end, this.segmentClosestToPoint)
+                .normalize();
+        }
+        const forward = direction.dot(towardEndVector) > direction.dot(towardStartVector);
+        this.extendCurve(shape, forward ? forwardInitialPointIndex : backwardInitialPointIndex, forward, until);
+        return this;
+    }
+    extendCurve(shape, initialPointIndex, forward, until) {
+        const advance = (i) => {
+            i += increment;
+            if (i === shape.points.length && shapeIsClosed(shape)) {
+                i = 1;
+            }
+            else if (i === -1 && shapeIsClosed(shape)) {
+                i = shape.points.length - 2;
+            }
+            return i;
+        };
+        // const initialPointIndex = forward ? segmentIndex + 1 : segmentIndex;
+        const increment = forward ? 1 : -1;
+        let i = initialPointIndex;
+        let count = 0;
+        while (0 <= i && i < shape.points.length) {
+            count += 1;
+            if (count === 500) {
+                console.log("rip");
+                break;
+            }
+            const newPoint = shape.points
+                .at(i)
+                ?.clone()
+                .applyMatrix4(shape.matrixWorld);
+            if (newPoint === undefined) {
+                throw new Error("Error extending curve.");
+            }
+            const newSegment = new THREE.Line3(this.points.at(-1)?.clone(), newPoint);
+            if (newSegment.distance() < this.adjacentThreshold) {
+                i += increment;
+                continue;
+            }
+            const pointsToCheck = this.points.slice(0, this.points.length - 1);
+            if (until !== undefined) {
+                pointsToCheck.push(until);
+            }
+            for (const point of pointsToCheck) {
+                newSegment.closestPointToPoint(point, true, this.segmentClosestToPoint);
+                const distanceToSegment = this.pointToSegment
+                    .subVectors(this.segmentClosestToPoint, point)
+                    .length();
+                if (distanceToSegment < this.adjacentThreshold) {
+                    this.points.push(point.clone());
+                    return;
+                }
+            }
+            this.points.push(newPoint);
+            i = advance(i);
+        }
+    }
+    finish() {
+        return new Polygon(this.points, this.style);
+    }
+}
+
+var utils = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	BUFFER: BUFFER,
+	DOWN: DOWN,
+	IN: IN,
+	LEFT: LEFT,
+	ORIGIN: ORIGIN,
+	OUT: OUT,
+	RIGHT: RIGHT,
+	ShapeFromCurves: ShapeFromCurves,
+	UP: UP,
+	bufferIndexOrThrow: bufferIndexOrThrow,
+	clamp: clamp$1,
+	convertWorldDirectionToObjectSpace: convertWorldDirectionToObjectSpace,
+	furthestInDirection: furthestInDirection,
+	getBoundingBoxCenter: getBoundingBoxCenter,
+	getBoundingBoxHelper: getBoundingBoxHelper,
+	getFrameAttributes: getFrameAttributes,
+	indexOrThrow: indexOrThrow,
+	intersectionsBetween: intersectionsBetween,
+	moveAbove: moveAbove,
+	moveBelow: moveBelow,
+	moveNextTo: moveNextTo,
+	moveToLeftOf: moveToLeftOf,
+	moveToRightOf: moveToRightOf,
+	pointAlongCurve: pointAlongCurve,
+	positiveAngleTo: positiveAngleTo,
+	rotate180: rotate180,
+	rotate270: rotate270,
+	rotate90: rotate90,
+	setupCanvas: setupCanvas,
+	transformBetweenSpaces: transformBetweenSpaces,
+	vspace: vspace,
+	vstack: vstack
+});
+
+class Shift extends Animation {
+    constructor(object, offset, config) {
+        super((_elapsedTime, deltaTime) => {
+            object.position.add(offset.clone().multiplyScalar(deltaTime));
+        }, {
+            object,
+            reveal: true,
+            ...config,
+        });
+    }
+}
+
+class MoveTo extends Animation {
+    constructor(obj, target, config) {
+        super((elapsedTime) => {
+            obj.position
+                .copy(this.start)
+                .addScaledVector(this.displacement, elapsedTime);
+        }, { obj, reveal: true, ...config });
+        Object.defineProperty(this, "obj", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: obj
+        });
+        Object.defineProperty(this, "target", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: target
+        });
+        Object.defineProperty(this, "start", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "displacement", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+    }
+    setUp() {
+        super.setUp();
+        this.start = this.obj.position.clone();
+        const final = new THREE.Vector3();
+        const initial = new THREE.Vector3();
+        final.copy(this.target);
+        getBoundingBoxCenter(this.obj, initial);
+        this.obj.parent?.worldToLocal(final);
+        this.obj.parent?.worldToLocal(initial);
+        this.displacement = new THREE.Vector3().subVectors(final, initial);
+    }
+}
+/*
+
+Example Usage:
+
+ new Animation.MoveTo(triangle, new THREE.Vector3(4, 1, 0));
+
+ new Animation.MoveTo(triangle, diagram.square.position);
+
+*/
+
+class Rotate extends Animation {
+    constructor(object, angle, config) {
+        super((_elapsedTime, deltaTime) => {
+            object.rotation.z += angle * deltaTime;
+        }, { object, reveal: true, ...config });
+    }
+}
+
+class Draw extends Animation {
+    constructor(object, config) {
+        super((elapsedTime) => {
+            this.object.traverse((child) => {
+                if (child.stroke) {
+                    child.stroke.material.uniforms.drawRange.value.y = elapsedTime;
+                }
+            });
+        }, { object, reveal: true, ...config });
+    }
+}
+
+class Erase extends Animation {
+    constructor(object, config) {
+        super((elapsedTime) => {
+            object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
+        }, { object, hide: true, ...config });
+        Object.defineProperty(this, "object", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: object
+        });
+        Object.defineProperty(this, "config", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: config
+        });
+    }
+    tearDown() {
+        if (this.config?.remove) {
+            this.object.parent.remove(this.object);
+        }
+        if (this.config?.restore) {
+            this.object.stroke.material.uniforms.drawRange.value.y = 1;
+        }
+        super.tearDown();
+    }
+}
+
+class SetScale extends Animation {
+    constructor(object, factor, config) {
+        super((elapsedTime) => {
+            const scale = THREE.MathUtils.lerp(this.initialScale, factor, elapsedTime);
+            object.scale.set(scale, scale);
+        }, { object, reveal: true, ...config });
+        Object.defineProperty(this, "initialScale", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+    }
+    setUp() {
+        super.setUp();
+        this.initialScale = this.object.scale.x;
+    }
+}
+
+class FadeIn extends Animation {
+    constructor(object, config) {
+        let family = true;
+        if (config && config.family === false) {
+            family = false;
+        }
+        super((elapsedTime, _deltaTime) => {
+            if (family) {
+                this.object.traverse((child) => {
+                    if (child instanceof THREE.Mesh) {
+                        child.material.opacity = THREE.MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(child) : 1, elapsedTime);
+                    }
+                });
+            }
+            else {
+                [this.object.stroke, this.object.fill].forEach((mesh) => {
+                    if (!mesh)
+                        return;
+                    mesh.material.opacity = THREE.MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(mesh) : 1, elapsedTime);
+                });
+            }
+        }, { object, reveal: true, ...config });
+        Object.defineProperty(this, "initialOpacity", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: new Map()
+        });
+    }
+    setUp() {
+        super.setUp();
+        this.object.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                this.initialOpacity.set(child, child.material.opacity);
+            }
+        });
+    }
+}
+
+class SetOpacity extends Animation {
+    constructor(objectOrFunc, targetOpacity, config) {
+        let family = true;
+        if (config && config.family === false) {
+            family = false;
+        }
+        super((elapsedTime, _deltaTime) => {
+            if (family) {
+                this.object.traverse((child) => {
+                    if (child instanceof THREE.Mesh) {
+                        if (!this.initialOpacity.has(child)) {
+                            console.error("Unknown child");
+                        }
+                        child.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), this.targetOpacity, elapsedTime);
+                    }
+                });
+            }
+            else {
+                [this.object.stroke, this.object.fill].forEach((mesh) => {
+                    if (!mesh)
+                        return;
+                    mesh.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), this.targetOpacity, elapsedTime);
+                });
+            }
+        }, { object: objectOrFunc, ...config });
+        Object.defineProperty(this, "targetOpacity", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: targetOpacity
+        });
+        Object.defineProperty(this, "config", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: config
+        });
+        Object.defineProperty(this, "initialOpacity", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: new Map()
+        });
+    }
+    setUp() {
+        super.setUp();
+        this.object.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                this.initialOpacity.set(child, child.material.opacity);
+            }
+        });
+    }
+}
+
+class FadeOut extends Animation {
+    constructor(objectOrFunc, config) {
+        let family = true;
+        if (config && config.family === false) {
+            family = false;
+        }
+        super((elapsedTime, _deltaTime) => {
+            if (family) {
+                this.object.traverse((child) => {
+                    if (child instanceof THREE.Mesh) {
+                        if (!this.initialOpacity.has(child)) {
+                            console.error("Unknown child");
+                        }
+                        child.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
+                    }
+                });
+            }
+            else {
+                [this.object.stroke, this.object.fill].forEach((mesh) => {
+                    if (!mesh)
+                        return;
+                    mesh.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), 0, elapsedTime);
+                });
+            }
+        }, { object: objectOrFunc, hide: true, ...config });
+        Object.defineProperty(this, "config", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: config
+        });
+        Object.defineProperty(this, "initialOpacity", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: new Map()
+        });
+    }
+    setUp() {
+        super.setUp();
+        this.object.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                this.initialOpacity.set(child, child.material.opacity);
+            }
+        });
+    }
+    tearDown() {
+        if (this.config?.remove) {
+            this.object.parent.remove(this.object);
+        }
+        if (this.config?.restore) {
+            this.object.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    if (!this.initialOpacity.has(child)) {
+                        console.error("Unknown child");
+                    }
+                    child.material.opacity = this.initialOpacity.get(child);
+                }
+            });
+        }
+        super.tearDown();
+    }
+}
+
+class Wait extends Animation {
+    constructor(config) {
+        super(() => { }, config);
+    }
+}
+
+class Emphasize extends Animation {
+    constructor(object, largeScale = 1.1, config) {
+        super((elapsedTime) => {
+            let scale;
+            if (elapsedTime <= this.keyframe) {
+                const t0 = elapsedTime / this.keyframe;
+                scale = (1 - t0) * this.initialScale + t0 * this.largeScale;
+            }
+            else {
+                const t0 = (elapsedTime - this.keyframe) / (1 - this.keyframe);
+                scale = (1 - t0) * this.largeScale + t0 * this.initialScale;
+            }
+            this.object.scale.setScalar(scale);
+        }, { object, reveal: true, ...config });
+        Object.defineProperty(this, "initialScale", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "largeScale", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "keyframe", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 0.9
+        });
+        this.largeScale = largeScale;
+    }
+    setUp() {
+        super.setUp();
+        this.initialScale = this.object.scale.x;
+    }
+}
+
+class Shake extends Animation {
+    constructor(object, config = {}) {
+        const { maxRotation = 0.05, frequency = 4 } = config;
+        super((_elapsedTime) => {
+            const sine = maxRotation * Math.sin(frequency * Math.PI * _elapsedTime);
+            object.rotation.z = sine;
+        }, { object, reveal: true, ...config });
+    }
+}
+
+class Grow extends Animation {
+    constructor(object) {
+        super((elapsedTime) => {
+            object.scale.set(elapsedTime, elapsedTime, elapsedTime);
+        }, { object, reveal: true });
+    }
+}
+
+let Stagger$1 = class Stagger extends Animation {
+    constructor(animations, userConfig = {}) {
+        const config = {
+            ...Stagger.defaultConfig(),
+            ...(animations.length === 1 ? { staggerDuration: 1 } : {}),
+            ...userConfig,
+        };
+        super(() => this.animations.forEach((animation) => animation.update(this.prevUpdateTime)), config);
+        Object.defineProperty(this, "animations", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: animations
+        });
+        Object.defineProperty(this, "config", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this.config = config;
+    }
+    setUp() {
+        super.setUp();
+        const staggerDuration = this.config.staggerDuration ?? 3 / 4;
+        const staggerInterval = staggerDuration !== 1
+            ? (1 - staggerDuration) / (this.animations.length - 1)
+            : 0;
+        this.animations.forEach((animation, index) => {
+            animation.startTime = index * staggerInterval;
+            animation.endTime = animation.startTime + staggerDuration;
+            animation.parent = animation.parent || this.parent;
+            animation.before && animation.addBefore(animation.before);
+            animation.after && animation.addAfter(animation.after);
+            if (animation.endTime > 1.0) {
+                throw new Error("All Stagger animations must finish within 1 second");
+            }
+        });
+    }
+    static defaultConfig() {
+        return {
+            staggerDuration: 3 / 4,
+        };
+    }
+};
+
+class SetStyle extends Animation {
+    constructor(shape, style, config) {
+        super((elapsedTime) => {
+            if (this.initialStyle.fillColor !== undefined &&
+                this.targetStyle.fillColor !== undefined) {
+                const t = Math.min(Math.max(elapsedTime, 0), 1);
+                this.currentStyle.fillColor = new THREE.Color()
+                    .copy(this.initialStyle.fillColor)
+                    .lerp(this.targetStyle.fillColor, t);
+            }
+            if (this.initialStyle.strokeColor !== undefined &&
+                this.targetStyle.strokeColor !== undefined) {
+                const t = Math.min(Math.max(elapsedTime, 0), 1);
+                this.currentStyle.strokeColor = new THREE.Color().copy(this.initialStyle.strokeColor);
+                this.currentStyle.strokeColor.lerp(this.targetStyle.strokeColor, t);
+            }
+            if (this.initialStyle.fillOpacity !== undefined &&
+                this.targetStyle.fillOpacity !== undefined) {
+                this.currentStyle.fillOpacity = THREE.MathUtils.lerp(this.initialStyle.fillOpacity, this.targetStyle.fillOpacity, elapsedTime);
+            }
+            if (this.initialStyle.strokeOpacity !== undefined &&
+                this.targetStyle.strokeOpacity !== undefined) {
+                this.currentStyle.strokeOpacity = THREE.MathUtils.lerp(this.initialStyle.strokeOpacity, this.targetStyle.strokeOpacity, elapsedTime);
+            }
+            if (this.initialStyle.strokeWidth !== undefined &&
+                this.targetStyle.strokeWidth !== undefined) {
+                this.currentStyle.strokeWidth = THREE.MathUtils.lerp(this.initialStyle.strokeWidth, this.targetStyle.strokeWidth, elapsedTime);
+            }
+            shape.restyle(this.currentStyle);
+        }, { object: shape, ...config });
+        Object.defineProperty(this, "shape", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: shape
+        });
+        Object.defineProperty(this, "style", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: style
+        });
+        Object.defineProperty(this, "initialStyle", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "targetStyle", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "currentStyle", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: {}
+        });
+    }
+    setUp() {
+        super.setUp();
+        const shapeStyle = this.shape.getStyle();
+        this.initialStyle = {
+            ...shapeStyle,
+            fillColor: shapeStyle.fillColor ? new THREE.Color().copy(shapeStyle.fillColor) : undefined,
+            strokeColor: shapeStyle.strokeColor ? new THREE.Color().copy(shapeStyle.strokeColor) : undefined
+        };
+        this.targetStyle = {
+            ...this.style,
+            fillColor: this.style.fillColor ? new THREE.Color().copy(this.style.fillColor) : undefined,
+            strokeColor: this.style.strokeColor ? new THREE.Color().copy(this.style.strokeColor) : undefined
+        };
+    }
+}
+
+class Stagger extends Animation {
+    /**
+     * Creates a staggered fade-in animation for multiple objects
+     * @param objects Array of objects to animate in sequence
+     * @param config Additional configuration options
+     */
+    constructor(objects, config = {}) {
+        const { duration = 2 / (objects.length + 1) } = config;
+        const staggerDelay = (1 - duration) / (objects.length - 1);
+        super((elapsedTime, _deltaTime) => {
+            objects.forEach((object, index) => {
+                const startTime = index * staggerDelay;
+                const objectProgress = THREE.MathUtils.clamp((elapsedTime - startTime) / duration, 0, 1);
+                // Only process if animation has started for this object
+                if (objectProgress > 0) {
+                    object.traverse((child) => {
+                        if (child instanceof THREE.Mesh && child.material) {
+                            const initialOpacity = config?.preserveOpacity
+                                ? this.initialOpacities.get(child) || 1
+                                : 1;
+                            child.material.opacity = THREE.MathUtils.lerp(0, initialOpacity, objectProgress);
+                        }
+                    });
+                }
+            });
+        }, { objects, reveal: true, ...config });
+        Object.defineProperty(this, "objects", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "initialOpacities", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: new Map()
+        });
+        Object.defineProperty(this, "duration", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "staggerDelay", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this.objects = objects;
+        this.duration = duration;
+        this.staggerDelay = staggerDelay;
+    }
+    setUp() {
+        super.setUp();
+        // Store initial opacity values for all objects
+        this.objects.forEach((object) => {
+            object.traverse((child) => {
+                if (child instanceof THREE.Mesh && child.material) {
+                    this.initialOpacities.set(child, child.material.opacity);
+                    // Start with opacity 0
+                    child.material.opacity = 0;
+                }
+            });
+        });
+    }
+}
+
+var index$1 = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	Animation: Animation,
+	Draw: Draw,
+	Emphasize: Emphasize,
+	Erase: Erase,
+	FadeIn: FadeIn,
+	FadeOut: FadeOut,
+	Grow: Grow,
+	MoveTo: MoveTo,
+	Rotate: Rotate,
+	SetOpacity: SetOpacity,
+	SetScale: SetScale,
+	SetStyle: SetStyle,
+	Shake: Shake,
+	Shift: Shift,
+	Stagger: Stagger$1,
+	StaggerFadeIn: Stagger,
+	Wait: Wait
+});
+
+class Indicator extends THREE.Group {
+    constructor(start, end, config = {}) {
+        const { tickLength = 0.4 } = config;
+        super();
+        Object.defineProperty(this, "start", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: start
+        });
+        Object.defineProperty(this, "end", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: end
+        });
+        Object.defineProperty(this, "startTick", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "endTick", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "stem", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this.stem = Line.centeredLine(start, end, config);
+        const tickVector = new THREE.Vector3()
+            .subVectors(end, start)
+            .normalize()
+            .applyAxisAngle(OUT, Math.PI / 2)
+            .multiplyScalar(tickLength / 2);
+        const negativeTickVector = tickVector.clone().multiplyScalar(-1);
+        this.startTick = Line.centeredLine(new THREE.Vector3().addVectors(start, tickVector), new THREE.Vector3().addVectors(start, negativeTickVector), config);
+        this.endTick = Line.centeredLine(new THREE.Vector3().addVectors(end, tickVector), new THREE.Vector3().addVectors(end, negativeTickVector), config);
+        const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
+        for (const mesh of [this.stem, this.startTick, this.endTick]) {
+            mesh.position.sub(center);
+            this.add(mesh);
+        }
+        this.position.copy(center);
+    }
+    grow(config) {
+        const vec = new THREE.Vector3().subVectors(this.end, this.start);
+        this.startTick.position.set(0, 0, 0);
+        this.endTick.position.set(0, 0, 0);
+        this.stem.stroke.material.uniforms.drawRange.value.set(0.5, 0.5);
+        return new Animation((elapsedTime) => {
+            const halfTime = elapsedTime / 2;
+            this.stem.stroke.material.uniforms.drawRange.value.set(0.5 - halfTime, 0.5 + halfTime);
+            this.startTick.position.set(0, 0, 0).addScaledVector(vec, halfTime);
+            this.endTick.position.set(0, 0, 0).addScaledVector(vec, -halfTime);
+        }, { object: this, ...config });
+    }
+}
+
+// TODO: Handle reflex angles.
+class Angle extends Shape$1 {
+    constructor(point1, point2, point3, config = {}) {
+        config = { radius: 0.4, reflex: false, ...config };
+        const vector21 = new THREE.Vector3().subVectors(point1, point2);
+        const vector23 = new THREE.Vector3().subVectors(point3, point2);
+        const arcAngle = vector21.angleTo(vector23);
+        let arcRotation;
+        // TODO: Handle 180 degree angles
+        if (positiveAngleTo(vector21, vector23) < Math.PI) {
+            arcRotation = positiveAngleTo(RIGHT, vector21);
+        }
+        else {
+            arcRotation = positiveAngleTo(RIGHT, vector23);
+        }
+        const points = getArcPoints(config.radius, arcAngle);
+        config.fillPoints = [...points, new THREE.Vector3(0, 0, 0)];
+        super(points, config);
+        Object.defineProperty(this, "point1", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point1
+        });
+        Object.defineProperty(this, "point2", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point2
+        });
+        Object.defineProperty(this, "point3", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point3
+        });
+        this.position.copy(point2);
+        this.rotateZ(arcRotation);
+    }
+    getAttributes() {
+        return {
+            point1: this.point1,
+            point2: this.point2,
+            point3: this.point3,
+        };
+    }
+}
+
+class CongruentAngle extends Shape$1 {
+    constructor(arcs, point1, point2, point3, config = {}) {
+        config = {
+            minRadius: 0.4,
+            spacing: 0.15,
+            ...config,
+        };
+        super();
+        Object.defineProperty(this, "arcs", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: arcs
+        });
+        Object.defineProperty(this, "point1", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point1
+        });
+        Object.defineProperty(this, "point2", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point2
+        });
+        Object.defineProperty(this, "point3", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: point3
+        });
+        Object.defineProperty(this, "config", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: config
+        });
+        this.intrinsicChildren = new THREE.Group();
+        for (let i = 0; i < arcs; i++) {
+            const arc = new Angle(point1, point2, point3, {
+                radius: config.minRadius + i * config.spacing,
+                ...config,
+            });
+            this.intrinsicChildren.add(arc);
+        }
+        this.add(this.intrinsicChildren);
+    }
+    getAttributes() {
+        return {
+            arcs: this.arcs,
+            point1: this.point1,
+            point2: this.point2,
+            point3: this.point3,
+        };
+    }
+}
+
+class RightAngle extends Polyline {
+    constructor(point1, point2, point3, config = {}) {
+        config = { sideLength: 0.35, ...config };
+        const vector21 = new THREE.Vector3()
+            .subVectors(point1, point2)
+            .setLength(config.sideLength);
+        const vector23 = new THREE.Vector3()
+            .subVectors(point3, point2)
+            .setLength(config.sideLength);
+        super([
+            new THREE.Vector3().addVectors(point2, vector21),
+            new THREE.Vector3().add(point2).add(vector21).add(vector23),
+            new THREE.Vector3().addVectors(point2, vector23),
+        ], config);
+    }
+}
+
+class CongruentLine extends THREE.Group {
+    constructor(ticks, start, end, config = {}) {
+        config = Object.assign({ tickLength: 0.25, spacing: 0.15 }, config);
+        super();
+        const left = -(config.spacing * (ticks - 1)) / 2;
+        for (let i = 0; i < ticks; i++) {
+            const pos = left + config.spacing * i;
+            const tick = new Line(new THREE.Vector3(pos, -config.tickLength / 2, 0), new THREE.Vector3(pos, config.tickLength / 2, 0), config);
+            this.add(tick);
+        }
+        this.moveToSegment(start, end);
+    }
+    moveToSegment(start, end) {
+        const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
+        this.position.copy(center);
+        const segmentVector = new THREE.Vector3().subVectors(end, start);
+        this.rotation.z = Math.atan2(segmentVector.y, segmentVector.x);
+    }
+}
+
+let Number$1 = class Number extends THREE.Group {
+    constructor(value = 0, config = {}) {
+        const fullConfig = {
+            color: config.color ?? "black",
+            decimals: config.decimals ?? 2,
+        };
+        super();
+        Object.defineProperty(this, "meshes", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: []
+        });
+        Object.defineProperty(this, "material", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: new THREE.MeshBasicMaterial({ color: "black" })
+        });
+        Object.defineProperty(this, "decimals", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "centerData", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: {
+                center: new THREE.Vector3(),
+                box: new THREE.Box3(),
+                offset: new THREE.Vector3(),
+                worldPosition: new THREE.Vector3(),
+            }
+        });
+        this.material.color = new THREE.Color(fullConfig.color);
+        this.decimals = fullConfig.decimals;
+        this.scale.set(0.0008, -0.0008, 0.0008);
+        this.updateFromValue(value);
+    }
+    reshape(value, config = {}) {
+        const fullConfig = {
+            color: config.color ?? "black",
+            decimals: config.decimals ?? 2,
+        };
+        this.material.color = new THREE.Color(fullConfig.color);
+        this.decimals = fullConfig.decimals;
+        this.clear();
+        this.updateFromValue(value);
+    }
+    updateFromValue(value) {
+        const characters = value.toFixed(this.decimals).split("");
+        for (let i = 0; i < characters.length; i++) {
+            const character = characters[i];
+            if (character === undefined) {
+                throw new Error(`No character at index ${i}`);
+            }
+            const geometry = Number.geometries.get(character);
+            if (geometry === undefined) {
+                throw new Error(`Character ${character} isn't supported in Number.`);
+            }
+            let mesh = this.meshes[i];
+            if (mesh !== undefined) {
+                mesh.geometry = geometry;
+            }
+            else {
+                mesh = new THREE.Mesh(geometry, this.material);
+                this.meshes.push(mesh);
+            }
+            this.add(mesh);
+        }
+        for (let i = 1; i < this.children.length; i++) {
+            const previousChild = this.children[i - 1];
+            const currentChild = this.children[i];
+            currentChild.moveNextTo(previousChild, RIGHT, 0.025);
+        }
+        this.centerData.worldPosition.copy(this.position);
+        this.localToWorld(this.centerData.worldPosition);
+        this.centerData.box.setFromObject(this).getCenter(this.centerData.center);
+        this.centerData.center.y *= -1;
+        this.centerData.offset
+            .subVectors(this.centerData.worldPosition, this.centerData.center)
+            .multiplyScalar(1 / 0.0008);
+        this.children.forEach((child) => child.position.add(this.centerData.offset));
+    }
+    static extractGeometry(textShape) {
+        return textShape.children[0].children[0].children[0]
+            .geometry;
+    }
+    static initializeGeometries() {
+        const geometryMap = new Map();
+        for (let i = 0; i < 10; i++) {
+            const numberShape = new Text(i.toString());
+            const numberGeometry = Number.extractGeometry(numberShape);
+            geometryMap.set(i.toString(), numberGeometry);
+        }
+        const decimalShape = new Text(".");
+        const decimalGeometry = Number.extractGeometry(decimalShape);
+        geometryMap.set(".", decimalGeometry);
+        return geometryMap;
+    }
+};
+Object.defineProperty(Number$1, "geometries", {
+    enumerable: true,
+    configurable: true,
+    writable: true,
+    value: Number$1.initializeGeometries()
+});
+
+var index = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	Angle: Angle,
+	CongruentAngle: CongruentAngle,
+	CongruentLine: CongruentLine,
+	Indicator: Indicator,
+	Number: Number$1,
+	RightAngle: RightAngle
+});
+
+/**
+ * A curve described by an equation.
+ */
+let Curve$1 = class Curve extends Polyline {
+    constructor(equation, config = {}) {
+        config = { ...Polyline.defaultConfig(), ...config };
+        super([new THREE.Vector3(-1, -1, 0), new THREE.Vector3(1, 1, 0)], config);
+        Object.defineProperty(this, "equation", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: equation
+        });
+    }
+    static defaultConfig() {
+        return { ...Polyline.defaultConfig() };
+    }
+    getClassConfig() {
+        return {};
+    }
+};
+
+var graphing = /*#__PURE__*/Object.freeze({
+	__proto__: null,
+	Curve: Curve$1
+});
+
+var frame = {
+    horizontal: {
+        nhd: {
+            aspectRatio: 16 / 9,
+            coordinateHeight: 8,
+            pixelHeight: 360,
+            frameRate: 30,
+        },
+        hd: {
+            aspectRatio: 16 / 9,
+            coordinateHeight: 8,
+            pixelHeight: 720,
+            frameRate: 30,
+        },
+        fhd: {
+            aspectRatio: 16 / 9,
+            coordinateHeight: 8,
+            pixelHeight: 1080,
+            frameRate: 60,
+        },
+    },
+    vertical: {
+        nhd: {
+            aspectRatio: 9 / 16,
+            coordinateWidth: 8,
+            pixelWidth: 360,
+            frameRate: 30,
+        },
+        hd: {
+            aspectRatio: 9 / 16,
+            coordinateWidth: 8,
+            pixelWidth: 720,
+            frameRate: 30,
+        },
+        fhd: {
+            aspectRatio: 9 / 16,
+            coordinateWidth: 8,
+            pixelWidth: 1080,
+            frameRate: 60,
+        },
+    },
+};
+
+class SceneController {
+    constructor(UserScene, canvasRef, config) {
+        Object.defineProperty(this, "UserScene", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: UserScene
+        });
+        Object.defineProperty(this, "animationIndex", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 0
+        });
+        Object.defineProperty(this, "deltaTime", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 0
+        });
+        Object.defineProperty(this, "elapsedTime", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 0
+        });
+        Object.defineProperty(this, "firstFrame", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: true
+        });
+        Object.defineProperty(this, "fps", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 60
+        });
+        Object.defineProperty(this, "timePrecision", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 1e5
+        });
+        Object.defineProperty(this, "loopAnimations", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: []
+        });
+        Object.defineProperty(this, "finishedAnimationCount", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 0
+        });
+        Object.defineProperty(this, "userScene", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "_viewport", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "aspectRatio", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        throw new Error("source map");
+    }
+    get viewport() {
+        return this._viewport;
+    }
+    set viewport(value) {
+        this._viewport = value;
+        const canvas = this.renderer?.domElement;
+        if (canvas) {
+            const screenSize = new THREE.Vector2(canvas.width, canvas.height);
+            const devicePixelRatio = typeof window !== "undefined" ? window.devicePixelRatio : 1;
+            ViewportManager.getInstance().setViewport(value, screenSize, devicePixelRatio);
+        }
+    }
+    get scene() {
+        return this.userScene.scene;
+    }
+    get camera() {
+        return this.userScene.camera;
+    }
+    get renderer() {
+        return this.userScene.renderer;
+    }
+    render() {
+        if (!this.viewport) {
+            this.renderer.clear();
+            this.userScene.renderer.render(this.userScene.scene, this.userScene.camera);
+        }
+        else {
+            const viewportArray = this.viewport.toArray();
+            this.renderer.setScissor(...viewportArray);
+            this.renderer.setViewport(...viewportArray);
+            this.renderer.setScissorTest(true);
+            this.renderer.clear();
+            this.renderer.render(this.scene, this.camera);
+        }
+    }
+    tick(deltaTime, render = true) {
+        if (this.firstFrame) {
+            this.deltaTime = 0;
+            this.elapsedTime = 0;
+            this.firstFrame = false;
+            let currentEndTime = 0;
+            this.userScene.animations?.forEach((o) => {
+                if (Array.isArray(o)) {
+                    o = { animations: o };
+                }
+                if (o instanceof Animation) {
+                    const animation = o;
+                    animation.startTime = currentEndTime;
+                    animation.endTime = currentEndTime + animation.runTime;
+                    animation.parent = animation.parent || this.userScene.scene;
+                    animation.before && animation.addBefore(animation.before);
+                    animation.after && animation.addAfter(animation.after);
+                    this.loopAnimations.push(animation);
+                    currentEndTime = animation.endTime;
+                }
+                else if (typeof o === "function") {
+                    const animation = new Animation(o);
+                    animation.startTime = currentEndTime;
+                    animation.endTime = currentEndTime + animation.runTime;
+                    animation.parent = this.userScene.scene;
+                    this.loopAnimations.push(animation);
+                    currentEndTime = animation.endTime;
+                }
+                else if (typeof o === "object") {
+                    const animationArray = o.animations;
+                    const runTime = o.runTime || 1;
+                    const scale = o.scale || 1;
+                    const before = o.before || (() => { });
+                    const after = o.after || (() => { });
+                    for (let i = 0; i < animationArray.length; i++) {
+                        const animation = animationArray[i];
+                        animation.startTime = currentEndTime;
+                        animation.endTime = currentEndTime + runTime * scale;
+                        animation.runTime = runTime;
+                        animation.scale = scale;
+                        animation.before && animation.addBefore(animation.before);
+                        animation.after && animation.addAfter(animation.after);
+                        animation.parent =
+                            animation.parent || o.parent || this.userScene.scene;
+                        this.loopAnimations.push(...animationArray);
+                    }
+                    animationArray.at(0).addBefore(before);
+                    animationArray.at(-1).addAfter(after);
+                    currentEndTime = animationArray[0].endTime;
+                }
+            });
+        }
+        else {
+            this.deltaTime = deltaTime;
+            this.elapsedTime += deltaTime;
+        }
+        try {
+            const roundedElapsedTime = Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
+            this.loopAnimations.forEach((animation) => animation.update(roundedElapsedTime));
+            this.userScene.scene.traverse((object) => {
+                object.update(this.deltaTime, this.elapsedTime);
+            });
+            this.userScene.update?.(this.deltaTime, this.elapsedTime);
+        }
+        catch (err) {
+            console.error(`Error executing user animation: ${err.toString()}`);
+            throw err;
+        }
+        const newFinishedAnimationCount = this.loopAnimations.reduce((acc, cur) => acc + (cur.finished ? 1 : 0), 0);
+        if (newFinishedAnimationCount !== this.finishedAnimationCount) {
+            this.animationIndex += 1;
+            this.finishedAnimationCount = newFinishedAnimationCount;
+        }
+        if (render) {
+            this.render();
+        }
+    }
+    play() {
+        let lastTime;
+        this.userScene.renderer.setAnimationLoop((time) => {
+            const elapsedSinceLastFrame = lastTime !== undefined ? (time - lastTime) / 1000 : 0;
+            this.tick(elapsedSinceLastFrame);
+            lastTime = time;
+        });
+    }
+}
+
+/**
  * @license
  * Copyright 2010-2025 Three.js Authors
  * SPDX-License-Identifier: MIT
  */
 const REVISION = '175dev';
-
-/**
- * Only front faces are rendered.
- *
- * @type {number}
- * @constant
- */
-const FrontSide = 0;
-
-/**
- * Only back faces are rendered.
- *
- * @type {number}
- * @constant
- */
-const BackSide = 1;
-
-/**
- * The default blending.
- *
- * @type {number}
- * @constant
- */
-const NormalBlending = 1;
-
-/**
- * A `source + destination` blending equation.
- *
- * @type {number}
- * @constant
- */
-const AddEquation = 100;
-
-/**
- * Multiplies all colors by the source alpha value.
- *
- * @type {number}
- * @constant
- */
-const SrcAlphaFactor = 204;
-
-/**
- * Multiplies all colors by 1 minus the source alpha value.
- *
- * @type {number}
- * @constant
- */
-const OneMinusSrcAlphaFactor = 205;
-
-/**
- * Pass if the incoming value is less than or equal to the depth buffer value.
- *
- * @type {number}
- * @constant
- */
-const LessEqualDepth = 3;
-
-/**
- * Multiplies the environment map color with the surface color.
- *
- * @type {number}
- * @constant
- */
-const MultiplyOperation = 0;
 
 /**
  * Maps textures using the geometry's UV coordinates.
@@ -56975,22 +58904,6 @@ const LinearTransfer = 'linear';
  * @constant
  */
 const SRGBTransfer = 'srgb';
-
-/**
- * Keeps the current value.
- *
- * @type {number}
- * @constant
- */
-const KeepStencilOp = 7680;
-
-/**
- * Will always return true.
- *
- * @type {number}
- * @constant
- */
-const AlwaysStencilFunc = 519;
 
 /**
  * The contents are intended to be specified once by the application, and used many
@@ -57178,12 +59091,6 @@ class EventDispatcher {
 
 const _lut = [ '00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '0a', '0b', '0c', '0d', '0e', '0f', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '1a', '1b', '1c', '1d', '1e', '1f', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '2a', '2b', '2c', '2d', '2e', '2f', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '3a', '3b', '3c', '3d', '3e', '3f', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '4a', '4b', '4c', '4d', '4e', '4f', '50', '51', '52', '53', '54', '55', '56', '57', '58', '59', '5a', '5b', '5c', '5d', '5e', '5f', '60', '61', '62', '63', '64', '65', '66', '67', '68', '69', '6a', '6b', '6c', '6d', '6e', '6f', '70', '71', '72', '73', '74', '75', '76', '77', '78', '79', '7a', '7b', '7c', '7d', '7e', '7f', '80', '81', '82', '83', '84', '85', '86', '87', '88', '89', '8a', '8b', '8c', '8d', '8e', '8f', '90', '91', '92', '93', '94', '95', '96', '97', '98', '99', '9a', '9b', '9c', '9d', '9e', '9f', 'a0', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'aa', 'ab', 'ac', 'ad', 'ae', 'af', 'b0', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8', 'b9', 'ba', 'bb', 'bc', 'bd', 'be', 'bf', 'c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'ca', 'cb', 'cc', 'cd', 'ce', 'cf', 'd0', 'd1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'da', 'db', 'dc', 'dd', 'de', 'df', 'e0', 'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'ea', 'eb', 'ec', 'ed', 'ee', 'ef', 'f0', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'fa', 'fb', 'fc', 'fd', 'fe', 'ff' ];
 
-let _seed = 1234567;
-
-
-const DEG2RAD = Math.PI / 180;
-const RAD2DEG = 180 / Math.PI;
-
 /**
  * Generate a [UUID]{@link https://en.wikipedia.org/wiki/Universally_unique_identifier}
  * (universally unique identifier).
@@ -57216,7 +59123,7 @@ function generateUUID() {
  * @param {number} max - The max value.
  * @return {number} The clamped value.
  */
-function clamp$1( value, min, max ) {
+function clamp( value, min, max ) {
 
 	return Math.max( min, Math.min( max, value ) );
 
@@ -57239,48 +59146,6 @@ function euclideanModulo( n, m ) {
 }
 
 /**
- * Performs a linear mapping from range `<a1, a2>` to range `<b1, b2>`
- * for the given value.
- *
- * @param {number} x - The value to be mapped.
- * @param {number} a1 - Minimum value for range A.
- * @param {number} a2 - Maximum value for range A.
- * @param {number} b1 - Minimum value for range B.
- * @param {number} b2 - Maximum value for range B.
- * @return {number} The mapped value.
- */
-function mapLinear( x, a1, a2, b1, b2 ) {
-
-	return b1 + ( x - a1 ) * ( b2 - b1 ) / ( a2 - a1 );
-
-}
-
-/**
- * Returns the percentage in the closed interval `[0, 1]` of the given value
- * between the start and end point.
- *
- * @param {number} x - The start point
- * @param {number} y - The end point.
- * @param {number} value - A value between start and end.
- * @return {number} The interpolation factor.
- */
-function inverseLerp( x, y, value ) {
-
-	// https://www.gamedev.net/tutorials/programming/general-and-gameplay-programming/inverse-lerp-a-super-useful-yet-often-overlooked-function-r5230/
-
-	if ( x !== y ) {
-
-		return ( value - x ) / ( y - x );
-
-	} else {
-
-		return 0;
-
-	}
-
-}
-
-/**
  * Returns a value linearly interpolated from two known points based on the given interval -
  * `t = 0` will return `x` and `t = 1` will return `y`.
  *
@@ -57292,265 +59157,6 @@ function inverseLerp( x, y, value ) {
 function lerp( x, y, t ) {
 
 	return ( 1 - t ) * x + t * y;
-
-}
-
-/**
- * Smoothly interpolate a number from `x` to `y` in  a spring-like manner using a delta
- * time to maintain frame rate independent movement. For details, see
- * [Frame rate independent damping using lerp]{@link http://www.rorydriscoll.com/2016/03/07/frame-rate-independent-damping-using-lerp/}.
- *
- * @param {number} x - The current point.
- * @param {number} y - The target point.
- * @param {number} lambda - A higher lambda value will make the movement more sudden,
- * and a lower value will make the movement more gradual.
- * @param {number} dt - Delta time in seconds.
- * @return {number} The interpolated value.
- */
-function damp( x, y, lambda, dt ) {
-
-	return lerp( x, y, 1 - Math.exp( - lambda * dt ) );
-
-}
-
-/**
- * Returns a value that alternates between `0` and the given `length` parameter.
- *
- * @param {number} x - The value to pingpong.
- * @param {number} [length=1] - The positive value the function will pingpong to.
- * @return {number} The alternated value.
- */
-function pingpong( x, length = 1 ) {
-
-	// https://www.desmos.com/calculator/vcsjnyz7x4
-
-	return length - Math.abs( euclideanModulo( x, length * 2 ) - length );
-
-}
-
-/**
- * Returns a value in the range `[0,1]` that represents the percentage that `x` has
- * moved between `min` and `max`, but smoothed or slowed down the closer `x` is to
- * the `min` and `max`.
- *
- * See [Smoothstep]{@link http://en.wikipedia.org/wiki/Smoothstep} for more details.
- *
- * @param {number} x - The value to evaluate based on its position between min and max.
- * @param {number} min - The min value. Any x value below min will be `0`.
- * @param {number} max - The max value. Any x value above max will be `1`.
- * @return {number} The alternated value.
- */
-function smoothstep( x, min, max ) {
-
-	if ( x <= min ) return 0;
-	if ( x >= max ) return 1;
-
-	x = ( x - min ) / ( max - min );
-
-	return x * x * ( 3 - 2 * x );
-
-}
-
-/**
- * A [variation on smoothstep]{@link https://en.wikipedia.org/wiki/Smoothstep#Variations}
- * that has zero 1st and 2nd order derivatives at x=0 and x=1.
- *
- * @param {number} x - The value to evaluate based on its position between min and max.
- * @param {number} min - The min value. Any x value below min will be `0`.
- * @param {number} max - The max value. Any x value above max will be `1`.
- * @return {number} The alternated value.
- */
-function smootherstep( x, min, max ) {
-
-	if ( x <= min ) return 0;
-	if ( x >= max ) return 1;
-
-	x = ( x - min ) / ( max - min );
-
-	return x * x * x * ( x * ( x * 6 - 15 ) + 10 );
-
-}
-
-/**
- * Returns a random integer from `<low, high>` interval.
- *
- * @param {number} low - The lower value boundary.
- * @param {number} high - The upper value boundary
- * @return {number} A random integer.
- */
-function randInt( low, high ) {
-
-	return low + Math.floor( Math.random() * ( high - low + 1 ) );
-
-}
-
-/**
- * Returns a random float from `<low, high>` interval.
- *
- * @param {number} low - The lower value boundary.
- * @param {number} high - The upper value boundary
- * @return {number} A random float.
- */
-function randFloat( low, high ) {
-
-	return low + Math.random() * ( high - low );
-
-}
-
-/**
- * Returns a random integer from `<-range/2, range/2>` interval.
- *
- * @param {number} range - Defines the value range.
- * @return {number} A random float.
- */
-function randFloatSpread( range ) {
-
-	return range * ( 0.5 - Math.random() );
-
-}
-
-/**
- * Returns a deterministic pseudo-random float in the interval `[0, 1]`.
- *
- * @param {number} [s] - The integer seed.
- * @return {number} A random float.
- */
-function seededRandom( s ) {
-
-	if ( s !== undefined ) _seed = s;
-
-	// Mulberry32 generator
-
-	let t = _seed += 0x6D2B79F5;
-
-	t = Math.imul( t ^ t >>> 15, t | 1 );
-
-	t ^= t + Math.imul( t ^ t >>> 7, t | 61 );
-
-	return ( ( t ^ t >>> 14 ) >>> 0 ) / 4294967296;
-
-}
-
-/**
- * Converts degrees to radians.
- *
- * @param {number} degrees - A value in degrees.
- * @return {number} The converted value in radians.
- */
-function degToRad( degrees ) {
-
-	return degrees * DEG2RAD;
-
-}
-
-/**
- * Converts radians to degrees.
- *
- * @param {number} radians - A value in radians.
- * @return {number} The converted value in degrees.
- */
-function radToDeg( radians ) {
-
-	return radians * RAD2DEG;
-
-}
-
-/**
- * Returns `true` if the given number is a power of two.
- *
- * @param {number} value - The value to check.
- * @return {boolean} Whether the given number is a power of two or not.
- */
-function isPowerOfTwo( value ) {
-
-	return ( value & ( value - 1 ) ) === 0 && value !== 0;
-
-}
-
-/**
- * Returns the smallest power of two that is greater than or equal to the given number.
- *
- * @param {number} value - The value to find a POT for.
- * @return {number} The smallest power of two that is greater than or equal to the given number.
- */
-function ceilPowerOfTwo( value ) {
-
-	return Math.pow( 2, Math.ceil( Math.log( value ) / Math.LN2 ) );
-
-}
-
-/**
- * Returns the largest power of two that is less than or equal to the given number.
- *
- * @param {number} value - The value to find a POT for.
- * @return {number} The largest power of two that is less than or equal to the given number.
- */
-function floorPowerOfTwo( value ) {
-
-	return Math.pow( 2, Math.floor( Math.log( value ) / Math.LN2 ) );
-
-}
-
-/**
- * Sets the given quaternion from the [Intrinsic Proper Euler Angles]{@link https://en.wikipedia.org/wiki/Euler_angles}
- * defined by the given angles and order.
- *
- * Rotations are applied to the axes in the order specified by order:
- * rotation by angle `a` is applied first, then by angle `b`, then by angle `c`.
- *
- * @param {Quaternion} q - The quaternion to set.
- * @param {number} a - The rotation applied to the first axis, in radians.
- * @param {number} b - The rotation applied to the second axis, in radians.
- * @param {number} c - The rotation applied to the third axis, in radians.
- * @param {('XYX'|'XZX'|'YXY'|'YZY'|'ZXZ'|'ZYZ')} order - A string specifying the axes order.
- */
-function setQuaternionFromProperEuler( q, a, b, c, order ) {
-
-	const cos = Math.cos;
-	const sin = Math.sin;
-
-	const c2 = cos( b / 2 );
-	const s2 = sin( b / 2 );
-
-	const c13 = cos( ( a + c ) / 2 );
-	const s13 = sin( ( a + c ) / 2 );
-
-	const c1_3 = cos( ( a - c ) / 2 );
-	const s1_3 = sin( ( a - c ) / 2 );
-
-	const c3_1 = cos( ( c - a ) / 2 );
-	const s3_1 = sin( ( c - a ) / 2 );
-
-	switch ( order ) {
-
-		case 'XYX':
-			q.set( c2 * s13, s2 * c1_3, s2 * s1_3, c2 * c13 );
-			break;
-
-		case 'YZY':
-			q.set( s2 * s1_3, c2 * s13, s2 * c1_3, c2 * c13 );
-			break;
-
-		case 'ZXZ':
-			q.set( s2 * c1_3, s2 * s1_3, c2 * s13, c2 * c13 );
-			break;
-
-		case 'XZX':
-			q.set( c2 * s13, s2 * s3_1, s2 * c3_1, c2 * c13 );
-			break;
-
-		case 'YXY':
-			q.set( s2 * c3_1, c2 * s13, s2 * s3_1, c2 * c13 );
-			break;
-
-		case 'ZYZ':
-			q.set( s2 * s3_1, s2 * c3_1, c2 * s13, c2 * c13 );
-			break;
-
-		default:
-			console.warn( 'THREE.MathUtils: .setQuaternionFromProperEuler() encountered an unknown order: ' + order );
-
-	}
 
 }
 
@@ -57647,256 +59253,6 @@ function normalize( value, array ) {
 	}
 
 }
-
-/**
- * @class
- * @classdesc A collection of math utility functions.
- * @hideconstructor
- */
-const MathUtils = {
-	DEG2RAD: DEG2RAD,
-	RAD2DEG: RAD2DEG,
-	/**
-	 * Generate a [UUID]{@link https://en.wikipedia.org/wiki/Universally_unique_identifier}
-	 * (universally unique identifier).
-	 *
-	 * @static
-	 * @method
-	 * @return {string} The UUID.
-	 */
-	generateUUID: generateUUID,
-	/**
-	 * Clamps the given value between min and max.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} value - The value to clamp.
-	 * @param {number} min - The min value.
-	 * @param {number} max - The max value.
-	 * @return {number} The clamped value.
-	 */
-	clamp: clamp$1,
-	/**
-	 * Computes the Euclidean modulo of the given parameters that
-	 * is `( ( n % m ) + m ) % m`.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} n - The first parameter.
-	 * @param {number} m - The second parameter.
-	 * @return {number} The Euclidean modulo.
-	 */
-	euclideanModulo: euclideanModulo,
-	/**
-	 * Performs a linear mapping from range `<a1, a2>` to range `<b1, b2>`
-	 * for the given value.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} x - The value to be mapped.
-	 * @param {number} a1 - Minimum value for range A.
-	 * @param {number} a2 - Maximum value for range A.
-	 * @param {number} b1 - Minimum value for range B.
-	 * @param {number} b2 - Maximum value for range B.
-	 * @return {number} The mapped value.
-	 */
-	mapLinear: mapLinear,
-	/**
-	 * Returns the percentage in the closed interval `[0, 1]` of the given value
-	 * between the start and end point.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} x - The start point
-	 * @param {number} y - The end point.
-	 * @param {number} value - A value between start and end.
-	 * @return {number} The interpolation factor.
-	 */
-	inverseLerp: inverseLerp,
-	/**
-	 * Returns a value linearly interpolated from two known points based on the given interval -
-	 * `t = 0` will return `x` and `t = 1` will return `y`.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} x - The start point
-	 * @param {number} y - The end point.
-	 * @param {number} t - The interpolation factor in the closed interval `[0, 1]`.
-	 * @return {number} The interpolated value.
-	 */
-	lerp: lerp,
-	/**
-	 * Smoothly interpolate a number from `x` to `y` in  a spring-like manner using a delta
-	 * time to maintain frame rate independent movement. For details, see
-	 * [Frame rate independent damping using lerp]{@link http://www.rorydriscoll.com/2016/03/07/frame-rate-independent-damping-using-lerp/}.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} x - The current point.
-	 * @param {number} y - The target point.
-	 * @param {number} lambda - A higher lambda value will make the movement more sudden,
-	 * and a lower value will make the movement more gradual.
-	 * @param {number} dt - Delta time in seconds.
-	 * @return {number} The interpolated value.
-	 */
-	damp: damp,
-	/**
-	 * Returns a value that alternates between `0` and the given `length` parameter.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} x - The value to pingpong.
-	 * @param {number} [length=1] - The positive value the function will pingpong to.
-	 * @return {number} The alternated value.
-	 */
-	pingpong: pingpong,
-	/**
-	 * Returns a value in the range `[0,1]` that represents the percentage that `x` has
-	 * moved between `min` and `max`, but smoothed or slowed down the closer `x` is to
-	 * the `min` and `max`.
-	 *
-	 * See [Smoothstep]{@link http://en.wikipedia.org/wiki/Smoothstep} for more details.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} x - The value to evaluate based on its position between min and max.
-	 * @param {number} min - The min value. Any x value below min will be `0`.
-	 * @param {number} max - The max value. Any x value above max will be `1`.
-	 * @return {number} The alternated value.
-	 */
-	smoothstep: smoothstep,
-	/**
-	 * A [variation on smoothstep]{@link https://en.wikipedia.org/wiki/Smoothstep#Variations}
-	 * that has zero 1st and 2nd order derivatives at x=0 and x=1.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} x - The value to evaluate based on its position between min and max.
-	 * @param {number} min - The min value. Any x value below min will be `0`.
-	 * @param {number} max - The max value. Any x value above max will be `1`.
-	 * @return {number} The alternated value.
-	 */
-	smootherstep: smootherstep,
-	/**
-	 * Returns a random integer from `<low, high>` interval.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} low - The lower value boundary.
-	 * @param {number} high - The upper value boundary
-	 * @return {number} A random integer.
-	 */
-	randInt: randInt,
-	/**
-	 * Returns a random float from `<low, high>` interval.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} low - The lower value boundary.
-	 * @param {number} high - The upper value boundary
-	 * @return {number} A random float.
-	 */
-	randFloat: randFloat,
-	/**
-	 * Returns a random integer from `<-range/2, range/2>` interval.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} range - Defines the value range.
-	 * @return {number} A random float.
-	 */
-	randFloatSpread: randFloatSpread,
-	/**
-	 * Returns a deterministic pseudo-random float in the interval `[0, 1]`.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} [s] - The integer seed.
-	 * @return {number} A random float.
-	 */
-	seededRandom: seededRandom,
-	/**
-	 * Converts degrees to radians.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} degrees - A value in degrees.
-	 * @return {number} The converted value in radians.
-	 */
-	degToRad: degToRad,
-	/**
-	 * Converts radians to degrees.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} radians - A value in radians.
-	 * @return {number} The converted value in degrees.
-	 */
-	radToDeg: radToDeg,
-	/**
-	 * Returns `true` if the given number is a power of two.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} value - The value to check.
-	 * @return {boolean} Whether the given number is a power of two or not.
-	 */
-	isPowerOfTwo: isPowerOfTwo,
-	/**
-	 * Returns the smallest power of two that is greater than or equal to the given number.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} value - The value to find a POT for.
-	 * @return {number} The smallest power of two that is greater than or equal to the given number.
-	 */
-	ceilPowerOfTwo: ceilPowerOfTwo,
-	/**
-	 * Returns the largest power of two that is less than or equal to the given number.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} value - The value to find a POT for.
-	 * @return {number} The largest power of two that is less than or equal to the given number.
-	 */
-	floorPowerOfTwo: floorPowerOfTwo,
-	/**
-	 * Sets the given quaternion from the [Intrinsic Proper Euler Angles]{@link https://en.wikipedia.org/wiki/Euler_angles}
-	 * defined by the given angles and order.
-	 *
-	 * Rotations are applied to the axes in the order specified by order:
-	 * rotation by angle `a` is applied first, then by angle `b`, then by angle `c`.
-	 *
-	 * @static
-	 * @method
-	 * @param {Quaternion} q - The quaternion to set.
-	 * @param {number} a - The rotation applied to the first axis, in radians.
-	 * @param {number} b - The rotation applied to the second axis, in radians.
-	 * @param {number} c - The rotation applied to the third axis, in radians.
-	 * @param {('XYX'|'XZX'|'YXY'|'YZY'|'ZXZ'|'ZYZ')} order - A string specifying the axes order.
-	 */
-	setQuaternionFromProperEuler: setQuaternionFromProperEuler,
-	/**
-	 * Normalizes the given value according to the given typed array.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} value - The float value in the range `[0,1]` to normalize.
-	 * @param {TypedArray} array - The typed array that defines the data type of the value.
-	 * @return {number} The normalize value.
-	 */
-	normalize: normalize,
-	/**
-	 * Denormalizes the given value according to the given typed array.
-	 *
-	 * @static
-	 * @method
-	 * @param {number} value - The value to denormalize.
-	 * @param {TypedArray} array - The typed array that defines the data type of the value.
-	 * @return {number} The denormalize (float) value in the range `[0,1]`.
-	 */
-	denormalize: denormalize
-};
 
 /**
  * Class representing a 2D vector. A 2D vector is an ordered pair of numbers
@@ -58346,8 +59702,8 @@ class Vector2 {
 
 		// assumes min < max, componentwise
 
-		this.x = clamp$1( this.x, min.x, max.x );
-		this.y = clamp$1( this.y, min.y, max.y );
+		this.x = clamp( this.x, min.x, max.x );
+		this.y = clamp( this.y, min.y, max.y );
 
 		return this;
 
@@ -58365,8 +59721,8 @@ class Vector2 {
 	 */
 	clampScalar( minVal, maxVal ) {
 
-		this.x = clamp$1( this.x, minVal, maxVal );
-		this.y = clamp$1( this.y, minVal, maxVal );
+		this.x = clamp( this.x, minVal, maxVal );
+		this.y = clamp( this.y, minVal, maxVal );
 
 		return this;
 
@@ -58386,7 +59742,7 @@ class Vector2 {
 
 		const length = this.length();
 
-		return this.divideScalar( length || 1 ).multiplyScalar( clamp$1( length, min, max ) );
+		return this.divideScalar( length || 1 ).multiplyScalar( clamp( length, min, max ) );
 
 	}
 
@@ -58561,7 +59917,7 @@ class Vector2 {
 
 		// clamp, to handle numerical problems
 
-		return Math.acos( clamp$1( theta, -1, 1 ) );
+		return Math.acos( clamp( theta, -1, 1 ) );
 
 	}
 
@@ -60572,1066 +61928,6 @@ Texture.DEFAULT_MAPPING = UVMapping;
 Texture.DEFAULT_ANISOTROPY = 1;
 
 /**
- * Class representing a 4D vector. A 4D vector is an ordered quadruplet of numbers
- * (labeled x, y, z and w), which can be used to represent a number of things, such as:
- *
- * - A point in 4D space.
- * - A direction and length in 4D space. In three.js the length will
- * always be the Euclidean distance(straight-line distance) from `(0, 0, 0, 0)` to `(x, y, z, w)`
- * and the direction is also measured from `(0, 0, 0, 0)` towards `(x, y, z, w)`.
- * - Any arbitrary ordered quadruplet of numbers.
- *
- * There are other things a 4D vector can be used to represent, however these
- * are the most common uses in *three.js*.
- *
- * Iterating through a vector instance will yield its components `(x, y, z, w)` in
- * the corresponding order.
- * ```js
- * const a = new THREE.Vector4( 0, 1, 0, 0 );
- *
- * //no arguments; will be initialised to (0, 0, 0, 1)
- * const b = new THREE.Vector4( );
- *
- * const d = a.dot( b );
- * ```
- */
-class Vector4 {
-
-	/**
-	 * Constructs a new 4D vector.
-	 *
-	 * @param {number} [x=0] - The x value of this vector.
-	 * @param {number} [y=0] - The y value of this vector.
-	 * @param {number} [z=0] - The z value of this vector.
-	 * @param {number} [w=1] - The w value of this vector.
-	 */
-	constructor( x = 0, y = 0, z = 0, w = 1 ) {
-
-		/**
-		 * This flag can be used for type testing.
-		 *
-		 * @type {boolean}
-		 * @readonly
-		 * @default true
-		 */
-		Vector4.prototype.isVector4 = true;
-
-		/**
-		 * The x value of this vector.
-		 *
-		 * @type {number}
-		 */
-		this.x = x;
-
-		/**
-		 * The y value of this vector.
-		 *
-		 * @type {number}
-		 */
-		this.y = y;
-
-		/**
-		 * The z value of this vector.
-		 *
-		 * @type {number}
-		 */
-		this.z = z;
-
-		/**
-		 * The w value of this vector.
-		 *
-		 * @type {number}
-		 */
-		this.w = w;
-
-	}
-
-	/**
-	 * Alias for {@link Vector4#z}.
-	 *
-	 * @type {number}
-	 */
-	get width() {
-
-		return this.z;
-
-	}
-
-	set width( value ) {
-
-		this.z = value;
-
-	}
-
-	/**
-	 * Alias for {@link Vector4#w}.
-	 *
-	 * @type {number}
-	 */
-	get height() {
-
-		return this.w;
-
-	}
-
-	set height( value ) {
-
-		this.w = value;
-
-	}
-
-	/**
-	 * Sets the vector components.
-	 *
-	 * @param {number} x - The value of the x component.
-	 * @param {number} y - The value of the y component.
-	 * @param {number} z - The value of the z component.
-	 * @param {number} w - The value of the w component.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	set( x, y, z, w ) {
-
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.w = w;
-
-		return this;
-
-	}
-
-	/**
-	 * Sets the vector components to the same value.
-	 *
-	 * @param {number} scalar - The value to set for all vector components.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	setScalar( scalar ) {
-
-		this.x = scalar;
-		this.y = scalar;
-		this.z = scalar;
-		this.w = scalar;
-
-		return this;
-
-	}
-
-	/**
-	 * Sets the vector's x component to the given value
-	 *
-	 * @param {number} x - The value to set.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	setX( x ) {
-
-		this.x = x;
-
-		return this;
-
-	}
-
-	/**
-	 * Sets the vector's y component to the given value
-	 *
-	 * @param {number} y - The value to set.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	setY( y ) {
-
-		this.y = y;
-
-		return this;
-
-	}
-
-	/**
-	 * Sets the vector's z component to the given value
-	 *
-	 * @param {number} z - The value to set.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	setZ( z ) {
-
-		this.z = z;
-
-		return this;
-
-	}
-
-	/**
-	 * Sets the vector's w component to the given value
-	 *
-	 * @param {number} w - The value to set.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	setW( w ) {
-
-		this.w = w;
-
-		return this;
-
-	}
-
-	/**
-	 * Allows to set a vector component with an index.
-	 *
-	 * @param {number} index - The component index. `0` equals to x, `1` equals to y,
-	 * `2` equals to z, `3` equals to w.
-	 * @param {number} value - The value to set.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	setComponent( index, value ) {
-
-		switch ( index ) {
-
-			case 0: this.x = value; break;
-			case 1: this.y = value; break;
-			case 2: this.z = value; break;
-			case 3: this.w = value; break;
-			default: throw new Error( 'index is out of range: ' + index );
-
-		}
-
-		return this;
-
-	}
-
-	/**
-	 * Returns the value of the vector component which matches the given index.
-	 *
-	 * @param {number} index - The component index. `0` equals to x, `1` equals to y,
-	 * `2` equals to z, `3` equals to w.
-	 * @return {number} A vector component value.
-	 */
-	getComponent( index ) {
-
-		switch ( index ) {
-
-			case 0: return this.x;
-			case 1: return this.y;
-			case 2: return this.z;
-			case 3: return this.w;
-			default: throw new Error( 'index is out of range: ' + index );
-
-		}
-
-	}
-
-	/**
-	 * Returns a new vector with copied values from this instance.
-	 *
-	 * @return {Vector4} A clone of this instance.
-	 */
-	clone() {
-
-		return new this.constructor( this.x, this.y, this.z, this.w );
-
-	}
-
-	/**
-	 * Copies the values of the given vector to this instance.
-	 *
-	 * @param {Vector3|Vector4} v - The vector to copy.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	copy( v ) {
-
-		this.x = v.x;
-		this.y = v.y;
-		this.z = v.z;
-		this.w = ( v.w !== undefined ) ? v.w : 1;
-
-		return this;
-
-	}
-
-	/**
-	 * Adds the given vector to this instance.
-	 *
-	 * @param {Vector4} v - The vector to add.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	add( v ) {
-
-		this.x += v.x;
-		this.y += v.y;
-		this.z += v.z;
-		this.w += v.w;
-
-		return this;
-
-	}
-
-	/**
-	 * Adds the given scalar value to all components of this instance.
-	 *
-	 * @param {number} s - The scalar to add.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	addScalar( s ) {
-
-		this.x += s;
-		this.y += s;
-		this.z += s;
-		this.w += s;
-
-		return this;
-
-	}
-
-	/**
-	 * Adds the given vectors and stores the result in this instance.
-	 *
-	 * @param {Vector4} a - The first vector.
-	 * @param {Vector4} b - The second vector.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	addVectors( a, b ) {
-
-		this.x = a.x + b.x;
-		this.y = a.y + b.y;
-		this.z = a.z + b.z;
-		this.w = a.w + b.w;
-
-		return this;
-
-	}
-
-	/**
-	 * Adds the given vector scaled by the given factor to this instance.
-	 *
-	 * @param {Vector4} v - The vector.
-	 * @param {number} s - The factor that scales `v`.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	addScaledVector( v, s ) {
-
-		this.x += v.x * s;
-		this.y += v.y * s;
-		this.z += v.z * s;
-		this.w += v.w * s;
-
-		return this;
-
-	}
-
-	/**
-	 * Subtracts the given vector from this instance.
-	 *
-	 * @param {Vector4} v - The vector to subtract.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	sub( v ) {
-
-		this.x -= v.x;
-		this.y -= v.y;
-		this.z -= v.z;
-		this.w -= v.w;
-
-		return this;
-
-	}
-
-	/**
-	 * Subtracts the given scalar value from all components of this instance.
-	 *
-	 * @param {number} s - The scalar to subtract.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	subScalar( s ) {
-
-		this.x -= s;
-		this.y -= s;
-		this.z -= s;
-		this.w -= s;
-
-		return this;
-
-	}
-
-	/**
-	 * Subtracts the given vectors and stores the result in this instance.
-	 *
-	 * @param {Vector4} a - The first vector.
-	 * @param {Vector4} b - The second vector.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	subVectors( a, b ) {
-
-		this.x = a.x - b.x;
-		this.y = a.y - b.y;
-		this.z = a.z - b.z;
-		this.w = a.w - b.w;
-
-		return this;
-
-	}
-
-	/**
-	 * Multiplies the given vector with this instance.
-	 *
-	 * @param {Vector4} v - The vector to multiply.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	multiply( v ) {
-
-		this.x *= v.x;
-		this.y *= v.y;
-		this.z *= v.z;
-		this.w *= v.w;
-
-		return this;
-
-	}
-
-	/**
-	 * Multiplies the given scalar value with all components of this instance.
-	 *
-	 * @param {number} scalar - The scalar to multiply.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	multiplyScalar( scalar ) {
-
-		this.x *= scalar;
-		this.y *= scalar;
-		this.z *= scalar;
-		this.w *= scalar;
-
-		return this;
-
-	}
-
-	/**
-	 * Multiplies this vector with the given 4x4 matrix.
-	 *
-	 * @param {Matrix4} m - The 4x4 matrix.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	applyMatrix4( m ) {
-
-		const x = this.x, y = this.y, z = this.z, w = this.w;
-		const e = m.elements;
-
-		this.x = e[ 0 ] * x + e[ 4 ] * y + e[ 8 ] * z + e[ 12 ] * w;
-		this.y = e[ 1 ] * x + e[ 5 ] * y + e[ 9 ] * z + e[ 13 ] * w;
-		this.z = e[ 2 ] * x + e[ 6 ] * y + e[ 10 ] * z + e[ 14 ] * w;
-		this.w = e[ 3 ] * x + e[ 7 ] * y + e[ 11 ] * z + e[ 15 ] * w;
-
-		return this;
-
-	}
-
-	/**
-	 * Divides this instance by the given vector.
-	 *
-	 * @param {Vector4} v - The vector to divide.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	divide( v ) {
-
-		this.x /= v.x;
-		this.y /= v.y;
-		this.z /= v.z;
-		this.w /= v.w;
-
-		return this;
-
-	}
-
-	/**
-	 * Divides this vector by the given scalar.
-	 *
-	 * @param {number} scalar - The scalar to divide.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	divideScalar( scalar ) {
-
-		return this.multiplyScalar( 1 / scalar );
-
-	}
-
-	/**
-	 * Sets the x, y and z components of this
-	 * vector to the quaternion's axis and w to the angle.
-	 *
-	 * @param {Quaternion} q - The Quaternion to set.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	setAxisAngleFromQuaternion( q ) {
-
-		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/index.htm
-
-		// q is assumed to be normalized
-
-		this.w = 2 * Math.acos( q.w );
-
-		const s = Math.sqrt( 1 - q.w * q.w );
-
-		if ( s < 0.0001 ) {
-
-			this.x = 1;
-			this.y = 0;
-			this.z = 0;
-
-		} else {
-
-			this.x = q.x / s;
-			this.y = q.y / s;
-			this.z = q.z / s;
-
-		}
-
-		return this;
-
-	}
-
-	/**
-	 * Sets the x, y and z components of this
-	 * vector to the axis of rotation and w to the angle.
-	 *
-	 * @param {Matrix4} m - A 4x4 matrix of which the upper left 3x3 matrix is a pure rotation matrix.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	setAxisAngleFromRotationMatrix( m ) {
-
-		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
-
-		// assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
-
-		let angle, x, y, z; // variables for result
-		const epsilon = 0.01,		// margin to allow for rounding errors
-			epsilon2 = 0.1,		// margin to distinguish between 0 and 180 degrees
-
-			te = m.elements,
-
-			m11 = te[ 0 ], m12 = te[ 4 ], m13 = te[ 8 ],
-			m21 = te[ 1 ], m22 = te[ 5 ], m23 = te[ 9 ],
-			m31 = te[ 2 ], m32 = te[ 6 ], m33 = te[ 10 ];
-
-		if ( ( Math.abs( m12 - m21 ) < epsilon ) &&
-		     ( Math.abs( m13 - m31 ) < epsilon ) &&
-		     ( Math.abs( m23 - m32 ) < epsilon ) ) {
-
-			// singularity found
-			// first check for identity matrix which must have +1 for all terms
-			// in leading diagonal and zero in other terms
-
-			if ( ( Math.abs( m12 + m21 ) < epsilon2 ) &&
-			     ( Math.abs( m13 + m31 ) < epsilon2 ) &&
-			     ( Math.abs( m23 + m32 ) < epsilon2 ) &&
-			     ( Math.abs( m11 + m22 + m33 - 3 ) < epsilon2 ) ) {
-
-				// this singularity is identity matrix so angle = 0
-
-				this.set( 1, 0, 0, 0 );
-
-				return this; // zero angle, arbitrary axis
-
-			}
-
-			// otherwise this singularity is angle = 180
-
-			angle = Math.PI;
-
-			const xx = ( m11 + 1 ) / 2;
-			const yy = ( m22 + 1 ) / 2;
-			const zz = ( m33 + 1 ) / 2;
-			const xy = ( m12 + m21 ) / 4;
-			const xz = ( m13 + m31 ) / 4;
-			const yz = ( m23 + m32 ) / 4;
-
-			if ( ( xx > yy ) && ( xx > zz ) ) {
-
-				// m11 is the largest diagonal term
-
-				if ( xx < epsilon ) {
-
-					x = 0;
-					y = 0.707106781;
-					z = 0.707106781;
-
-				} else {
-
-					x = Math.sqrt( xx );
-					y = xy / x;
-					z = xz / x;
-
-				}
-
-			} else if ( yy > zz ) {
-
-				// m22 is the largest diagonal term
-
-				if ( yy < epsilon ) {
-
-					x = 0.707106781;
-					y = 0;
-					z = 0.707106781;
-
-				} else {
-
-					y = Math.sqrt( yy );
-					x = xy / y;
-					z = yz / y;
-
-				}
-
-			} else {
-
-				// m33 is the largest diagonal term so base result on this
-
-				if ( zz < epsilon ) {
-
-					x = 0.707106781;
-					y = 0.707106781;
-					z = 0;
-
-				} else {
-
-					z = Math.sqrt( zz );
-					x = xz / z;
-					y = yz / z;
-
-				}
-
-			}
-
-			this.set( x, y, z, angle );
-
-			return this; // return 180 deg rotation
-
-		}
-
-		// as we have reached here there are no singularities so we can handle normally
-
-		let s = Math.sqrt( ( m32 - m23 ) * ( m32 - m23 ) +
-			( m13 - m31 ) * ( m13 - m31 ) +
-			( m21 - m12 ) * ( m21 - m12 ) ); // used to normalize
-
-		if ( Math.abs( s ) < 0.001 ) s = 1;
-
-		// prevent divide by zero, should not happen if matrix is orthogonal and should be
-		// caught by singularity test above, but I've left it in just in case
-
-		this.x = ( m32 - m23 ) / s;
-		this.y = ( m13 - m31 ) / s;
-		this.z = ( m21 - m12 ) / s;
-		this.w = Math.acos( ( m11 + m22 + m33 - 1 ) / 2 );
-
-		return this;
-
-	}
-
-	/**
-	 * Sets the vector components to the position elements of the
-	 * given transformation matrix.
-	 *
-	 * @param {Matrix4} m - The 4x4 matrix.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	setFromMatrixPosition( m ) {
-
-		const e = m.elements;
-
-		this.x = e[ 12 ];
-		this.y = e[ 13 ];
-		this.z = e[ 14 ];
-		this.w = e[ 15 ];
-
-		return this;
-
-	}
-
-	/**
-	 * If this vector's x, y, z or w value is greater than the given vector's x, y, z or w
-	 * value, replace that value with the corresponding min value.
-	 *
-	 * @param {Vector4} v - The vector.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	min( v ) {
-
-		this.x = Math.min( this.x, v.x );
-		this.y = Math.min( this.y, v.y );
-		this.z = Math.min( this.z, v.z );
-		this.w = Math.min( this.w, v.w );
-
-		return this;
-
-	}
-
-	/**
-	 * If this vector's x, y, z or w value is less than the given vector's x, y, z or w
-	 * value, replace that value with the corresponding max value.
-	 *
-	 * @param {Vector4} v - The vector.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	max( v ) {
-
-		this.x = Math.max( this.x, v.x );
-		this.y = Math.max( this.y, v.y );
-		this.z = Math.max( this.z, v.z );
-		this.w = Math.max( this.w, v.w );
-
-		return this;
-
-	}
-
-	/**
-	 * If this vector's x, y, z or w value is greater than the max vector's x, y, z or w
-	 * value, it is replaced by the corresponding value.
-	 * If this vector's x, y, z or w value is less than the min vector's x, y, z or w value,
-	 * it is replaced by the corresponding value.
-	 *
-	 * @param {Vector4} min - The minimum x, y and z values.
-	 * @param {Vector4} max - The maximum x, y and z values in the desired range.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	clamp( min, max ) {
-
-		// assumes min < max, componentwise
-
-		this.x = clamp$1( this.x, min.x, max.x );
-		this.y = clamp$1( this.y, min.y, max.y );
-		this.z = clamp$1( this.z, min.z, max.z );
-		this.w = clamp$1( this.w, min.w, max.w );
-
-		return this;
-
-	}
-
-	/**
-	 * If this vector's x, y, z or w values are greater than the max value, they are
-	 * replaced by the max value.
-	 * If this vector's x, y, z or w values are less than the min value, they are
-	 * replaced by the min value.
-	 *
-	 * @param {number} minVal - The minimum value the components will be clamped to.
-	 * @param {number} maxVal - The maximum value the components will be clamped to.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	clampScalar( minVal, maxVal ) {
-
-		this.x = clamp$1( this.x, minVal, maxVal );
-		this.y = clamp$1( this.y, minVal, maxVal );
-		this.z = clamp$1( this.z, minVal, maxVal );
-		this.w = clamp$1( this.w, minVal, maxVal );
-
-		return this;
-
-	}
-
-	/**
-	 * If this vector's length is greater than the max value, it is replaced by
-	 * the max value.
-	 * If this vector's length is less than the min value, it is replaced by the
-	 * min value.
-	 *
-	 * @param {number} min - The minimum value the vector length will be clamped to.
-	 * @param {number} max - The maximum value the vector length will be clamped to.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	clampLength( min, max ) {
-
-		const length = this.length();
-
-		return this.divideScalar( length || 1 ).multiplyScalar( clamp$1( length, min, max ) );
-
-	}
-
-	/**
-	 * The components of this vector are rounded down to the nearest integer value.
-	 *
-	 * @return {Vector4} A reference to this vector.
-	 */
-	floor() {
-
-		this.x = Math.floor( this.x );
-		this.y = Math.floor( this.y );
-		this.z = Math.floor( this.z );
-		this.w = Math.floor( this.w );
-
-		return this;
-
-	}
-
-	/**
-	 * The components of this vector are rounded up to the nearest integer value.
-	 *
-	 * @return {Vector4} A reference to this vector.
-	 */
-	ceil() {
-
-		this.x = Math.ceil( this.x );
-		this.y = Math.ceil( this.y );
-		this.z = Math.ceil( this.z );
-		this.w = Math.ceil( this.w );
-
-		return this;
-
-	}
-
-	/**
-	 * The components of this vector are rounded to the nearest integer value
-	 *
-	 * @return {Vector4} A reference to this vector.
-	 */
-	round() {
-
-		this.x = Math.round( this.x );
-		this.y = Math.round( this.y );
-		this.z = Math.round( this.z );
-		this.w = Math.round( this.w );
-
-		return this;
-
-	}
-
-	/**
-	 * The components of this vector are rounded towards zero (up if negative,
-	 * down if positive) to an integer value.
-	 *
-	 * @return {Vector4} A reference to this vector.
-	 */
-	roundToZero() {
-
-		this.x = Math.trunc( this.x );
-		this.y = Math.trunc( this.y );
-		this.z = Math.trunc( this.z );
-		this.w = Math.trunc( this.w );
-
-		return this;
-
-	}
-
-	/**
-	 * Inverts this vector - i.e. sets x = -x, y = -y, z = -z, w = -w.
-	 *
-	 * @return {Vector4} A reference to this vector.
-	 */
-	negate() {
-
-		this.x = - this.x;
-		this.y = - this.y;
-		this.z = - this.z;
-		this.w = - this.w;
-
-		return this;
-
-	}
-
-	/**
-	 * Calculates the dot product of the given vector with this instance.
-	 *
-	 * @param {Vector4} v - The vector to compute the dot product with.
-	 * @return {number} The result of the dot product.
-	 */
-	dot( v ) {
-
-		return this.x * v.x + this.y * v.y + this.z * v.z + this.w * v.w;
-
-	}
-
-	/**
-	 * Computes the square of the Euclidean length (straight-line length) from
-	 * (0, 0, 0, 0) to (x, y, z, w). If you are comparing the lengths of vectors, you should
-	 * compare the length squared instead as it is slightly more efficient to calculate.
-	 *
-	 * @return {number} The square length of this vector.
-	 */
-	lengthSq() {
-
-		return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
-
-	}
-
-	/**
-	 * Computes the  Euclidean length (straight-line length) from (0, 0, 0, 0) to (x, y, z, w).
-	 *
-	 * @return {number} The length of this vector.
-	 */
-	length() {
-
-		return Math.sqrt( this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w );
-
-	}
-
-	/**
-	 * Computes the Manhattan length of this vector.
-	 *
-	 * @return {number} The length of this vector.
-	 */
-	manhattanLength() {
-
-		return Math.abs( this.x ) + Math.abs( this.y ) + Math.abs( this.z ) + Math.abs( this.w );
-
-	}
-
-	/**
-	 * Converts this vector to a unit vector - that is, sets it equal to a vector
-	 * with the same direction as this one, but with a vector length of `1`.
-	 *
-	 * @return {Vector4} A reference to this vector.
-	 */
-	normalize() {
-
-		return this.divideScalar( this.length() || 1 );
-
-	}
-
-	/**
-	 * Sets this vector to a vector with the same direction as this one, but
-	 * with the specified length.
-	 *
-	 * @param {number} length - The new length of this vector.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	setLength( length ) {
-
-		return this.normalize().multiplyScalar( length );
-
-	}
-
-	/**
-	 * Linearly interpolates between the given vector and this instance, where
-	 * alpha is the percent distance along the line - alpha = 0 will be this
-	 * vector, and alpha = 1 will be the given one.
-	 *
-	 * @param {Vector4} v - The vector to interpolate towards.
-	 * @param {number} alpha - The interpolation factor, typically in the closed interval `[0, 1]`.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	lerp( v, alpha ) {
-
-		this.x += ( v.x - this.x ) * alpha;
-		this.y += ( v.y - this.y ) * alpha;
-		this.z += ( v.z - this.z ) * alpha;
-		this.w += ( v.w - this.w ) * alpha;
-
-		return this;
-
-	}
-
-	/**
-	 * Linearly interpolates between the given vectors, where alpha is the percent
-	 * distance along the line - alpha = 0 will be first vector, and alpha = 1 will
-	 * be the second one. The result is stored in this instance.
-	 *
-	 * @param {Vector4} v1 - The first vector.
-	 * @param {Vector4} v2 - The second vector.
-	 * @param {number} alpha - The interpolation factor, typically in the closed interval `[0, 1]`.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	lerpVectors( v1, v2, alpha ) {
-
-		this.x = v1.x + ( v2.x - v1.x ) * alpha;
-		this.y = v1.y + ( v2.y - v1.y ) * alpha;
-		this.z = v1.z + ( v2.z - v1.z ) * alpha;
-		this.w = v1.w + ( v2.w - v1.w ) * alpha;
-
-		return this;
-
-	}
-
-	/**
-	 * Returns `true` if this vector is equal with the given one.
-	 *
-	 * @param {Vector4} v - The vector to test for equality.
-	 * @return {boolean} Whether this vector is equal with the given one.
-	 */
-	equals( v ) {
-
-		return ( ( v.x === this.x ) && ( v.y === this.y ) && ( v.z === this.z ) && ( v.w === this.w ) );
-
-	}
-
-	/**
-	 * Sets this vector's x value to be `array[ offset ]`, y value to be `array[ offset + 1 ]`,
-	 * z value to be `array[ offset + 2 ]`, w value to be `array[ offset + 3 ]`.
-	 *
-	 * @param {Array<number>} array - An array holding the vector component values.
-	 * @param {number} [offset=0] - The offset into the array.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	fromArray( array, offset = 0 ) {
-
-		this.x = array[ offset ];
-		this.y = array[ offset + 1 ];
-		this.z = array[ offset + 2 ];
-		this.w = array[ offset + 3 ];
-
-		return this;
-
-	}
-
-	/**
-	 * Writes the components of this vector to the given array. If no array is provided,
-	 * the method returns a new instance.
-	 *
-	 * @param {Array<number>} [array=[]] - The target array holding the vector components.
-	 * @param {number} [offset=0] - Index of the first element in the array.
-	 * @return {Array<number>} The vector components.
-	 */
-	toArray( array = [], offset = 0 ) {
-
-		array[ offset ] = this.x;
-		array[ offset + 1 ] = this.y;
-		array[ offset + 2 ] = this.z;
-		array[ offset + 3 ] = this.w;
-
-		return array;
-
-	}
-
-	/**
-	 * Sets the components of this vector from the given buffer attribute.
-	 *
-	 * @param {BufferAttribute} attribute - The buffer attribute holding vector data.
-	 * @param {number} index - The index into the attribute.
-	 * @return {Vector4} A reference to this vector.
-	 */
-	fromBufferAttribute( attribute, index ) {
-
-		this.x = attribute.getX( index );
-		this.y = attribute.getY( index );
-		this.z = attribute.getZ( index );
-		this.w = attribute.getW( index );
-
-		return this;
-
-	}
-
-	/**
-	 * Sets each component of this vector to a pseudo-random value between `0` and
-	 * `1`, excluding `1`.
-	 *
-	 * @return {Vector4} A reference to this vector.
-	 */
-	random() {
-
-		this.x = Math.random();
-		this.y = Math.random();
-		this.z = Math.random();
-		this.w = Math.random();
-
-		return this;
-
-	}
-
-	*[ Symbol.iterator ]() {
-
-		yield this.x;
-		yield this.y;
-		yield this.z;
-		yield this.w;
-
-	}
-
-}
-
-/**
  * Class for representing a Quaternion. Quaternions are used in three.js to represent rotations.
  *
  * Iterating through a vector instance will yield its components `(x, y, z, w)` in
@@ -62158,7 +62454,7 @@ class Quaternion {
 	 */
 	angleTo( q ) {
 
-		return 2 * Math.acos( Math.abs( clamp$1( this.dot( q ), -1, 1 ) ) );
+		return 2 * Math.acos( Math.abs( clamp( this.dot( q ), -1, 1 ) ) );
 
 	}
 
@@ -63133,9 +63429,9 @@ class Vector3 {
 	clamp(min, max) {
 		// assumes min < max, componentwise
 
-		this.x = clamp$1(this.x, min.x, max.x);
-		this.y = clamp$1(this.y, min.y, max.y);
-		this.z = clamp$1(this.z, min.z, max.z);
+		this.x = clamp(this.x, min.x, max.x);
+		this.y = clamp(this.y, min.y, max.y);
+		this.z = clamp(this.z, min.z, max.z);
 
 		return this;
 	}
@@ -63151,9 +63447,9 @@ class Vector3 {
 	 * @return {Vector3} A reference to this vector.
 	 */
 	clampScalar(minVal, maxVal) {
-		this.x = clamp$1(this.x, minVal, maxVal);
-		this.y = clamp$1(this.y, minVal, maxVal);
-		this.z = clamp$1(this.z, minVal, maxVal);
+		this.x = clamp(this.x, minVal, maxVal);
+		this.y = clamp(this.y, minVal, maxVal);
+		this.z = clamp(this.z, minVal, maxVal);
 
 		return this;
 	}
@@ -63172,7 +63468,7 @@ class Vector3 {
 		const length = this.length();
 
 		return this.divideScalar(length || 1).multiplyScalar(
-			clamp$1(length, min, max),
+			clamp(length, min, max),
 		);
 	}
 
@@ -63466,7 +63762,7 @@ class Vector3 {
 
 		// clamp, to handle numerical problems
 
-		return Math.acos(clamp$1(theta, -1, 1));
+		return Math.acos(clamp(theta, -1, 1));
 	}
 
 	/**
@@ -64909,656 +65205,6 @@ class Sphere {
 	 * Returns a new sphere with copied values from this instance.
 	 *
 	 * @return {Sphere} A clone of this instance.
-	 */
-	clone() {
-
-		return new this.constructor().copy( this );
-
-	}
-
-}
-
-const _vector$a = /*@__PURE__*/ new Vector3();
-const _segCenter = /*@__PURE__*/ new Vector3();
-const _segDir = /*@__PURE__*/ new Vector3();
-const _diff = /*@__PURE__*/ new Vector3();
-
-const _edge1 = /*@__PURE__*/ new Vector3();
-const _edge2 = /*@__PURE__*/ new Vector3();
-const _normal$1 = /*@__PURE__*/ new Vector3();
-
-/**
- * A ray that emits from an origin in a certain direction. The class is used by
- * {@link Raycaster} to assist with raycasting. Raycasting is used for
- * mouse picking (working out what objects in the 3D space the mouse is over)
- * amongst other things.
- */
-class Ray {
-
-	/**
-	 * Constructs a new ray.
-	 *
-	 * @param {Vector3} [origin=(0,0,0)] - The origin of the ray.
-	 * @param {Vector3} [direction=(0,0,-1)] - The (normalized) direction of the ray.
-	 */
-	constructor( origin = new Vector3(), direction = new Vector3( 0, 0, -1 ) ) {
-
-		/**
-		 * The origin of the ray.
-		 *
-		 * @type {Vector3}
-		 */
-		this.origin = origin;
-
-		/**
-		 * The (normalized) direction of the ray.
-		 *
-		 * @type {Vector3}
-		 */
-		this.direction = direction;
-
-	}
-
-	/**
-	 * Sets the ray's components by copying the given values.
-	 *
-	 * @param {Vector3} origin - The origin.
-	 * @param {Vector3} direction - The direction.
-	 * @return {Ray} A reference to this ray.
-	 */
-	set( origin, direction ) {
-
-		this.origin.copy( origin );
-		this.direction.copy( direction );
-
-		return this;
-
-	}
-
-	/**
-	 * Copies the values of the given ray to this instance.
-	 *
-	 * @param {Ray} ray - The ray to copy.
-	 * @return {Ray} A reference to this ray.
-	 */
-	copy( ray ) {
-
-		this.origin.copy( ray.origin );
-		this.direction.copy( ray.direction );
-
-		return this;
-
-	}
-
-	/**
-	 * Returns a vector that is located at a given distance along this ray.
-	 *
-	 * @param {number} t - The distance along the ray to retrieve a position for.
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {Vector3} A position on the ray.
-	 */
-	at( t, target ) {
-
-		return target.copy( this.origin ).addScaledVector( this.direction, t );
-
-	}
-
-	/**
-	 * Adjusts the direction of the ray to point at the given vector in world space.
-	 *
-	 * @param {Vector3} v - The target position.
-	 * @return {Ray} A reference to this ray.
-	 */
-	lookAt( v ) {
-
-		this.direction.copy( v ).sub( this.origin ).normalize();
-
-		return this;
-
-	}
-
-	/**
-	 * Shift the origin of this ray along its direction by the given distance.
-	 *
-	 * @param {number} t - The distance along the ray to interpolate.
-	 * @return {Ray} A reference to this ray.
-	 */
-	recast( t ) {
-
-		this.origin.copy( this.at( t, _vector$a ) );
-
-		return this;
-
-	}
-
-	/**
-	 * Returns the point along this ray that is closest to the given point.
-	 *
-	 * @param {Vector3} point - A point in 3D space to get the closet location on the ray for.
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {Vector3} The closest point on this ray.
-	 */
-	closestPointToPoint( point, target ) {
-
-		target.subVectors( point, this.origin );
-
-		const directionDistance = target.dot( this.direction );
-
-		if ( directionDistance < 0 ) {
-
-			return target.copy( this.origin );
-
-		}
-
-		return target.copy( this.origin ).addScaledVector( this.direction, directionDistance );
-
-	}
-
-	/**
-	 * Returns the distance of the closest approach between this ray and the given point.
-	 *
-	 * @param {Vector3} point - A point in 3D space to compute the distance to.
-	 * @return {number} The distance.
-	 */
-	distanceToPoint( point ) {
-
-		return Math.sqrt( this.distanceSqToPoint( point ) );
-
-	}
-
-	/**
-	 * Returns the squared distance of the closest approach between this ray and the given point.
-	 *
-	 * @param {Vector3} point - A point in 3D space to compute the distance to.
-	 * @return {number} The squared distance.
-	 */
-	distanceSqToPoint( point ) {
-
-		const directionDistance = _vector$a.subVectors( point, this.origin ).dot( this.direction );
-
-		// point behind the ray
-
-		if ( directionDistance < 0 ) {
-
-			return this.origin.distanceToSquared( point );
-
-		}
-
-		_vector$a.copy( this.origin ).addScaledVector( this.direction, directionDistance );
-
-		return _vector$a.distanceToSquared( point );
-
-	}
-
-	/**
-	 * Returns the squared distance between this ray and the given line segment.
-	 *
-	 * @param {Vector3} v0 - The start point of the line segment.
-	 * @param {Vector3} v1 - The end point of the line segment.
-	 * @param {Vector3} [optionalPointOnRay] - When provided, it receives the point on this ray that is closest to the segment.
-	 * @param {Vector3} [optionalPointOnSegment] - When provided, it receives the point on the line segment that is closest to this ray.
-	 * @return {number} The squared distance.
-	 */
-	distanceSqToSegment( v0, v1, optionalPointOnRay, optionalPointOnSegment ) {
-
-		// from https://github.com/pmjoniak/GeometricTools/blob/master/GTEngine/Include/Mathematics/GteDistRaySegment.h
-		// It returns the min distance between the ray and the segment
-		// defined by v0 and v1
-		// It can also set two optional targets :
-		// - The closest point on the ray
-		// - The closest point on the segment
-
-		_segCenter.copy( v0 ).add( v1 ).multiplyScalar( 0.5 );
-		_segDir.copy( v1 ).sub( v0 ).normalize();
-		_diff.copy( this.origin ).sub( _segCenter );
-
-		const segExtent = v0.distanceTo( v1 ) * 0.5;
-		const a01 = - this.direction.dot( _segDir );
-		const b0 = _diff.dot( this.direction );
-		const b1 = - _diff.dot( _segDir );
-		const c = _diff.lengthSq();
-		const det = Math.abs( 1 - a01 * a01 );
-		let s0, s1, sqrDist, extDet;
-
-		if ( det > 0 ) {
-
-			// The ray and segment are not parallel.
-
-			s0 = a01 * b1 - b0;
-			s1 = a01 * b0 - b1;
-			extDet = segExtent * det;
-
-			if ( s0 >= 0 ) {
-
-				if ( s1 >= - extDet ) {
-
-					if ( s1 <= extDet ) {
-
-						// region 0
-						// Minimum at interior points of ray and segment.
-
-						const invDet = 1 / det;
-						s0 *= invDet;
-						s1 *= invDet;
-						sqrDist = s0 * ( s0 + a01 * s1 + 2 * b0 ) + s1 * ( a01 * s0 + s1 + 2 * b1 ) + c;
-
-					} else {
-
-						// region 1
-
-						s1 = segExtent;
-						s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
-						sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-					}
-
-				} else {
-
-					// region 5
-
-					s1 = - segExtent;
-					s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
-					sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-				}
-
-			} else {
-
-				if ( s1 <= - extDet ) {
-
-					// region 4
-
-					s0 = Math.max( 0, - ( - a01 * segExtent + b0 ) );
-					s1 = ( s0 > 0 ) ? - segExtent : Math.min( Math.max( - segExtent, - b1 ), segExtent );
-					sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-				} else if ( s1 <= extDet ) {
-
-					// region 3
-
-					s0 = 0;
-					s1 = Math.min( Math.max( - segExtent, - b1 ), segExtent );
-					sqrDist = s1 * ( s1 + 2 * b1 ) + c;
-
-				} else {
-
-					// region 2
-
-					s0 = Math.max( 0, - ( a01 * segExtent + b0 ) );
-					s1 = ( s0 > 0 ) ? segExtent : Math.min( Math.max( - segExtent, - b1 ), segExtent );
-					sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-				}
-
-			}
-
-		} else {
-
-			// Ray and segment are parallel.
-
-			s1 = ( a01 > 0 ) ? - segExtent : segExtent;
-			s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
-			sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
-
-		}
-
-		if ( optionalPointOnRay ) {
-
-			optionalPointOnRay.copy( this.origin ).addScaledVector( this.direction, s0 );
-
-		}
-
-		if ( optionalPointOnSegment ) {
-
-			optionalPointOnSegment.copy( _segCenter ).addScaledVector( _segDir, s1 );
-
-		}
-
-		return sqrDist;
-
-	}
-
-	/**
-	 * Intersects this ray with the given sphere, returning the intersection
-	 * point or `null` if there is no intersection.
-	 *
-	 * @param {Sphere} sphere - The sphere to intersect.
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {?Vector3} The intersection point.
-	 */
-	intersectSphere( sphere, target ) {
-
-		_vector$a.subVectors( sphere.center, this.origin );
-		const tca = _vector$a.dot( this.direction );
-		const d2 = _vector$a.dot( _vector$a ) - tca * tca;
-		const radius2 = sphere.radius * sphere.radius;
-
-		if ( d2 > radius2 ) return null;
-
-		const thc = Math.sqrt( radius2 - d2 );
-
-		// t0 = first intersect point - entrance on front of sphere
-		const t0 = tca - thc;
-
-		// t1 = second intersect point - exit point on back of sphere
-		const t1 = tca + thc;
-
-		// test to see if t1 is behind the ray - if so, return null
-		if ( t1 < 0 ) return null;
-
-		// test to see if t0 is behind the ray:
-		// if it is, the ray is inside the sphere, so return the second exit point scaled by t1,
-		// in order to always return an intersect point that is in front of the ray.
-		if ( t0 < 0 ) return this.at( t1, target );
-
-		// else t0 is in front of the ray, so return the first collision point scaled by t0
-		return this.at( t0, target );
-
-	}
-
-	/**
-	 * Returns `true` if this ray intersects with the given sphere.
-	 *
-	 * @param {Sphere} sphere - The sphere to intersect.
-	 * @return {boolean} Whether this ray intersects with the given sphere or not.
-	 */
-	intersectsSphere( sphere ) {
-
-		return this.distanceSqToPoint( sphere.center ) <= ( sphere.radius * sphere.radius );
-
-	}
-
-	/**
-	 * Computes the distance from the ray's origin to the given plane. Returns `null` if the ray
-	 * does not intersect with the plane.
-	 *
-	 * @param {Plane} plane - The plane to compute the distance to.
-	 * @return {?number} Whether this ray intersects with the given sphere or not.
-	 */
-	distanceToPlane( plane ) {
-
-		const denominator = plane.normal.dot( this.direction );
-
-		if ( denominator === 0 ) {
-
-			// line is coplanar, return origin
-			if ( plane.distanceToPoint( this.origin ) === 0 ) {
-
-				return 0;
-
-			}
-
-			// Null is preferable to undefined since undefined means.... it is undefined
-
-			return null;
-
-		}
-
-		const t = - ( this.origin.dot( plane.normal ) + plane.constant ) / denominator;
-
-		// Return if the ray never intersects the plane
-
-		return t >= 0 ? t : null;
-
-	}
-
-	/**
-	 * Intersects this ray with the given plane, returning the intersection
-	 * point or `null` if there is no intersection.
-	 *
-	 * @param {Plane} plane - The plane to intersect.
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {?Vector3} The intersection point.
-	 */
-	intersectPlane( plane, target ) {
-
-		const t = this.distanceToPlane( plane );
-
-		if ( t === null ) {
-
-			return null;
-
-		}
-
-		return this.at( t, target );
-
-	}
-
-	/**
-	 * Returns `true` if this ray intersects with the given plane.
-	 *
-	 * @param {Plane} plane - The plane to intersect.
-	 * @return {boolean} Whether this ray intersects with the given plane or not.
-	 */
-	intersectsPlane( plane ) {
-
-		// check if the ray lies on the plane first
-
-		const distToPoint = plane.distanceToPoint( this.origin );
-
-		if ( distToPoint === 0 ) {
-
-			return true;
-
-		}
-
-		const denominator = plane.normal.dot( this.direction );
-
-		if ( denominator * distToPoint < 0 ) {
-
-			return true;
-
-		}
-
-		// ray origin is behind the plane (and is pointing behind it)
-
-		return false;
-
-	}
-
-	/**
-	 * Intersects this ray with the given bounding box, returning the intersection
-	 * point or `null` if there is no intersection.
-	 *
-	 * @param {Box3} box - The box to intersect.
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {?Vector3} The intersection point.
-	 */
-	intersectBox( box, target ) {
-
-		let tmin, tmax, tymin, tymax, tzmin, tzmax;
-
-		const invdirx = 1 / this.direction.x,
-			invdiry = 1 / this.direction.y,
-			invdirz = 1 / this.direction.z;
-
-		const origin = this.origin;
-
-		if ( invdirx >= 0 ) {
-
-			tmin = ( box.min.x - origin.x ) * invdirx;
-			tmax = ( box.max.x - origin.x ) * invdirx;
-
-		} else {
-
-			tmin = ( box.max.x - origin.x ) * invdirx;
-			tmax = ( box.min.x - origin.x ) * invdirx;
-
-		}
-
-		if ( invdiry >= 0 ) {
-
-			tymin = ( box.min.y - origin.y ) * invdiry;
-			tymax = ( box.max.y - origin.y ) * invdiry;
-
-		} else {
-
-			tymin = ( box.max.y - origin.y ) * invdiry;
-			tymax = ( box.min.y - origin.y ) * invdiry;
-
-		}
-
-		if ( ( tmin > tymax ) || ( tymin > tmax ) ) return null;
-
-		if ( tymin > tmin || isNaN( tmin ) ) tmin = tymin;
-
-		if ( tymax < tmax || isNaN( tmax ) ) tmax = tymax;
-
-		if ( invdirz >= 0 ) {
-
-			tzmin = ( box.min.z - origin.z ) * invdirz;
-			tzmax = ( box.max.z - origin.z ) * invdirz;
-
-		} else {
-
-			tzmin = ( box.max.z - origin.z ) * invdirz;
-			tzmax = ( box.min.z - origin.z ) * invdirz;
-
-		}
-
-		if ( ( tmin > tzmax ) || ( tzmin > tmax ) ) return null;
-
-		if ( tzmin > tmin || tmin !== tmin ) tmin = tzmin;
-
-		if ( tzmax < tmax || tmax !== tmax ) tmax = tzmax;
-
-		//return point closest to the ray (positive side)
-
-		if ( tmax < 0 ) return null;
-
-		return this.at( tmin >= 0 ? tmin : tmax, target );
-
-	}
-
-	/**
-	 * Returns `true` if this ray intersects with the given box.
-	 *
-	 * @param {Box3} box - The box to intersect.
-	 * @return {boolean} Whether this ray intersects with the given box or not.
-	 */
-	intersectsBox( box ) {
-
-		return this.intersectBox( box, _vector$a ) !== null;
-
-	}
-
-	/**
-	 * Intersects this ray with the given triangle, returning the intersection
-	 * point or `null` if there is no intersection.
-	 *
-	 * @param {Vector3} a - The first vertex of the triangle.
-	 * @param {Vector3} b - The second vertex of the triangle.
-	 * @param {Vector3} c - The third vertex of the triangle.
-	 * @param {boolean} backfaceCulling - Whether to use backface culling or not.
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {?Vector3} The intersection point.
-	 */
-	intersectTriangle( a, b, c, backfaceCulling, target ) {
-
-		// Compute the offset origin, edges, and normal.
-
-		// from https://github.com/pmjoniak/GeometricTools/blob/master/GTEngine/Include/Mathematics/GteIntrRay3Triangle3.h
-
-		_edge1.subVectors( b, a );
-		_edge2.subVectors( c, a );
-		_normal$1.crossVectors( _edge1, _edge2 );
-
-		// Solve Q + t*D = b1*E1 + b2*E2 (Q = kDiff, D = ray direction,
-		// E1 = kEdge1, E2 = kEdge2, N = Cross(E1,E2)) by
-		//   |Dot(D,N)|*b1 = sign(Dot(D,N))*Dot(D,Cross(Q,E2))
-		//   |Dot(D,N)|*b2 = sign(Dot(D,N))*Dot(D,Cross(E1,Q))
-		//   |Dot(D,N)|*t = -sign(Dot(D,N))*Dot(Q,N)
-		let DdN = this.direction.dot( _normal$1 );
-		let sign;
-
-		if ( DdN > 0 ) {
-
-			if ( backfaceCulling ) return null;
-			sign = 1;
-
-		} else if ( DdN < 0 ) {
-
-			sign = -1;
-			DdN = - DdN;
-
-		} else {
-
-			return null;
-
-		}
-
-		_diff.subVectors( this.origin, a );
-		const DdQxE2 = sign * this.direction.dot( _edge2.crossVectors( _diff, _edge2 ) );
-
-		// b1 < 0, no intersection
-		if ( DdQxE2 < 0 ) {
-
-			return null;
-
-		}
-
-		const DdE1xQ = sign * this.direction.dot( _edge1.cross( _diff ) );
-
-		// b2 < 0, no intersection
-		if ( DdE1xQ < 0 ) {
-
-			return null;
-
-		}
-
-		// b1+b2 > 1, no intersection
-		if ( DdQxE2 + DdE1xQ > DdN ) {
-
-			return null;
-
-		}
-
-		// Line intersects triangle, check if ray does.
-		const QdN = - sign * _diff.dot( _normal$1 );
-
-		// t < 0, no intersection
-		if ( QdN < 0 ) {
-
-			return null;
-
-		}
-
-		// Ray intersects triangle.
-		return this.at( QdN / DdN, target );
-
-	}
-
-	/**
-	 * Transforms this ray with the given 4x4 transformation matrix.
-	 *
-	 * @param {Matrix4} matrix4 - The transformation matrix.
-	 * @return {Ray} A reference to this ray.
-	 */
-	applyMatrix4( matrix4 ) {
-
-		this.origin.applyMatrix4( matrix4 );
-		this.direction.transformDirection( matrix4 );
-
-		return this;
-
-	}
-
-	/**
-	 * Returns `true` if this ray is equal with the given one.
-	 *
-	 * @param {Ray} ray - The ray to test for equality.
-	 * @return {boolean} Whether this ray is equal with the given one.
-	 */
-	equals( ray ) {
-
-		return ray.origin.equals( this.origin ) && ray.direction.equals( this.direction );
-
-	}
-
-	/**
-	 * Returns a new ray with copied values from this instance.
-	 *
-	 * @return {Ray} A clone of this instance.
 	 */
 	clone() {
 
@@ -67038,7 +66684,7 @@ class Euler {
 
 			case 'XYZ':
 
-				this._y = Math.asin( clamp$1( m13, -1, 1 ) );
+				this._y = Math.asin( clamp( m13, -1, 1 ) );
 
 				if ( Math.abs( m13 ) < 0.9999999 ) {
 
@@ -67056,7 +66702,7 @@ class Euler {
 
 			case 'YXZ':
 
-				this._x = Math.asin( - clamp$1( m23, -1, 1 ) );
+				this._x = Math.asin( - clamp( m23, -1, 1 ) );
 
 				if ( Math.abs( m23 ) < 0.9999999 ) {
 
@@ -67074,7 +66720,7 @@ class Euler {
 
 			case 'ZXY':
 
-				this._x = Math.asin( clamp$1( m32, -1, 1 ) );
+				this._x = Math.asin( clamp( m32, -1, 1 ) );
 
 				if ( Math.abs( m32 ) < 0.9999999 ) {
 
@@ -67092,7 +66738,7 @@ class Euler {
 
 			case 'ZYX':
 
-				this._y = Math.asin( - clamp$1( m31, -1, 1 ) );
+				this._y = Math.asin( - clamp( m31, -1, 1 ) );
 
 				if ( Math.abs( m31 ) < 0.9999999 ) {
 
@@ -67110,7 +66756,7 @@ class Euler {
 
 			case 'YZX':
 
-				this._z = Math.asin( clamp$1( m21, -1, 1 ) );
+				this._z = Math.asin( clamp( m21, -1, 1 ) );
 
 				if ( Math.abs( m21 ) < 0.9999999 ) {
 
@@ -67128,7 +66774,7 @@ class Euler {
 
 			case 'XZY':
 
-				this._z = Math.asin( - clamp$1( m12, -1, 1 ) );
+				this._z = Math.asin( - clamp( m12, -1, 1 ) );
 
 				if ( Math.abs( m12 ) < 0.9999999 ) {
 
@@ -69108,541 +68754,6 @@ Object3D.DEFAULT_MATRIX_AUTO_UPDATE = true;
  */
 Object3D.DEFAULT_MATRIX_WORLD_AUTO_UPDATE = true;
 
-const _v0$1 = /*@__PURE__*/ new Vector3();
-const _v1$3 = /*@__PURE__*/ new Vector3();
-const _v2$2 = /*@__PURE__*/ new Vector3();
-const _v3$2 = /*@__PURE__*/ new Vector3();
-
-const _vab = /*@__PURE__*/ new Vector3();
-const _vac = /*@__PURE__*/ new Vector3();
-const _vbc = /*@__PURE__*/ new Vector3();
-const _vap = /*@__PURE__*/ new Vector3();
-const _vbp = /*@__PURE__*/ new Vector3();
-const _vcp = /*@__PURE__*/ new Vector3();
-
-const _v40 = /*@__PURE__*/ new Vector4();
-const _v41 = /*@__PURE__*/ new Vector4();
-const _v42 = /*@__PURE__*/ new Vector4();
-
-/**
- * A geometric triangle as defined by three vectors representing its three corners.
- */
-class Triangle {
-
-	/**
-	 * Constructs a new triangle.
-	 *
-	 * @param {Vector3} [a=(0,0,0)] - The first corner of the triangle.
-	 * @param {Vector3} [b=(0,0,0)] - The second corner of the triangle.
-	 * @param {Vector3} [c=(0,0,0)] - The third corner of the triangle.
-	 */
-	constructor( a = new Vector3(), b = new Vector3(), c = new Vector3() ) {
-
-		/**
-		 * The first corner of the triangle.
-		 *
-		 * @type {Vector3}
-		 */
-		this.a = a;
-
-		/**
-		 * The second corner of the triangle.
-		 *
-		 * @type {Vector3}
-		 */
-		this.b = b;
-
-		/**
-		 * The third corner of the triangle.
-		 *
-		 * @type {Vector3}
-		 */
-		this.c = c;
-
-	}
-
-	/**
-	 * Computes the normal vector of a triangle.
-	 *
-	 * @param {Vector3} a - The first corner of the triangle.
-	 * @param {Vector3} b - The second corner of the triangle.
-	 * @param {Vector3} c - The third corner of the triangle.
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {Vector3} The triangle's normal.
-	 */
-	static getNormal( a, b, c, target ) {
-
-		target.subVectors( c, b );
-		_v0$1.subVectors( a, b );
-		target.cross( _v0$1 );
-
-		const targetLengthSq = target.lengthSq();
-		if ( targetLengthSq > 0 ) {
-
-			return target.multiplyScalar( 1 / Math.sqrt( targetLengthSq ) );
-
-		}
-
-		return target.set( 0, 0, 0 );
-
-	}
-
-	/**
-	 * Computes a barycentric coordinates from the given vector.
-	 * Returns `null` if the triangle is degenerate.
-	 *
-	 * @param {Vector3} point - A point in 3D space.
-	 * @param {Vector3} a - The first corner of the triangle.
-	 * @param {Vector3} b - The second corner of the triangle.
-	 * @param {Vector3} c - The third corner of the triangle.
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {?Vector3} The barycentric coordinates for the given point
-	 */
-	static getBarycoord( point, a, b, c, target ) {
-
-		// based on: http://www.blackpawn.com/texts/pointinpoly/default.html
-
-		_v0$1.subVectors( c, a );
-		_v1$3.subVectors( b, a );
-		_v2$2.subVectors( point, a );
-
-		const dot00 = _v0$1.dot( _v0$1 );
-		const dot01 = _v0$1.dot( _v1$3 );
-		const dot02 = _v0$1.dot( _v2$2 );
-		const dot11 = _v1$3.dot( _v1$3 );
-		const dot12 = _v1$3.dot( _v2$2 );
-
-		const denom = ( dot00 * dot11 - dot01 * dot01 );
-
-		// collinear or singular triangle
-		if ( denom === 0 ) {
-
-			target.set( 0, 0, 0 );
-			return null;
-
-		}
-
-		const invDenom = 1 / denom;
-		const u = ( dot11 * dot02 - dot01 * dot12 ) * invDenom;
-		const v = ( dot00 * dot12 - dot01 * dot02 ) * invDenom;
-
-		// barycentric coordinates must always sum to 1
-		return target.set( 1 - u - v, v, u );
-
-	}
-
-	/**
-	 * Returns `true` if the given point, when projected onto the plane of the
-	 * triangle, lies within the triangle.
-	 *
-	 * @param {Vector3} point - The point in 3D space to test.
-	 * @param {Vector3} a - The first corner of the triangle.
-	 * @param {Vector3} b - The second corner of the triangle.
-	 * @param {Vector3} c - The third corner of the triangle.
-	 * @return {boolean} Whether the given point, when projected onto the plane of the
-	 * triangle, lies within the triangle or not.
-	 */
-	static containsPoint( point, a, b, c ) {
-
-		// if the triangle is degenerate then we can't contain a point
-		if ( this.getBarycoord( point, a, b, c, _v3$2 ) === null ) {
-
-			return false;
-
-		}
-
-		return ( _v3$2.x >= 0 ) && ( _v3$2.y >= 0 ) && ( ( _v3$2.x + _v3$2.y ) <= 1 );
-
-	}
-
-	/**
-	 * Computes the value barycentrically interpolated for the given point on the
-	 * triangle. Returns `null` if the triangle is degenerate.
-	 *
-	 * @param {Vector3} point - Position of interpolated point.
-	 * @param {Vector3} p1 - The first corner of the triangle.
-	 * @param {Vector3} p2 - The second corner of the triangle.
-	 * @param {Vector3} p3 - The third corner of the triangle.
-	 * @param {Vector3} v1 - Value to interpolate of first vertex.
-	 * @param {Vector3} v2 - Value to interpolate of second vertex.
-	 * @param {Vector3} v3 - Value to interpolate of third vertex.
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {?Vector3} The interpolated value.
-	 */
-	static getInterpolation( point, p1, p2, p3, v1, v2, v3, target ) {
-
-		if ( this.getBarycoord( point, p1, p2, p3, _v3$2 ) === null ) {
-
-			target.x = 0;
-			target.y = 0;
-			if ( 'z' in target ) target.z = 0;
-			if ( 'w' in target ) target.w = 0;
-			return null;
-
-		}
-
-		target.setScalar( 0 );
-		target.addScaledVector( v1, _v3$2.x );
-		target.addScaledVector( v2, _v3$2.y );
-		target.addScaledVector( v3, _v3$2.z );
-
-		return target;
-
-	}
-
-	/**
-	 * Computes the value barycentrically interpolated for the given attribute and indices.
-	 *
-	 * @param {BufferAttribute} attr - The attribute to interpolate.
-	 * @param {number} i1 - Index of first vertex.
-	 * @param {number} i2 - Index of second vertex.
-	 * @param {number} i3 - Index of third vertex.
-	 * @param {Vector3} barycoord - The barycoordinate value to use to interpolate.
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {Vector3} The interpolated attribute value.
-	 */
-	static getInterpolatedAttribute( attr, i1, i2, i3, barycoord, target ) {
-
-		_v40.setScalar( 0 );
-		_v41.setScalar( 0 );
-		_v42.setScalar( 0 );
-
-		_v40.fromBufferAttribute( attr, i1 );
-		_v41.fromBufferAttribute( attr, i2 );
-		_v42.fromBufferAttribute( attr, i3 );
-
-		target.setScalar( 0 );
-		target.addScaledVector( _v40, barycoord.x );
-		target.addScaledVector( _v41, barycoord.y );
-		target.addScaledVector( _v42, barycoord.z );
-
-		return target;
-
-	}
-
-	/**
-	 * Returns `true` if the triangle is oriented towards the given direction.
-	 *
-	 * @param {Vector3} a - The first corner of the triangle.
-	 * @param {Vector3} b - The second corner of the triangle.
-	 * @param {Vector3} c - The third corner of the triangle.
-	 * @param {Vector3} direction - The (normalized) direction vector.
-	 * @return {boolean} Whether the triangle is oriented towards the given direction or not.
-	 */
-	static isFrontFacing( a, b, c, direction ) {
-
-		_v0$1.subVectors( c, b );
-		_v1$3.subVectors( a, b );
-
-		// strictly front facing
-		return ( _v0$1.cross( _v1$3 ).dot( direction ) < 0 ) ? true : false;
-
-	}
-
-	/**
-	 * Sets the triangle's vertices by copying the given values.
-	 *
-	 * @param {Vector3} a - The first corner of the triangle.
-	 * @param {Vector3} b - The second corner of the triangle.
-	 * @param {Vector3} c - The third corner of the triangle.
-	 * @return {Triangle} A reference to this triangle.
-	 */
-	set( a, b, c ) {
-
-		this.a.copy( a );
-		this.b.copy( b );
-		this.c.copy( c );
-
-		return this;
-
-	}
-
-	/**
-	 * Sets the triangle's vertices by copying the given array values.
-	 *
-	 * @param {Array<Vector3>} points - An array with 3D points.
-	 * @param {number} i0 - The array index representing the first corner of the triangle.
-	 * @param {number} i1 - The array index representing the second corner of the triangle.
-	 * @param {number} i2 - The array index representing the third corner of the triangle.
-	 * @return {Triangle} A reference to this triangle.
-	 */
-	setFromPointsAndIndices( points, i0, i1, i2 ) {
-
-		this.a.copy( points[ i0 ] );
-		this.b.copy( points[ i1 ] );
-		this.c.copy( points[ i2 ] );
-
-		return this;
-
-	}
-
-	/**
-	 * Sets the triangle's vertices by copying the given attribute values.
-	 *
-	 * @param {BufferAttribute} attribute - A buffer attribute with 3D points data.
-	 * @param {number} i0 - The attribute index representing the first corner of the triangle.
-	 * @param {number} i1 - The attribute index representing the second corner of the triangle.
-	 * @param {number} i2 - The attribute index representing the third corner of the triangle.
-	 * @return {Triangle} A reference to this triangle.
-	 */
-	setFromAttributeAndIndices( attribute, i0, i1, i2 ) {
-
-		this.a.fromBufferAttribute( attribute, i0 );
-		this.b.fromBufferAttribute( attribute, i1 );
-		this.c.fromBufferAttribute( attribute, i2 );
-
-		return this;
-
-	}
-
-	/**
-	 * Returns a new triangle with copied values from this instance.
-	 *
-	 * @return {Triangle} A clone of this instance.
-	 */
-	clone() {
-
-		return new this.constructor().copy( this );
-
-	}
-
-	/**
-	 * Copies the values of the given triangle to this instance.
-	 *
-	 * @param {Triangle} triangle - The triangle to copy.
-	 * @return {Triangle} A reference to this triangle.
-	 */
-	copy( triangle ) {
-
-		this.a.copy( triangle.a );
-		this.b.copy( triangle.b );
-		this.c.copy( triangle.c );
-
-		return this;
-
-	}
-
-	/**
-	 * Computes the area of the triangle.
-	 *
-	 * @return {number} The triangle's area.
-	 */
-	getArea() {
-
-		_v0$1.subVectors( this.c, this.b );
-		_v1$3.subVectors( this.a, this.b );
-
-		return _v0$1.cross( _v1$3 ).length() * 0.5;
-
-	}
-
-	/**
-	 * Computes the midpoint of the triangle.
-	 *
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {Vector3} The triangle's midpoint.
-	 */
-	getMidpoint( target ) {
-
-		return target.addVectors( this.a, this.b ).add( this.c ).multiplyScalar( 1 / 3 );
-
-	}
-
-	/**
-	 * Computes the normal of the triangle.
-	 *
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {Vector3} The triangle's normal.
-	 */
-	getNormal( target ) {
-
-		return Triangle.getNormal( this.a, this.b, this.c, target );
-
-	}
-
-	/**
-	 * Computes a plane the triangle lies within.
-	 *
-	 * @param {Plane} target - The target vector that is used to store the method's result.
-	 * @return {Plane} The plane the triangle lies within.
-	 */
-	getPlane( target ) {
-
-		return target.setFromCoplanarPoints( this.a, this.b, this.c );
-
-	}
-
-	/**
-	 * Computes a barycentric coordinates from the given vector.
-	 * Returns `null` if the triangle is degenerate.
-	 *
-	 * @param {Vector3} point - A point in 3D space.
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {?Vector3} The barycentric coordinates for the given point
-	 */
-	getBarycoord( point, target ) {
-
-		return Triangle.getBarycoord( point, this.a, this.b, this.c, target );
-
-	}
-
-	/**
-	 * Computes the value barycentrically interpolated for the given point on the
-	 * triangle. Returns `null` if the triangle is degenerate.
-	 *
-	 * @param {Vector3} point - Position of interpolated point.
-	 * @param {Vector3} v1 - Value to interpolate of first vertex.
-	 * @param {Vector3} v2 - Value to interpolate of second vertex.
-	 * @param {Vector3} v3 - Value to interpolate of third vertex.
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {?Vector3} The interpolated value.
-	 */
-	getInterpolation( point, v1, v2, v3, target ) {
-
-		return Triangle.getInterpolation( point, this.a, this.b, this.c, v1, v2, v3, target );
-
-	}
-
-	/**
-	 * Returns `true` if the given point, when projected onto the plane of the
-	 * triangle, lies within the triangle.
-	 *
-	 * @param {Vector3} point - The point in 3D space to test.
-	 * @return {boolean} Whether the given point, when projected onto the plane of the
-	 * triangle, lies within the triangle or not.
-	 */
-	containsPoint( point ) {
-
-		return Triangle.containsPoint( point, this.a, this.b, this.c );
-
-	}
-
-	/**
-	 * Returns `true` if the triangle is oriented towards the given direction.
-	 *
-	 * @param {Vector3} direction - The (normalized) direction vector.
-	 * @return {boolean} Whether the triangle is oriented towards the given direction or not.
-	 */
-	isFrontFacing( direction ) {
-
-		return Triangle.isFrontFacing( this.a, this.b, this.c, direction );
-
-	}
-
-	/**
-	 * Returns `true` if this triangle intersects with the given box.
-	 *
-	 * @param {Box3} box - The box to intersect.
-	 * @return {boolean} Whether this triangle intersects with the given box or not.
-	 */
-	intersectsBox( box ) {
-
-		return box.intersectsTriangle( this );
-
-	}
-
-	/**
-	 * Returns the closest point on the triangle to the given point.
-	 *
-	 * @param {Vector3} p - The point to compute the closest point for.
-	 * @param {Vector3} target - The target vector that is used to store the method's result.
-	 * @return {Vector3} The closest point on the triangle.
-	 */
-	closestPointToPoint( p, target ) {
-
-		const a = this.a, b = this.b, c = this.c;
-		let v, w;
-
-		// algorithm thanks to Real-Time Collision Detection by Christer Ericson,
-		// published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.,
-		// under the accompanying license; see chapter 5.1.5 for detailed explanation.
-		// basically, we're distinguishing which of the voronoi regions of the triangle
-		// the point lies in with the minimum amount of redundant computation.
-
-		_vab.subVectors( b, a );
-		_vac.subVectors( c, a );
-		_vap.subVectors( p, a );
-		const d1 = _vab.dot( _vap );
-		const d2 = _vac.dot( _vap );
-		if ( d1 <= 0 && d2 <= 0 ) {
-
-			// vertex region of A; barycentric coords (1, 0, 0)
-			return target.copy( a );
-
-		}
-
-		_vbp.subVectors( p, b );
-		const d3 = _vab.dot( _vbp );
-		const d4 = _vac.dot( _vbp );
-		if ( d3 >= 0 && d4 <= d3 ) {
-
-			// vertex region of B; barycentric coords (0, 1, 0)
-			return target.copy( b );
-
-		}
-
-		const vc = d1 * d4 - d3 * d2;
-		if ( vc <= 0 && d1 >= 0 && d3 <= 0 ) {
-
-			v = d1 / ( d1 - d3 );
-			// edge region of AB; barycentric coords (1-v, v, 0)
-			return target.copy( a ).addScaledVector( _vab, v );
-
-		}
-
-		_vcp.subVectors( p, c );
-		const d5 = _vab.dot( _vcp );
-		const d6 = _vac.dot( _vcp );
-		if ( d6 >= 0 && d5 <= d6 ) {
-
-			// vertex region of C; barycentric coords (0, 0, 1)
-			return target.copy( c );
-
-		}
-
-		const vb = d5 * d2 - d1 * d6;
-		if ( vb <= 0 && d2 >= 0 && d6 <= 0 ) {
-
-			w = d2 / ( d2 - d6 );
-			// edge region of AC; barycentric coords (1-w, 0, w)
-			return target.copy( a ).addScaledVector( _vac, w );
-
-		}
-
-		const va = d3 * d6 - d5 * d4;
-		if ( va <= 0 && ( d4 - d3 ) >= 0 && ( d5 - d6 ) >= 0 ) {
-
-			_vbc.subVectors( c, b );
-			w = ( d4 - d3 ) / ( ( d4 - d3 ) + ( d5 - d6 ) );
-			// edge region of BC; barycentric coords (0, 1-w, w)
-			return target.copy( b ).addScaledVector( _vbc, w ); // edge region of BC
-
-		}
-
-		// face region
-		const denom = 1 / ( va + vb + vc );
-		// u = va * denom
-		v = vb * denom;
-		w = vc * denom;
-
-		return target.copy( a ).addScaledVector( _vab, v ).addScaledVector( _vac, w );
-
-	}
-
-	/**
-	 * Returns `true` if this triangle is equal with the given one.
-	 *
-	 * @param {Triangle} triangle - The triangle to test for equality.
-	 * @return {boolean} Whether this triangle is equal with the given one.
-	 */
-	equals( triangle ) {
-
-		return triangle.a.equals( this.a ) && triangle.b.equals( this.b ) && triangle.c.equals( this.c );
-
-	}
-
-}
-
 const _colorKeywords = { 'aliceblue': 0xF0F8FF, 'antiquewhite': 0xFAEBD7, 'aqua': 0x00FFFF, 'aquamarine': 0x7FFFD4, 'azure': 0xF0FFFF,
 	'beige': 0xF5F5DC, 'bisque': 0xFFE4C4, 'black': 0x000000, 'blanchedalmond': 0xFFEBCD, 'blue': 0x0000FF, 'blueviolet': 0x8A2BE2,
 	'brown': 0xA52A2A, 'burlywood': 0xDEB887, 'cadetblue': 0x5F9EA0, 'chartreuse': 0x7FFF00, 'chocolate': 0xD2691E, 'coral': 0xFF7F50,
@@ -69889,8 +69000,8 @@ class Color {
 
 		// h,s,l ranges are in 0.0 - 1.0
 		h = euclideanModulo( h, 1 );
-		s = clamp$1( s, 0, 1 );
-		l = clamp$1( l, 0, 1 );
+		s = clamp( s, 0, 1 );
+		l = clamp( l, 0, 1 );
 
 		if ( s === 0 ) {
 
@@ -70180,7 +69291,7 @@ class Color {
 
 		ColorManagement.fromWorkingColorSpace( _color.copy( this ), colorSpace );
 
-		return Math.round( clamp$1( _color.r * 255, 0, 255 ) ) * 65536 + Math.round( clamp$1( _color.g * 255, 0, 255 ) ) * 256 + Math.round( clamp$1( _color.b * 255, 0, 255 ) );
+		return Math.round( clamp( _color.r * 255, 0, 255 ) ) * 65536 + Math.round( clamp( _color.g * 255, 0, 255 ) ) * 256 + Math.round( clamp( _color.b * 255, 0, 255 ) );
 
 	}
 
@@ -70603,1243 +69714,6 @@ const _color = /*@__PURE__*/ new Color();
  * @type {Object}
  */
 Color.NAMES = _colorKeywords;
-
-let _materialId = 0;
-
-/**
- * Abstract base class for materials.
- *
- * Materials define the appearance of renderable 3D objects.
- *
- * @abstract
- * @augments EventDispatcher
- */
-class Material extends EventDispatcher {
-
-	/**
-	 * Constructs a new material.
-	 */
-	constructor() {
-
-		super();
-
-		/**
-		 * This flag can be used for type testing.
-		 *
-		 * @type {boolean}
-		 * @readonly
-		 * @default true
-		 */
-		this.isMaterial = true;
-
-		/**
-		 * The ID of the material.
-		 *
-		 * @name Material#id
-		 * @type {number}
-		 * @readonly
-		 */
-		Object.defineProperty( this, 'id', { value: _materialId ++ } );
-
-		/**
-		 * The UUID of the material.
-		 *
-		 * @type {string}
-		 * @readonly
-		 */
-		this.uuid = generateUUID();
-
-		/**
-		 * The name of the material.
-		 *
-		 * @type {string}
-		 */
-		this.name = '';
-
-		/**
-		 * The type property is used for detecting the object type
-		 * in context of serialization/deserialization.
-		 *
-		 * @type {string}
-		 * @readonly
-		 */
-		this.type = 'Material';
-
-		/**
-		 * Defines the blending type of the material.
-		 *
-		 * It must be set to `CustomBlending` if custom blending properties like
-		 * {@link Material#blendSrc}, {@link Material#blendDst} or {@link Material#blendEquation}
-		 * should have any effect.
-		 *
-		 * @type {(NoBlending|NormalBlending|AdditiveBlending|SubtractiveBlending|MultiplyBlending|CustomBlending)}
-		 * @default NormalBlending
-		 */
-		this.blending = NormalBlending;
-
-		/**
-		 * Defines which side of faces will be rendered - front, back or both.
-		 *
-		 * @type {(FrontSide|BackSide|DoubleSide)}
-		 * @default FrontSide
-		 */
-		this.side = FrontSide;
-
-		/**
-		 * If set to `true`, vertex colors should be used.
-		 *
-		 * The engine supports RGB and RGBA vertex colors depending on whether a three (RGB) or
-		 * four (RGBA) component color buffer attribute is used.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.vertexColors = false;
-
-		/**
-		 * Defines how transparent the material is.
-		 * A value of `0.0` indicates fully transparent, `1.0` is fully opaque.
-		 *
-		 * If the {@link Material#transparent} is not set to `true`,
-		 * the material will remain fully opaque and this value will only affect its color.
-		 *
-		 * @type {number}
-		 * @default 1
-		 */
-		this.opacity = 1;
-
-		/**
-		 * Defines whether this material is transparent. This has an effect on
-		 * rendering as transparent objects need special treatment and are rendered
-		 * after non-transparent objects.
-		 *
-		 * When set to true, the extent to which the material is transparent is
-		 * controlled by {@link Material#opacity}.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.transparent = false;
-
-		/**
-		 * Enables alpha hashed transparency, an alternative to {@link Material#transparent} or
-		 * {@link Material#alphaTest}. The material will not be rendered if opacity is lower than
-		 * a random threshold. Randomization introduces some grain or noise, but approximates alpha
-		 * blending without the associated problems of sorting. Using TAA can reduce the resulting noise.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.alphaHash = false;
-
-		/**
-		 * Defines the blending source factor.
-		 *
-		 * @type {(ZeroFactor|OneFactor|SrcColorFactor|OneMinusSrcColorFactor|SrcAlphaFactor|OneMinusSrcAlphaFactor|DstAlphaFactor|OneMinusDstAlphaFactor|DstColorFactor|OneMinusDstColorFactor|SrcAlphaSaturateFactor|ConstantColorFactor|OneMinusConstantColorFactor|ConstantAlphaFactor|OneMinusConstantAlphaFactor)}
-		 * @default SrcAlphaFactor
-		 */
-		this.blendSrc = SrcAlphaFactor;
-
-		/**
-		 * Defines the blending destination factor.
-		 *
-		 * @type {(ZeroFactor|OneFactor|SrcColorFactor|OneMinusSrcColorFactor|SrcAlphaFactor|OneMinusSrcAlphaFactor|DstAlphaFactor|OneMinusDstAlphaFactor|DstColorFactor|OneMinusDstColorFactor|SrcAlphaSaturateFactor|ConstantColorFactor|OneMinusConstantColorFactor|ConstantAlphaFactor|OneMinusConstantAlphaFactor)}
-		 * @default OneMinusSrcAlphaFactor
-		 */
-		this.blendDst = OneMinusSrcAlphaFactor;
-
-		/**
-		 * Defines the blending equation.
-		 *
-		 * @type {(AddEquation|SubtractEquation|ReverseSubtractEquation|MinEquation|MaxEquation)}
-		 * @default OneMinusSrcAlphaFactor
-		 */
-		this.blendEquation = AddEquation;
-
-		/**
-		 * Defines the blending source alpha factor.
-		 *
-		 * @type {?(ZeroFactor|OneFactor|SrcColorFactor|OneMinusSrcColorFactor|SrcAlphaFactor|OneMinusSrcAlphaFactor|DstAlphaFactor|OneMinusDstAlphaFactor|DstColorFactor|OneMinusDstColorFactor|SrcAlphaSaturateFactor|ConstantColorFactor|OneMinusConstantColorFactor|ConstantAlphaFactor|OneMinusConstantAlphaFactor)}
-		 * @default null
-		 */
-		this.blendSrcAlpha = null;
-
-		/**
-		 * Defines the blending destination alpha factor.
-		 *
-		 * @type {?(ZeroFactor|OneFactor|SrcColorFactor|OneMinusSrcColorFactor|SrcAlphaFactor|OneMinusSrcAlphaFactor|DstAlphaFactor|OneMinusDstAlphaFactor|DstColorFactor|OneMinusDstColorFactor|SrcAlphaSaturateFactor|ConstantColorFactor|OneMinusConstantColorFactor|ConstantAlphaFactor|OneMinusConstantAlphaFactor)}
-		 * @default null
-		 */
-		this.blendDstAlpha = null;
-
-		/**
-		 * Defines the blending equation of the alpha channel.
-		 *
-		 * @type {(AddEquation|SubtractEquation|ReverseSubtractEquation|MinEquation|MaxEquation)}
-		 * @default OneMinusSrcAlphaFactor
-		 */
-		this.blendEquationAlpha = null;
-
-		/**
-		 * Represents the RGB values of the constant blend color.
-		 *
-		 * This property has only an effect when using custom blending with `ConstantColor` or `OneMinusConstantColor`.
-		 *
-		 * @type {Color}
-		 * @default (0,0,0)
-		 */
-		this.blendColor = new Color( 0, 0, 0 );
-
-		/**
-		 * Represents the alpha value of the constant blend color.
-		 *
-		 * This property has only an effect when using custom blending with `ConstantAlpha` or `OneMinusConstantAlpha`.
-		 *
-		 * @type {number}
-		 * @default 0
-		 */
-		this.blendAlpha = 0;
-
-		/**
-		 * Defines the depth function.
-		 *
-		 * @type {(NeverDepth|AlwaysDepth|LessDepth|LessEqualDepth|EqualDepth|GreaterEqualDepth|GreaterDepth|NotEqualDepth)}
-		 * @default LessEqualDepth
-		 */
-		this.depthFunc = LessEqualDepth;
-
-		/**
-		 * Whether to have depth test enabled when rendering this material.
-		 * When the depth test is disabled, the depth write will also be implicitly disabled.
-		 *
-		 * @type {boolean}
-		 * @default true
-		 */
-		this.depthTest = true;
-
-		/**
-		 * Whether rendering this material has any effect on the depth buffer.
-		 *
-		 * When drawing 2D overlays it can be useful to disable the depth writing in
-		 * order to layer several things together without creating z-index artifacts.
-		 *
-		 * @type {boolean}
-		 * @default true
-		 */
-		this.depthWrite = true;
-
-		/**
-		 * The bit mask to use when writing to the stencil buffer.
-		 *
-		 * @type {number}
-		 * @default 0xff
-		 */
-		this.stencilWriteMask = 0xff;
-
-		/**
-		 * The stencil comparison function to use.
-		 *
-		 * @type {NeverStencilFunc|LessStencilFunc|EqualStencilFunc|LessEqualStencilFunc|GreaterStencilFunc|NotEqualStencilFunc|GreaterEqualStencilFunc|AlwaysStencilFunc}
-		 * @default AlwaysStencilFunc
-		 */
-		this.stencilFunc = AlwaysStencilFunc;
-
-		/**
-		 * The value to use when performing stencil comparisons or stencil operations.
-		 *
-		 * @type {number}
-		 * @default 0
-		 */
-		this.stencilRef = 0;
-
-		/**
-		 * The bit mask to use when comparing against the stencil buffer.
-		 *
-		 * @type {number}
-		 * @default 0xff
-		 */
-		this.stencilFuncMask = 0xff;
-
-		/**
-		 * Which stencil operation to perform when the comparison function returns `false`.
-		 *
-		 * @type {ZeroStencilOp|KeepStencilOp|ReplaceStencilOp|IncrementStencilOp|DecrementStencilOp|IncrementWrapStencilOp|DecrementWrapStencilOp|InvertStencilOp}
-		 * @default KeepStencilOp
-		 */
-		this.stencilFail = KeepStencilOp;
-
-		/**
-		 * Which stencil operation to perform when the comparison function returns
-		 * `true` but the depth test fails.
-		 *
-		 * @type {ZeroStencilOp|KeepStencilOp|ReplaceStencilOp|IncrementStencilOp|DecrementStencilOp|IncrementWrapStencilOp|DecrementWrapStencilOp|InvertStencilOp}
-		 * @default KeepStencilOp
-		 */
-		this.stencilZFail = KeepStencilOp;
-
-		/**
-		 * Which stencil operation to perform when the comparison function returns
-		 * `true` and the depth test passes.
-		 *
-		 * @type {ZeroStencilOp|KeepStencilOp|ReplaceStencilOp|IncrementStencilOp|DecrementStencilOp|IncrementWrapStencilOp|DecrementWrapStencilOp|InvertStencilOp}
-		 * @default KeepStencilOp
-		 */
-		this.stencilZPass = KeepStencilOp;
-
-		/**
-		 * Whether stencil operations are performed against the stencil buffer. In
-		 * order to perform writes or comparisons against the stencil buffer this
-		 * value must be `true`.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.stencilWrite = false;
-
-		/**
-		 * User-defined clipping planes specified as THREE.Plane objects in world
-		 * space. These planes apply to the objects this material is attached to.
-		 * Points in space whose signed distance to the plane is negative are clipped
-		 * (not rendered). This requires {@link WebGLRenderer#localClippingEnabled} to
-		 * be `true`.
-		 *
-		 * @type {?Array<Plane>}
-		 * @default null
-		 */
-		this.clippingPlanes = null;
-
-		/**
-		 * Changes the behavior of clipping planes so that only their intersection is
-		 * clipped, rather than their union.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.clipIntersection = false;
-
-		/**
-		 * Defines whether to clip shadows according to the clipping planes specified
-		 * on this material.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.clipShadows = false;
-
-		/**
-		 * Defines which side of faces cast shadows. If `null`, the side casting shadows
-		 * is determined as follows:
-		 *
-		 * - When {@link Material#side} is set to `FrontSide`, the back side cast shadows.
-		 * - When {@link Material#side} is set to `BackSide`, the front side cast shadows.
-		 * - When {@link Material#side} is set to `DoubleSide`, both sides cast shadows.
-		 *
-		 * @type {?(FrontSide|BackSide|DoubleSide)}
-		 * @default null
-		 */
-		this.shadowSide = null;
-
-		/**
-		 * Whether to render the material's color.
-		 *
-		 * This can be used in conjunction with {@link Object3D#renderOder} to create invisible
-		 * objects that occlude other objects.
-		 *
-		 * @type {boolean}
-		 * @default true
-		 */
-		this.colorWrite = true;
-
-		/**
-		 * Override the renderer's default precision for this material.
-		 *
-		 * @type {?('highp'|'mediump'|'lowp')}
-		 * @default null
-		 */
-		this.precision = null;
-
-		/**
-		 * Whether to use polygon offset or not. When enabled, each fragment's depth value will
-		 * be offset after it is interpolated from the depth values of the appropriate vertices.
-		 * The offset is added before the depth test is performed and before the value is written
-		 * into the depth buffer.
-		 *
-		 * Can be useful for rendering hidden-line images, for applying decals to surfaces, and for
-		 * rendering solids with highlighted edges.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.polygonOffset = false;
-
-		/**
-		 * Specifies a scale factor that is used to create a variable depth offset for each polygon.
-		 *
-		 * @type {number}
-		 * @default 0
-		 */
-		this.polygonOffsetFactor = 0;
-
-		/**
-		 * Is multiplied by an implementation-specific value to create a constant depth offset.
-		 *
-		 * @type {number}
-		 * @default 0
-		 */
-		this.polygonOffsetUnits = 0;
-
-		/**
-		 * Whether to apply dithering to the color to remove the appearance of banding.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.dithering = false;
-
-		/**
-		 * Whether alpha to coverage should be enabled or not. Can only be used with MSAA-enabled contexts
-		 * (meaning when the renderer was created with *antialias* parameter set to `true`). Enabling this
-		 * will smooth aliasing on clip plane edges and alphaTest-clipped edges.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.alphaToCoverage = false;
-
-		/**
-		 * Whether to premultiply the alpha (transparency) value.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.premultipliedAlpha = false;
-
-		/**
-		 * Whether double-sided, transparent objects should be rendered with a single pass or not.
-		 *
-		 * The engine renders double-sided, transparent objects with two draw calls (back faces first,
-		 * then front faces) to mitigate transparency artifacts. There are scenarios however where this
-		 * approach produces no quality gains but still doubles draw calls e.g. when rendering flat
-		 * vegetation like grass sprites. In these cases, set the `forceSinglePass` flag to `true` to
-		 * disable the two pass rendering to avoid performance issues.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.forceSinglePass = false;
-
-		/**
-		 * Defines whether 3D objects using this material are visible.
-		 *
-		 * @type {boolean}
-		 * @default true
-		 */
-		this.visible = true;
-
-		/**
-		 * Defines whether this material is tone mapped according to the renderer's tone mapping setting.
-		 *
-		 * It is ignored when rendering to a render target or using post processing or when using
-		 * `WebGPURenderer`. In all these cases, all materials are honored by tone mapping.
-		 *
-		 * @type {boolean}
-		 * @default true
-		 */
-		this.toneMapped = true;
-
-		/**
-		 * An object that can be used to store custom data about the Material. It
-		 * should not hold references to functions as these will not be cloned.
-		 *
-		 * @type {Object}
-		 */
-		this.userData = {};
-
-		/**
-		 * This starts at `0` and counts how many times {@link Material#needsUpdate} is set to `true`.
-		 *
-		 * @type {number}
-		 * @readonly
-		 * @default 0
-		 */
-		this.version = 0;
-
-		this._alphaTest = 0;
-
-	}
-
-	/**
-	 * Sets the alpha value to be used when running an alpha test. The material
-	 * will not be rendered if the opacity is lower than this value.
-	 *
-	 * @type {number}
-	 * @readonly
-	 * @default 0
-	 */
-	get alphaTest() {
-
-		return this._alphaTest;
-
-	}
-
-	set alphaTest( value ) {
-
-		if ( this._alphaTest > 0 !== value > 0 ) {
-
-			this.version ++;
-
-		}
-
-		this._alphaTest = value;
-
-	}
-
-	/**
-	 * An optional callback that is executed immediately before the material is used to render a 3D object.
-	 *
-	 * This method can only be used when rendering with {@link WebGLRenderer}.
-	 *
-	 * @param {WebGLRenderer} renderer - The renderer.
-	 * @param {Scene} scene - The scene.
-	 * @param {Camera} camera - The camera that is used to render the scene.
-	 * @param {BufferGeometry} geometry - The 3D object's geometry.
-	 * @param {Object3D} object - The 3D object.
-	 * @param {Object} group - The geometry group data.
-	 */
-	onBeforeRender( /* renderer, scene, camera, geometry, object, group */ ) {}
-
-	/**
-	 * An optional callback that is executed immediately before the shader
-	 * program is compiled. This function is called with the shader source code
-	 * as a parameter. Useful for the modification of built-in materials.
-	 *
-	 * This method can only be used when rendering with {@link WebGLRenderer}. The
-	 * recommended approach when customizing materials is to use `WebGPURenderer` with the new
-	 * Node Material system and [TSL]{@link https://github.com/mrdoob/three.js/wiki/Three.js-Shading-Language}.
-	 *
-	 * @param {{vertexShader:string,fragmentShader:string,uniforms:Object}} shaderobject - The object holds the uniforms and the vertex and fragment shader source.
-	 * @param {WebGLRenderer} renderer - A reference to the renderer.
-	 */
-	onBeforeCompile( /* shaderobject, renderer */ ) {}
-
-	/**
-	 * In case {@link Material#onBeforeCompile} is used, this callback can be used to identify
-	 * values of settings used in `onBeforeCompile()`, so three.js can reuse a cached
-	 * shader or recompile the shader for this material as needed.
-	 *
-	 * This method can only be used when rendering with {@link WebGLRenderer}.
-	 *
-	 * @return {string} The custom program cache key.
-	 */
-	customProgramCacheKey() {
-
-		return this.onBeforeCompile.toString();
-
-	}
-
-	/**
-	 * This method can be used to set default values from parameter objects.
-	 * It is a generic implementation so it can be used with different types
-	 * of materials.
-	 *
-	 * @param {Object} [values] - The material values to set.
-	 */
-	setValues( values ) {
-
-		if ( values === undefined ) return;
-
-		for ( const key in values ) {
-
-			const newValue = values[ key ];
-
-			if ( newValue === undefined ) {
-
-				console.warn( `THREE.Material: parameter '${ key }' has value of undefined.` );
-				continue;
-
-			}
-
-			const currentValue = this[ key ];
-
-			if ( currentValue === undefined ) {
-
-				console.warn( `THREE.Material: '${ key }' is not a property of THREE.${ this.type }.` );
-				continue;
-
-			}
-
-			if ( currentValue && currentValue.isColor ) {
-
-				currentValue.set( newValue );
-
-			} else if ( ( currentValue && currentValue.isVector3 ) && ( newValue && newValue.isVector3 ) ) {
-
-				currentValue.copy( newValue );
-
-			} else {
-
-				this[ key ] = newValue;
-
-			}
-
-		}
-
-	}
-
-	/**
-	 * Serializes the material into JSON.
-	 *
-	 * @param {?(Object|string)} meta - An optional value holding meta information about the serialization.
-	 * @return {Object} A JSON object representing the serialized material.
-	 * @see {@link ObjectLoader#parse}
-	 */
-	toJSON( meta ) {
-
-		const isRootObject = ( meta === undefined || typeof meta === 'string' );
-
-		if ( isRootObject ) {
-
-			meta = {
-				textures: {},
-				images: {}
-			};
-
-		}
-
-		const data = {
-			metadata: {
-				version: 4.6,
-				type: 'Material',
-				generator: 'Material.toJSON'
-			}
-		};
-
-		// standard Material serialization
-		data.uuid = this.uuid;
-		data.type = this.type;
-
-		if ( this.name !== '' ) data.name = this.name;
-
-		if ( this.color && this.color.isColor ) data.color = this.color.getHex();
-
-		if ( this.roughness !== undefined ) data.roughness = this.roughness;
-		if ( this.metalness !== undefined ) data.metalness = this.metalness;
-
-		if ( this.sheen !== undefined ) data.sheen = this.sheen;
-		if ( this.sheenColor && this.sheenColor.isColor ) data.sheenColor = this.sheenColor.getHex();
-		if ( this.sheenRoughness !== undefined ) data.sheenRoughness = this.sheenRoughness;
-		if ( this.emissive && this.emissive.isColor ) data.emissive = this.emissive.getHex();
-		if ( this.emissiveIntensity !== undefined && this.emissiveIntensity !== 1 ) data.emissiveIntensity = this.emissiveIntensity;
-
-		if ( this.specular && this.specular.isColor ) data.specular = this.specular.getHex();
-		if ( this.specularIntensity !== undefined ) data.specularIntensity = this.specularIntensity;
-		if ( this.specularColor && this.specularColor.isColor ) data.specularColor = this.specularColor.getHex();
-		if ( this.shininess !== undefined ) data.shininess = this.shininess;
-		if ( this.clearcoat !== undefined ) data.clearcoat = this.clearcoat;
-		if ( this.clearcoatRoughness !== undefined ) data.clearcoatRoughness = this.clearcoatRoughness;
-
-		if ( this.clearcoatMap && this.clearcoatMap.isTexture ) {
-
-			data.clearcoatMap = this.clearcoatMap.toJSON( meta ).uuid;
-
-		}
-
-		if ( this.clearcoatRoughnessMap && this.clearcoatRoughnessMap.isTexture ) {
-
-			data.clearcoatRoughnessMap = this.clearcoatRoughnessMap.toJSON( meta ).uuid;
-
-		}
-
-		if ( this.clearcoatNormalMap && this.clearcoatNormalMap.isTexture ) {
-
-			data.clearcoatNormalMap = this.clearcoatNormalMap.toJSON( meta ).uuid;
-			data.clearcoatNormalScale = this.clearcoatNormalScale.toArray();
-
-		}
-
-		if ( this.dispersion !== undefined ) data.dispersion = this.dispersion;
-
-		if ( this.iridescence !== undefined ) data.iridescence = this.iridescence;
-		if ( this.iridescenceIOR !== undefined ) data.iridescenceIOR = this.iridescenceIOR;
-		if ( this.iridescenceThicknessRange !== undefined ) data.iridescenceThicknessRange = this.iridescenceThicknessRange;
-
-		if ( this.iridescenceMap && this.iridescenceMap.isTexture ) {
-
-			data.iridescenceMap = this.iridescenceMap.toJSON( meta ).uuid;
-
-		}
-
-		if ( this.iridescenceThicknessMap && this.iridescenceThicknessMap.isTexture ) {
-
-			data.iridescenceThicknessMap = this.iridescenceThicknessMap.toJSON( meta ).uuid;
-
-		}
-
-		if ( this.anisotropy !== undefined ) data.anisotropy = this.anisotropy;
-		if ( this.anisotropyRotation !== undefined ) data.anisotropyRotation = this.anisotropyRotation;
-
-		if ( this.anisotropyMap && this.anisotropyMap.isTexture ) {
-
-			data.anisotropyMap = this.anisotropyMap.toJSON( meta ).uuid;
-
-		}
-
-		if ( this.map && this.map.isTexture ) data.map = this.map.toJSON( meta ).uuid;
-		if ( this.matcap && this.matcap.isTexture ) data.matcap = this.matcap.toJSON( meta ).uuid;
-		if ( this.alphaMap && this.alphaMap.isTexture ) data.alphaMap = this.alphaMap.toJSON( meta ).uuid;
-
-		if ( this.lightMap && this.lightMap.isTexture ) {
-
-			data.lightMap = this.lightMap.toJSON( meta ).uuid;
-			data.lightMapIntensity = this.lightMapIntensity;
-
-		}
-
-		if ( this.aoMap && this.aoMap.isTexture ) {
-
-			data.aoMap = this.aoMap.toJSON( meta ).uuid;
-			data.aoMapIntensity = this.aoMapIntensity;
-
-		}
-
-		if ( this.bumpMap && this.bumpMap.isTexture ) {
-
-			data.bumpMap = this.bumpMap.toJSON( meta ).uuid;
-			data.bumpScale = this.bumpScale;
-
-		}
-
-		if ( this.normalMap && this.normalMap.isTexture ) {
-
-			data.normalMap = this.normalMap.toJSON( meta ).uuid;
-			data.normalMapType = this.normalMapType;
-			data.normalScale = this.normalScale.toArray();
-
-		}
-
-		if ( this.displacementMap && this.displacementMap.isTexture ) {
-
-			data.displacementMap = this.displacementMap.toJSON( meta ).uuid;
-			data.displacementScale = this.displacementScale;
-			data.displacementBias = this.displacementBias;
-
-		}
-
-		if ( this.roughnessMap && this.roughnessMap.isTexture ) data.roughnessMap = this.roughnessMap.toJSON( meta ).uuid;
-		if ( this.metalnessMap && this.metalnessMap.isTexture ) data.metalnessMap = this.metalnessMap.toJSON( meta ).uuid;
-
-		if ( this.emissiveMap && this.emissiveMap.isTexture ) data.emissiveMap = this.emissiveMap.toJSON( meta ).uuid;
-		if ( this.specularMap && this.specularMap.isTexture ) data.specularMap = this.specularMap.toJSON( meta ).uuid;
-		if ( this.specularIntensityMap && this.specularIntensityMap.isTexture ) data.specularIntensityMap = this.specularIntensityMap.toJSON( meta ).uuid;
-		if ( this.specularColorMap && this.specularColorMap.isTexture ) data.specularColorMap = this.specularColorMap.toJSON( meta ).uuid;
-
-		if ( this.envMap && this.envMap.isTexture ) {
-
-			data.envMap = this.envMap.toJSON( meta ).uuid;
-
-			if ( this.combine !== undefined ) data.combine = this.combine;
-
-		}
-
-		if ( this.envMapRotation !== undefined ) data.envMapRotation = this.envMapRotation.toArray();
-		if ( this.envMapIntensity !== undefined ) data.envMapIntensity = this.envMapIntensity;
-		if ( this.reflectivity !== undefined ) data.reflectivity = this.reflectivity;
-		if ( this.refractionRatio !== undefined ) data.refractionRatio = this.refractionRatio;
-
-		if ( this.gradientMap && this.gradientMap.isTexture ) {
-
-			data.gradientMap = this.gradientMap.toJSON( meta ).uuid;
-
-		}
-
-		if ( this.transmission !== undefined ) data.transmission = this.transmission;
-		if ( this.transmissionMap && this.transmissionMap.isTexture ) data.transmissionMap = this.transmissionMap.toJSON( meta ).uuid;
-		if ( this.thickness !== undefined ) data.thickness = this.thickness;
-		if ( this.thicknessMap && this.thicknessMap.isTexture ) data.thicknessMap = this.thicknessMap.toJSON( meta ).uuid;
-		if ( this.attenuationDistance !== undefined && this.attenuationDistance !== Infinity ) data.attenuationDistance = this.attenuationDistance;
-		if ( this.attenuationColor !== undefined ) data.attenuationColor = this.attenuationColor.getHex();
-
-		if ( this.size !== undefined ) data.size = this.size;
-		if ( this.shadowSide !== null ) data.shadowSide = this.shadowSide;
-		if ( this.sizeAttenuation !== undefined ) data.sizeAttenuation = this.sizeAttenuation;
-
-		if ( this.blending !== NormalBlending ) data.blending = this.blending;
-		if ( this.side !== FrontSide ) data.side = this.side;
-		if ( this.vertexColors === true ) data.vertexColors = true;
-
-		if ( this.opacity < 1 ) data.opacity = this.opacity;
-		if ( this.transparent === true ) data.transparent = true;
-
-		if ( this.blendSrc !== SrcAlphaFactor ) data.blendSrc = this.blendSrc;
-		if ( this.blendDst !== OneMinusSrcAlphaFactor ) data.blendDst = this.blendDst;
-		if ( this.blendEquation !== AddEquation ) data.blendEquation = this.blendEquation;
-		if ( this.blendSrcAlpha !== null ) data.blendSrcAlpha = this.blendSrcAlpha;
-		if ( this.blendDstAlpha !== null ) data.blendDstAlpha = this.blendDstAlpha;
-		if ( this.blendEquationAlpha !== null ) data.blendEquationAlpha = this.blendEquationAlpha;
-		if ( this.blendColor && this.blendColor.isColor ) data.blendColor = this.blendColor.getHex();
-		if ( this.blendAlpha !== 0 ) data.blendAlpha = this.blendAlpha;
-
-		if ( this.depthFunc !== LessEqualDepth ) data.depthFunc = this.depthFunc;
-		if ( this.depthTest === false ) data.depthTest = this.depthTest;
-		if ( this.depthWrite === false ) data.depthWrite = this.depthWrite;
-		if ( this.colorWrite === false ) data.colorWrite = this.colorWrite;
-
-		if ( this.stencilWriteMask !== 0xff ) data.stencilWriteMask = this.stencilWriteMask;
-		if ( this.stencilFunc !== AlwaysStencilFunc ) data.stencilFunc = this.stencilFunc;
-		if ( this.stencilRef !== 0 ) data.stencilRef = this.stencilRef;
-		if ( this.stencilFuncMask !== 0xff ) data.stencilFuncMask = this.stencilFuncMask;
-		if ( this.stencilFail !== KeepStencilOp ) data.stencilFail = this.stencilFail;
-		if ( this.stencilZFail !== KeepStencilOp ) data.stencilZFail = this.stencilZFail;
-		if ( this.stencilZPass !== KeepStencilOp ) data.stencilZPass = this.stencilZPass;
-		if ( this.stencilWrite === true ) data.stencilWrite = this.stencilWrite;
-
-		// rotation (SpriteMaterial)
-		if ( this.rotation !== undefined && this.rotation !== 0 ) data.rotation = this.rotation;
-
-		if ( this.polygonOffset === true ) data.polygonOffset = true;
-		if ( this.polygonOffsetFactor !== 0 ) data.polygonOffsetFactor = this.polygonOffsetFactor;
-		if ( this.polygonOffsetUnits !== 0 ) data.polygonOffsetUnits = this.polygonOffsetUnits;
-
-		if ( this.linewidth !== undefined && this.linewidth !== 1 ) data.linewidth = this.linewidth;
-		if ( this.dashSize !== undefined ) data.dashSize = this.dashSize;
-		if ( this.gapSize !== undefined ) data.gapSize = this.gapSize;
-		if ( this.scale !== undefined ) data.scale = this.scale;
-
-		if ( this.dithering === true ) data.dithering = true;
-
-		if ( this.alphaTest > 0 ) data.alphaTest = this.alphaTest;
-		if ( this.alphaHash === true ) data.alphaHash = true;
-		if ( this.alphaToCoverage === true ) data.alphaToCoverage = true;
-		if ( this.premultipliedAlpha === true ) data.premultipliedAlpha = true;
-		if ( this.forceSinglePass === true ) data.forceSinglePass = true;
-
-		if ( this.wireframe === true ) data.wireframe = true;
-		if ( this.wireframeLinewidth > 1 ) data.wireframeLinewidth = this.wireframeLinewidth;
-		if ( this.wireframeLinecap !== 'round' ) data.wireframeLinecap = this.wireframeLinecap;
-		if ( this.wireframeLinejoin !== 'round' ) data.wireframeLinejoin = this.wireframeLinejoin;
-
-		if ( this.flatShading === true ) data.flatShading = true;
-
-		if ( this.visible === false ) data.visible = false;
-
-		if ( this.toneMapped === false ) data.toneMapped = false;
-
-		if ( this.fog === false ) data.fog = false;
-
-		if ( Object.keys( this.userData ).length > 0 ) data.userData = this.userData;
-
-		// TODO: Copied from Object3D.toJSON
-
-		function extractFromCache( cache ) {
-
-			const values = [];
-
-			for ( const key in cache ) {
-
-				const data = cache[ key ];
-				delete data.metadata;
-				values.push( data );
-
-			}
-
-			return values;
-
-		}
-
-		if ( isRootObject ) {
-
-			const textures = extractFromCache( meta.textures );
-			const images = extractFromCache( meta.images );
-
-			if ( textures.length > 0 ) data.textures = textures;
-			if ( images.length > 0 ) data.images = images;
-
-		}
-
-		return data;
-
-	}
-
-	/**
-	 * Returns a new material with copied values from this instance.
-	 *
-	 * @return {Material} A clone of this instance.
-	 */
-	clone() {
-
-		return new this.constructor().copy( this );
-
-	}
-
-	/**
-	 * Copies the values of the given material to this instance.
-	 *
-	 * @param {Material} source - The material to copy.
-	 * @return {Material} A reference to this instance.
-	 */
-	copy( source ) {
-
-		this.name = source.name;
-
-		this.blending = source.blending;
-		this.side = source.side;
-		this.vertexColors = source.vertexColors;
-
-		this.opacity = source.opacity;
-		this.transparent = source.transparent;
-
-		this.blendSrc = source.blendSrc;
-		this.blendDst = source.blendDst;
-		this.blendEquation = source.blendEquation;
-		this.blendSrcAlpha = source.blendSrcAlpha;
-		this.blendDstAlpha = source.blendDstAlpha;
-		this.blendEquationAlpha = source.blendEquationAlpha;
-		this.blendColor.copy( source.blendColor );
-		this.blendAlpha = source.blendAlpha;
-
-		this.depthFunc = source.depthFunc;
-		this.depthTest = source.depthTest;
-		this.depthWrite = source.depthWrite;
-
-		this.stencilWriteMask = source.stencilWriteMask;
-		this.stencilFunc = source.stencilFunc;
-		this.stencilRef = source.stencilRef;
-		this.stencilFuncMask = source.stencilFuncMask;
-		this.stencilFail = source.stencilFail;
-		this.stencilZFail = source.stencilZFail;
-		this.stencilZPass = source.stencilZPass;
-		this.stencilWrite = source.stencilWrite;
-
-		const srcPlanes = source.clippingPlanes;
-		let dstPlanes = null;
-
-		if ( srcPlanes !== null ) {
-
-			const n = srcPlanes.length;
-			dstPlanes = new Array( n );
-
-			for ( let i = 0; i !== n; ++ i ) {
-
-				dstPlanes[ i ] = srcPlanes[ i ].clone();
-
-			}
-
-		}
-
-		this.clippingPlanes = dstPlanes;
-		this.clipIntersection = source.clipIntersection;
-		this.clipShadows = source.clipShadows;
-
-		this.shadowSide = source.shadowSide;
-
-		this.colorWrite = source.colorWrite;
-
-		this.precision = source.precision;
-
-		this.polygonOffset = source.polygonOffset;
-		this.polygonOffsetFactor = source.polygonOffsetFactor;
-		this.polygonOffsetUnits = source.polygonOffsetUnits;
-
-		this.dithering = source.dithering;
-
-		this.alphaTest = source.alphaTest;
-		this.alphaHash = source.alphaHash;
-		this.alphaToCoverage = source.alphaToCoverage;
-		this.premultipliedAlpha = source.premultipliedAlpha;
-		this.forceSinglePass = source.forceSinglePass;
-
-		this.visible = source.visible;
-
-		this.toneMapped = source.toneMapped;
-
-		this.userData = JSON.parse( JSON.stringify( source.userData ) );
-
-		return this;
-
-	}
-
-	/**
-	 * Frees the GPU-related resources allocated by this instance. Call this
-	 * method whenever this instance is no longer used in your app.
-	 *
-	 * @fires Material#dispose
-	 */
-	dispose() {
-
-		/**
-		 * Fires when the material has been disposed of.
-		 *
-		 * @event Material#dispose
-		 * @type {Object}
-		 */
-		this.dispatchEvent( { type: 'dispose' } );
-
-	}
-
-	/**
-	 * Setting this property to `true` indicates the engine the material
-	 * needs to be recompiled.
-	 *
-	 * @type {boolean}
-	 * @default false
-	 * @param {boolean} value
-	 */
-	set needsUpdate( value ) {
-
-		if ( value === true ) this.version ++;
-
-	}
-
-	onBuild( /* shaderobject, renderer */ ) {
-
-		console.warn( 'Material: onBuild() has been removed.' ); // @deprecated, r166
-
-	}
-
-}
-
-/**
- * A material for drawing geometries in a simple shaded (flat or wireframe) way.
- *
- * This material is not affected by lights.
- *
- * @augments Material
- */
-class MeshBasicMaterial extends Material {
-
-	/**
-	 * Constructs a new mesh basic material.
-	 *
-	 * @param {Object} [parameters] - An object with one or more properties
-	 * defining the material's appearance. Any property of the material
-	 * (including any property from inherited materials) can be passed
-	 * in here. Color values can be passed any type of value accepted
-	 * by {@link Color#set}.
-	 */
-	constructor( parameters ) {
-
-		super();
-
-		/**
-		 * This flag can be used for type testing.
-		 *
-		 * @type {boolean}
-		 * @readonly
-		 * @default true
-		 */
-		this.isMeshBasicMaterial = true;
-
-		this.type = 'MeshBasicMaterial';
-
-		/**
-		 * Color of the material.
-		 *
-		 * @type {Color}
-		 * @default (1,1,1)
-		 */
-		this.color = new Color( 0xffffff ); // emissive
-
-		/**
-		 * The color map. May optionally include an alpha channel, typically combined
-		 * with {@link Material#transparent} or {@link Material#alphaTest}. The texture map
-		 * color is modulated by the diffuse `color`.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.map = null;
-
-		/**
-		 * The light map. Requires a second set of UVs.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.lightMap = null;
-
-		/**
-		 * Intensity of the baked light.
-		 *
-		 * @type {number}
-		 * @default 1
-		 */
-		this.lightMapIntensity = 1.0;
-
-		/**
-		 * The red channel of this texture is used as the ambient occlusion map.
-		 * Requires a second set of UVs.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.aoMap = null;
-
-		/**
-		 * Intensity of the ambient occlusion effect. Range is `[0,1]`, where `0`
-		 * disables ambient occlusion. Where intensity is `1` and the AO map's
-		 * red channel is also `1`, ambient light is fully occluded on a surface.
-		 *
-		 * @type {number}
-		 * @default 1
-		 */
-		this.aoMapIntensity = 1.0;
-
-		/**
-		 * Specular map used by the material.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.specularMap = null;
-
-		/**
-		 * The alpha map is a grayscale texture that controls the opacity across the
-		 * surface (black: fully transparent; white: fully opaque).
-		 *
-		 * Only the color of the texture is used, ignoring the alpha channel if one
-		 * exists. For RGB and RGBA textures, the renderer will use the green channel
-		 * when sampling this texture due to the extra bit of precision provided for
-		 * green in DXT-compressed and uncompressed RGB 565 formats. Luminance-only and
-		 * luminance/alpha textures will also still work as expected.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.alphaMap = null;
-
-		/**
-		 * The environment map.
-		 *
-		 * @type {?Texture}
-		 * @default null
-		 */
-		this.envMap = null;
-
-		/**
-		 * The rotation of the environment map in radians.
-		 *
-		 * @type {Euler}
-		 * @default (0,0,0)
-		 */
-		this.envMapRotation = new Euler();
-
-		/**
-		 * How to combine the result of the surface's color with the environment map, if any.
-		 *
-		 * When set to `MixOperation`, the {@link MeshBasicMaterial#reflectivity} is used to
-		 * blend between the two colors.
-		 *
-		 * @type {(MultiplyOperation|MixOperation|AddOperation)}
-		 * @default MultiplyOperation
-		 */
-		this.combine = MultiplyOperation;
-
-		/**
-		 * How much the environment map affects the surface.
-		 * The valid range is between `0` (no reflections) and `1` (full reflections).
-		 *
-		 * @type {number}
-		 * @default 1
-		 */
-		this.reflectivity = 1;
-
-		/**
-		 * The index of refraction (IOR) of air (approximately 1) divided by the
-		 * index of refraction of the material. It is used with environment mapping
-		 * modes {@link CubeRefractionMapping} and {@link EquirectangularRefractionMapping}.
-		 * The refraction ratio should not exceed `1`.
-		 *
-		 * @type {number}
-		 * @default 0.98
-		 */
-		this.refractionRatio = 0.98;
-
-		/**
-		 * Renders the geometry as a wireframe.
-		 *
-		 * @type {boolean}
-		 * @default false
-		 */
-		this.wireframe = false;
-
-		/**
-		 * Controls the thickness of the wireframe.
-		 *
-		 * Can only be used with {@link SVGRenderer}.
-		 *
-		 * @type {number}
-		 * @default 1
-		 */
-		this.wireframeLinewidth = 1;
-
-		/**
-		 * Defines appearance of wireframe ends.
-		 *
-		 * Can only be used with {@link SVGRenderer}.
-		 *
-		 * @type {('round'|'bevel'|'miter')}
-		 * @default 'round'
-		 */
-		this.wireframeLinecap = 'round';
-
-		/**
-		 * Defines appearance of wireframe joints.
-		 *
-		 * Can only be used with {@link SVGRenderer}.
-		 *
-		 * @type {('round'|'bevel'|'miter')}
-		 * @default 'round'
-		 */
-		this.wireframeLinejoin = 'round';
-
-		/**
-		 * Whether the material is affected by fog or not.
-		 *
-		 * @type {boolean}
-		 * @default true
-		 */
-		this.fog = true;
-
-		this.setValues( parameters );
-
-	}
-
-	copy( source ) {
-
-		super.copy( source );
-
-		this.color.copy( source.color );
-
-		this.map = source.map;
-
-		this.lightMap = source.lightMap;
-		this.lightMapIntensity = source.lightMapIntensity;
-
-		this.aoMap = source.aoMap;
-		this.aoMapIntensity = source.aoMapIntensity;
-
-		this.specularMap = source.specularMap;
-
-		this.alphaMap = source.alphaMap;
-
-		this.envMap = source.envMap;
-		this.envMapRotation.copy( source.envMapRotation );
-		this.combine = source.combine;
-		this.reflectivity = source.reflectivity;
-		this.refractionRatio = source.refractionRatio;
-
-		this.wireframe = source.wireframe;
-		this.wireframeLinewidth = source.wireframeLinewidth;
-		this.wireframeLinecap = source.wireframeLinecap;
-		this.wireframeLinejoin = source.wireframeLinejoin;
-
-		this.fog = source.fog;
-
-		return this;
-
-	}
-
-}
 
 const _vector$9 = /*@__PURE__*/ new Vector3();
 const _vector2$1 = /*@__PURE__*/ new Vector2();
@@ -74018,526 +71892,13 @@ class BufferGeometry extends EventDispatcher {
 
 }
 
-const _inverseMatrix$3 = /*@__PURE__*/ new Matrix4();
-const _ray$3 = /*@__PURE__*/ new Ray();
-const _sphere$6 = /*@__PURE__*/ new Sphere();
-const _sphereHitAt = /*@__PURE__*/ new Vector3();
-
-const _vA$1 = /*@__PURE__*/ new Vector3();
-const _vB$1 = /*@__PURE__*/ new Vector3();
-const _vC$1 = /*@__PURE__*/ new Vector3();
-
-const _tempA = /*@__PURE__*/ new Vector3();
-const _morphA = /*@__PURE__*/ new Vector3();
-
-const _intersectionPoint = /*@__PURE__*/ new Vector3();
-const _intersectionPointWorld = /*@__PURE__*/ new Vector3();
-
-/**
- * Class representing triangular polygon mesh based objects.
- *
- * ```js
- * const geometry = new THREE.BoxGeometry( 1, 1, 1 );
- * const material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
- * const mesh = new THREE.Mesh( geometry, material );
- * scene.add( mesh );
- * ```
- *
- * @augments Object3D
- */
-class Mesh extends Object3D {
-
-	/**
-	 * Constructs a new mesh.
-	 *
-	 * @param {BufferGeometry} [geometry] - The mesh geometry.
-	 * @param {Material|Array<Material>} [material] - The mesh material.
-	 */
-	constructor( geometry = new BufferGeometry(), material = new MeshBasicMaterial() ) {
-
-		super();
-
-		/**
-		 * This flag can be used for type testing.
-		 *
-		 * @type {boolean}
-		 * @readonly
-		 * @default true
-		 */
-		this.isMesh = true;
-
-		this.type = 'Mesh';
-
-		/**
-		 * The mesh geometry.
-		 *
-		 * @type {BufferGeometry}
-		 */
-		this.geometry = geometry;
-
-		/**
-		 * The mesh material.
-		 *
-		 * @type {Material|Array<Material>}
-		 * @default MeshBasicMaterial
-		 */
-		this.material = material;
-
-		/**
-		 * A dictionary representing the morph targets in the geometry. The key is the
-		 * morph targets name, the value its attribute index. This member is `undefined`
-		 * by default and only set when morph targets are detected in the geometry.
-		 *
-		 * @type {Object<String,number>|undefined}
-		 * @default undefined
-		 */
-		this.morphTargetDictionary = undefined;
-
-		/**
-		 * An array of weights typically in the range `[0,1]` that specify how much of the morph
-		 * is applied. This member is `undefined` by default and only set when morph targets are
-		 * detected in the geometry.
-		 *
-		 * @type {Array<number>|undefined}
-		 * @default undefined
-		 */
-		this.morphTargetInfluences = undefined;
-
-		this.updateMorphTargets();
-
-	}
-
-	copy( source, recursive ) {
-
-		super.copy( source, recursive );
-
-		if ( source.morphTargetInfluences !== undefined ) {
-
-			this.morphTargetInfluences = source.morphTargetInfluences.slice();
-
-		}
-
-		if ( source.morphTargetDictionary !== undefined ) {
-
-			this.morphTargetDictionary = Object.assign( {}, source.morphTargetDictionary );
-
-		}
-
-		this.material = Array.isArray( source.material ) ? source.material.slice() : source.material;
-		this.geometry = source.geometry;
-
-		return this;
-
-	}
-
-	/**
-	 * Sets the values of {@link Mesh#morphTargetDictionary} and {@link Mesh#morphTargetInfluences}
-	 * to make sure existing morph targets can influence this 3D object.
-	 */
-	updateMorphTargets() {
-
-		const geometry = this.geometry;
-
-		const morphAttributes = geometry.morphAttributes;
-		const keys = Object.keys( morphAttributes );
-
-		if ( keys.length > 0 ) {
-
-			const morphAttribute = morphAttributes[ keys[ 0 ] ];
-
-			if ( morphAttribute !== undefined ) {
-
-				this.morphTargetInfluences = [];
-				this.morphTargetDictionary = {};
-
-				for ( let m = 0, ml = morphAttribute.length; m < ml; m ++ ) {
-
-					const name = morphAttribute[ m ].name || String( m );
-
-					this.morphTargetInfluences.push( 0 );
-					this.morphTargetDictionary[ name ] = m;
-
-				}
-
-			}
-
-		}
-
-	}
-
-	/**
-	 * Returns the local-space position of the vertex at the given index, taking into
-	 * account the current animation state of both morph targets and skinning.
-	 *
-	 * @param {number} index - The vertex index.
-	 * @param {Vector3} target - The target object that is used to store the method's result.
-	 * @return {Vector3} The vertex position in local space.
-	 */
-	getVertexPosition( index, target ) {
-
-		const geometry = this.geometry;
-		const position = geometry.attributes.position;
-		const morphPosition = geometry.morphAttributes.position;
-		const morphTargetsRelative = geometry.morphTargetsRelative;
-
-		target.fromBufferAttribute( position, index );
-
-		const morphInfluences = this.morphTargetInfluences;
-
-		if ( morphPosition && morphInfluences ) {
-
-			_morphA.set( 0, 0, 0 );
-
-			for ( let i = 0, il = morphPosition.length; i < il; i ++ ) {
-
-				const influence = morphInfluences[ i ];
-				const morphAttribute = morphPosition[ i ];
-
-				if ( influence === 0 ) continue;
-
-				_tempA.fromBufferAttribute( morphAttribute, index );
-
-				if ( morphTargetsRelative ) {
-
-					_morphA.addScaledVector( _tempA, influence );
-
-				} else {
-
-					_morphA.addScaledVector( _tempA.sub( target ), influence );
-
-				}
-
-			}
-
-			target.add( _morphA );
-
-		}
-
-		return target;
-
-	}
-
-	/**
-	 * Computes intersection points between a casted ray and this line.
-	 *
-	 * @param {Raycaster} raycaster - The raycaster.
-	 * @param {Array<Object>} intersects - The target array that holds the intersection points.
-	 */
-	raycast( raycaster, intersects ) {
-
-		const geometry = this.geometry;
-		const material = this.material;
-		const matrixWorld = this.matrixWorld;
-
-		if ( material === undefined ) return;
-
-		// test with bounding sphere in world space
-
-		if ( geometry.boundingSphere === null ) geometry.computeBoundingSphere();
-
-		_sphere$6.copy( geometry.boundingSphere );
-		_sphere$6.applyMatrix4( matrixWorld );
-
-		// check distance from ray origin to bounding sphere
-
-		_ray$3.copy( raycaster.ray ).recast( raycaster.near );
-
-		if ( _sphere$6.containsPoint( _ray$3.origin ) === false ) {
-
-			if ( _ray$3.intersectSphere( _sphere$6, _sphereHitAt ) === null ) return;
-
-			if ( _ray$3.origin.distanceToSquared( _sphereHitAt ) > ( raycaster.far - raycaster.near ) ** 2 ) return;
-
-		}
-
-		// convert ray to local space of mesh
-
-		_inverseMatrix$3.copy( matrixWorld ).invert();
-		_ray$3.copy( raycaster.ray ).applyMatrix4( _inverseMatrix$3 );
-
-		// test with bounding box in local space
-
-		if ( geometry.boundingBox !== null ) {
-
-			if ( _ray$3.intersectsBox( geometry.boundingBox ) === false ) return;
-
-		}
-
-		// test for intersections with geometry
-
-		this._computeIntersections( raycaster, intersects, _ray$3 );
-
-	}
-
-	_computeIntersections( raycaster, intersects, rayLocalSpace ) {
-
-		let intersection;
-
-		const geometry = this.geometry;
-		const material = this.material;
-
-		const index = geometry.index;
-		const position = geometry.attributes.position;
-		const uv = geometry.attributes.uv;
-		const uv1 = geometry.attributes.uv1;
-		const normal = geometry.attributes.normal;
-		const groups = geometry.groups;
-		const drawRange = geometry.drawRange;
-
-		if ( index !== null ) {
-
-			// indexed buffer geometry
-
-			if ( Array.isArray( material ) ) {
-
-				for ( let i = 0, il = groups.length; i < il; i ++ ) {
-
-					const group = groups[ i ];
-					const groupMaterial = material[ group.materialIndex ];
-
-					const start = Math.max( group.start, drawRange.start );
-					const end = Math.min( index.count, Math.min( ( group.start + group.count ), ( drawRange.start + drawRange.count ) ) );
-
-					for ( let j = start, jl = end; j < jl; j += 3 ) {
-
-						const a = index.getX( j );
-						const b = index.getX( j + 1 );
-						const c = index.getX( j + 2 );
-
-						intersection = checkGeometryIntersection( this, groupMaterial, raycaster, rayLocalSpace, uv, uv1, normal, a, b, c );
-
-						if ( intersection ) {
-
-							intersection.faceIndex = Math.floor( j / 3 ); // triangle number in indexed buffer semantics
-							intersection.face.materialIndex = group.materialIndex;
-							intersects.push( intersection );
-
-						}
-
-					}
-
-				}
-
-			} else {
-
-				const start = Math.max( 0, drawRange.start );
-				const end = Math.min( index.count, ( drawRange.start + drawRange.count ) );
-
-				for ( let i = start, il = end; i < il; i += 3 ) {
-
-					const a = index.getX( i );
-					const b = index.getX( i + 1 );
-					const c = index.getX( i + 2 );
-
-					intersection = checkGeometryIntersection( this, material, raycaster, rayLocalSpace, uv, uv1, normal, a, b, c );
-
-					if ( intersection ) {
-
-						intersection.faceIndex = Math.floor( i / 3 ); // triangle number in indexed buffer semantics
-						intersects.push( intersection );
-
-					}
-
-				}
-
-			}
-
-		} else if ( position !== undefined ) {
-
-			// non-indexed buffer geometry
-
-			if ( Array.isArray( material ) ) {
-
-				for ( let i = 0, il = groups.length; i < il; i ++ ) {
-
-					const group = groups[ i ];
-					const groupMaterial = material[ group.materialIndex ];
-
-					const start = Math.max( group.start, drawRange.start );
-					const end = Math.min( position.count, Math.min( ( group.start + group.count ), ( drawRange.start + drawRange.count ) ) );
-
-					for ( let j = start, jl = end; j < jl; j += 3 ) {
-
-						const a = j;
-						const b = j + 1;
-						const c = j + 2;
-
-						intersection = checkGeometryIntersection( this, groupMaterial, raycaster, rayLocalSpace, uv, uv1, normal, a, b, c );
-
-						if ( intersection ) {
-
-							intersection.faceIndex = Math.floor( j / 3 ); // triangle number in non-indexed buffer semantics
-							intersection.face.materialIndex = group.materialIndex;
-							intersects.push( intersection );
-
-						}
-
-					}
-
-				}
-
-			} else {
-
-				const start = Math.max( 0, drawRange.start );
-				const end = Math.min( position.count, ( drawRange.start + drawRange.count ) );
-
-				for ( let i = start, il = end; i < il; i += 3 ) {
-
-					const a = i;
-					const b = i + 1;
-					const c = i + 2;
-
-					intersection = checkGeometryIntersection( this, material, raycaster, rayLocalSpace, uv, uv1, normal, a, b, c );
-
-					if ( intersection ) {
-
-						intersection.faceIndex = Math.floor( i / 3 ); // triangle number in non-indexed buffer semantics
-						intersects.push( intersection );
-
-					}
-
-				}
-
-			}
-
-		}
-
-	}
-
-}
-
-function checkIntersection$1( object, material, raycaster, ray, pA, pB, pC, point ) {
-
-	let intersect;
-
-	if ( material.side === BackSide ) {
-
-		intersect = ray.intersectTriangle( pC, pB, pA, true, point );
-
-	} else {
-
-		intersect = ray.intersectTriangle( pA, pB, pC, ( material.side === FrontSide ), point );
-
-	}
-
-	if ( intersect === null ) return null;
-
-	_intersectionPointWorld.copy( point );
-	_intersectionPointWorld.applyMatrix4( object.matrixWorld );
-
-	const distance = raycaster.ray.origin.distanceTo( _intersectionPointWorld );
-
-	if ( distance < raycaster.near || distance > raycaster.far ) return null;
-
-	return {
-		distance: distance,
-		point: _intersectionPointWorld.clone(),
-		object: object
-	};
-
-}
-
-function checkGeometryIntersection( object, material, raycaster, ray, uv, uv1, normal, a, b, c ) {
-
-	object.getVertexPosition( a, _vA$1 );
-	object.getVertexPosition( b, _vB$1 );
-	object.getVertexPosition( c, _vC$1 );
-
-	const intersection = checkIntersection$1( object, material, raycaster, ray, _vA$1, _vB$1, _vC$1, _intersectionPoint );
-
-	if ( intersection ) {
-
-		const barycoord = new Vector3();
-		Triangle.getBarycoord( _intersectionPoint, _vA$1, _vB$1, _vC$1, barycoord );
-
-		if ( uv ) {
-
-			intersection.uv = Triangle.getInterpolatedAttribute( uv, a, b, c, barycoord, new Vector2() );
-
-		}
-
-		if ( uv1 ) {
-
-			intersection.uv1 = Triangle.getInterpolatedAttribute( uv1, a, b, c, barycoord, new Vector2() );
-
-		}
-
-		if ( normal ) {
-
-			intersection.normal = Triangle.getInterpolatedAttribute( normal, a, b, c, barycoord, new Vector3() );
-
-			if ( intersection.normal.dot( ray.direction ) > 0 ) {
-
-				intersection.normal.multiplyScalar( -1 );
-
-			}
-
-		}
-
-		const face = {
-			a: a,
-			b: b,
-			c: c,
-			normal: new Vector3(),
-			materialIndex: 0
-		};
-
-		Triangle.getNormal( _vA$1, _vB$1, _vC$1, face.normal );
-
-		intersection.face = face;
-		intersection.barycoord = barycoord;
-
-	}
-
-	return intersection;
-
-}
-
-/**
- * This is almost identical to an {@link Object3D}. Its purpose is to
- * make working with groups of objects syntactically clearer.
- *
- * ```js
- * // Create a group and add the two cubes.
- * // These cubes can now be rotated / scaled etc as a group.
- * const group = new THREE.Group();
- *
- * group.add( meshA );
- * group.add( meshB );
- *
- * scene.add( group );
- * ```
- *
- * @augments Object3D
- */
-class Group extends Object3D {
-
-	constructor() {
-
-		super();
-
-		/**
-		 * This flag can be used for type testing.
-		 *
-		 * @type {boolean}
-		 * @readonly
-		 * @default true
-		 */
-		this.isGroup = true;
-
-		this.type = 'Group';
-
-	}
-
-}
-
 /**
  * An abstract base class for creating an analytic curve object that contains methods
  * for interpolation.
  *
  * @abstract
  */
-let Curve$1 = class Curve {
+class Curve {
 
 	/**
 	 * Constructs a new curve.
@@ -74935,7 +72296,7 @@ let Curve$1 = class Curve {
 
 				vec.normalize();
 
-				const theta = Math.acos( clamp$1( tangents[ i - 1 ].dot( tangents[ i ] ), -1, 1 ) ); // clamp for floating pt errors
+				const theta = Math.acos( clamp( tangents[ i - 1 ].dot( tangents[ i ] ), -1, 1 ) ); // clamp for floating pt errors
 
 				normals[ i ].applyMatrix4( mat.makeRotationAxis( vec, theta ) );
 
@@ -74949,7 +72310,7 @@ let Curve$1 = class Curve {
 
 		if ( closed === true ) {
 
-			let theta = Math.acos( clamp$1( normals[ 0 ].dot( normals[ segments ] ), -1, 1 ) );
+			let theta = Math.acos( clamp( normals[ 0 ].dot( normals[ segments ] ), -1, 1 ) );
 			theta /= segments;
 
 			if ( tangents[ 0 ].dot( vec.crossVectors( normals[ 0 ], normals[ segments ] ) ) > 0 ) {
@@ -75038,7 +72399,7 @@ let Curve$1 = class Curve {
 
 	}
 
-};
+}
 
 /**
  * A curve representing an ellipse.
@@ -75063,7 +72424,7 @@ let Curve$1 = class Curve {
  *
  * @augments Curve
  */
-class EllipseCurve extends Curve$1 {
+class EllipseCurve extends Curve {
 
 	/**
 	 * Constructs a new ellipse curve.
@@ -75435,7 +72796,7 @@ const pz = /*@__PURE__*/ new CubicPoly();
  *
  * @augments Curve
  */
-class CatmullRomCurve3 extends Curve$1 {
+class CatmullRomCurve3 extends Curve {
 
 	/**
 	 * Constructs a new Catmull-Rom curve.
@@ -75778,7 +73139,7 @@ function CubicBezier( t, p0, p1, p2, p3 ) {
  *
  * @augments Curve
  */
-class CubicBezierCurve extends Curve$1 {
+class CubicBezierCurve extends Curve {
 
 	/**
 	 * Constructs a new Cubic Bezier curve.
@@ -75901,7 +73262,7 @@ class CubicBezierCurve extends Curve$1 {
  *
  * @augments Curve
  */
-class CubicBezierCurve3 extends Curve$1 {
+class CubicBezierCurve3 extends Curve {
 
 	/**
 	 * Constructs a new Cubic Bezier curve.
@@ -76025,7 +73386,7 @@ class CubicBezierCurve3 extends Curve$1 {
  *
  * @augments Curve
  */
-class LineCurve extends Curve$1 {
+class LineCurve extends Curve {
 
 	/**
 	 * Constructs a new line curve.
@@ -76149,7 +73510,7 @@ class LineCurve extends Curve$1 {
  *
  * @augments Curve
  */
-class LineCurve3 extends Curve$1 {
+class LineCurve3 extends Curve {
 
 	/**
 	 * Constructs a new line curve.
@@ -76289,7 +73650,7 @@ class LineCurve3 extends Curve$1 {
  *
  * @augments Curve
  */
-class QuadraticBezierCurve extends Curve$1 {
+class QuadraticBezierCurve extends Curve {
 
 	/**
 	 * Constructs a new Quadratic Bezier curve.
@@ -76401,7 +73762,7 @@ class QuadraticBezierCurve extends Curve$1 {
  *
  * @augments Curve
  */
-class QuadraticBezierCurve3 extends Curve$1 {
+class QuadraticBezierCurve3 extends Curve {
 
 	/**
 	 * Constructs a new Quadratic Bezier curve.
@@ -76533,7 +73894,7 @@ class QuadraticBezierCurve3 extends Curve$1 {
  *
  * @augments Curve
  */
-class SplineCurve extends Curve$1 {
+class SplineCurve extends Curve {
 
 	/**
 	 * Constructs a new 2D spline curve.
@@ -76669,7 +74030,7 @@ var Curves = /*#__PURE__*/Object.freeze({
  *
  * @augments Curve
  */
-class CurvePath extends Curve$1 {
+class CurvePath extends Curve {
 
 	/**
 	 * Constructs a new curve path.
@@ -80831,2003 +78192,6 @@ if ( typeof window !== 'undefined' ) {
 
 	}
 
-}
-
-/**
- * A shape with four sides of equal length and four right angles.
- *
- * @example square.ts
- */
-class Square extends Rectangle {
-    constructor(sideLength = 2, config = {}) {
-        super(sideLength, sideLength, { ...Square.defaultConfig(), ...config });
-        Object.defineProperty(this, "sideLength", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: sideLength
-        });
-    }
-    reshape(sideLength, config = {}) {
-        this.sideLength = sideLength;
-        this.copyStrokeAndFill(new Square(sideLength, config));
-    }
-    Reshape(sideLength) {
-        let startSideLength;
-        let endSideLength;
-        return new Animation((t) => {
-            this.reshape(MathUtils.lerp(startSideLength, endSideLength, t));
-        }, {
-            before: () => {
-                startSideLength = this.sideLength;
-                endSideLength = sideLength;
-            },
-        });
-    }
-    getCloneAttributes() {
-        return [this.sideLength];
-    }
-    getAttributes() {
-        return {
-            width: this.sideLength,
-            height: this.sideLength,
-        };
-    }
-    static fromAttributes(attributes) {
-        const { width } = attributes;
-        return new Square(width);
-    }
-    get attributeData() {
-        return [
-            {
-                attribute: "sideLength",
-                type: "number",
-                default: 2,
-            },
-        ];
-    }
-}
-
-class Ellipse extends Shape$1 {
-    constructor(radiusA = 2, radiusB = 1, config = {}) {
-        const angle = 2 * Math.PI;
-        let points = [];
-        for (let i = 0; i <= angle + ERROR_THRESHOLD; i += angle / 50) {
-            const angle = i;
-            const x = radiusA * Math.cos(angle);
-            const y = radiusB * Math.sin(angle);
-            points.push(new Vector3(x, y, 0));
-        }
-        super(points, {
-            ...Ellipse.defaultConfig(),
-            ...config,
-        });
-        Object.defineProperty(this, "radiusA", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: radiusA
-        });
-        Object.defineProperty(this, "radiusB", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: radiusB
-        });
-    }
-    reshape(radiusA, radiusB, config = {}) {
-        this.radiusA = radiusA;
-        this.radiusB = radiusB;
-        this.copyStrokeAndFill(new Ellipse(radiusA, radiusB, config));
-    }
-    getCloneAttributes() {
-        return [this.radiusA, this.radiusB];
-    }
-    getAttributes() {
-        return {
-            radiusA: this.radiusA,
-            radiusB: this.radiusB,
-        };
-    }
-    static fromAttributes(attributes) {
-        const { radiusA, radiusB } = attributes;
-        return new Ellipse(radiusA, radiusB);
-    }
-    get attributeData() {
-        return [
-            {
-                attribute: "radiusA",
-                type: "number",
-                default: 1,
-            },
-            {
-                attribute: "radiusB",
-                type: "number",
-                default: 2,
-            },
-        ];
-    }
-}
-
-var index$2 = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	Arc: Arc,
-	Arrow: Arrow,
-	Circle: Circle,
-	Ellipse: Ellipse,
-	EllipseArc: EllipseArc,
-	Line: Line,
-	Point: Point,
-	Polygon: Polygon,
-	Polyline: Polyline,
-	Rectangle: Rectangle,
-	Shape: Shape$1,
-	Square: Square
-});
-
-const BUFFER = 0.5;
-const ORIGIN = Object.freeze(new THREE.Vector3(0, 0, 0));
-const RIGHT = Object.freeze(new THREE.Vector3(1, 0, 0));
-const LEFT = Object.freeze(new THREE.Vector3(-1, 0, 0));
-const UP = Object.freeze(new THREE.Vector3(0, 1, 0));
-const DOWN = Object.freeze(new THREE.Vector3(0, -1, 0));
-const OUT = Object.freeze(new THREE.Vector3(0, 0, 1));
-const IN = Object.freeze(new THREE.Vector3(0, 0, -1));
-const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-const getFrameAttributes = (aspectRatio, height) => {
-    const coordinateHeight = PIXELS_TO_COORDS * height;
-    return {
-        aspectRatio,
-        height,
-        width: height * aspectRatio,
-        coordinateHeight,
-        coordinateWidth: coordinateHeight * aspectRatio,
-    };
-};
-const isWidthSetup = (config) => {
-    return ("aspectRatio" in config &&
-        "pixelWidth" in config &&
-        "coordinateWidth" in config);
-};
-const isHeightSetup = (config) => {
-    return ("aspectRatio" in config &&
-        "pixelHeight" in config &&
-        "coordinateHeight" in config);
-};
-const isViewportWidthSetup = (config) => {
-    return "viewport" in config && "coordinateWidth" in config && !("coordinateHeight" in config);
-};
-const isViewportHeightSetup = (config) => {
-    return "viewport" in config && "coordinateHeight" in config && !("coordinateWidth" in config);
-};
-class Scene extends Scene$1 {
-    constructor() {
-        super(...arguments);
-        Object.defineProperty(this, "forwardEvent", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: (e) => this.dispatchEvent(e)
-        });
-    }
-    add(...objects) {
-        super.add(...objects);
-        objects.forEach((object) => {
-            object.addEventListener("childadded", this.forwardEvent);
-            object.addEventListener("childremoved", this.forwardEvent);
-        });
-        return this;
-    }
-    remove(...objects) {
-        super.remove(...objects);
-        objects.forEach((object) => {
-            object.removeEventListener("childadded", this.forwardEvent);
-            object.removeEventListener("childremoved", this.forwardEvent);
-        });
-        return this;
-    }
-}
-const setupCanvas = (canvas, config = {
-    aspectRatio: 16 / 9,
-    pixelHeight: 720,
-    coordinateHeight: 8,
-    viewport: undefined,
-}) => {
-    let aspectRatio;
-    let pixelWidth;
-    let pixelHeight;
-    let coordinateWidth;
-    let coordinateHeight;
-    if (isViewportWidthSetup(config)) {
-        aspectRatio = config.viewport.z / config.viewport.w;
-        pixelWidth = canvas.clientWidth || canvas.width;
-        pixelHeight = canvas.clientHeight || canvas.height;
-        coordinateWidth = config.coordinateWidth;
-        coordinateHeight = coordinateWidth / aspectRatio;
-    }
-    else if (isViewportHeightSetup(config)) {
-        aspectRatio = config.viewport.z / config.viewport.w;
-        pixelWidth = canvas.clientWidth || canvas.width;
-        pixelHeight = canvas.clientHeight || canvas.height;
-        coordinateHeight = config.coordinateHeight;
-        coordinateWidth = coordinateHeight * aspectRatio;
-    }
-    else if (isWidthSetup(config)) {
-        aspectRatio = config.aspectRatio;
-        pixelWidth = config.pixelWidth;
-        coordinateWidth = config.coordinateWidth;
-        pixelHeight = pixelWidth / aspectRatio;
-        coordinateHeight = coordinateWidth / aspectRatio;
-    }
-    else if (isHeightSetup(config)) {
-        aspectRatio = config.aspectRatio;
-        pixelHeight = config.pixelHeight;
-        coordinateHeight = config.coordinateHeight;
-        pixelWidth = pixelHeight * aspectRatio;
-        coordinateWidth = coordinateHeight * aspectRatio;
-    }
-    else {
-        throw new Error("Invalid config");
-    }
-    const camera = new THREE.OrthographicCamera(-coordinateWidth / 2, coordinateWidth / 2, coordinateHeight / 2, -coordinateHeight / 2, 1, 11);
-    camera.position.z = 6;
-    const renderer = new THREE.WebGPURenderer({
-        canvas,
-        antialias: true,
-    });
-    renderer.autoClear = false;
-    renderer.setClearColor(new THREE.Color(DEFAULT_BACKGROUND_HEX));
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(pixelWidth, pixelHeight, !(isViewportWidthSetup(config) || isViewportHeightSetup(config)));
-    return [new Scene(), camera, renderer, aspectRatio];
-};
-const convertWorldDirectionToObjectSpace = (worldDirection, object) => {
-    const worldQuaternion = new THREE.Quaternion();
-    object.getWorldQuaternion(worldQuaternion);
-    const inverseQuaternion = worldQuaternion.clone().invert();
-    const localDirection = worldDirection
-        .clone()
-        .applyQuaternion(inverseQuaternion);
-    localDirection.normalize();
-    return localDirection;
-};
-/*
- * Vertically stacks the children of a group.
- * buffer specifies the length of empty space between each child.
- */
-const vstack = (group, buffer = 0.2) => {
-    if (group.children.length < 2)
-        return group;
-    const center = group.children[0].position.clone();
-    for (let i = 1; i < group.children.length; i++) {
-        group.children[i].position
-            .copy(group.children[i - 1].position)
-            .addScaledVector(DOWN, buffer);
-        center.add(group.children[i].position);
-    }
-    center.divideScalar(group.children.length);
-    group.children.forEach((child) => child.position.sub(center));
-};
-/*
- * Like vstack, but puts an equal distance between the positions of each child.
- */
-const vspace = (group, distanceBetween) => {
-    if (group.children.length < 2)
-        return group;
-    const defaultBuffer = 0.2;
-    let defaultSpacing = Number.NEGATIVE_INFINITY;
-    for (let i = 1; i < group.children.length; i++) {
-        const previous = group.children[i - 1];
-        const previousLowest = furthestInDirection(previous, DOWN);
-        const distanceToBottom = new THREE.Vector3()
-            .subVectors(previousLowest, previous.position)
-            .dot(DOWN);
-        const current = group.children[i];
-        const currentTop = furthestInDirection(current, UP);
-        const distanceToTop = new THREE.Vector3()
-            .subVectors(currentTop, current.position)
-            .dot(UP);
-        defaultSpacing = Math.max(defaultSpacing, distanceToBottom + distanceToTop + defaultBuffer);
-    }
-    const center = group.children[0].position.clone();
-    for (let i = 1; i < group.children.length; i++) {
-        const previous = group.children[i - 1];
-        const current = group.children[i];
-        current.position
-            .copy(previous.position)
-            .addScaledVector(DOWN, distanceBetween ?? defaultSpacing);
-        center.add(group.children[i].position);
-    }
-    center.divideScalar(group.children.length);
-    group.children.forEach((child) => child.position.sub(center));
-};
-const transformBetweenSpaces = (from, to, point) => {
-    return to.worldToLocal(from.localToWorld(point));
-};
-const furthestInDirection = (object, direction, exclude = []) => {
-    let excludeArray;
-    if (!Array.isArray(exclude)) {
-        excludeArray = [exclude];
-    }
-    else {
-        excludeArray = exclude;
-    }
-    object.updateWorldMatrix(true, true);
-    // const unitDirection = convertWorldDirectionToObjectSpace(direction, object);
-    const unitDirection = direction.clone().normalize();
-    let maxDot = Number.NEGATIVE_INFINITY;
-    const maxDotPoint = unitDirection
-        .clone()
-        .negate()
-        .setLength(Number.POSITIVE_INFINITY);
-    object.traverse((obj) => {
-        let exclusionCheckObj = obj;
-        while (exclusionCheckObj) {
-            if (excludeArray.includes(exclusionCheckObj)) {
-                return;
-            }
-            if (exclusionCheckObj === object) {
-                break;
-            }
-            exclusionCheckObj = exclusionCheckObj.parent;
-        }
-        if (obj instanceof WebGPUMeshLine) {
-            for (const point of obj.points) {
-                const clonedPoint = point.clone();
-                transformBetweenSpaces(obj, object, clonedPoint);
-                const dotProduct = clonedPoint.dot(unitDirection);
-                if (dotProduct > maxDot) {
-                    maxDot = dotProduct;
-                    maxDotPoint.copy(clonedPoint);
-                }
-            }
-        }
-        else if (obj instanceof THREE.Mesh &&
-            (obj.parent?.parent?.parent?.constructor?.name === "Text" ||
-                object.parent?.constructor?.name === "Number")) {
-            const pointsArray = obj.geometry.attributes.position.array;
-            const pointContainer = new THREE.Vector3();
-            for (let i = 0; i < pointsArray.length; i += 3) {
-                pointContainer.set(pointsArray[i], pointsArray[i + 1], pointsArray[i + 2]);
-                transformBetweenSpaces(obj, object, pointContainer);
-                const dotProduct = pointContainer.dot(unitDirection);
-                if (dotProduct > maxDot) {
-                    maxDot = dotProduct;
-                    maxDotPoint.copy(pointContainer);
-                }
-            }
-        }
-    });
-    return maxDotPoint;
-};
-const moveNextTo = (target, object, direction, buffer = 0.2) => {
-    target.updateWorldMatrix(true, true);
-    object.updateWorldMatrix(true, true);
-    const targetSpaceDirectionInitial = new THREE.Vector3().applyMatrix4(new THREE.Matrix4().copy(target.matrixWorld).invert());
-    const targetSpaceDirectionFinal = direction
-        .clone()
-        .applyMatrix4(new THREE.Matrix4().copy(target.matrixWorld).invert());
-    const targetSpaceDirection = new THREE.Vector3().subVectors(targetSpaceDirectionFinal, targetSpaceDirectionInitial);
-    // Target space
-    let targetSpaceStartPosition;
-    let targetSpaceOffsetInitial;
-    let targetSpaceOffsetFinal;
-    if (!(target instanceof Line)) {
-        const targetSpaceFurthestInDirection = furthestInDirection(target, targetSpaceDirection, object);
-        targetSpaceStartPosition = new THREE.Vector3();
-        targetSpaceOffsetInitial = new THREE.Vector3();
-        const targetSpaceOffsetFinalLength = targetSpaceDirection
-            .clone()
-            .normalize()
-            .dot(targetSpaceFurthestInDirection);
-        targetSpaceOffsetFinal = targetSpaceDirection
-            .clone()
-            .setLength(Math.max(targetSpaceOffsetFinalLength, 0));
-    }
-    else {
-        const vector = target.getVector().normalize();
-        const normal = vector.clone().applyAxisAngle(OUT, Math.PI / 2);
-        const vectorDot = targetSpaceDirection.dot(vector);
-        const normalDot = targetSpaceDirection.dot(normal);
-        const againstVectorDot = targetSpaceDirection.dot(vector.clone().negate());
-        const againstNormalDot = targetSpaceDirection.dot(normal.clone().negate());
-        const dotProducts = [
-            vectorDot,
-            normalDot,
-            againstVectorDot,
-            againstNormalDot,
-        ];
-        const maxDot = Math.max(...dotProducts);
-        if (maxDot === vectorDot) {
-            targetSpaceStartPosition = target.end.clone();
-        }
-        else if (maxDot === againstVectorDot) {
-            targetSpaceStartPosition = target.start.clone();
-        }
-        else if ([normalDot, againstNormalDot].includes(maxDot)) {
-            targetSpaceStartPosition = new THREE.Vector3()
-                .addVectors(target.start, target.end)
-                .divideScalar(2);
-        }
-        targetSpaceOffsetInitial = new THREE.Vector3();
-        targetSpaceOffsetFinal = new THREE.Vector3();
-    }
-    // Object space
-    const objectSpaceDirectionInitial = new THREE.Vector3().applyMatrix4(new THREE.Matrix4().copy(object.matrixWorld).invert());
-    const objectSpaceDirectionFinal = direction
-        .clone()
-        .applyMatrix4(new THREE.Matrix4().copy(object.matrixWorld).invert());
-    const objectSpaceDirection = new THREE.Vector3()
-        .subVectors(objectSpaceDirectionFinal, objectSpaceDirectionInitial)
-        .negate();
-    const objectSpaceFurthestInDirection = furthestInDirection(object, objectSpaceDirection, target);
-    const objectSpaceOffsetInitial = new THREE.Vector3();
-    const objectSpaceOffsetFinalLength = objectSpaceDirection
-        .clone()
-        .normalize()
-        .dot(objectSpaceFurthestInDirection);
-    const objectSpaceOffsetFinal = objectSpaceDirection
-        .clone()
-        .negate()
-        .setLength(Math.max(objectSpaceOffsetFinalLength, 0));
-    // World space
-    const worldSpaceStartPosition = targetSpaceStartPosition.applyMatrix4(target.matrixWorld);
-    const worldSpaceTargetOffsetInitial = targetSpaceOffsetInitial.applyMatrix4(target.matrixWorld);
-    const worldSpaceTargetOffsetFinal = targetSpaceOffsetFinal.applyMatrix4(target.matrixWorld);
-    const worldSpaceTargetOffset = new THREE.Vector3().subVectors(worldSpaceTargetOffsetFinal, worldSpaceTargetOffsetInitial);
-    const worldSpaceObjectOffsetInitial = objectSpaceOffsetInitial.applyMatrix4(object.matrixWorld);
-    const worldSpaceObjectOffsetFinal = objectSpaceOffsetFinal.applyMatrix4(object.matrixWorld);
-    const worldSpaceObjectOffset = new THREE.Vector3().subVectors(worldSpaceObjectOffsetFinal, worldSpaceObjectOffsetInitial);
-    const worldSpaceOffset = direction
-        .clone()
-        .setLength(0 +
-        worldSpaceTargetOffset.length() +
-        buffer +
-        worldSpaceObjectOffset.length());
-    const worldSpaceOffsetInitial = new THREE.Vector3();
-    const worldSpaceOffsetFinal = worldSpaceOffset.clone();
-    // Object parent space
-    const objectParentSpaceStartPosition = worldSpaceStartPosition
-        .applyMatrix4(object.matrixWorld.clone().invert())
-        .applyMatrix4(object.matrix);
-    const objectParentSpaceOffsetInitial = worldSpaceOffsetInitial
-        .applyMatrix4(object.matrixWorld.clone().invert())
-        .applyMatrix4(object.matrix);
-    const objectParentSpaceOffsetFinal = worldSpaceOffsetFinal
-        .applyMatrix4(object.matrixWorld.clone().invert())
-        .applyMatrix4(object.matrix);
-    const objectParentSpaceOffset = new THREE.Vector3().subVectors(objectParentSpaceOffsetFinal, objectParentSpaceOffsetInitial);
-    object.position
-        .copy(objectParentSpaceStartPosition)
-        .add(objectParentSpaceOffset);
-    return object;
-};
-const moveToRightOf = (target, object, distance = 0.2) => {
-    return moveNextTo(target, object, RIGHT, distance);
-};
-const moveToLeftOf = (target, object, distance = 0.2) => {
-    return moveNextTo(target, object, LEFT, distance);
-};
-const moveAbove = (target, object, distance = 0.2) => {
-    return moveNextTo(target, object, UP, distance);
-};
-const moveBelow = (target, object, distance = 0.2) => {
-    return moveNextTo(target, object, DOWN, distance);
-};
-const rotate90 = (v) => v.applyAxisAngle(OUT, Math.PI / 2);
-const rotate180 = (v) => v.applyAxisAngle(OUT, Math.PI);
-const rotate270 = (v) => v.applyAxisAngle(OUT, -Math.PI / 2);
-const getBoundingBoxCenter = (obj, target) => {
-    obj.updateWorldMatrix(true, true);
-    new THREE.Box3().expandByObject(obj).getCenter(target);
-    return target;
-};
-const getBoundingBoxHelper = (obj, color) => {
-    obj.updateWorldMatrix(true, true);
-    const box = new THREE.Box3().expandByObject(obj);
-    const helper = new THREE.Box3Helper(box, new THREE.Color(color));
-    return helper;
-};
-const pointAlongCurve = (shape, t) => {
-    if (t < 0 || t > 1) {
-        throw new Error(`Invalid parameter ${t}`);
-    }
-    const totalLength = strokeLength(shape);
-    const targetLength = totalLength * t;
-    let currentLength = 0;
-    for (let i = 0; i < shape.points.length - 1; i++) {
-        const segmentLength = getSegmentLength(shape.points[i], shape.points[i + 1]);
-        if (currentLength + segmentLength >= targetLength) {
-            const segmentPercent = (targetLength - currentLength) / segmentLength;
-            return new THREE.Vector3().lerpVectors(shape.points[i], shape.points[i + 1], segmentPercent);
-        }
-        currentLength += segmentLength;
-    }
-    return shape.points[shape.points.length - 1];
-};
-const strokeLength = (shape) => {
-    let length = 0;
-    for (let i = 0; i < shape.points.length - 1; i++) {
-        length += getSegmentLength(shape.points[i], shape.points[i + 1]);
-    }
-    return length;
-};
-const getSegmentLength = (u, v) => {
-    const dx = u.x - v.x;
-    const dy = u.y - v.y;
-    const dz = u.z - v.z;
-    return Math.sqrt(dx * dx + dy * dy + dz * dz);
-};
-/*
- * Solves
- * [ a b ]   [ xa ]   [ ba ]
- * [ c d ] * [ xb ] = [ bb ]
- * for x.
- */
-const matrixSolve = (ma, mb, mc, md, ba, bb) => {
-    const determinant = ma * md - mb * mc;
-    if (determinant === 0) {
-        return null;
-    }
-    return [(md * ba - mb * bb) / determinant, (ma * bb - mc * ba) / determinant];
-};
-// https://blogs.sas.com/content/iml/2018/07/09/intersection-line-segments.html
-const getIntersection = (p1, p2, q1, q2) => {
-    const p2MinusP1 = new THREE.Vector3().subVectors(p2, p1);
-    const q1MinusQ2 = new THREE.Vector3().subVectors(q1, q2);
-    const q1MinusP1 = new THREE.Vector3().subVectors(q1, p1);
-    const solution = matrixSolve(p2MinusP1.x, q1MinusQ2.x, p2MinusP1.y, q1MinusQ2.y, q1MinusP1.x, q1MinusP1.y);
-    if (solution === null) {
-        // TODO: Handle parallel lines.
-        return null;
-    }
-    const [s, t] = solution;
-    if (s < 0 || 1 < s || t < 0 || 1 < t) {
-        return null;
-    }
-    return p1.multiplyScalar(1 - s).addScaledVector(p2, s);
-};
-const shapeIsClosed = (shape, adjacentThreshold = 0.0001) => {
-    return (new THREE.Vector3()
-        .subVectors(shape.points.at(0), shape.points.at(-1))
-        .length() < adjacentThreshold);
-};
-const intersectionsBetween = (shape1, shape2) => {
-    const intersections = [];
-    shape1.updateMatrixWorld();
-    shape2.updateMatrixWorld();
-    for (let i = 0; i < shape1.points.length - 1; i++) {
-        const segment1 = new THREE.Line3(shape1.points[i]?.clone().applyMatrix4(shape1.matrixWorld), shape1.points[i + 1]?.clone().applyMatrix4(shape1.matrixWorld));
-        for (let j = 0; j < shape2.points.length - 1; j++) {
-            const segment2 = new THREE.Line3(shape2.points[j]?.clone().applyMatrix4(shape2.matrixWorld), shape2.points[j + 1]?.clone().applyMatrix4(shape2.matrixWorld));
-            const maybeIntersection = getIntersection(segment1.start, segment1.end, segment2.start, segment2.end);
-            if (maybeIntersection !== null) {
-                intersections.push(maybeIntersection);
-            }
-        }
-    }
-    return intersections;
-};
-const positiveAngleTo = (a, b) => {
-    const normal = a.clone().rotate90();
-    const angle = a.angleTo(b);
-    if (Math.sign(normal.dot(b)) < 0) {
-        return 2 * Math.PI - angle;
-    }
-    return angle;
-};
-const indexOrThrow = (array, i) => {
-    const value = array[i];
-    if (value === undefined) {
-        throw new Error("Invalid array access");
-    }
-    return value;
-};
-const bufferIndexOrThrow = (array, i) => {
-    const value = array[i];
-    if (value === undefined) {
-        throw new Error("Invalid array access");
-    }
-    return value;
-};
-class ShapeFromCurves {
-    constructor() {
-        Object.defineProperty(this, "adjacentThreshold", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: 0.0001
-        });
-        Object.defineProperty(this, "segmentClosestToPoint", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: new THREE.Vector3()
-        });
-        Object.defineProperty(this, "pointToSegment", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: new THREE.Vector3()
-        });
-        Object.defineProperty(this, "points", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "style", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: {}
-        });
-    }
-    withStyle(style) {
-        this.style = style;
-        return this;
-    }
-    startAt(start) {
-        this.points = [start];
-        return this;
-    }
-    extendAlong(shape, direction, until) {
-        const startPoint = this.points.at(-1)?.clone();
-        if (startPoint === undefined) {
-            throw new Error("Cannot extend with no current points.");
-        }
-        // Find where the shape intersects the current endpoint.
-        let intersectSegment = null;
-        let intersectIndex = null;
-        shape.updateMatrixWorld();
-        for (let j = 0; j < shape.points.length - 1; j++) {
-            const segment = new THREE.Line3(shape.points.at(j)?.clone().applyMatrix4(shape.matrixWorld), shape.points
-                .at(j + 1)
-                ?.clone()
-                .applyMatrix4(shape.matrixWorld));
-            segment.closestPointToPoint(startPoint, true, this.segmentClosestToPoint);
-            const distanceToSegment = this.pointToSegment
-                .subVectors(this.segmentClosestToPoint, startPoint)
-                .length();
-            if (distanceToSegment < this.adjacentThreshold) {
-                intersectSegment = segment;
-                intersectIndex = j;
-                break;
-            }
-        }
-        if (intersectSegment === null || intersectIndex === null) {
-            throw new Error(`No intersection between ${startPoint.toArray()} and ${shape}`);
-        }
-        const vectorFromPointToIndex = (point, index) => {
-            const endPoint = shape.points
-                .at(index)
-                ?.clone()
-                .applyMatrix4(shape.matrixWorld);
-            if (endPoint === undefined) {
-                return new THREE.Vector3();
-            }
-            return new THREE.Vector3().subVectors(endPoint, point).normalize();
-        };
-        // Get potential directions to extend.
-        let towardStartVector;
-        let forwardInitialPointIndex = intersectIndex + 1;
-        let backwardInitialPointIndex = intersectIndex;
-        // debugger;
-        towardStartVector = new THREE.Vector3().subVectors(intersectSegment.start, this.segmentClosestToPoint);
-        if (towardStartVector.length() < this.adjacentThreshold) {
-            // The point intersects at the start of this segment, so try using the previous point instead.
-            let prevIndex = intersectIndex - 1;
-            if (prevIndex === -1 && shapeIsClosed(shape)) {
-                // The point intersects at the first point of a closed shape, so use the second to last point.
-                prevIndex = shape.points.length - 2;
-            }
-            if (prevIndex !== -1) {
-                towardStartVector = vectorFromPointToIndex(intersectSegment.start, prevIndex);
-                forwardInitialPointIndex = intersectIndex + 1;
-                backwardInitialPointIndex = prevIndex;
-            }
-            else {
-                // The vector is (effectively) zero.
-                towardStartVector.set(0, 0, 0);
-            }
-        }
-        towardStartVector.normalize();
-        // Ugh do this.
-        let towardEndVector;
-        const endToIntersection = new THREE.Vector3()
-            .subVectors(intersectSegment.end, this.segmentClosestToPoint)
-            .length();
-        if (endToIntersection < this.adjacentThreshold &&
-            intersectIndex + 2 < shape.points.length) {
-            let nextPoint = shape.points
-                .at(intersectIndex + 2)
-                ?.clone()
-                .applyMatrix4(shape.matrixWorld);
-            if (nextPoint === undefined) {
-                throw new Error("No next point");
-            }
-            towardEndVector = new THREE.Vector3()
-                .subVectors(nextPoint, intersectSegment.end)
-                .normalize();
-            // Handle closed curves (shape.points.at(0) === shape.points.at(-1))
-            if (towardEndVector.length() < this.adjacentThreshold) {
-                nextPoint = shape.points
-                    .at(intersectIndex + 3)
-                    ?.clone()
-                    .applyMatrix4(shape.matrixWorld);
-                if (nextPoint === undefined) {
-                    throw new Error("No next point");
-                }
-            }
-            forwardInitialPointIndex = intersectIndex + 2;
-            backwardInitialPointIndex = intersectIndex;
-        }
-        else {
-            towardEndVector = new THREE.Vector3()
-                .subVectors(intersectSegment.end, this.segmentClosestToPoint)
-                .normalize();
-        }
-        const forward = direction.dot(towardEndVector) > direction.dot(towardStartVector);
-        this.extendCurve(shape, forward ? forwardInitialPointIndex : backwardInitialPointIndex, forward, until);
-        return this;
-    }
-    extendCurve(shape, initialPointIndex, forward, until) {
-        const advance = (i) => {
-            i += increment;
-            if (i === shape.points.length && shapeIsClosed(shape)) {
-                i = 1;
-            }
-            else if (i === -1 && shapeIsClosed(shape)) {
-                i = shape.points.length - 2;
-            }
-            return i;
-        };
-        // const initialPointIndex = forward ? segmentIndex + 1 : segmentIndex;
-        const increment = forward ? 1 : -1;
-        let i = initialPointIndex;
-        let count = 0;
-        while (0 <= i && i < shape.points.length) {
-            count += 1;
-            if (count === 500) {
-                console.log("rip");
-                break;
-            }
-            const newPoint = shape.points
-                .at(i)
-                ?.clone()
-                .applyMatrix4(shape.matrixWorld);
-            if (newPoint === undefined) {
-                throw new Error("Error extending curve.");
-            }
-            const newSegment = new THREE.Line3(this.points.at(-1)?.clone(), newPoint);
-            if (newSegment.distance() < this.adjacentThreshold) {
-                i += increment;
-                continue;
-            }
-            const pointsToCheck = this.points.slice(0, this.points.length - 1);
-            if (until !== undefined) {
-                pointsToCheck.push(until);
-            }
-            for (const point of pointsToCheck) {
-                newSegment.closestPointToPoint(point, true, this.segmentClosestToPoint);
-                const distanceToSegment = this.pointToSegment
-                    .subVectors(this.segmentClosestToPoint, point)
-                    .length();
-                if (distanceToSegment < this.adjacentThreshold) {
-                    this.points.push(point.clone());
-                    return;
-                }
-            }
-            this.points.push(newPoint);
-            i = advance(i);
-        }
-    }
-    finish() {
-        return new Polygon(this.points, this.style);
-    }
-}
-
-var utils = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	BUFFER: BUFFER,
-	DOWN: DOWN,
-	IN: IN,
-	LEFT: LEFT,
-	ORIGIN: ORIGIN,
-	OUT: OUT,
-	RIGHT: RIGHT,
-	ShapeFromCurves: ShapeFromCurves,
-	UP: UP,
-	bufferIndexOrThrow: bufferIndexOrThrow,
-	clamp: clamp,
-	convertWorldDirectionToObjectSpace: convertWorldDirectionToObjectSpace,
-	furthestInDirection: furthestInDirection,
-	getBoundingBoxCenter: getBoundingBoxCenter,
-	getBoundingBoxHelper: getBoundingBoxHelper,
-	getFrameAttributes: getFrameAttributes,
-	indexOrThrow: indexOrThrow,
-	intersectionsBetween: intersectionsBetween,
-	moveAbove: moveAbove,
-	moveBelow: moveBelow,
-	moveNextTo: moveNextTo,
-	moveToLeftOf: moveToLeftOf,
-	moveToRightOf: moveToRightOf,
-	pointAlongCurve: pointAlongCurve,
-	positiveAngleTo: positiveAngleTo,
-	rotate180: rotate180,
-	rotate270: rotate270,
-	rotate90: rotate90,
-	setupCanvas: setupCanvas,
-	transformBetweenSpaces: transformBetweenSpaces,
-	vspace: vspace,
-	vstack: vstack
-});
-
-class Shift extends Animation {
-    constructor(object, offset, config) {
-        super((_elapsedTime, deltaTime) => {
-            object.position.add(offset.clone().multiplyScalar(deltaTime));
-        }, {
-            object,
-            reveal: true,
-            ...config,
-        });
-    }
-}
-
-class MoveTo extends Animation {
-    constructor(obj, target, config) {
-        super((elapsedTime) => {
-            obj.position
-                .copy(this.start)
-                .addScaledVector(this.displacement, elapsedTime);
-        }, { obj, reveal: true, ...config });
-        Object.defineProperty(this, "obj", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: obj
-        });
-        Object.defineProperty(this, "target", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: target
-        });
-        Object.defineProperty(this, "start", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "displacement", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-    }
-    setUp() {
-        super.setUp();
-        this.start = this.obj.position.clone();
-        const final = new THREE.Vector3();
-        const initial = new THREE.Vector3();
-        final.copy(this.target);
-        getBoundingBoxCenter(this.obj, initial);
-        this.obj.parent?.worldToLocal(final);
-        this.obj.parent?.worldToLocal(initial);
-        this.displacement = new THREE.Vector3().subVectors(final, initial);
-    }
-}
-/*
-
-Example Usage:
-
- new Animation.MoveTo(triangle, new THREE.Vector3(4, 1, 0));
-
- new Animation.MoveTo(triangle, diagram.square.position);
-
-*/
-
-class Rotate extends Animation {
-    constructor(object, angle, config) {
-        super((_elapsedTime, deltaTime) => {
-            object.rotation.z += angle * deltaTime;
-        }, { object, reveal: true, ...config });
-    }
-}
-
-class Draw extends Animation {
-    constructor(object, config) {
-        super((elapsedTime) => {
-            this.object.traverse((child) => {
-                if (child.stroke) {
-                    child.stroke.material.uniforms.drawRange.value.y = elapsedTime;
-                }
-            });
-        }, { object, reveal: true, ...config });
-    }
-}
-
-class Erase extends Animation {
-    constructor(object, config) {
-        super((elapsedTime) => {
-            object.stroke.material.uniforms.drawRange.value.y = 1 - elapsedTime;
-        }, { object, hide: true, ...config });
-        Object.defineProperty(this, "object", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: object
-        });
-        Object.defineProperty(this, "config", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: config
-        });
-    }
-    tearDown() {
-        if (this.config?.remove) {
-            this.object.parent.remove(this.object);
-        }
-        if (this.config?.restore) {
-            this.object.stroke.material.uniforms.drawRange.value.y = 1;
-        }
-        super.tearDown();
-    }
-}
-
-class SetScale extends Animation {
-    constructor(object, factor, config) {
-        super((elapsedTime) => {
-            const scale = THREE.MathUtils.lerp(this.initialScale, factor, elapsedTime);
-            object.scale.set(scale, scale);
-        }, { object, reveal: true, ...config });
-        Object.defineProperty(this, "initialScale", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-    }
-    setUp() {
-        super.setUp();
-        this.initialScale = this.object.scale.x;
-    }
-}
-
-class FadeIn extends Animation {
-    constructor(object, config) {
-        let family = true;
-        if (config && config.family === false) {
-            family = false;
-        }
-        super((elapsedTime, _deltaTime) => {
-            if (family) {
-                this.object.traverse((child) => {
-                    if (child instanceof THREE.Mesh) {
-                        child.material.opacity = THREE.MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(child) : 1, elapsedTime);
-                    }
-                });
-            }
-            else {
-                [this.object.stroke, this.object.fill].forEach((mesh) => {
-                    if (!mesh)
-                        return;
-                    mesh.material.opacity = THREE.MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(mesh) : 1, elapsedTime);
-                });
-            }
-        }, { object, reveal: true, ...config });
-        Object.defineProperty(this, "initialOpacity", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: new Map()
-        });
-    }
-    setUp() {
-        super.setUp();
-        this.object.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-                this.initialOpacity.set(child, child.material.opacity);
-            }
-        });
-    }
-}
-
-class SetOpacity extends Animation {
-    constructor(objectOrFunc, targetOpacity, config) {
-        let family = true;
-        if (config && config.family === false) {
-            family = false;
-        }
-        super((elapsedTime, _deltaTime) => {
-            if (family) {
-                this.object.traverse((child) => {
-                    if (child instanceof THREE.Mesh) {
-                        if (!this.initialOpacity.has(child)) {
-                            console.error("Unknown child");
-                        }
-                        child.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), this.targetOpacity, elapsedTime);
-                    }
-                });
-            }
-            else {
-                [this.object.stroke, this.object.fill].forEach((mesh) => {
-                    if (!mesh)
-                        return;
-                    mesh.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), this.targetOpacity, elapsedTime);
-                });
-            }
-        }, { object: objectOrFunc, ...config });
-        Object.defineProperty(this, "targetOpacity", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: targetOpacity
-        });
-        Object.defineProperty(this, "config", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: config
-        });
-        Object.defineProperty(this, "initialOpacity", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: new Map()
-        });
-    }
-    setUp() {
-        super.setUp();
-        this.object.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-                this.initialOpacity.set(child, child.material.opacity);
-            }
-        });
-    }
-}
-
-class FadeOut extends Animation {
-    constructor(objectOrFunc, config) {
-        let family = true;
-        if (config && config.family === false) {
-            family = false;
-        }
-        super((elapsedTime, _deltaTime) => {
-            if (family) {
-                this.object.traverse((child) => {
-                    if (child instanceof THREE.Mesh) {
-                        if (!this.initialOpacity.has(child)) {
-                            console.error("Unknown child");
-                        }
-                        child.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
-                    }
-                });
-            }
-            else {
-                [this.object.stroke, this.object.fill].forEach((mesh) => {
-                    if (!mesh)
-                        return;
-                    mesh.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), 0, elapsedTime);
-                });
-            }
-        }, { object: objectOrFunc, hide: true, ...config });
-        Object.defineProperty(this, "config", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: config
-        });
-        Object.defineProperty(this, "initialOpacity", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: new Map()
-        });
-    }
-    setUp() {
-        super.setUp();
-        this.object.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-                this.initialOpacity.set(child, child.material.opacity);
-            }
-        });
-    }
-    tearDown() {
-        if (this.config?.remove) {
-            this.object.parent.remove(this.object);
-        }
-        if (this.config?.restore) {
-            this.object.traverse((child) => {
-                if (child instanceof THREE.Mesh) {
-                    if (!this.initialOpacity.has(child)) {
-                        console.error("Unknown child");
-                    }
-                    child.material.opacity = this.initialOpacity.get(child);
-                }
-            });
-        }
-        super.tearDown();
-    }
-}
-
-class Wait extends Animation {
-    constructor(config) {
-        super(() => { }, config);
-    }
-}
-
-class Emphasize extends Animation {
-    constructor(object, largeScale = 1.1, config) {
-        super((elapsedTime) => {
-            let scale;
-            if (elapsedTime <= this.keyframe) {
-                const t0 = elapsedTime / this.keyframe;
-                scale = (1 - t0) * this.initialScale + t0 * this.largeScale;
-            }
-            else {
-                const t0 = (elapsedTime - this.keyframe) / (1 - this.keyframe);
-                scale = (1 - t0) * this.largeScale + t0 * this.initialScale;
-            }
-            this.object.scale.setScalar(scale);
-        }, { object, reveal: true, ...config });
-        Object.defineProperty(this, "initialScale", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "largeScale", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "keyframe", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: 0.9
-        });
-        this.largeScale = largeScale;
-    }
-    setUp() {
-        super.setUp();
-        this.initialScale = this.object.scale.x;
-    }
-}
-
-class Shake extends Animation {
-    constructor(object, config = {}) {
-        const { maxRotation = 0.05, frequency = 4 } = config;
-        super((_elapsedTime) => {
-            const sine = maxRotation * Math.sin(frequency * Math.PI * _elapsedTime);
-            object.rotation.z = sine;
-        }, { object, reveal: true, ...config });
-    }
-}
-
-class Grow extends Animation {
-    constructor(object) {
-        super((elapsedTime) => {
-            object.scale.set(elapsedTime, elapsedTime, elapsedTime);
-        }, { object, reveal: true });
-    }
-}
-
-let Stagger$1 = class Stagger extends Animation {
-    constructor(animations, userConfig = {}) {
-        const config = {
-            ...Stagger.defaultConfig(),
-            ...(animations.length === 1 ? { staggerDuration: 1 } : {}),
-            ...userConfig,
-        };
-        super(() => this.animations.forEach((animation) => animation.update(this.prevUpdateTime)), config);
-        Object.defineProperty(this, "animations", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: animations
-        });
-        Object.defineProperty(this, "config", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        this.config = config;
-    }
-    setUp() {
-        super.setUp();
-        const staggerDuration = this.config.staggerDuration ?? 3 / 4;
-        const staggerInterval = staggerDuration !== 1
-            ? (1 - staggerDuration) / (this.animations.length - 1)
-            : 0;
-        this.animations.forEach((animation, index) => {
-            animation.startTime = index * staggerInterval;
-            animation.endTime = animation.startTime + staggerDuration;
-            animation.parent = animation.parent || this.parent;
-            animation.before && animation.addBefore(animation.before);
-            animation.after && animation.addAfter(animation.after);
-            if (animation.endTime > 1.0) {
-                throw new Error("All Stagger animations must finish within 1 second");
-            }
-        });
-    }
-    static defaultConfig() {
-        return {
-            staggerDuration: 3 / 4,
-        };
-    }
-};
-
-class SetStyle extends Animation {
-    constructor(shape, style, config) {
-        super((elapsedTime) => {
-            if (this.initialStyle.fillColor !== undefined &&
-                this.targetStyle.fillColor !== undefined) {
-                const t = Math.min(Math.max(elapsedTime, 0), 1);
-                this.currentStyle.fillColor = new Color()
-                    .copy(this.initialStyle.fillColor)
-                    .lerp(this.targetStyle.fillColor, t);
-            }
-            if (this.initialStyle.strokeColor !== undefined &&
-                this.targetStyle.strokeColor !== undefined) {
-                const t = Math.min(Math.max(elapsedTime, 0), 1);
-                this.currentStyle.strokeColor = new Color().copy(this.initialStyle.strokeColor);
-                this.currentStyle.strokeColor.lerp(this.targetStyle.strokeColor, t);
-            }
-            if (this.initialStyle.fillOpacity !== undefined &&
-                this.targetStyle.fillOpacity !== undefined) {
-                this.currentStyle.fillOpacity = MathUtils.lerp(this.initialStyle.fillOpacity, this.targetStyle.fillOpacity, elapsedTime);
-            }
-            if (this.initialStyle.strokeOpacity !== undefined &&
-                this.targetStyle.strokeOpacity !== undefined) {
-                this.currentStyle.strokeOpacity = MathUtils.lerp(this.initialStyle.strokeOpacity, this.targetStyle.strokeOpacity, elapsedTime);
-            }
-            if (this.initialStyle.strokeWidth !== undefined &&
-                this.targetStyle.strokeWidth !== undefined) {
-                this.currentStyle.strokeWidth = MathUtils.lerp(this.initialStyle.strokeWidth, this.targetStyle.strokeWidth, elapsedTime);
-            }
-            shape.restyle(this.currentStyle);
-        }, { object: shape, ...config });
-        Object.defineProperty(this, "shape", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: shape
-        });
-        Object.defineProperty(this, "style", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: style
-        });
-        Object.defineProperty(this, "initialStyle", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "targetStyle", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "currentStyle", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: {}
-        });
-    }
-    setUp() {
-        super.setUp();
-        const shapeStyle = this.shape.getStyle();
-        this.initialStyle = {
-            ...shapeStyle,
-            fillColor: shapeStyle.fillColor ? new Color().copy(shapeStyle.fillColor) : undefined,
-            strokeColor: shapeStyle.strokeColor ? new Color().copy(shapeStyle.strokeColor) : undefined
-        };
-        this.targetStyle = {
-            ...this.style,
-            fillColor: this.style.fillColor ? new Color().copy(this.style.fillColor) : undefined,
-            strokeColor: this.style.strokeColor ? new Color().copy(this.style.strokeColor) : undefined
-        };
-    }
-}
-
-class Stagger extends Animation {
-    /**
-     * Creates a staggered fade-in animation for multiple objects
-     * @param objects Array of objects to animate in sequence
-     * @param config Additional configuration options
-     */
-    constructor(objects, config = {}) {
-        const { duration = 2 / (objects.length + 1) } = config;
-        const staggerDelay = (1 - duration) / (objects.length - 1);
-        super((elapsedTime, _deltaTime) => {
-            objects.forEach((object, index) => {
-                const startTime = index * staggerDelay;
-                const objectProgress = MathUtils.clamp((elapsedTime - startTime) / duration, 0, 1);
-                // Only process if animation has started for this object
-                if (objectProgress > 0) {
-                    object.traverse((child) => {
-                        if (child instanceof Mesh && child.material) {
-                            const initialOpacity = config?.preserveOpacity
-                                ? this.initialOpacities.get(child) || 1
-                                : 1;
-                            child.material.opacity = MathUtils.lerp(0, initialOpacity, objectProgress);
-                        }
-                    });
-                }
-            });
-        }, { objects, reveal: true, ...config });
-        Object.defineProperty(this, "objects", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "initialOpacities", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: new Map()
-        });
-        Object.defineProperty(this, "duration", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "staggerDelay", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        this.objects = objects;
-        this.duration = duration;
-        this.staggerDelay = staggerDelay;
-    }
-    setUp() {
-        super.setUp();
-        // Store initial opacity values for all objects
-        this.objects.forEach((object) => {
-            object.traverse((child) => {
-                if (child instanceof Mesh && child.material) {
-                    this.initialOpacities.set(child, child.material.opacity);
-                    // Start with opacity 0
-                    child.material.opacity = 0;
-                }
-            });
-        });
-    }
-}
-
-var index$1 = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	Animation: Animation,
-	Draw: Draw,
-	Emphasize: Emphasize,
-	Erase: Erase,
-	FadeIn: FadeIn,
-	FadeOut: FadeOut,
-	Grow: Grow,
-	MoveTo: MoveTo,
-	Rotate: Rotate,
-	SetOpacity: SetOpacity,
-	SetScale: SetScale,
-	SetStyle: SetStyle,
-	Shake: Shake,
-	Shift: Shift,
-	Stagger: Stagger$1,
-	StaggerFadeIn: Stagger,
-	Wait: Wait
-});
-
-class Indicator extends Group {
-    constructor(start, end, config = {}) {
-        const { tickLength = 0.4 } = config;
-        super();
-        Object.defineProperty(this, "start", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: start
-        });
-        Object.defineProperty(this, "end", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: end
-        });
-        Object.defineProperty(this, "startTick", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "endTick", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "stem", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        this.stem = Line.centeredLine(start, end, config);
-        const tickVector = new Vector3()
-            .subVectors(end, start)
-            .normalize()
-            .applyAxisAngle(OUT, Math.PI / 2)
-            .multiplyScalar(tickLength / 2);
-        const negativeTickVector = tickVector.clone().multiplyScalar(-1);
-        this.startTick = Line.centeredLine(new Vector3().addVectors(start, tickVector), new Vector3().addVectors(start, negativeTickVector), config);
-        this.endTick = Line.centeredLine(new Vector3().addVectors(end, tickVector), new Vector3().addVectors(end, negativeTickVector), config);
-        const center = new Vector3().addVectors(start, end).divideScalar(2);
-        for (const mesh of [this.stem, this.startTick, this.endTick]) {
-            mesh.position.sub(center);
-            this.add(mesh);
-        }
-        this.position.copy(center);
-    }
-    grow(config) {
-        const vec = new Vector3().subVectors(this.end, this.start);
-        this.startTick.position.set(0, 0, 0);
-        this.endTick.position.set(0, 0, 0);
-        this.stem.stroke.material.uniforms.drawRange.value.set(0.5, 0.5);
-        return new Animation((elapsedTime) => {
-            const halfTime = elapsedTime / 2;
-            this.stem.stroke.material.uniforms.drawRange.value.set(0.5 - halfTime, 0.5 + halfTime);
-            this.startTick.position.set(0, 0, 0).addScaledVector(vec, halfTime);
-            this.endTick.position.set(0, 0, 0).addScaledVector(vec, -halfTime);
-        }, { object: this, ...config });
-    }
-}
-
-// TODO: Handle reflex angles.
-class Angle extends Shape$1 {
-    constructor(point1, point2, point3, config = {}) {
-        config = { radius: 0.4, reflex: false, ...config };
-        const vector21 = new THREE.Vector3().subVectors(point1, point2);
-        const vector23 = new THREE.Vector3().subVectors(point3, point2);
-        const arcAngle = vector21.angleTo(vector23);
-        let arcRotation;
-        // TODO: Handle 180 degree angles
-        if (positiveAngleTo(vector21, vector23) < Math.PI) {
-            arcRotation = positiveAngleTo(RIGHT, vector21);
-        }
-        else {
-            arcRotation = positiveAngleTo(RIGHT, vector23);
-        }
-        const points = getArcPoints(config.radius, arcAngle);
-        config.fillPoints = [...points, new THREE.Vector3(0, 0, 0)];
-        super(points, config);
-        Object.defineProperty(this, "point1", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: point1
-        });
-        Object.defineProperty(this, "point2", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: point2
-        });
-        Object.defineProperty(this, "point3", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: point3
-        });
-        this.position.copy(point2);
-        this.rotateZ(arcRotation);
-    }
-    getAttributes() {
-        return {
-            point1: this.point1,
-            point2: this.point2,
-            point3: this.point3,
-        };
-    }
-}
-
-class CongruentAngle extends Shape$1 {
-    constructor(arcs, point1, point2, point3, config = {}) {
-        config = {
-            minRadius: 0.4,
-            spacing: 0.15,
-            ...config,
-        };
-        super();
-        Object.defineProperty(this, "arcs", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: arcs
-        });
-        Object.defineProperty(this, "point1", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: point1
-        });
-        Object.defineProperty(this, "point2", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: point2
-        });
-        Object.defineProperty(this, "point3", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: point3
-        });
-        Object.defineProperty(this, "config", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: config
-        });
-        this.intrinsicChildren = new Group();
-        for (let i = 0; i < arcs; i++) {
-            const arc = new Angle(point1, point2, point3, {
-                radius: config.minRadius + i * config.spacing,
-                ...config,
-            });
-            this.intrinsicChildren.add(arc);
-        }
-        this.add(this.intrinsicChildren);
-    }
-    getAttributes() {
-        return {
-            arcs: this.arcs,
-            point1: this.point1,
-            point2: this.point2,
-            point3: this.point3,
-        };
-    }
-}
-
-class RightAngle extends Polyline {
-    constructor(point1, point2, point3, config = {}) {
-        config = { sideLength: 0.35, ...config };
-        const vector21 = new Vector3()
-            .subVectors(point1, point2)
-            .setLength(config.sideLength);
-        const vector23 = new Vector3()
-            .subVectors(point3, point2)
-            .setLength(config.sideLength);
-        super([
-            new Vector3().addVectors(point2, vector21),
-            new Vector3().add(point2).add(vector21).add(vector23),
-            new Vector3().addVectors(point2, vector23),
-        ], config);
-    }
-}
-
-class CongruentLine extends Group {
-    constructor(ticks, start, end, config = {}) {
-        config = Object.assign({ tickLength: 0.25, spacing: 0.15 }, config);
-        super();
-        const left = -(config.spacing * (ticks - 1)) / 2;
-        for (let i = 0; i < ticks; i++) {
-            const pos = left + config.spacing * i;
-            const tick = new Line(new Vector3(pos, -config.tickLength / 2, 0), new Vector3(pos, config.tickLength / 2, 0), config);
-            this.add(tick);
-        }
-        this.moveToSegment(start, end);
-    }
-    moveToSegment(start, end) {
-        const center = new Vector3().addVectors(start, end).divideScalar(2);
-        this.position.copy(center);
-        const segmentVector = new Vector3().subVectors(end, start);
-        this.rotation.z = Math.atan2(segmentVector.y, segmentVector.x);
-    }
-}
-
-let Number$1 = class Number extends Group {
-    constructor(value = 0, config = {}) {
-        const fullConfig = {
-            color: config.color ?? "black",
-            decimals: config.decimals ?? 2,
-        };
-        super();
-        Object.defineProperty(this, "meshes", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: []
-        });
-        Object.defineProperty(this, "material", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: new MeshBasicMaterial({ color: "black" })
-        });
-        Object.defineProperty(this, "decimals", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "centerData", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: {
-                center: new Vector3(),
-                box: new Box3(),
-                offset: new Vector3(),
-                worldPosition: new Vector3(),
-            }
-        });
-        this.material.color = new Color(fullConfig.color);
-        this.decimals = fullConfig.decimals;
-        this.scale.set(0.0008, -0.0008, 0.0008);
-        this.updateFromValue(value);
-    }
-    reshape(value, config = {}) {
-        const fullConfig = {
-            color: config.color ?? "black",
-            decimals: config.decimals ?? 2,
-        };
-        this.material.color = new Color(fullConfig.color);
-        this.decimals = fullConfig.decimals;
-        this.clear();
-        this.updateFromValue(value);
-    }
-    updateFromValue(value) {
-        const characters = value.toFixed(this.decimals).split("");
-        for (let i = 0; i < characters.length; i++) {
-            const character = characters[i];
-            if (character === undefined) {
-                throw new Error(`No character at index ${i}`);
-            }
-            const geometry = Number.geometries.get(character);
-            if (geometry === undefined) {
-                throw new Error(`Character ${character} isn't supported in Number.`);
-            }
-            let mesh = this.meshes[i];
-            if (mesh !== undefined) {
-                mesh.geometry = geometry;
-            }
-            else {
-                mesh = new Mesh(geometry, this.material);
-                this.meshes.push(mesh);
-            }
-            this.add(mesh);
-        }
-        for (let i = 1; i < this.children.length; i++) {
-            const previousChild = this.children[i - 1];
-            const currentChild = this.children[i];
-            currentChild.moveNextTo(previousChild, RIGHT, 0.025);
-        }
-        this.centerData.worldPosition.copy(this.position);
-        this.localToWorld(this.centerData.worldPosition);
-        this.centerData.box.setFromObject(this).getCenter(this.centerData.center);
-        this.centerData.center.y *= -1;
-        this.centerData.offset
-            .subVectors(this.centerData.worldPosition, this.centerData.center)
-            .multiplyScalar(1 / 0.0008);
-        this.children.forEach((child) => child.position.add(this.centerData.offset));
-    }
-    static extractGeometry(textShape) {
-        return textShape.children[0].children[0].children[0]
-            .geometry;
-    }
-    static initializeGeometries() {
-        const geometryMap = new Map();
-        for (let i = 0; i < 10; i++) {
-            const numberShape = new Text(i.toString());
-            const numberGeometry = Number.extractGeometry(numberShape);
-            geometryMap.set(i.toString(), numberGeometry);
-        }
-        const decimalShape = new Text(".");
-        const decimalGeometry = Number.extractGeometry(decimalShape);
-        geometryMap.set(".", decimalGeometry);
-        return geometryMap;
-    }
-};
-Object.defineProperty(Number$1, "geometries", {
-    enumerable: true,
-    configurable: true,
-    writable: true,
-    value: Number$1.initializeGeometries()
-});
-
-var index = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	Angle: Angle,
-	CongruentAngle: CongruentAngle,
-	CongruentLine: CongruentLine,
-	Indicator: Indicator,
-	Number: Number$1,
-	RightAngle: RightAngle
-});
-
-/**
- * A curve described by an equation.
- */
-class Curve extends Polyline {
-    constructor(equation, config = {}) {
-        config = { ...Polyline.defaultConfig(), ...config };
-        super([new THREE.Vector3(-1, -1, 0), new THREE.Vector3(1, 1, 0)], config);
-        Object.defineProperty(this, "equation", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: equation
-        });
-    }
-    static defaultConfig() {
-        return { ...Polyline.defaultConfig() };
-    }
-    getClassConfig() {
-        return {};
-    }
-}
-
-var graphing = /*#__PURE__*/Object.freeze({
-	__proto__: null,
-	Curve: Curve
-});
-
-var frame = {
-    horizontal: {
-        nhd: {
-            aspectRatio: 16 / 9,
-            coordinateHeight: 8,
-            pixelHeight: 360,
-            frameRate: 30,
-        },
-        hd: {
-            aspectRatio: 16 / 9,
-            coordinateHeight: 8,
-            pixelHeight: 720,
-            frameRate: 30,
-        },
-        fhd: {
-            aspectRatio: 16 / 9,
-            coordinateHeight: 8,
-            pixelHeight: 1080,
-            frameRate: 60,
-        },
-    },
-    vertical: {
-        nhd: {
-            aspectRatio: 9 / 16,
-            coordinateWidth: 8,
-            pixelWidth: 360,
-            frameRate: 30,
-        },
-        hd: {
-            aspectRatio: 9 / 16,
-            coordinateWidth: 8,
-            pixelWidth: 720,
-            frameRate: 30,
-        },
-        fhd: {
-            aspectRatio: 9 / 16,
-            coordinateWidth: 8,
-            pixelWidth: 1080,
-            frameRate: 60,
-        },
-    },
-};
-
-class SceneController {
-    constructor(UserScene, canvasRef, config) {
-        Object.defineProperty(this, "UserScene", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: UserScene
-        });
-        Object.defineProperty(this, "animationIndex", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: 0
-        });
-        Object.defineProperty(this, "deltaTime", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: 0
-        });
-        Object.defineProperty(this, "elapsedTime", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: 0
-        });
-        Object.defineProperty(this, "firstFrame", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: true
-        });
-        Object.defineProperty(this, "fps", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: 60
-        });
-        Object.defineProperty(this, "timePrecision", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: 1e5
-        });
-        Object.defineProperty(this, "loopAnimations", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: []
-        });
-        Object.defineProperty(this, "finishedAnimationCount", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: 0
-        });
-        Object.defineProperty(this, "userScene", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "_viewport", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "aspectRatio", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
-        });
-        const [scene, camera, renderer, aspectRatio] = setupCanvas(canvasRef, config);
-        this.aspectRatio = aspectRatio;
-        this.userScene = new UserScene(scene, camera, renderer);
-        // Set viewport which will trigger the setter and update ViewportManager
-        this.viewport = config.viewport;
-    }
-    get viewport() {
-        return this._viewport;
-    }
-    set viewport(value) {
-        this._viewport = value;
-        const canvas = this.renderer?.domElement;
-        if (canvas) {
-            const screenSize = new THREE.Vector2(canvas.width, canvas.height);
-            const devicePixelRatio = typeof window !== "undefined" ? window.devicePixelRatio : 1;
-            ViewportManager.getInstance().setViewport(value, screenSize, devicePixelRatio);
-        }
-    }
-    get scene() {
-        return this.userScene.scene;
-    }
-    get camera() {
-        return this.userScene.camera;
-    }
-    get renderer() {
-        return this.userScene.renderer;
-    }
-    render() {
-        if (!this.viewport) {
-            this.renderer.clear();
-            this.userScene.renderer.render(this.userScene.scene, this.userScene.camera);
-        }
-        else {
-            const viewportArray = this.viewport.toArray();
-            this.renderer.setScissor(...viewportArray);
-            this.renderer.setViewport(...viewportArray);
-            this.renderer.setScissorTest(true);
-            this.renderer.clear();
-            this.renderer.render(this.scene, this.camera);
-        }
-    }
-    tick(deltaTime, render = true) {
-        if (this.firstFrame) {
-            this.deltaTime = 0;
-            this.elapsedTime = 0;
-            this.firstFrame = false;
-            let currentEndTime = 0;
-            this.userScene.animations?.forEach((o) => {
-                if (Array.isArray(o)) {
-                    o = { animations: o };
-                }
-                if (o instanceof Animation) {
-                    const animation = o;
-                    animation.startTime = currentEndTime;
-                    animation.endTime = currentEndTime + animation.runTime;
-                    animation.parent = animation.parent || this.userScene.scene;
-                    animation.before && animation.addBefore(animation.before);
-                    animation.after && animation.addAfter(animation.after);
-                    this.loopAnimations.push(animation);
-                    currentEndTime = animation.endTime;
-                }
-                else if (typeof o === "function") {
-                    const animation = new Animation(o);
-                    animation.startTime = currentEndTime;
-                    animation.endTime = currentEndTime + animation.runTime;
-                    animation.parent = this.userScene.scene;
-                    this.loopAnimations.push(animation);
-                    currentEndTime = animation.endTime;
-                }
-                else if (typeof o === "object") {
-                    const animationArray = o.animations;
-                    const runTime = o.runTime || 1;
-                    const scale = o.scale || 1;
-                    const before = o.before || (() => { });
-                    const after = o.after || (() => { });
-                    for (let i = 0; i < animationArray.length; i++) {
-                        const animation = animationArray[i];
-                        animation.startTime = currentEndTime;
-                        animation.endTime = currentEndTime + runTime * scale;
-                        animation.runTime = runTime;
-                        animation.scale = scale;
-                        animation.before && animation.addBefore(animation.before);
-                        animation.after && animation.addAfter(animation.after);
-                        animation.parent =
-                            animation.parent || o.parent || this.userScene.scene;
-                        this.loopAnimations.push(...animationArray);
-                    }
-                    animationArray.at(0).addBefore(before);
-                    animationArray.at(-1).addAfter(after);
-                    currentEndTime = animationArray[0].endTime;
-                }
-            });
-        }
-        else {
-            this.deltaTime = deltaTime;
-            this.elapsedTime += deltaTime;
-        }
-        try {
-            const roundedElapsedTime = Math.round(this.elapsedTime * this.timePrecision) / this.timePrecision;
-            this.loopAnimations.forEach((animation) => animation.update(roundedElapsedTime));
-            this.userScene.scene.traverse((object) => {
-                object.update(this.deltaTime, this.elapsedTime);
-            });
-            this.userScene.update?.(this.deltaTime, this.elapsedTime);
-        }
-        catch (err) {
-            console.error(`Error executing user animation: ${err.toString()}`);
-            throw err;
-        }
-        const newFinishedAnimationCount = this.loopAnimations.reduce((acc, cur) => acc + (cur.finished ? 1 : 0), 0);
-        if (newFinishedAnimationCount !== this.finishedAnimationCount) {
-            this.animationIndex += 1;
-            this.finishedAnimationCount = newFinishedAnimationCount;
-        }
-        if (render) {
-            this.render();
-        }
-    }
-    play() {
-        let lastTime;
-        this.userScene.renderer.setAnimationLoop((time) => {
-            const elapsedSinceLastFrame = lastTime !== undefined ? (time - lastTime) / 1000 : 0;
-            this.tick(elapsedSinceLastFrame);
-            lastTime = time;
-        });
-    }
 }
 
 const COLOR_SPACE_SVG = SRGBColorSpace;

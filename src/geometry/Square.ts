@@ -1,7 +1,7 @@
 import { type Style } from "./utils.js";
 import Rectangle, { RectangleAttributes } from "./Rectangle.js";
 import { Animation } from "../animation/Animation.js";
-import { MathUtils } from "three";
+import { MathUtils } from "three/webgpu";
 
 /**
  * A shape with four sides of equal length and four right angles.

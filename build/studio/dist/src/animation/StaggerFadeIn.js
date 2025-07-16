@@ -1,5 +1,5 @@
 import { Animation } from "./Animation.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 export default class Stagger extends Animation {
     /**
      * Creates a staggered fade-in animation for multiple objects

@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import * as Geometry from "../geometry/index.js";
 import Angle from "./Angle.js";
 import Shape from "../geometry/Shape.js";

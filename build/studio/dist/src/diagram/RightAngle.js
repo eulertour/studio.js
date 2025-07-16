@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import * as Geometry from "../geometry/index.js";
 export default class RightAngle extends Geometry.Polyline {
     constructor(point1, point2, point3, config = {}) {

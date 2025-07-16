@@ -1,5 +1,5 @@
 import { Animation } from "./index.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 export default class SetStyle extends Animation {
     constructor(shape, style, config) {
         super((elapsedTime) => {

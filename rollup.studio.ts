@@ -10,6 +10,12 @@ export default [
       file: "build/studio/bundle/index.js",
       format: "es",
       sourcemap: true,
+      // sourcemapBaseUrl: "http://localhost:5173/",
+      // sourcemapPathTransform: (relativeSourcePath, sourcemapPath) => {
+      //   const srcIndex = relativeSourcePath.indexOf("src/");
+      //   if (srcIndex === -1) return relativeSourcePath;
+      //   return relativeSourcePath.slice(srcIndex);
+      // },
     },
     external: ["three/webgpu"],
     plugins: [

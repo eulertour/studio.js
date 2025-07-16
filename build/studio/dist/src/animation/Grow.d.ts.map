@@ -1,1 +1,1 @@
-{"version":3,"file":"Grow.d.ts","sourceRoot":"","sources":["../../../../../src/animation/Grow.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAE,MAAM,gBAAgB,CAAC;AAC3C,OAAO,KAAK,KAAK,MAAM,OAAO,CAAC;AAE/B,MAAM,CAAC,OAAO,OAAO,IAAK,SAAQ,SAAS;gBAC3B,MAAM,EAAE,KAAK,CAAC,QAAQ;CAQrC"}
+{"version":3,"file":"Grow.d.ts","sourceRoot":"","sources":["../../../../../src/animation/Grow.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAE,MAAM,gBAAgB,CAAC;AAC3C,OAAO,KAAK,KAAK,MAAM,cAAc,CAAC;AAEtC,MAAM,CAAC,OAAO,OAAO,IAAK,SAAQ,SAAS;gBAC3B,MAAM,EAAE,KAAK,CAAC,QAAQ;CAQrC"}

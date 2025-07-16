@@ -1,5 +1,5 @@
 import { Animation } from "./index.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import { Shape, Style } from "../geometry/index.js";
 
 export default class SetStyle extends Animation {
