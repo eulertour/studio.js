@@ -35,6 +35,7 @@
   ],
   "scripts": {
     "dev": "vite",
+    "devBundle": "bun run build:source && vite --config vite.config.bundle.ts",
     "test": "vitest",
     "build": "rm -rf build; bun run build:source; bun run build:mathjax; bun run build:three; bun run build:api; bun run copy:examples",
     "build:source": "tsc --project tsconfig.build.json; rollup --config rollup.studio.ts --configPlugin typescript",
