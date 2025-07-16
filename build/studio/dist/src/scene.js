@@ -76,7 +76,6 @@ export class SceneController {
             writable: true,
             value: void 0
         });
-        throw new Error("source map");
         const [scene, camera, renderer, aspectRatio] = setupCanvas(canvasRef, config);
         this.aspectRatio = aspectRatio;
         this.userScene = new UserScene(scene, camera, renderer);
@@ -111,6 +110,10 @@ export class SceneController {
         }
         else {
             const viewportArray = this.viewport.toArray();
+            if (viewportArray.some(v => v < 0)) {
+                console.warn(`Suppressed attempt to render with invalid viewport ${viewportArray}.`);
+                return;
+            }
             this.renderer.setScissor(...viewportArray);
             this.renderer.setViewport(...viewportArray);
             this.renderer.setScissorTest(true);

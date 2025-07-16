@@ -13,19 +13,7 @@ export default [
       sourcemapPathTransform: (relativeSourcePath) => {
         // Fix excessive ../../../ in source paths
         const normalized = relativeSourcePath.replace(/^(\.\.\/)+/, '');
-        
-        // For src files, create correct relative path from bundle directory
-        if (normalized.startsWith('src/')) {
-          return '../../../' + normalized;
-        }
-        
-        // For node_modules, create correct relative path
-        if (normalized.includes('node_modules/')) {
-          const nodeModulesIndex = normalized.indexOf('node_modules/');
-          return '../../../' + normalized.slice(nodeModulesIndex);
-        }
-        
-        return relativeSourcePath;
+        return '../../../' + normalized;
       },
     },
     external: ["three/webgpu"],

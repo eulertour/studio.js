@@ -100,6 +100,13 @@ export class SceneController {
       );
     } else {
       const viewportArray = this.viewport.toArray();
+      if (viewportArray.some(v => v < 0)) {
+        console.warn(
+          `Suppressed attempt to render with invalid viewport ${viewportArray}.`,
+        );
+        return;
+      }
+
       this.renderer.setScissor(...viewportArray);
       this.renderer.setViewport(...viewportArray);
       this.renderer.setScissorTest(true);
