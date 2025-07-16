@@ -86596,3 +86596,4 @@ THREE.Object3D.prototype.recenter = function (globalPosition) {
 THREE.Object3D.prototype.reorient = () => { };
 
 export { index$1 as Animation, constants as Constants, index as Diagram, FontLoader, frame as Frame, index$2 as Geometry, graphing as Graphing, SVGLoader, SceneController, text as Text, TextGeometry, utils as Utils, WebGPUMeshLineMaterial, component, setupCanvas };
+//# sourceMappingURL=index.js.map

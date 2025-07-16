@@ -9,6 +9,7 @@ export default [
     output: {
       file: "build/studio/bundle/index.js",
       format: "es",
+      sourcemap: true,
     },
     external: ["three/webgpu"],
     plugins: [
@@ -18,6 +19,8 @@ export default [
         declarationMap: false,
         outDir: "build/studio/bundle",
         tsconfig: "tsconfig.build.json",
+        sourceMap: true,
+        inlineSources: false,
       }),
       commonjs(),
     ],

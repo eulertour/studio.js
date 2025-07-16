@@ -1,4 +1,4 @@
-import { Geometry, Animation, Text, THREE } from "@eulertour/studio";
+import { Geometry, Animation, Text, THREE, Diagram } from "@eulertour/studio";
 
 export default class Example {
   square: Geometry.Square;
