@@ -7,18 +7,44 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Paths
-const inputPath = path.join(__dirname, 'main.ts');
-const outputPath = path.join(__dirname, 'main.js');
+const srcDir = path.join(__dirname, 'src');
+const buildDir = path.join(__dirname, 'build');
 
-// Check if the TypeScript file exists
-if (!fs.existsSync(inputPath)) {
-  console.log('No studio/main.ts file found, skipping transpilation');
-  process.exit(0);
+// Ensure build directory exists
+if (!fs.existsSync(buildDir)) {
+  fs.mkdirSync(buildDir, { recursive: true });
 }
 
-// Function to transpile the TypeScript file
-function transpile() {
+// Function to get all TypeScript files in src directory
+function getTypeScriptFiles(dir: string): string[] {
+  const files: string[] = [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...getTypeScriptFiles(fullPath));
+    } else if (entry.isFile() && entry.name.endsWith('.ts')) {
+      files.push(fullPath);
+    }
+  }
+  
+  return files;
+}
+
+// Function to transpile a TypeScript file
+function transpileFile(inputPath: string) {
   try {
+    // Calculate relative path and output path
+    const relativePath = path.relative(srcDir, inputPath);
+    const outputPath = path.join(buildDir, relativePath.replace(/\.ts$/, '.js'));
+    const outputDir = path.dirname(outputPath);
+    
+    // Ensure output directory exists
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+    
     // Read the TypeScript source
     const source = fs.readFileSync(inputPath, 'utf8');
 
@@ -34,33 +60,59 @@ function transpile() {
     // Write the JavaScript output
     fs.writeFileSync(outputPath, result.outputText);
 
-    console.log(`Transpiled studio/main.ts to studio/main.js`);
+    console.log(`Transpiled ${relativePath} to build/${relativePath.replace(/\.ts$/, '.js')}`);
   } catch (error) {
-    console.error('Error transpiling:', error);
+    console.error(`Error transpiling ${inputPath}:`, error);
+  }
+}
+
+// Function to transpile all TypeScript files
+function transpileAll() {
+  const files = getTypeScriptFiles(srcDir);
+  if (files.length === 0) {
+    console.log('No TypeScript files found in src directory');
+    return;
+  }
+  
+  for (const file of files) {
+    transpileFile(file);
   }
 }
 
 // Initial transpilation
-transpile();
+transpileAll();
 
 // Check if watch mode is enabled
 const watchMode = process.argv.includes('--watch') || process.argv.includes('-w');
 
 if (watchMode) {
-  console.log('Watching for changes to studio/main.ts...');
+  console.log('Watching for changes in src directory...');
   
-  // Watch the TypeScript file for changes
-  fs.watchFile(inputPath, { interval: 300 }, (curr, prev) => {
-    if (curr.mtime > prev.mtime) {
-      console.log('Detected change in studio/main.ts');
-      transpile();
-    }
-  });
+  // Watch the src directory for changes
+  const watchers = new Map<string, fs.FSWatcher>();
+  
+  function watchDirectory(dir: string) {
+    const watcher = fs.watch(dir, { recursive: true }, (eventType, filename) => {
+      if (filename && filename.endsWith('.ts')) {
+        const fullPath = path.join(dir, filename);
+        if (fs.existsSync(fullPath)) {
+          console.log(`Detected change in ${filename}`);
+          transpileFile(fullPath);
+        }
+      }
+    });
+    
+    watchers.set(dir, watcher);
+  }
+  
+  watchDirectory(srcDir);
   
   // Keep the process running
   process.on('SIGINT', () => {
     console.log('\nStopping watch mode...');
-    fs.unwatchFile(inputPath);
+    for (const watcher of watchers.values()) {
+      watcher.close();
+    }
     process.exit(0);
   });
 }

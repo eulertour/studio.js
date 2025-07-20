@@ -50,7 +50,7 @@ export const options = [
     template: 'horizontal.html'
   },
   { 
-    scene: '../../scenes/studio/main.js',
+    scene: '../../scenes/studio/build/main.js',
     title: 'Studio Example',
     template: 'horizontal.html'
   },

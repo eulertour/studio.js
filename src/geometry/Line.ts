@@ -24,7 +24,7 @@ export default class Line extends Shape {
   }
 
   static defaultConfig() {
-    return { ...Shape.defaultConfig() };
+    return { ...Shape.defaultConfig(), fill: false };
   }
 
   static centeredLine(
