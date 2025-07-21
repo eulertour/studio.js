@@ -1,9 +1,4 @@
-import {
-  Geometry,
-  Utils,
-  THREE,
-  component,
-} from '@eulertour/studio';
+import { Geometry, Utils, THREE, component } from "@eulertour/studio";
 
 export default class Example {
   solarSystemConfig = {
@@ -59,8 +54,12 @@ class SolarSystem extends THREE.Group {
     );
   }
 
-  get earth() { return this.sun.earth }
-  get moon() { return this.sun.earth.moon }
+  get earth() {
+    return this.sun.earth;
+  }
+  get moon() {
+    return this.sun.earth.moon;
+  }
 
   update(t) {
     this.earth.update(t);
@@ -108,7 +107,7 @@ class Earth extends Geometry.Circle {
     this.position.set(
       this.orbitRadius * Math.cos(angle),
       this.orbitRadius * Math.sin(angle),
-      0
+      0,
     );
   }
 }
@@ -133,7 +132,7 @@ class Moon extends Geometry.Circle {
     this.position.set(
       this.orbitRadius * Math.cos(angle),
       this.orbitRadius * Math.sin(angle),
-      0
+      0,
     );
   }
 }
