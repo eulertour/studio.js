@@ -56069,7 +56069,7 @@ class Line extends Shape$1 {
         this.curveEndIndices = [[0, 1]];
     }
     static defaultConfig() {
-        return { ...Shape$1.defaultConfig() };
+        return { ...Shape$1.defaultConfig(), fill: false };
     }
     static centeredLine(start, end, config = {}) {
         const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);
@@ -57696,7 +57696,7 @@ class Draw extends Animation {
         super((elapsedTime) => {
             this.object.traverse((child) => {
                 if (child.stroke) {
-                    child.stroke.material.uniforms.drawRange.value.y = elapsedTime;
+                    child.stroke.material.uniforms.endProportion.value = elapsedTime;
                 }
             });
         }, { object, reveal: true, ...config });
@@ -57760,8 +57760,12 @@ class FadeIn extends Animation {
         super((elapsedTime, _deltaTime) => {
             if (family) {
                 this.object.traverse((child) => {
-                    if (child instanceof THREE.Mesh) {
-                        child.material.opacity = THREE.MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(child) : 1, elapsedTime);
+                    const interpolatedOpacity = THREE.MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(child) : 1, elapsedTime);
+                    if (child instanceof WebGPUMeshLine) {
+                        child.material.uniforms.opacity.value = interpolatedOpacity;
+                    }
+                    else if (child instanceof THREE.Mesh) {
+                        child.material.opacity = interpolatedOpacity;
                     }
                 });
             }
@@ -57769,7 +57773,13 @@ class FadeIn extends Animation {
                 [this.object.stroke, this.object.fill].forEach((mesh) => {
                     if (!mesh)
                         return;
-                    mesh.material.opacity = THREE.MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(mesh) : 1, elapsedTime);
+                    const interpolatedOpacity = THREE.MathUtils.lerp(0, config?.preserveOpacity ? this.initialOpacity.get(mesh) : 1, elapsedTime);
+                    if (mesh instanceof WebGPUMeshLine) {
+                        mesh.material.uniforms.opacity.value = interpolatedOpacity;
+                    }
+                    else if (mesh instanceof THREE.Mesh) {
+                        mesh.material.opacity = interpolatedOpacity;
+                    }
                 });
             }
         }, { object, reveal: true, ...config });
@@ -57857,7 +57867,13 @@ class FadeOut extends Animation {
                         if (!this.initialOpacity.has(child)) {
                             console.error("Unknown child");
                         }
-                        child.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
+                        const interpolatedOpacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
+                        if (child instanceof WebGPUMeshLine) {
+                            child.material.uniforms.opacity.value = interpolatedOpacity;
+                        }
+                        else if (child instanceof THREE.Mesh) {
+                            child.material.opacity = interpolatedOpacity;
+                        }
                     }
                 });
             }
@@ -57865,7 +57881,13 @@ class FadeOut extends Animation {
                 [this.object.stroke, this.object.fill].forEach((mesh) => {
                     if (!mesh)
                         return;
-                    mesh.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), 0, elapsedTime);
+                    const interpolatedOpacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), 0, elapsedTime);
+                    if (mesh instanceof WebGPUMeshLine) {
+                        mesh.material.uniforms.opacity.value = interpolatedOpacity;
+                    }
+                    else if (mesh instanceof THREE.Mesh) {
+                        mesh.material.opacity = interpolatedOpacity;
+                    }
                 });
             }
         }, { object: objectOrFunc, hide: true, ...config });

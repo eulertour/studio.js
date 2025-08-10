@@ -24,7 +24,7 @@ export default class Line extends Shape {
         this.curveEndIndices = [[0, 1]];
     }
     static defaultConfig() {
-        return { ...Shape.defaultConfig() };
+        return { ...Shape.defaultConfig(), fill: false };
     }
     static centeredLine(start, end, config = {}) {
         const center = new THREE.Vector3().addVectors(start, end).divideScalar(2);

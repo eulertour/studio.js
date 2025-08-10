@@ -4,7 +4,7 @@ export default class Draw extends Animation {
         super((elapsedTime) => {
             this.object.traverse((child) => {
                 if (child.stroke) {
-                    child.stroke.material.uniforms.drawRange.value.y = elapsedTime;
+                    child.stroke.material.uniforms.endProportion.value = elapsedTime;
                 }
             });
         }, { object, reveal: true, ...config });

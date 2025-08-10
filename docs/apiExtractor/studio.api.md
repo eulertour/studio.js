@@ -552,7 +552,9 @@ class Line extends Shape {
     // (undocumented)
     static centeredLine(start: THREE.Vector3, end: THREE.Vector3, config?: Style): Line;
     // (undocumented)
-    static defaultConfig(): {};
+    static defaultConfig(): {
+        fill: boolean;
+    };
     // (undocumented)
     end: THREE.Vector3;
     // (undocumented)

@@ -1,3 +1,4 @@
+import WebGPUMeshLine from "../geometry/WebGPUMeshLine/index.js";
 import { Animation } from "./Animation.js";
 import * as THREE from "three/webgpu";
 export default class FadeOut extends Animation {
@@ -13,7 +14,13 @@ export default class FadeOut extends Animation {
                         if (!this.initialOpacity.has(child)) {
                             console.error("Unknown child");
                         }
-                        child.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
+                        const interpolatedOpacity = THREE.MathUtils.lerp(this.initialOpacity.get(child), 0, elapsedTime);
+                        if (child instanceof WebGPUMeshLine) {
+                            child.material.uniforms.opacity.value = interpolatedOpacity;
+                        }
+                        else if (child instanceof THREE.Mesh) {
+                            child.material.opacity = interpolatedOpacity;
+                        }
                     }
                 });
             }
@@ -21,7 +28,13 @@ export default class FadeOut extends Animation {
                 [this.object.stroke, this.object.fill].forEach((mesh) => {
                     if (!mesh)
                         return;
-                    mesh.material.opacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), 0, elapsedTime);
+                    const interpolatedOpacity = THREE.MathUtils.lerp(this.initialOpacity.get(mesh), 0, elapsedTime);
+                    if (mesh instanceof WebGPUMeshLine) {
+                        mesh.material.uniforms.opacity.value = interpolatedOpacity;
+                    }
+                    else if (mesh instanceof THREE.Mesh) {
+                        mesh.material.opacity = interpolatedOpacity;
+                    }
                 });
             }
         }, { object: objectOrFunc, hide: true, ...config });

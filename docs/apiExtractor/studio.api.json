@@ -7737,7 +7737,7 @@
                     },
                     {
                       "kind": "Content",
-                      "text": "{}"
+                      "text": "{\n        fill: boolean;\n    }"
                     },
                     {
                       "kind": "Content",
