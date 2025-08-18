@@ -38,6 +38,10 @@ export default class Square extends Rectangle {
     );
   }
 
+  area() {
+    return this.sideLength * this.sideLength;
+  }
+
   getCloneAttributes() {
     return [this.sideLength];
   }
